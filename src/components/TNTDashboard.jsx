@@ -517,7 +517,14 @@ export default function TNTDashboard() {
                     </td>
                     <td style={{ padding: "10px 12px" }}>{pill(sCfg)}</td>
                     <td style={{ padding: "10px 12px" }}>{pill(bCfg)}</td>
-                    <td style={{ padding: "10px 12px" }}>{pill(cCfg)}</td>
+                    <td style={{ padding: "10px 12px" }} onClick={e => e.stopPropagation()}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        {pill(cCfg)}
+                        {hire.contractStatus === "signed" && (
+                          <a href={`/api/contract/${hire.id}/pdf`} target="_blank" rel="noopener noreferrer" title="Download signed contract" style={{ fontSize: 14, textDecoration: "none", color: "#3B6D11" }}>📄</a>
+                        )}
+                      </div>
+                    </td>
                     <td style={{ padding: "8px 12px" }} onClick={e => e.stopPropagation()}>
                       <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
                         {next && (
