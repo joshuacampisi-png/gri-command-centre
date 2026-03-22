@@ -112,6 +112,8 @@ function OverviewPage({ data, company }) {
   const [hires, setHires] = useState([])
   const [trends, setTrends] = useState(null)
   const [sales, setSales] = useState(null)
+  const [shippingRange, setShippingRange] = useState('mtd')
+  const [shippingData, setShippingData] = useState(null)
 
   useEffect(() => {
     fetch('/api/hires').then(r => r.json()).then(d => setHires(d.hires || [])).catch(() => {})
@@ -122,6 +124,27 @@ function OverviewPage({ data, company }) {
       setSales(d.ok ? d : { ok: false, error: d.error })
     }).catch(() => setSales({ ok: false, error: 'Failed to load' }))
   }, [])
+
+  // Shipping revenue date range
+  useEffect(() => {
+    const now = new Date()
+    const today = now.toLocaleDateString('en-CA', { timeZone: 'Australia/Brisbane' })
+    let from, to = today
+    if (shippingRange === 'mtd') {
+      from = today.slice(0, 8) + '01'
+    } else if (shippingRange === 'last_month') {
+      const lm = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+      from = lm.toISOString().slice(0, 10)
+      const lmEnd = new Date(now.getFullYear(), now.getMonth(), 0)
+      to = lmEnd.toISOString().slice(0, 10)
+    } else if (shippingRange === '12mo') {
+      const y = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate())
+      from = y.toISOString().slice(0, 10)
+    }
+    fetch(`/api/shopify/sales-range?from=${from}&to=${to}`).then(r => r.json()).then(d => {
+      setShippingData(d.ok ? d : null)
+    }).catch(() => setShippingData(null))
+  }, [shippingRange])
 
   // Top 5 keywords by latest 24h value
   const top5 = (() => {
@@ -151,7 +174,7 @@ function OverviewPage({ data, company }) {
     <div className="page">
       <PageHeader title="Overview" subtitle={`Command Centre — ${COMPANIES[company]?.name || company}`} />
 
-      <div className="ov-grid" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
+      <div className="ov-grid" style={{ gridTemplateColumns: '1fr 1fr 1fr 1fr' }}>
         {/* Shopify Sales */}
         <div className="ov-card">
           <h3>Today's Sales</h3>
@@ -164,6 +187,29 @@ function OverviewPage({ data, company }) {
               <div className="kv-row"><span>Orders</span><strong>{sales.orders}</strong></div>
               <div className="kv-row"><span>Date</span><span className="muted">{sales.date}</span></div>
             </>}
+        </div>
+
+        {/* Shipping Revenue */}
+        <div className="ov-card">
+          <h3 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            Shipping Revenue
+          </h3>
+          <div style={{ display: 'flex', gap: 4, marginBottom: 10, flexWrap: 'wrap' }}>
+            {[['mtd','This Month'],['last_month','Last Month'],['12mo','12 Months']].map(([k,l]) => (
+              <button key={k} onClick={() => setShippingRange(k)}
+                style={{ padding: '3px 8px', fontSize: 11, borderRadius: 6, border: '1px solid #ddd', cursor: 'pointer',
+                  background: shippingRange === k ? '#E43F7B' : '#fff', color: shippingRange === k ? '#fff' : '#666' }}>
+                {l}
+              </button>
+            ))}
+          </div>
+          {shippingData ? <>
+            <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#3AB4C0', marginBottom: 8 }}>
+              ${shippingData.shipping.toFixed(2)}
+            </div>
+            <div className="kv-row"><span>Orders</span><strong>{shippingData.orders}</strong></div>
+            <div className="kv-row"><span>Total sales</span><strong>${shippingData.revenue.toFixed(2)}</strong></div>
+          </> : <p className="muted">Loading…</p>}
         </div>
 
         {/* TNT Hires */}

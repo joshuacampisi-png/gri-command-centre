@@ -84,6 +84,18 @@ router.get('/shopify/today-sales', async (_req, res) => {
   }
 })
 
+// ── Shipping / sales by date range ──
+router.get('/shopify/sales-range', async (req, res) => {
+  try {
+    const { getSalesRange } = await import('../lib/sales-tracker.js')
+    const { from, to } = req.query
+    if (!from || !to) return res.json({ ok: false, error: 'from and to query params required' })
+    res.json(getSalesRange(from, to))
+  } catch (e) {
+    res.json({ ok: false, error: e.message })
+  }
+})
+
 router.post('/slack/report', async (req, res) => res.json(await postSlackMessage(req.body)))
 router.post('/slack/role/:role', async (req, res) => res.json(await postRoleMessage(req.params.role, req.body?.text || 'Role test message')))
 router.post('/slack/test', async (_req, res) => res.json(await postInitialCommandCentreMessage()))
