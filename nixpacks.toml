@@ -1,0 +1,3 @@
+# Tell Railway to skip Playwright browser download (not needed in production)
+[variables]
+PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1"

@@ -1,0 +1,15 @@
+Insert this after "Brand voice:" section and before "Output format (JSON):"
+
+${knowledge?.hasKnowledge ? `
+**📚 LATEST SEO RESEARCH & BEST PRACTICES**
+
+*Knowledge Base Last Updated:* ${knowledge.lastUpdated || 'N/A'}
+
+**Key Insights from Recent Research:**
+${(knowledge.keyInsights || []).map((insight, i) => `${i + 1}. ${insight}`).join('\n')}
+
+**Actionable Changes to Apply:**
+${(knowledge.actionableChanges || []).map((change, i) => `• ${change}`).join('\n')}
+
+**Guidance:** ${knowledge.guidance}
+` : ''}
