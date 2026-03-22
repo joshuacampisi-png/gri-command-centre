@@ -1557,6 +1557,7 @@ function TrendsIntelligencePage() {
   const [visibleKws, setVisibleKws] = useState([])
   const [sortBy, setSortBy] = useState('current')
   const [error, setError] = useState(null)
+  const [activeRange, setActiveRange] = useState('12mo')
   // Publish flow state
   const [publishedArticles, setPublishedArticles] = useState([])
   const [confirmModal, setConfirmModal] = useState(null)      // spike object pending confirmation
@@ -1594,16 +1595,24 @@ function TrendsIntelligencePage() {
     }
   }, [data])
 
-  async function triggerScan() {
+  async function triggerScan(range) {
+    const r = range || activeRange
     setScanning(true)
+    setActiveRange(r)
     try {
-      await fetch(`${API}/api/trends/scan-now`, { method: 'POST' })
+      await fetch(`${API}/api/trends/scan-now`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ range: r }),
+      })
       const poll = setInterval(async () => {
         const s = await fetch(`${API}/api/trends/status`).then(r => r.json())
         if (!s.scanning) { clearInterval(poll); setScanning(false); load() }
       }, 3000)
     } catch { setScanning(false) }
   }
+
+  const RANGE_LABELS = { '24h': 'Last 24 Hours', '7d': 'Last 7 Days', '30d': 'Last 30 Days', '12mo': 'Last 12 Months' }
 
   async function generateBrief(keyword) {
     setGeneratingBrief(keyword)
@@ -1706,9 +1715,22 @@ function TrendsIntelligencePage() {
         title="Trends Intelligence"
         subtitle={`Google Trends Australia | ${demoMode ? 'DEMO MODE' : 'Live Data — DataForSEO'} | Last scan: ${lastUpdated}`}
         actions={
-          <button className="btn btn-primary" onClick={triggerScan} disabled={scanning}>
-            {scanning ? 'Scanning...' : 'Scan Now'}
-          </button>
+          <div style={{display:'flex',gap:'8px',alignItems:'center',flexWrap:'wrap'}}>
+            <div className="range-selector">
+              {Object.entries(RANGE_LABELS).map(([key, label]) => (
+                <button
+                  key={key}
+                  className={`range-btn${activeRange === key ? ' active' : ''}`}
+                  onClick={() => triggerScan(key)}
+                  disabled={scanning}
+                  title={`Scan with ${label} data`}
+                >{label}</button>
+              ))}
+            </div>
+            <button className="btn btn-primary" onClick={() => triggerScan(activeRange)} disabled={scanning}>
+              {scanning ? '⏳ Scanning...' : '↻ Scan Now'}
+            </button>
+          </div>
         }
       />
 
@@ -1827,7 +1849,7 @@ function TrendsIntelligencePage() {
       {/* ── Trends Chart ── */}
       <div className="trends-chart-container">
         <h3>Search Interest Over Time</h3>
-        <p className="trends-chart-sub">Google Trends Index | Past 12 months | Australia</p>
+        <p className="trends-chart-sub">Google Trends Index | {RANGE_LABELS[activeRange] || 'Last 12 Months'} | Australia</p>
         {chartData.length > 0 ? (
           <div className="trends-chart">
             <svg viewBox="0 0 800 300" className="trends-svg">

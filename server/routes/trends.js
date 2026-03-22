@@ -2,7 +2,7 @@
  * Google Trends Intelligence API Routes
  */
 import { Router } from 'express'
-import { readTrendsCache, runTrendsScan, isTrendsScanning, GENDER_REVEAL_KEYWORDS, hasDfsCredentials } from '../lib/google-trends.js'
+import { readTrendsCache, runTrendsScan, isTrendsScanning, GENDER_REVEAL_KEYWORDS, hasDfsCredentials, TIME_RANGE_MAP } from '../lib/google-trends.js'
 import { generateBlogBrief } from '../lib/trends-blog-generator.js'
 import { readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
@@ -41,23 +41,29 @@ router.get('/status', (_req, res) => {
     scanning: isTrendsScanning(),
     lastUpdated: cache?.lastUpdated || null,
     lastScan,
+    activeRange: cache?.activeRange || '12mo',
     keywordCount: GENDER_REVEAL_KEYWORDS.length,
     spikeCount: (cache?.spikes || []).length,
     briefCount: (cache?.blogBriefs || []).length,
     hasDataForSeo,
     hasAnthropicKey,
     demoMode: !hasDataForSeo,
+    availableRanges: Object.keys(TIME_RANGE_MAP),
   })
 })
 
 // POST /api/trends/scan-now — trigger manual scan
-router.post('/scan-now', async (_req, res) => {
+// Body: { range: '24h' | '7d' | '30d' | '12mo' }
+router.post('/scan-now', async (req, res) => {
   if (isTrendsScanning()) return res.json({ ok: false, message: 'Scan already in progress' })
 
-  res.json({ ok: true, message: 'Scan started' })
+  const range = req.body?.range || '12mo'
+  if (!TIME_RANGE_MAP[range]) return res.status(400).json({ ok: false, error: `Invalid range. Use: ${Object.keys(TIME_RANGE_MAP).join(', ')}` })
+
+  res.json({ ok: true, message: `Scan started (${range})` })
 
   // Run in background (don't block response)
-  runTrendsScan().catch(e => console.error('[Trends] Manual scan failed:', e.message))
+  runTrendsScan(range).catch(e => console.error('[Trends] Manual scan failed:', e.message))
 })
 
 // POST /api/trends/generate-brief — generate blog brief for a spike keyword

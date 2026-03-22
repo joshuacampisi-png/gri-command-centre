@@ -88,7 +88,15 @@ export function hasDfsCredentials() { return Boolean(getDfsAuth()) }
 
 // Returns { timeseries: { keyword: [{date, value}] }, risingQueries: [] }
 // DataForSEO Google Trends explore/live endpoint — weekly data, past 12 months, Australia
-async function fetchTrendsBatch(batch) {
+// Map UI range options to DataForSEO time_range values
+export const TIME_RANGE_MAP = {
+  '24h':  'past_day',
+  '7d':   'past_7_days',
+  '30d':  'past_month',
+  '12mo': 'past_12_months',
+}
+
+async function fetchTrendsBatch(batch, timeRange = 'past_12_months') {
   const auth = getDfsAuth()
   if (!auth) throw new Error('No DataForSEO credentials')
 
@@ -104,7 +112,7 @@ async function fetchTrendsBatch(batch) {
         keywords:      batch,
         location_code: LOCATION_CODE,
         type:          'web',
-        time_range:    'past_12_months',
+        time_range:    timeRange,
         language_code: 'en',
       }]),
       signal: AbortSignal.timeout(30000),
@@ -206,11 +214,12 @@ export function detectSpikes(currentTimeseries, currentRising, previousCache) {
 let isScanning = false
 export function isTrendsScanning() { return isScanning }
 
-export async function runTrendsScan() {
+export async function runTrendsScan(rangeKey = '12mo') {
   if (isScanning) return null
   isScanning = true
   const start = Date.now()
-  console.log(`[Trends] Scanning ${GENDER_REVEAL_KEYWORDS.length} keywords...`)
+  const timeRange = TIME_RANGE_MAP[rangeKey] || 'past_12_months'
+  console.log(`[Trends] Scanning ${GENDER_REVEAL_KEYWORDS.length} keywords (${rangeKey})...`)
 
   const prev = readTrendsCache()
   const cache = prev ? { ...prev } : emptyCache()
@@ -219,6 +228,7 @@ export async function runTrendsScan() {
     if (!hasDfsCredentials()) {
       console.warn('[Trends] No DataForSEO credentials — generating demo data')
       Object.assign(cache, generateDemoData())
+      cache.activeRange = rangeKey
       writeTrendsCache(cache)
       return cache
     }
@@ -234,7 +244,7 @@ export async function runTrendsScan() {
     for (let i = 0; i < batches.length; i++) {
       console.log(`[Trends] Batch ${i + 1}/${batches.length}: ${batches[i].join(', ')}`)
       try {
-        const { timeseries, risingQueries } = await fetchTrendsBatch(batches[i])
+        const { timeseries, risingQueries } = await fetchTrendsBatch(batches[i], timeRange)
         Object.assign(newTS, timeseries)
         allRising.push(...risingQueries)
       } catch (e) { console.error(`[Trends] Batch ${i + 1} failed:`, e.message) }
@@ -242,6 +252,7 @@ export async function runTrendsScan() {
     }
 
     cache.timeseries = newTS
+    cache.activeRange = rangeKey
     cache.risingQueries = allRising
     cache.seenRisingQueries = [...new Set([...(cache.seenRisingQueries || []), ...allRising.map(r => r.query)])]
     cache.spikes = detectSpikes(newTS, allRising, prev)

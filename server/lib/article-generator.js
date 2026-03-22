@@ -8,6 +8,53 @@
 
 import { callClaude } from './claude-guard.js'
 
+// ── Live GRI product context from Shopify ─────────────────────
+
+async function fetchGRIProductContext(keyword) {
+  try {
+    const store = process.env.SHOPIFY_STORE_DOMAIN || 'bdd19a-3.myshopify.com'
+    const token = process.env.SHOPIFY_ADMIN_ACCESS_TOKEN
+    if (!token) return ''
+
+    // Search products relevant to the keyword
+    const searchTerm = keyword.replace(/gender reveal\s*/i, '').trim() || 'gender reveal'
+    const url = `https://${store}/admin/api/2026-01/products.json?title=${encodeURIComponent(searchTerm)}&limit=5&fields=title,handle,body_html,product_type,tags,variants`
+
+    const res = await fetch(url, {
+      headers: { 'X-Shopify-Access-Token': token },
+      signal: AbortSignal.timeout(8000),
+    })
+    if (!res.ok) return ''
+
+    const data = await res.json()
+    const products = data.products || []
+
+    if (products.length === 0) {
+      // Fallback: fetch bestselling products
+      const fallback = await fetch(
+        `https://${store}/admin/api/2026-01/products.json?limit=5&fields=title,handle,product_type,tags,variants`,
+        { headers: { 'X-Shopify-Access-Token': token }, signal: AbortSignal.timeout(8000) }
+      )
+      if (fallback.ok) {
+        const fd = await fallback.json()
+        products.push(...(fd.products || []))
+      }
+    }
+
+    if (products.length === 0) return ''
+
+    const lines = products.map(p => {
+      const price = p.variants?.[0]?.price ? `$${p.variants[0].price}` : 'POA'
+      return `- ${p.title} (${price}) → genderrevealideas.com.au/products/${p.handle}`
+    })
+
+    return `\nLIVE GRI PRODUCTS (use these for accurate internal links and product references):\n${lines.join('\n')}\n`
+  } catch (e) {
+    console.warn('[ArticleGenerator] Could not fetch GRI products:', e.message)
+    return ''
+  }
+}
+
 // ── Brand rules enforced in every prompt ─────────────────────
 
 function buildSystemPrompt() {
@@ -181,11 +228,15 @@ function parseArticleResponse(rawText, spike) {
 export async function generateFullArticle(spike) {
   console.log(`[ArticleGenerator] Generating article for spike: "${spike.keyword}"`)
 
+  // Fetch live GRI products for accurate context
+  const productContext = await fetchGRIProductContext(spike.keyword)
+  const prompt = buildArticlePrompt(spike) + (productContext ? `\n${productContext}` : '')
+
   const message = await callClaude({
     model:      'claude-opus-4-5',
     max_tokens: 4000,
     system:     buildSystemPrompt(),
-    messages:   [{ role: 'user', content: buildArticlePrompt(spike) }],
+    messages:   [{ role: 'user', content: prompt }],
   }, 'article-generator')
 
   const rawText = message.content[0].text
