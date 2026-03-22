@@ -2271,8 +2271,8 @@ export default function App() {
     <div className="app">
       <aside className="sidebar">
         <div className="sidebar-top">
+          <img src="/company-logos/gri.jpg" alt="GRI" className="brand-logo" />
           <div className="brand">Command Centre</div>
-          <div className="brand-sub">AI Operations Layer</div>
         </div>
 
         <nav className="nav">
