@@ -112,10 +112,42 @@ function OverviewPage({ data, company }) {
   const [hires, setHires] = useState([])
   const [trends, setTrends] = useState(null)
   const [sales, setSales] = useState(null)
-  const [shippingRange, setShippingRange] = useState('mtd')
+  const [shippingWeekOffset, setShippingWeekOffset] = useState(0)
   const [shippingData, setShippingData] = useState(null)
 
   const [trendingQueries, setTrendingQueries] = useState(null)
+
+  // Wed-Tue week helper: get the Wednesday start for a given week offset (0 = current)
+  const getWedTueWeek = useCallback((offset = 0) => {
+    const now = new Date()
+    // Get today in AEST
+    const aest = new Date(now.toLocaleString('en-US', { timeZone: 'Australia/Brisbane' }))
+    const day = aest.getDay() // 0=Sun..6=Sat
+    // Days since last Wednesday: Wed=3, so (day - 3 + 7) % 7
+    const daysSinceWed = (day - 3 + 7) % 7
+    const wed = new Date(aest)
+    wed.setDate(aest.getDate() - daysSinceWed + (offset * 7))
+    wed.setHours(0, 0, 0, 0)
+    const tue = new Date(wed)
+    tue.setDate(wed.getDate() + 6)
+    const fmt = d => d.toISOString().slice(0, 10)
+    return { from: fmt(wed), to: fmt(tue), wedDate: wed, tueDate: tue }
+  }, [])
+
+  // Format like "18th-24th March" or "25th Mar - 1st Apr"
+  const formatWeekLabel = useCallback((wed, tue) => {
+    const ordinal = n => {
+      const s = ['th','st','nd','rd']
+      const v = n % 100
+      return n + (s[(v - 20) % 10] || s[v] || s[0])
+    }
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+    const wm = months[wed.getMonth()], tm = months[tue.getMonth()]
+    if (wed.getMonth() === tue.getMonth()) {
+      return `${ordinal(wed.getDate())} - ${ordinal(tue.getDate())} ${wm}`
+    }
+    return `${ordinal(wed.getDate())} ${wm} - ${ordinal(tue.getDate())} ${tm}`
+  }, [])
 
   useEffect(() => {
     fetch('/api/hires').then(r => r.json()).then(d => setHires(d.hires || [])).catch(() => {})
@@ -125,32 +157,24 @@ function OverviewPage({ data, company }) {
     fetch('/api/shopify/today-sales').then(r => r.json()).then(d => {
       setSales(d.ok ? d : { ok: false, error: d.error })
     }).catch(() => setSales({ ok: false, error: 'Failed to load' }))
-    // Real-time trending queries for Overview card
     fetch('/api/trends/trending').then(r => r.json()).then(d => {
       setTrendingQueries(d.ok ? d.queries : [])
     }).catch(() => setTrendingQueries([]))
   }, [])
 
-  // Shipping revenue date range
+  // Shipping revenue: Wed-Tue weekly fetch
   useEffect(() => {
-    const now = new Date()
-    const today = now.toLocaleDateString('en-CA', { timeZone: 'Australia/Brisbane' })
-    let from, to = today
-    if (shippingRange === 'mtd') {
-      from = today.slice(0, 8) + '01'
-    } else if (shippingRange === 'last_month') {
-      const lm = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-      from = lm.toISOString().slice(0, 10)
-      const lmEnd = new Date(now.getFullYear(), now.getMonth(), 0)
-      to = lmEnd.toISOString().slice(0, 10)
-    } else if (shippingRange === '12mo') {
-      const y = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate())
-      from = y.toISOString().slice(0, 10)
-    }
+    const { from, to } = getWedTueWeek(shippingWeekOffset)
     fetch(`/api/shopify/sales-range?from=${from}&to=${to}`).then(r => r.json()).then(d => {
       setShippingData(d.ok ? d : null)
     }).catch(() => setShippingData(null))
-  }, [shippingRange])
+  }, [shippingWeekOffset, getWedTueWeek])
+
+  // Build the week buttons: current week + last 3 weeks
+  const shippingWeeks = [0, -1, -2, -3].map(offset => {
+    const { wedDate, tueDate } = getWedTueWeek(offset)
+    return { offset, label: formatWeekLabel(wedDate, tueDate), isCurrent: offset === 0 }
+  })
 
   // Top 5: prefer real-time trending queries, fall back to cached timeseries
   const top5 = (() => {
@@ -204,17 +228,20 @@ function OverviewPage({ data, company }) {
             </>}
         </div>
 
-        {/* Shipping Revenue */}
+        {/* Shipping Revenue — Wed-Tue weekly */}
         <div className="ov-card">
-          <h3 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            Shipping Revenue
-          </h3>
-          <div style={{ display: 'flex', gap: 4, marginBottom: 10, flexWrap: 'wrap' }}>
-            {[['mtd','This Month'],['last_month','Last Month'],['12mo','12 Months']].map(([k,l]) => (
-              <button key={k} onClick={() => setShippingRange(k)}
-                style={{ padding: '3px 8px', fontSize: 11, borderRadius: 6, border: '1px solid #ddd', cursor: 'pointer',
-                  background: shippingRange === k ? '#E43F7B' : '#fff', color: shippingRange === k ? '#fff' : '#666' }}>
-                {l}
+          <h3>Shipping Revenue</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 10 }}>
+            {shippingWeeks.map(w => (
+              <button key={w.offset} onClick={() => setShippingWeekOffset(w.offset)}
+                style={{
+                  padding: '6px 10px', fontSize: 12, borderRadius: 8, cursor: 'pointer', textAlign: 'left',
+                  border: shippingWeekOffset === w.offset ? '2px solid #3AB4C0' : '1px solid #e5e7eb',
+                  background: shippingWeekOffset === w.offset ? '#F0FDFA' : '#fff',
+                  color: shippingWeekOffset === w.offset ? '#0F766E' : '#555',
+                  fontWeight: shippingWeekOffset === w.offset ? 600 : 400,
+                }}>
+                {w.label}{w.isCurrent ? ' (current)' : ''}
               </button>
             ))}
           </div>
