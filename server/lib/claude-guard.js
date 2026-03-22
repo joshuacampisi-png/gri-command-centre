@@ -25,7 +25,7 @@ const PRICE_OUTPUT_PER_M = 15.00  // $15.00 per 1M output tokens
 
 // Configurable limits (from .env with defaults)
 const DAILY_BUDGET_USD   = parseFloat(process.env.CLAUDE_DAILY_BUDGET_USD  || '10')
-const HOURLY_CALL_LIMIT  = parseInt(process.env.CLAUDE_HOURLY_CALL_LIMIT   || '30')
+const HOURLY_CALL_LIMIT  = parseInt(process.env.CLAUDE_HOURLY_CALL_LIMIT   || '0') // 0 = no limit
 const KILL_SWITCH        = process.env.CLAUDE_DISABLED === 'true'
 
 // ─── Usage store ────────────────────────────────────────────────────────────
@@ -71,7 +71,8 @@ function checkHourlyLimit(usage) {
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
   const recentCalls = usage.calls.filter(c => c.timestamp > oneHourAgo).length
 
-  if (recentCalls >= HOURLY_CALL_LIMIT) {
+  // 0 = no hourly limit (daily budget still protects against runaway costs)
+  if (HOURLY_CALL_LIMIT > 0 && recentCalls >= HOURLY_CALL_LIMIT) {
     throw new Error(
       `[ClaudeGuard] BLOCKED — Hourly call limit reached (${recentCalls}/${HOURLY_CALL_LIMIT}). ` +
       `Raise CLAUDE_HOURLY_CALL_LIMIT in .env or wait for the hour to pass.`
