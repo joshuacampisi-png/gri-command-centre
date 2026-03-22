@@ -1679,19 +1679,27 @@ function TrendsIntelligencePage() {
   // Build set of published keyword slugs for TermsTable badge
   const publishedKeywordSet = new Set(publishedArticles.map(a => a.spikeKeyword?.toLowerCase()))
 
-  // Build ranked keywords table
+  // Build ranked keywords table — sorted by volume for selected range
   const kwRows = data?.timeseries ? Object.entries(data.timeseries).map(([kw, series]) => {
     const latest = series.length ? series[series.length - 1].value : 0
     const peak = Math.max(...series.map(s => s.value), 0)
+    const avg = series.length ? Math.round(series.reduce((a, s) => a + s.value, 0) / series.length) : 0
     const prev4 = series.slice(-5, -1).map(s => s.value)
-    const avg = prev4.length ? prev4.reduce((a, b) => a + b, 0) / prev4.length : 0
-    const change = avg > 0 ? Math.round(((latest - avg) / avg) * 100) : 0
+    const rollingAvg = prev4.length ? prev4.reduce((a, b) => a + b, 0) / prev4.length : 0
+    const change = rollingAvg > 0 ? Math.round(((latest - rollingAvg) / rollingAvg) * 100) : 0
     const isSpike = (data.spikes || []).some(s => s.keyword === kw)
     const isPublished = publishedKeywordSet.has(kw.toLowerCase())
     const publishedRecord = publishedArticles.find(a => a.spikeKeyword?.toLowerCase() === kw.toLowerCase())
     const statusLabel = isPublished ? 'PUBLISHED' : isSpike ? 'SPIKE' : change > 15 ? 'RISING' : change < -15 ? 'FALLING' : 'STABLE'
-    return { kw, latest, peak, change, statusLabel, series, publishedRecord }
-  }).sort((a, b) => sortBy === 'peak' ? b.peak - a.peak : sortBy === 'change' ? b.change - a.change : b.latest - a.latest) : []
+    return { kw, latest, peak, avg, change, statusLabel, series, publishedRecord }
+  }).sort((a, b) => {
+    if (sortBy === 'peak') return b.peak - a.peak
+    if (sortBy === 'change') return b.change - a.change
+    // Default: sort by current interest, zeros to bottom
+    if (a.latest === 0 && b.latest > 0) return 1
+    if (b.latest === 0 && a.latest > 0) return -1
+    return b.latest - a.latest
+  }) : []
 
   // Chart data
   const chartData = (() => {
@@ -1889,17 +1897,17 @@ function TrendsIntelligencePage() {
       {/* ── Keywords Table ── */}
       <div className="trends-table-container">
         <div className="trends-table-header">
-          <h3>Keyword Rankings</h3>
+          <h3>Top Searches by Volume — {RANGE_LABELS[activeRange] || 'Last 12 Months'}</h3>
           <div className="trends-sort">
             Sort:{' '}
-            <button className={sortBy==='current'?'active':''} onClick={()=>setSortBy('current')}>Current</button>
+            <button className={sortBy==='current'?'active':''} onClick={()=>setSortBy('current')}>Volume</button>
             <button className={sortBy==='peak'?'active':''} onClick={()=>setSortBy('peak')}>Peak</button>
             <button className={sortBy==='change'?'active':''} onClick={()=>setSortBy('change')}>Change</button>
           </div>
         </div>
         <table className="trends-table">
           <thead>
-            <tr><th>#</th><th>Search Term</th><th>Current</th><th>Peak</th><th>Trend</th><th>Change</th><th>Status</th><th>Chart</th></tr>
+            <tr><th>#</th><th>Search Term</th><th>Interest</th><th>Avg</th><th>Peak</th><th>Trend</th><th>Change</th><th>Status</th><th>Chart</th></tr>
           </thead>
           <tbody>
             {kwRows.map((row, i) => (
@@ -1908,7 +1916,8 @@ function TrendsIntelligencePage() {
                 <td className="kw-name">
                   <a href={`https://trends.google.com/trends/explore?date=today%203-m&geo=AU&q=${encodeURIComponent(row.kw)}`} target="_blank" rel="noopener">{row.kw}</a>
                 </td>
-                <td className="val">{row.latest}</td>
+                <td className="val" style={{fontWeight: row.latest > 0 ? '600' : '400'}}>{row.latest}</td>
+                <td className="val" style={{color: '#9ca3af'}}>{row.avg}</td>
                 <td className="val">{row.peak}</td>
                 <td><MiniSparkline data={row.series.slice(-7)} color={row.change > 0 ? '#34d399' : '#f87171'} /></td>
                 <td className={`val ${row.change > 0 ? 'pos' : row.change < 0 ? 'neg' : ''}`}>

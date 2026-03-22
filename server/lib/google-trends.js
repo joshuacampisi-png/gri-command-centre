@@ -236,19 +236,54 @@ export async function runTrendsScan(rangeKey = '12mo') {
     const newTS = {}
     const allRising = []
 
-    // Batch in groups of 5 (DataForSEO compares up to 5 keywords per call)
+    // Use first keyword as anchor for cross-batch normalization.
+    // Google Trends scores are relative within each API call (0-100).
+    // By including the same anchor in every batch, we can normalize all
+    // scores to a single scale.
+    const ANCHOR = GENDER_REVEAL_KEYWORDS[0] // "gender reveal ideas"
+    const others = GENDER_REVEAL_KEYWORDS.slice(1)
+
+    // Batch: 4 keywords + anchor per call (DataForSEO allows up to 5)
     const batches = []
-    for (let i = 0; i < GENDER_REVEAL_KEYWORDS.length; i += 5)
-      batches.push(GENDER_REVEAL_KEYWORDS.slice(i, i + 5))
+    for (let i = 0; i < others.length; i += 4)
+      batches.push([ANCHOR, ...others.slice(i, i + 4)])
+
+    // Track anchor scores per batch for normalization
+    const anchorLatestByBatch = []
 
     for (let i = 0; i < batches.length; i++) {
       console.log(`[Trends] Batch ${i + 1}/${batches.length}: ${batches[i].join(', ')}`)
       try {
         const { timeseries, risingQueries } = await fetchTrendsBatch(batches[i], timeRange)
+
+        // Record anchor's latest value in this batch
+        const anchorSeries = timeseries[ANCHOR]
+        const anchorLatest = anchorSeries?.length ? anchorSeries[anchorSeries.length - 1].value : null
+        anchorLatestByBatch.push({ batch: i, anchorLatest, keywords: batches[i].filter(k => k !== ANCHOR) })
+
         Object.assign(newTS, timeseries)
         allRising.push(...risingQueries)
       } catch (e) { console.error(`[Trends] Batch ${i + 1} failed:`, e.message) }
       if (i < batches.length - 1) await delay(2000)
+    }
+
+    // Normalize all keyword scores relative to the anchor's score in batch 0.
+    // If anchor scored 60 in batch 0 but 30 in batch 3, multiply batch 3 scores by 60/30.
+    const refAnchorVal = anchorLatestByBatch[0]?.anchorLatest
+    if (refAnchorVal && refAnchorVal > 0) {
+      for (const { anchorLatest, keywords } of anchorLatestByBatch) {
+        if (!anchorLatest || anchorLatest <= 0) continue
+        const scale = refAnchorVal / anchorLatest
+        if (Math.abs(scale - 1) < 0.01) continue // no adjustment needed
+        for (const kw of keywords) {
+          if (!newTS[kw]) continue
+          newTS[kw] = newTS[kw].map(pt => ({
+            ...pt,
+            value: Math.round(Math.min(100, pt.value * scale)),
+          }))
+        }
+      }
+      console.log(`[Trends] Normalized ${others.length} keywords against anchor "${ANCHOR}" (ref=${refAnchorVal})`)
     }
 
     cache.timeseries = newTS
