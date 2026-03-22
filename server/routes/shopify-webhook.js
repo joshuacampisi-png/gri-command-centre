@@ -6,6 +6,7 @@ import { createBondPaymentLink } from '../lib/square-client.js';
 import { sendHireEmail } from '../lib/hire-mailer.js';
 import { update } from '../lib/hire-store.js';
 import { notifyTNTEvent } from '../lib/tnt-telegram.js';
+import { recordOrder } from '../lib/sales-tracker.js';
 
 const router = Router();
 
@@ -249,6 +250,9 @@ router.post('/orders-create', async (req, res) => {
 
   // Respond immediately — Shopify requires 200 within 5 seconds
   res.status(200).json({ ok: true });
+
+  // Track sale revenue
+  try { recordOrder(req.body) } catch (e) { console.error('[sales-tracker] Error:', e.message) }
 
   // Process asynchronously
   try {

@@ -74,23 +74,11 @@ router.get('/dashboard', async (req, res) => {
     res.status(500).json({ ok: false, error: String(error?.message || error) })
   }
 })
-// ── Today's Shopify sales ──
+// ── Today's Shopify sales (from webhook tracker) ──
 router.get('/shopify/today-sales', async (_req, res) => {
   try {
-    // Today midnight AEST → UTC
-    const now = new Date()
-    const aestNow = new Date(now.toLocaleString('en-US', { timeZone: 'Australia/Brisbane' }))
-    const todayStart = new Date(aestNow)
-    todayStart.setHours(0, 0, 0, 0)
-    const utcStart = new Date(todayStart.getTime() - 10 * 60 * 60 * 1000)
-
-    const { shopifyFetch } = await import('../connectors/shopify.js')
-    const data = await shopifyFetch(`/orders.json?status=any&created_at_min=${utcStart.toISOString()}&limit=250`)
-    const orders = data.orders || []
-    const totalRevenue = orders.reduce((sum, o) => sum + parseFloat(o.total_price || 0), 0)
-    const totalOrders = orders.length
-
-    res.json({ ok: true, revenue: totalRevenue, orders: totalOrders, date: aestNow.toISOString().split('T')[0] })
+    const { getTodaySales } = await import('../lib/sales-tracker.js')
+    res.json(getTodaySales())
   } catch (e) {
     res.json({ ok: false, error: e.message })
   }
