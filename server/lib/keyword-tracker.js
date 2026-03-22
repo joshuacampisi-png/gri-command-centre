@@ -99,6 +99,29 @@ export async function refreshRankings() {
     await browser.close()
     browser = null
 
+    // Fill in prevRank/change from previous cache if Keyword.com doesn't provide prev_grank
+    const oldCache = readCache()
+    if (oldCache?.keywords?.length) {
+      // Build best-rank map from previous cache (dedup by keyword, keep best rank)
+      const prevMap = {}
+      for (const k of oldCache.keywords) {
+        if (!prevMap[k.keyword]) {
+          prevMap[k.keyword] = k
+        } else if (k.rank !== null && (prevMap[k.keyword].rank === null || k.rank < prevMap[k.keyword].rank)) {
+          prevMap[k.keyword] = k
+        }
+      }
+      for (const kw of keywords) {
+        if (kw.prevRank === null && prevMap[kw.keyword]) {
+          const prev = prevMap[kw.keyword]
+          if (prev.rank !== null && kw.rank !== null) {
+            kw.prevRank = prev.rank
+            kw.change   = prev.rank - kw.rank // positive = improved, negative = declined
+          }
+        }
+      }
+    }
+
     const alerts = detectAlerts(keywords)
     const cache = {
       updatedAt: new Date().toISOString(),
