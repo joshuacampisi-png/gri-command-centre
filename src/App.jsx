@@ -109,80 +109,114 @@ function ActivityFeed() {
 }
 
 function OverviewPage({ data, company }) {
-  const stats   = data?.stats        || []
-  const tasks   = data?.tasks        || []
-  const shopify = data?.shopify      || {}
-  const integ   = data?.integrations || {}
-  const byType  = tasks.reduce((a, t) => { a[t.taskType] = (a[t.taskType]||0)+1; return a }, {})
-  const byStatus= tasks.reduce((a, t) => { a[t.status]   = (a[t.status]  ||0)+1; return a }, {})
+  const [hires, setHires] = useState([])
+  const [trends, setTrends] = useState(null)
+  const [sales, setSales] = useState(null)
+
+  useEffect(() => {
+    fetch('/api/hires').then(r => r.json()).then(d => setHires(d.hires || [])).catch(() => {})
+    fetch('/api/trends').then(r => r.json()).then(d => {
+      if (d.ok && d.data) setTrends(d.data)
+    }).catch(() => {})
+    fetch('/api/shopify/today-sales').then(r => r.json()).then(d => {
+      setSales(d.ok ? d : { ok: false, error: d.error })
+    }).catch(() => setSales({ ok: false, error: 'Failed to load' }))
+  }, [])
+
+  // Top 5 keywords by latest 24h value
+  const top5 = (() => {
+    if (!trends?.timeseries) return []
+    const now = Date.now()
+    const h24 = 24 * 60 * 60 * 1000
+    return Object.entries(trends.timeseries)
+      .map(([kw, pts]) => {
+        const recent = pts.filter(p => now - new Date(p.date).getTime() < h24)
+        const latest = recent.length ? recent[recent.length - 1].value : (pts.length ? pts[pts.length - 1].value : 0)
+        return { kw, value: latest }
+      })
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 5)
+  })()
+
+  const activeHires = hires.filter(h => !['returned', 'withheld', 'cancelled'].includes(h.status))
+  const awaitingBond = hires.filter(h => h.bondStatus !== 'paid' && !['returned', 'withheld', 'cancelled'].includes(h.status))
 
   return (
     <div className="page">
       <PageHeader title="Overview" subtitle={`Command Centre — ${COMPANIES[company]?.name || company}`} />
 
-      <div className="stats-row">
-        {stats.map(s => (
-          <div key={s.label} className="stat-card">
-            <span className="stat-label">{s.label}</span>
-            <strong className="stat-value">{s.value}</strong>
-          </div>
-        ))}
-      </div>
-
-      <div className="ov-grid">
+      <div className="ov-grid" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
+        {/* Shopify Sales */}
         <div className="ov-card">
-          <h3>Integrations</h3>
-          {Object.entries(integ).map(([k,v]) => (
-            <div key={k} className="kv-row">
-              <span>{k[0].toUpperCase()+k.slice(1)}</span>
-              <span className={`pill ${v?'on':'off'}`}>{v?'Connected':'Offline'}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="ov-card">
-          <h3>Tasks by Type</h3>
-          {Object.keys(byType).length
-            ? Object.entries(byType).map(([t,c]) => <div key={t} className="kv-row"><span>{t}</span><strong>{c}</strong></div>)
-            : <p className="muted">No tasks yet</p>}
-        </div>
-
-        <div className="ov-card">
-          <h3>Tasks by Status</h3>
-          {Object.keys(byStatus).length
-            ? Object.entries(byStatus).map(([s,c]) => <div key={s} className="kv-row"><span>{s}</span><strong>{c}</strong></div>)
-            : <p className="muted">No tasks yet</p>}
-        </div>
-
-        <div className="ov-card">
-          <h3>Shopify</h3>
-          {shopify.connected
-            ? <>
-                <div className="kv-row"><span>Store</span><span className="muted">{shopify.shop?.name||'—'}</span></div>
-                <div className="kv-row"><span>Themes</span><strong>{shopify.themes?.length||0}</strong></div>
-                <div className="kv-row"><span>Plan</span><span className="muted">{shopify.shop?.plan_name||'—'}</span></div>
-              </>
-            : <p className="muted">Not connected</p>}
-        </div>
-      </div>
-
-      <div className="ov-card full">
-        <h3>Recent Tasks</h3>
-        {tasks.length === 0
-          ? <Empty icon="📋" title="No tasks" body="Tasks lodged via Telegram will appear here." />
-          : tasks.slice(0,6).map(t => (
-              <div key={t.id} className="mini-task">
-                <div>
-                  <span className="mini-task-title">{t.title}</span>
-                  <span className="mini-task-meta">{t.taskType} · {t.executor} · {t.status}</span>
-                </div>
-                {t.notionUrl && <a href={t.notionUrl} target="_blank" rel="noreferrer" className="link-btn">Notion →</a>}
+          <h3>Today's Sales</h3>
+          {!sales ? <p className="muted">Loading sales…</p>
+           : !sales.ok ? <p className="muted">Sales data unavailable</p>
+           : <>
+              <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#E43F7B', marginBottom: 8 }}>
+                ${sales.revenue.toFixed(2)}
               </div>
-            ))
-        }
+              <div className="kv-row"><span>Orders</span><strong>{sales.orders}</strong></div>
+              <div className="kv-row"><span>Date</span><span className="muted">{sales.date}</span></div>
+            </>}
+        </div>
+
+        {/* TNT Hires */}
+        <div className="ov-card">
+          <h3>TNT Hires</h3>
+          <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#2D3A4A', marginBottom: 8 }}>
+            {activeHires.length}
+          </div>
+          <div className="kv-row"><span>Active hires</span><strong>{activeHires.length}</strong></div>
+          <div className="kv-row"><span>Awaiting bond</span><strong style={{ color: awaitingBond.length ? '#E43F7B' : '#10B981' }}>{awaitingBond.length}</strong></div>
+          <div className="kv-row"><span>Total all-time</span><strong>{hires.length}</strong></div>
+        </div>
+
+        {/* Google Trends Top 5 */}
+        <div className="ov-card">
+          <h3>Trending Now (24h)</h3>
+          {top5.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {top5.map((t, i) => (
+                <div key={t.kw} className="kv-row">
+                  <span style={{ fontWeight: i === 0 ? 700 : 400 }}>{i + 1}. {t.kw}</span>
+                  <strong style={{ color: '#3AB4C0' }}>{t.value}</strong>
+                </div>
+              ))}
+            </div>
+          ) : <p className="muted">No trend data yet</p>}
+        </div>
       </div>
 
-      <ActivityFeed />
+      {/* Active Hires Table */}
+      {activeHires.length > 0 && (
+        <div className="ov-card full" style={{ marginTop: 16 }}>
+          <h3>Active Hire Bookings</h3>
+          <table className="data-table" style={{ width: '100%' }}>
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Order</th>
+                <th>Event Date</th>
+                <th>Status</th>
+                <th>Bond</th>
+                <th>Contract</th>
+              </tr>
+            </thead>
+            <tbody>
+              {activeHires.map(h => (
+                <tr key={h.id}>
+                  <td><strong>{h.customerName}</strong></td>
+                  <td>{h.orderNumber}</td>
+                  <td>{h.eventDate}</td>
+                  <td><span className={`pill ${h.status === 'confirmed' ? 'on' : ''}`}>{h.status?.replace(/_/g, ' ') || '—'}</span></td>
+                  <td><span style={{ color: h.bondStatus === 'paid' ? '#10B981' : '#E43F7B', fontWeight: 600 }}>{h.bondStatus === 'paid' ? 'Paid' : 'Pending'}</span></td>
+                  <td>{h.contractStatus === 'signed' ? '✅ Signed' : h.contractStatus === 'sent' ? '📧 Sent' : 'Not Sent'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   )
 }
