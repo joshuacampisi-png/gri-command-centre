@@ -299,9 +299,18 @@ export default function TNTDashboard() {
   const [filter, setFilter] = useState("all");
   const [toast, setToast] = useState(null);
   const [returnHire, setReturnHire] = useState(null);
+  const [health, setHealth] = useState(null);
+  const [showHealth, setShowHealth] = useState(false);
   const pollRef = useRef(null);
 
   const showToast = (msg, type = "success") => { setToast({ msg, type }); setTimeout(() => setToast(null), 3000); };
+
+  const loadHealth = useCallback(async () => {
+    try {
+      const res = await fetch("/api/hires/health");
+      setHealth(await res.json());
+    } catch {}
+  }, []);
 
   const loadHires = useCallback(async () => {
     try { setHires((await api("")).hires); }
@@ -395,7 +404,12 @@ export default function TNTDashboard() {
       {/* Header */}
       <div style={{ padding: "14px 24px", borderBottom: "0.5px solid var(--color-border-tertiary)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <span style={{ fontWeight: 600, fontSize: 15 }}>TNT Cannon Hire</span>
-        <button onClick={() => setActiveModal("add")} style={btnPrimary}>+ Lodge hire</button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button onClick={() => { loadHealth(); setShowHealth(v => !v); }} style={btnBase}>
+            {showHealth ? 'Hide Health' : 'Flow Health'}
+          </button>
+          <button onClick={() => setActiveModal("add")} style={btnPrimary}>+ Lodge hire</button>
+        </div>
       </div>
 
       <div style={{ padding: "20px 24px" }}>
@@ -413,6 +427,32 @@ export default function TNTDashboard() {
             </div>
           ))}
         </div>
+
+        {/* Flow Health Panel */}
+        {showHealth && health?.checks && (
+          <div style={{ background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: 8, padding: "14px 18px", marginBottom: 16 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10, display: "flex", alignItems: "center", gap: 8 }}>
+              Flow Health Check
+              <span style={{ fontSize: 11, fontWeight: 500, padding: "2px 8px", borderRadius: 4, background: health.ok ? "#EAF3DE" : "#FCEBEB", color: health.ok ? "#3B6D11" : "#A32D2D" }}>
+                {health.ok ? "ALL SYSTEMS GO" : "ISSUES FOUND"}
+              </span>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10 }}>
+              {Object.entries(health.checks).map(([name, check]) => (
+                <div key={name} style={{ fontSize: 12, padding: "8px 12px", borderRadius: 6, border: `1px solid ${check.ok ? '#C0DD97' : '#F7C1C1'}`, background: check.ok ? 'rgba(234,243,222,0.1)' : 'rgba(252,235,235,0.1)' }}>
+                  <div style={{ fontWeight: 600, marginBottom: 4, textTransform: "uppercase", fontSize: 10, color: check.ok ? "#3B6D11" : "#A32D2D" }}>
+                    {check.ok ? "\u2713" : "\u2717"} {name}
+                  </div>
+                  {Object.entries(check).filter(([k]) => k !== "ok").map(([k, v]) => (
+                    <div key={k} style={{ fontSize: 11, color: "var(--color-text-secondary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {k}: {typeof v === "boolean" ? (v ? "\u2713" : "\u2717") : String(v)}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Filter tabs */}
         <div style={{ display: "flex", gap: 2, marginBottom: 12 }}>

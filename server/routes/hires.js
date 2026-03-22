@@ -1,10 +1,52 @@
 import { Router } from 'express';
+import { existsSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { getAll, getById, create, update } from '../lib/hire-store.js';
 import { createBondPaymentLink, refundBondPayment } from '../lib/square-client.js';
 import { sendHireEmail } from '../lib/hire-mailer.js';
 import { notifyTNTEvent } from '../lib/tnt-telegram.js';
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
 const router = Router();
+
+// GET /api/hires/health — flow health check (MUST be before /:id)
+router.get('/health', (_req, res) => {
+  const checks = {
+    square: {
+      environment: process.env.SQUARE_ENVIRONMENT || 'NOT SET',
+      hasToken: Boolean(process.env.SQUARE_ACCESS_TOKEN),
+      hasLocation: Boolean(process.env.SQUARE_LOCATION_ID),
+      ok: Boolean(process.env.SQUARE_ACCESS_TOKEN && process.env.SQUARE_LOCATION_ID),
+    },
+    email: {
+      user: process.env.GMAIL_USER || 'NOT SET',
+      hasPassword: Boolean(process.env.GMAIL_APP_PASSWORD),
+      ok: Boolean(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD),
+    },
+    telegram: {
+      hasToken: Boolean(process.env.TELEGRAM_BOT_TOKEN),
+      hasChatId: Boolean(process.env.TELEGRAM_JOSH_CHAT_ID),
+      ok: Boolean(process.env.TELEGRAM_BOT_TOKEN),
+    },
+    contracts: {
+      baseUrl: process.env.BASE_URL || 'NOT SET',
+      signingUrl: `${process.env.BASE_URL || ''}/api/contract/{hireId}/sign`,
+      ok: Boolean(process.env.BASE_URL && !process.env.BASE_URL.includes('trycloudflare')),
+    },
+    webhooks: {
+      squareWebhook: `${process.env.BASE_URL || ''}/api/square/webhook`,
+      ok: Boolean(process.env.BASE_URL && !process.env.BASE_URL.includes('trycloudflare')),
+    },
+    data: {
+      hiresFile: existsSync(join(__dirname, '..', '..', 'data', 'tnt-hires.json')),
+      contractsDir: existsSync(join(__dirname, '..', '..', 'data', 'contracts')),
+      ok: true,
+    },
+  };
+  const allOk = Object.values(checks).every(c => c.ok);
+  res.json({ ok: allOk, checks, timestamp: new Date().toISOString() });
+});
 
 // GET /api/hires — list all hires
 router.get('/', (req, res) => {
