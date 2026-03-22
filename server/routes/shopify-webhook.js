@@ -169,8 +169,9 @@ async function processOrder(order) {
   const customerPhone = shipping.phone || customer.phone || order.phone || '';
   const eventDate = extractEventDate(order);
 
-  // Calculate total TNT kit quantity (each line item may have qty > 1)
+  // Calculate total TNT kit quantity and revenue
   const kitQty = tntItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
+  const hireRevenue = tntItems.reduce((sum, item) => sum + parseFloat(item.price || 0) * (item.quantity || 1), 0);
 
   const hire = create({
     orderNumber: orderName,
@@ -179,6 +180,7 @@ async function processOrder(order) {
     customerPhone,
     eventDate: eventDate || '', // May need manual entry if not provided
     kitQty,
+    revenue: hireRevenue,
   });
 
   console.log(`[shopify-webhook] TNT hire created: ${hire.id} for order ${orderName} (${customerName})`);

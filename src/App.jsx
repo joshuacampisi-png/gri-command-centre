@@ -141,6 +141,12 @@ function OverviewPage({ data, company }) {
   const activeHires = hires.filter(h => !['returned', 'withheld', 'cancelled'].includes(h.status))
   const awaitingBond = hires.filter(h => h.bondStatus !== 'paid' && !['returned', 'withheld', 'cancelled'].includes(h.status))
 
+  // Monthly TNT revenue
+  const now = new Date()
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+  const monthlyHires = hires.filter(h => h.createdAt >= monthStart)
+  const monthlyRevenue = monthlyHires.reduce((sum, h) => sum + (h.revenue || 0), 0)
+
   return (
     <div className="page">
       <PageHeader title="Overview" subtitle={`Command Centre — ${COMPANIES[company]?.name || company}`} />
@@ -166,9 +172,10 @@ function OverviewPage({ data, company }) {
           <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#2D3A4A', marginBottom: 8 }}>
             {activeHires.length}
           </div>
+          <div className="kv-row"><span>Monthly revenue</span><strong style={{ color: '#E43F7B' }}>${monthlyRevenue.toFixed(2)}</strong></div>
           <div className="kv-row"><span>Active hires</span><strong>{activeHires.length}</strong></div>
           <div className="kv-row"><span>Awaiting bond</span><strong style={{ color: awaitingBond.length ? '#E43F7B' : '#10B981' }}>{awaitingBond.length}</strong></div>
-          <div className="kv-row"><span>Total all-time</span><strong>{hires.length}</strong></div>
+          <div className="kv-row"><span>This month</span><strong>{monthlyHires.length} bookings</strong></div>
         </div>
 
         {/* Google Trends Top 5 */}

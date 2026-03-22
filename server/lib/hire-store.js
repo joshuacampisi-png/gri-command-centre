@@ -44,6 +44,7 @@ export function create(hire) {
     bondPaymentUrl: null,
     bondOutcome: null,
     kitQty: hire.kitQty || 1,
+    revenue: hire.revenue || 0,
     contractStatus: 'not_sent',
     contractSignedAt: null,
     contractSignatureUrl: null,
