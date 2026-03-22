@@ -2,7 +2,7 @@
  * Google Trends Intelligence API Routes
  */
 import { Router } from 'express'
-import { readTrendsCache, runTrendsScan, isTrendsScanning, GENDER_REVEAL_KEYWORDS, hasDfsCredentials, TIME_RANGE_MAP } from '../lib/google-trends.js'
+import { readTrendsCache, runTrendsScan, isTrendsScanning, GENDER_REVEAL_KEYWORDS, hasDfsCredentials, TIME_RANGE_MAP, fetchTrendingQueries } from '../lib/google-trends.js'
 import { generateBlogBrief } from '../lib/trends-blog-generator.js'
 import { readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
@@ -50,6 +50,16 @@ router.get('/status', (_req, res) => {
     demoMode: !hasDataForSeo,
     availableRanges: Object.keys(TIME_RANGE_MAP),
   })
+})
+
+// GET /api/trends/trending — real-time trending queries (for Overview card)
+router.get('/trending', async (_req, res) => {
+  try {
+    const result = await fetchTrendingQueries()
+    res.json(result)
+  } catch (e) {
+    res.json({ ok: false, queries: [], error: e.message })
+  }
 })
 
 // POST /api/trends/scan-now — trigger manual scan

@@ -115,6 +115,8 @@ function OverviewPage({ data, company }) {
   const [shippingRange, setShippingRange] = useState('mtd')
   const [shippingData, setShippingData] = useState(null)
 
+  const [trendingQueries, setTrendingQueries] = useState(null)
+
   useEffect(() => {
     fetch('/api/hires').then(r => r.json()).then(d => setHires(d.hires || [])).catch(() => {})
     fetch('/api/trends').then(r => r.json()).then(d => {
@@ -123,6 +125,10 @@ function OverviewPage({ data, company }) {
     fetch('/api/shopify/today-sales').then(r => r.json()).then(d => {
       setSales(d.ok ? d : { ok: false, error: d.error })
     }).catch(() => setSales({ ok: false, error: 'Failed to load' }))
+    // Real-time trending queries for Overview card
+    fetch('/api/trends/trending').then(r => r.json()).then(d => {
+      setTrendingQueries(d.ok ? d.queries : [])
+    }).catch(() => setTrendingQueries([]))
   }, [])
 
   // Shipping revenue date range
@@ -146,8 +152,17 @@ function OverviewPage({ data, company }) {
     }).catch(() => setShippingData(null))
   }, [shippingRange])
 
-  // Top 5 keywords by latest 24h value
+  // Top 5: prefer real-time trending queries, fall back to cached timeseries
   const top5 = (() => {
+    // Use live trending queries if available
+    if (trendingQueries && trendingQueries.length > 0) {
+      return trendingQueries.slice(0, 5).map(q => ({
+        kw: q.query,
+        value: q.type === 'rising' ? `+${q.value}%` : q.value,
+        isRising: q.type === 'rising',
+      }))
+    }
+    // Fallback: timeseries from last scan
     if (!trends?.timeseries) return []
     const now = Date.now()
     const h24 = 24 * 60 * 60 * 1000
@@ -227,16 +242,17 @@ function OverviewPage({ data, company }) {
         {/* Google Trends Top 5 */}
         <div className="ov-card">
           <h3>Trending Now (24h)</h3>
-          {top5.length > 0 ? (
+          {trendingQueries === null ? <p className="muted">Loading trends…</p>
+           : top5.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {top5.map((t, i) => (
                 <div key={t.kw} className="kv-row">
                   <span style={{ fontWeight: i === 0 ? 700 : 400 }}>{i + 1}. {t.kw}</span>
-                  <strong style={{ color: '#3AB4C0' }}>{t.value}</strong>
+                  <strong style={{ color: t.isRising ? '#10B981' : '#3AB4C0' }}>{t.value}</strong>
                 </div>
               ))}
             </div>
-          ) : <p className="muted">No trend data yet</p>}
+          ) : <p className="muted">No trending queries found</p>}
         </div>
       </div>
 

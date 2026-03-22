@@ -86,6 +86,70 @@ function getDfsAuth() {
 
 export function hasDfsCredentials() { return Boolean(getDfsAuth()) }
 
+/**
+ * Fetch real-time trending queries related to "gender reveal" from DataForSEO.
+ * Uses the explore endpoint with a single seed keyword + past_day to get
+ * actual rising/top related search queries (not just our predefined list).
+ */
+export async function fetchTrendingQueries(seed = 'gender reveal', timeRange = 'past_day') {
+  const auth = getDfsAuth()
+  if (!auth) return { ok: false, queries: [], error: 'No DataForSEO credentials' }
+
+  try {
+    const res = await fetch(
+      'https://api.dataforseo.com/v3/keywords_data/google_trends/explore/live',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${auth}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify([{
+          keywords:      [seed],
+          location_code: LOCATION_CODE,
+          type:          'web',
+          time_range:    timeRange,
+          language_code: 'en',
+        }]),
+        signal: AbortSignal.timeout(30000),
+      }
+    )
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const data = await res.json()
+    const result = data.tasks?.[0]?.result?.[0]
+    if (!result) return { ok: true, queries: [] }
+
+    const queries = []
+
+    for (const item of (result.items || [])) {
+      // Related queries list (rising & top)
+      if (item.type === 'google_trends_queries_list') {
+        const queryType = (item.title || '').toLowerCase() // "rising" or "top"
+        for (const q of (item.data || [])) {
+          queries.push({
+            query:  q.query,
+            value:  q.value ?? 0,
+            type:   queryType,
+          })
+        }
+      }
+    }
+
+    // Sort: rising queries first (by value desc), then top queries
+    queries.sort((a, b) => {
+      if (a.type === 'rising' && b.type !== 'rising') return -1
+      if (a.type !== 'rising' && b.type === 'rising') return 1
+      return b.value - a.value
+    })
+
+    return { ok: true, queries }
+  } catch (e) {
+    console.error('[Trends] fetchTrendingQueries failed:', e.message)
+    return { ok: false, queries: [], error: e.message }
+  }
+}
+
 // Returns { timeseries: { keyword: [{date, value}] }, risingQueries: [] }
 // DataForSEO Google Trends explore/live endpoint — weekly data, past 12 months, Australia
 // Map UI range options to DataForSEO time_range values
@@ -133,26 +197,39 @@ async function fetchTrendsBatch(batch, timeRange = 'past_12_months') {
   if (!result) return { timeseries: {}, risingQueries: [] }
 
   const timeseries = {}
+  const risingQueries = []
 
   for (const item of (result.items || [])) {
-    if (item.type !== 'google_trends_graph') continue
+    if (item.type === 'google_trends_graph') {
+      const keywords = item.keywords || []
+      for (let ki = 0; ki < keywords.length; ki++) {
+        const kw = keywords[ki]
+        if (!kw) continue
+        // item.data: [{date_from, date_to, timestamp, missing_data, values:[v0,v1,...]}]
+        // values are per-keyword at index ki; can be null — default to 0
+        timeseries[kw] = (item.data || [])
+          .filter(pt => !pt.missing_data)
+          .map(pt => ({
+            date:  pt.date_from,          // "YYYY-MM-DD"
+            value: pt.values?.[ki] ?? 0,  // null → 0
+          }))
+      }
+    }
 
-    const keywords = item.keywords || []
-    for (let ki = 0; ki < keywords.length; ki++) {
-      const kw = keywords[ki]
-      if (!kw) continue
-      // item.data: [{date_from, date_to, timestamp, missing_data, values:[v0,v1,...]}]
-      // values are per-keyword at index ki; can be null — default to 0
-      timeseries[kw] = (item.data || [])
-        .filter(pt => !pt.missing_data)
-        .map(pt => ({
-          date:  pt.date_from,          // "YYYY-MM-DD"
-          value: pt.values?.[ki] ?? 0,  // null → 0
-        }))
+    // Extract rising & top related queries from DataForSEO response
+    if (item.type === 'google_trends_queries_list') {
+      for (const q of (item.data || [])) {
+        risingQueries.push({
+          query:           q.query,
+          extracted_value: q.value ?? 0,    // relative interest or % rise
+          parentKeyword:   (item.keywords || batch)?.[0] || '',
+          queryType:       item.title || '', // "Rising" or "Top"
+        })
+      }
     }
   }
 
-  return { timeseries, risingQueries: [] }
+  return { timeseries, risingQueries }
 }
 
 // ── Spike Detection ────────────────────────────────────────────
