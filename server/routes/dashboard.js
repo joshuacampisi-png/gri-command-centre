@@ -3,7 +3,7 @@ import { getNotionSnapshot } from '../connectors/notion.js'
 import { getSlackSnapshot, postChannelVerificationSuite, postInitialCommandCentreMessage, postRoleMessage, postSlackMessage } from '../connectors/slack.js'
 import { getOpenClawSnapshot } from '../connectors/openclaw.js'
 import { getShopifySnapshot } from '../connectors/shopify.js'
-import { integrationStatus, env } from '../lib/env.js'
+import { integrationStatus } from '../lib/env.js'
 import { COMPANIES, normalizeCompany } from '../lib/companies.js'
 import { workflowConvertFindingToTask, workflowCreateAlert, workflowCreateApproval, workflowCreateFinding, workflowCreateHandoff, workflowCreateReport, workflowCreateTask } from '../workflows/core.js'
 import { loadTasks, updateTaskStatus } from '../lib/auto-task-store.js'
@@ -77,24 +77,15 @@ router.get('/dashboard', async (req, res) => {
 // ── Today's Shopify sales ──
 router.get('/shopify/today-sales', async (_req, res) => {
   try {
-    const store = env.shopify.storeDomain
-    const token = env.shopify.adminAccessToken
-    if (!store || !token) return res.json({ ok: false, error: 'Shopify not configured' })
-
-    // Today midnight AEST
+    // Today midnight AEST → UTC
     const now = new Date()
     const aestNow = new Date(now.toLocaleString('en-US', { timeZone: 'Australia/Brisbane' }))
     const todayStart = new Date(aestNow)
     todayStart.setHours(0, 0, 0, 0)
-    // Convert back to UTC for Shopify API
     const utcStart = new Date(todayStart.getTime() - 10 * 60 * 60 * 1000)
 
-    const url = `https://${store}/admin/api/2024-01/orders.json?status=any&created_at_min=${utcStart.toISOString()}&limit=250`
-    const response = await fetch(url, {
-      headers: { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' }
-    })
-    if (!response.ok) throw new Error(`Shopify API ${response.status}`)
-    const data = await response.json()
+    const { shopifyFetch } = await import('../connectors/shopify.js')
+    const data = await shopifyFetch(`/orders.json?status=any&created_at_min=${utcStart.toISOString()}&limit=250`)
     const orders = data.orders || []
     const totalRevenue = orders.reduce((sum, o) => sum + parseFloat(o.total_price || 0), 0)
     const totalOrders = orders.length

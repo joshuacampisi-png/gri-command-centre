@@ -13,7 +13,7 @@ async function effectiveAdminToken() {
   return ''
 }
 
-async function shopifyFetch(path, options = {}) {
+export async function shopifyFetch(path, options = {}) {
   const token = await effectiveAdminToken()
   const response = await fetch(adminUrl(path), {
     ...options,
