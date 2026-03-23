@@ -348,33 +348,63 @@ function OverviewPage({ data, company }) {
                     boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
                   }}>{v.viralLabel || 'New'}</div>
 
-                  {/* Gradient placeholder for video thumbnail */}
-                  <div style={{
-                    height: 140, position: 'relative',
-                    background: isTop
-                      ? 'linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)'
-                      : `linear-gradient(135deg, hsl(${200 + i * 30}, 60%, 65%), hsl(${230 + i * 30}, 50%, 55%))`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  {/* Video thumbnail */}
+                  <a href={v.url} target="_blank" rel="noopener noreferrer" style={{
+                    display: 'block', height: 180, position: 'relative', overflow: 'hidden',
+                    background: v.thumbnail
+                      ? '#000'
+                      : isTop
+                        ? 'linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)'
+                        : `linear-gradient(135deg, hsl(${200 + i * 30}, 60%, 65%), hsl(${230 + i * 30}, 50%, 55%))`,
                   }}>
-                    <a href={v.url} target="_blank" rel="noopener noreferrer"
-                      style={{ color: '#fff', fontSize: 36, textDecoration: 'none', opacity: 0.9, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}>
-                      &#9654;
-                    </a>
+                    {v.thumbnail && <img src={v.thumbnail} alt={v.caption || 'Reel thumbnail'} style={{
+                      width: '100%', height: '100%', objectFit: 'cover', display: 'block',
+                    }} onError={(e) => { e.target.style.display = 'none' }} />}
+                    {/* Play button overlay */}
+                    <div style={{
+                      position: 'absolute', inset: 0,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: 'rgba(0,0,0,0.15)',
+                      transition: 'background 0.2s',
+                    }}>
+                      <div style={{
+                        width: 44, height: 44, borderRadius: '50%',
+                        background: 'rgba(255,255,255,0.9)', display: 'flex',
+                        alignItems: 'center', justifyContent: 'center',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                      }}>
+                        <span style={{ fontSize: 18, marginLeft: 3, color: '#E43F7B' }}>&#9654;</span>
+                      </div>
+                    </div>
                     {/* Age label */}
                     <span style={{
                       position: 'absolute', bottom: 6, left: 8,
-                      fontSize: 10, color: '#fff', background: 'rgba(0,0,0,0.55)',
-                      padding: '2px 6px', borderRadius: 6,
+                      fontSize: 10, color: '#fff', background: 'rgba(0,0,0,0.6)',
+                      padding: '2px 8px', borderRadius: 6, fontWeight: 600,
                     }}>{v.ageHours != null ? (v.ageHours < 24 ? `${v.ageHours}h ago` : `${Math.round(v.ageHours / 24)}d ago`) : 'Recent'}</span>
-                  </div>
+                    {/* Views overlay */}
+                    {v.views > 0 && <span style={{
+                      position: 'absolute', bottom: 6, right: 8,
+                      fontSize: 10, color: '#fff', background: 'rgba(0,0,0,0.6)',
+                      padding: '2px 8px', borderRadius: 6, fontWeight: 600,
+                    }}>&#9654; {v.views >= 1000000 ? `${(v.views/1000000).toFixed(1)}M` : v.views >= 1000 ? `${(v.views/1000).toFixed(0)}K` : v.views}</span>}
+                  </a>
 
                   {/* Content */}
                   <div style={{ padding: '10px 12px 8px' }}>
                     <div style={{
-                      fontSize: 12, fontWeight: 600, lineHeight: 1.35, marginBottom: 6,
+                      fontSize: 12, fontWeight: 600, lineHeight: 1.35, marginBottom: 4,
                       overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
                       minHeight: 32,
                     }}>{v.caption || 'Gender reveal reel'}</div>
+
+                    {/* Hashtags */}
+                    {v.hashtags && v.hashtags.length > 0 && (
+                      <div style={{
+                        fontSize: 10, color: '#405DE6', marginBottom: 6, lineHeight: 1.5,
+                        overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+                      }}>{v.hashtags.join(' ')}</div>
+                    )}
 
                     <div style={{ fontSize: 11, color: '#E43F7B', fontWeight: 600, marginBottom: 8 }}>{v.creator}</div>
 

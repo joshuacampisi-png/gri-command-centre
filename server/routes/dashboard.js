@@ -119,20 +119,24 @@ router.get('/viral/instagram/download/:shortcode', async (req, res) => {
     const { downloadReelVideo } = await import('../lib/viral-instagram.js')
     const result = await downloadReelVideo(req.params.shortcode)
     if (!result.ok) return res.status(400).json(result)
-    // Proxy the video as a download
-    const videoRes = await fetch(result.videoUrl, { signal: AbortSignal.timeout(30000) })
-    if (!videoRes.ok) return res.status(502).json({ ok: false, error: 'Failed to fetch video' })
+
+    // Proxy the video as a file download
+    const videoRes = await fetch(result.videoUrl, {
+      signal: AbortSignal.timeout(60000),
+      headers: { 'User-Agent': 'Mozilla/5.0' },
+    })
+    if (!videoRes.ok) return res.status(502).json({ ok: false, error: `Video fetch failed: ${videoRes.status}` })
+
+    const contentLength = videoRes.headers.get('content-length')
     res.setHeader('Content-Type', 'video/mp4')
     res.setHeader('Content-Disposition', `attachment; filename="reel-${req.params.shortcode}.mp4"`)
-    const reader = videoRes.body.getReader()
-    const pump = async () => {
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) { res.end(); return }
-        res.write(value)
-      }
-    }
-    await pump()
+    if (contentLength) res.setHeader('Content-Length', contentLength)
+
+    // Stream using Node.js Readable
+    const { Readable } = await import('stream')
+    const nodeStream = Readable.fromWeb(videoRes.body)
+    nodeStream.pipe(res)
+    nodeStream.on('error', () => { if (!res.headersSent) res.status(500).end() })
   } catch (e) {
     if (!res.headersSent) res.status(500).json({ ok: false, error: e.message })
   }

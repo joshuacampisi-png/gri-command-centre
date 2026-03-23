@@ -187,13 +187,35 @@ async function fetchFromRapidAPI(apiKey) {
         const ageMs = ts ? Date.now() - ts.getTime() : Infinity
         if (ageMs > 7 * 24 * 60 * 60 * 1000) continue
 
+        // Thumbnail: try multiple fields the API might return
+        const thumbnail = post.thumbnail_url
+          || post.display_url
+          || post.image_versions2?.candidates?.[0]?.url
+          || post.carousel_media?.[0]?.image_versions2?.candidates?.[0]?.url
+          || post.thumbnail_src
+          || post.cover_frame_url
+          || ''
+
+        // Video URL for direct download
+        const videoUrl = post.video_url
+          || post.video_versions?.[0]?.url
+          || post.clips?.video_url
+          || ''
+
+        // Extract hashtags from caption
+        const fullCaption = post.caption?.text || post.caption || ''
+        const hashtags = (fullCaption.match(/#[\w\u00C0-\u024F]+/g) || []).slice(0, 8)
+
         const engagementRate = views > 0 ? (likes + comments + saves + shares) / views : 0
         const virality = calculateViralityScore({ views, likes, comments, saves, shares, ageMs })
 
         allVideos.push({
           id: code,
           url: `https://www.instagram.com/reel/${code}/`,
-          caption: (post.caption?.text || post.caption || '').slice(0, 120),
+          caption: fullCaption.slice(0, 120),
+          hashtags,
+          thumbnail,
+          videoUrl,
           creator: username ? `@${username}` : 'Unknown',
           views,
           likes,
@@ -246,33 +268,55 @@ function formatVirality(v) {
 
 /**
  * Download a reel video by shortcode.
- * Uses the Instagram Scraper 2025 API to get the video URL from a post.
+ * 1. Check cache for stored videoUrl (from hashtag scrape)
+ * 2. Fall back to API post_info endpoint
  */
 export async function downloadReelVideo(shortcode) {
+  // 1. Check if we already have the video URL cached from the hashtag scrape
+  const cached = readCache()
+  if (cached) {
+    const match = cached.videos.find(v => v.id === shortcode)
+    if (match?.videoUrl) return { ok: true, videoUrl: match.videoUrl }
+  }
+
+  // 2. Try API to fetch post details
   const apiKey = process.env.RAPIDAPI_KEY
   if (!apiKey) return { ok: false, error: 'No RAPIDAPI_KEY configured' }
 
-  try {
-    // Try the post info endpoint to get video URL
-    const res = await fetch(`https://${API_HOST}/post_info/?shortcode=${shortcode}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        'X-RapidAPI-Key': apiKey,
-        'X-RapidAPI-Host': API_HOST
-      },
-      signal: AbortSignal.timeout(15000),
-    })
+  // Try multiple possible endpoint patterns
+  const endpoints = [
+    `/post_info/?shortcode=${shortcode}`,
+    `/media_info/?shortcode=${shortcode}`,
+    `/postinfo/?shortcode=${shortcode}`,
+  ]
 
-    if (!res.ok) return { ok: false, error: `API returned ${res.status}` }
+  for (const endpoint of endpoints) {
+    try {
+      const res = await fetch(`https://${API_HOST}${endpoint}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-RapidAPI-Key': apiKey,
+          'X-RapidAPI-Host': API_HOST
+        },
+        signal: AbortSignal.timeout(15000),
+      })
 
-    const data = await res.json()
-    const post = data.data || data
+      if (!res.ok) continue
 
-    const videoUrl = post.video_url || post.video_versions?.[0]?.url || post.clips?.video_url || ''
-    if (!videoUrl) return { ok: false, error: 'No video URL found for this reel' }
+      const data = await res.json()
+      const post = data.data || data
 
-    return { ok: true, videoUrl }
-  } catch (e) {
-    return { ok: false, error: e.message }
+      const videoUrl = post.video_url
+        || post.video_versions?.[0]?.url
+        || post.clips?.video_url
+        || post.media?.video_url
+        || ''
+
+      if (videoUrl) return { ok: true, videoUrl }
+    } catch {
+      continue
+    }
   }
+
+  return { ok: false, error: 'Could not find video URL for this reel' }
 }
