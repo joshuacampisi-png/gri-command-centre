@@ -1,17 +1,21 @@
 /**
  * Viral Instagram Scraper — Gender Reveal Reels
- * Uses RapidAPI "Instagram Scraper 2025" to find trending gender reveal content.
- * Endpoint: /hashtagposts/?keyword=genderreveal
- * Caches results for 1 hour to avoid excessive API calls.
  *
- * VIRALITY SCORING (research-backed, 2025/2026):
- *   - Saves & shares are the #1 algorithm signal (weighted 100x)
+ * Supports multiple RapidAPI providers with automatic fallback:
+ *   1. instagram-scraper-20251 (Instagram Scraper 2025)
+ *   2. instagram-scraper-api2  (Instagram Scraper API2 by yukils)
+ *   3. instagram-scraper2      (Instagram Scraper by JoTucker)
+ *
+ * Each provider has its own endpoint format. If one returns quota exceeded
+ * or errors, the next is tried automatically.
+ *
+ * VIRALITY SCORING (research-backed):
+ *   - Saves & shares weighted 100x (strongest algorithm signal)
  *   - Comments weighted 50x (high-intent engagement)
- *   - Likes weighted 5x (weak signal per Instagram 2026 algo)
+ *   - Likes weighted 5x (weaker signal)
  *   - Views are baseline (1x)
- *   - Engagement rate > 5% = strong trending signal
- *   - Recency bonus: content < 24h old gets 2x multiplier
- *   - 500K+ views with high engagement = viral tier
+ *   - Engagement rate > 5% = trending multiplier
+ *   - Recency bonus: < 24h = 2x
  */
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
@@ -21,12 +25,11 @@ const DATA_DIR = join(process.cwd(), 'data')
 const CACHE_FILE = join(DATA_DIR, 'viral-instagram-cache.json')
 if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true })
 
-// Clear stale cache on startup — ensures new fields (thumbnails, hashtags) come through
+// Clear stale cache on startup
 try {
   if (existsSync(CACHE_FILE)) {
     const old = JSON.parse(readFileSync(CACHE_FILE, 'utf8'))
     const firstVideo = old.videos?.[0]
-    // If cache is missing thumbnail field, it's from an old version — nuke it
     if (firstVideo && !firstVideo.thumbnail) {
       writeFileSync(CACHE_FILE, '{}')
       console.log('[ViralIG] Cleared stale cache — missing thumbnail data')
@@ -34,19 +37,44 @@ try {
   }
 } catch { /* ignore */ }
 
-const CACHE_TTL = 60 * 60 * 1000 // 1 hour
-const API_HOST = 'instagram-scraper-20251.p.rapidapi.com'
-const HASHTAGS = ['genderreveal', 'genderrevealparty', 'genderrevealideas']
+const CACHE_TTL = 6 * 60 * 60 * 1000 // 6 hours — keeps API usage minimal (~4 calls/day)
+// Single hashtag only — covers most content and saves 2 API calls per refresh
+const HASHTAGS = ['genderreveal']
 
-// Exclude our own accounts — no point showing our own content
+// Exclude own accounts
 const OWN_ACCOUNTS = new Set(['gender.reveal.ideass'])
+
+// ── API Providers (tried in order) ──────────────────────────────────────────
+const PROVIDERS = [
+  {
+    name: 'Instagram Scraper 2025',
+    host: 'instagram-scraper-20251.p.rapidapi.com',
+    hashtagUrl: (h) => `https://instagram-scraper-20251.p.rapidapi.com/hashtagposts/?keyword=${h}`,
+    postUrl: (code) => `https://instagram-scraper-20251.p.rapidapi.com/post_info/?shortcode=${code}`,
+  },
+  {
+    name: 'Instagram Scraper API2',
+    host: 'instagram-scraper-api2.p.rapidapi.com',
+    hashtagUrl: (h) => `https://instagram-scraper-api2.p.rapidapi.com/v1/hashtag?hashtag=${h}`,
+    postUrl: (code) => `https://instagram-scraper-api2.p.rapidapi.com/v1/post_info?code_or_id_or_url=${code}`,
+  },
+  {
+    name: 'Instagram Scraper JoTucker',
+    host: 'instagram-scraper2.p.rapidapi.com',
+    hashtagUrl: (h) => `https://instagram-scraper2.p.rapidapi.com/ig/hashtag/?hashtag=${h}`,
+    postUrl: (code) => `https://instagram-scraper2.p.rapidapi.com/ig/post_info/?shortcode=${code}`,
+  },
+]
+
+// Allow overriding which provider to use via env var
+const PROVIDER_INDEX = parseInt(process.env.IG_PROVIDER_INDEX || '0', 10)
 
 function readCache() {
   try {
     if (!existsSync(CACHE_FILE)) return null
     const data = JSON.parse(readFileSync(CACHE_FILE, 'utf8'))
     if (Date.now() - new Date(data.fetchedAt).getTime() < CACHE_TTL) return data
-    return null // expired
+    return null
   } catch { return null }
 }
 
@@ -57,8 +85,6 @@ function writeCache(videos) {
 
 /**
  * Get top 5 viral gender reveal Instagram reels.
- * Prioritises last 24h content, falls back to 7 days if nothing recent.
- * @param {boolean} forceRefresh - skip cache and fetch fresh data
  */
 export async function getViralInstagramReels(forceRefresh = false) {
   if (!forceRefresh) {
@@ -71,66 +97,54 @@ export async function getViralInstagramReels(forceRefresh = false) {
     return { ok: false, videos: [], error: 'No RAPIDAPI_KEY configured' }
   }
 
-  try {
-    const videos = await fetchFromRapidAPI(apiKey)
-    if (videos.length > 0) {
-      writeCache(videos)
-      return { ok: true, videos, cached: false }
+  // Try providers in order starting from configured index
+  const errors = []
+  for (let attempt = 0; attempt < PROVIDERS.length; attempt++) {
+    const idx = (PROVIDER_INDEX + attempt) % PROVIDERS.length
+    const provider = PROVIDERS[idx]
+    try {
+      console.log(`[ViralIG] Trying provider: ${provider.name}`)
+      const videos = await fetchFromProvider(apiKey, provider)
+      if (videos.length > 0) {
+        writeCache(videos)
+        return { ok: true, videos, cached: false, provider: provider.name }
+      }
+      errors.push(`${provider.name}: no videos found`)
+    } catch (e) {
+      const isQuota = e.message?.includes('exceeded') || e.message?.includes('quota') || e.message?.includes('not subscribed')
+      errors.push(`${provider.name}: ${e.message}`)
+      if (isQuota) {
+        console.warn(`[ViralIG] ${provider.name} quota/subscription issue, trying next...`)
+        continue
+      }
+      console.error(`[ViralIG] ${provider.name} error:`, e.message)
     }
-    return { ok: false, videos: [], error: 'No viral reels found for gender reveal hashtags' }
-  } catch (e) {
-    console.error('[ViralIG] RapidAPI failed:', e.message)
-    return { ok: false, videos: [], error: e.message }
   }
+
+  return { ok: false, videos: [], error: `All providers failed: ${errors.join('; ')}` }
 }
 
-/**
- * Calculate virality score using Instagram's 2026 algorithm priorities.
- *
- * Algorithm ranking signals (in order of weight):
- *   1. Saves & Shares — strongest signal, means user found it valuable enough to keep/send
- *   2. Comments — high-intent interaction, sparks conversation
- *   3. Likes — weakest engagement signal (downgraded in 2025 algo update)
- *   4. Views — baseline reach metric
- *
- * Engagement rate = (likes + comments + saves + shares) / views
- *   > 5% = strong trending potential
- *   > 10% = viral-tier engagement
- *   1.23% = average Reel engagement (benchmark)
- *
- * Recency: content < 24h gets a 2x boost (first-hour engagement
- * determines 80% of viral potential per research)
- */
-function calculateViralityScore(post) {
-  const views    = post.views || 0
-  const likes    = post.likes || 0
-  const comments = post.comments || 0
-  const saves    = post.saves || 0
-  const shares   = post.shares || 0
-  const ageMs    = post.ageMs || Infinity
+// ── Virality Scoring ────────────────────────────────────────────────────────
 
-  // Weighted engagement score
-  // Saves/shares most important (100x), comments (50x), likes (5x), views (1x)
-  let score = views
-    + (likes * 5)
-    + (comments * 50)
-    + (saves * 100)
-    + (shares * 100)
+function calculateViralityScore(post) {
+  const { views = 0, likes = 0, comments = 0, saves = 0, shares = 0, ageMs = Infinity } = post
+
+  let score = views + (likes * 5) + (comments * 50) + (saves * 100) + (shares * 100)
 
   // Engagement rate multiplier
   if (views > 0) {
-    const engagementRate = (likes + comments + saves + shares) / views
-    if (engagementRate > 0.10) score *= 3.0      // 10%+ = viral-tier
-    else if (engagementRate > 0.05) score *= 2.0  // 5%+  = strong trending
-    else if (engagementRate > 0.03) score *= 1.5  // 3%+  = above average
+    const er = (likes + comments + saves + shares) / views
+    if (er > 0.10) score *= 3.0
+    else if (er > 0.05) score *= 2.0
+    else if (er > 0.03) score *= 1.5
   }
 
-  // Recency bonus: < 24h = 2x, < 48h = 1.5x
+  // Recency bonus
   const ONE_DAY = 24 * 60 * 60 * 1000
   if (ageMs < ONE_DAY) score *= 2.0
   else if (ageMs < 2 * ONE_DAY) score *= 1.5
 
-  // High absolute views bonus (500K+ = viral reach)
+  // Absolute views bonus
   if (views >= 1000000) score *= 2.0
   else if (views >= 500000) score *= 1.5
   else if (views >= 100000) score *= 1.2
@@ -138,9 +152,6 @@ function calculateViralityScore(post) {
   return Math.round(score)
 }
 
-/**
- * Classify the viral status of a reel
- */
 function getViralLabel(score, views, engagementRate) {
   if (score >= 5000000 || views >= 1000000) return 'VIRAL'
   if (score >= 1000000 || views >= 500000) return 'Blowing Up'
@@ -149,115 +160,63 @@ function getViralLabel(score, views, engagementRate) {
   return 'New'
 }
 
-/**
- * RapidAPI Instagram Scraper 2025 — hashtag posts
- * GET /hashtagposts/?keyword={hashtag}
- */
-async function fetchFromRapidAPI(apiKey) {
+// ── Provider Fetch ──────────────────────────────────────────────────────────
+
+async function fetchFromProvider(apiKey, provider) {
   const allVideos = []
 
   for (const hashtag of HASHTAGS) {
     try {
-      const res = await fetch(`https://${API_HOST}/hashtagposts/?keyword=${hashtag}`, {
+      const url = provider.hashtagUrl(hashtag)
+      const res = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
           'X-RapidAPI-Key': apiKey,
-          'X-RapidAPI-Host': API_HOST
+          'X-RapidAPI-Host': provider.host,
         },
         signal: AbortSignal.timeout(15000),
       })
 
       if (!res.ok) {
-        console.warn(`[ViralIG] RapidAPI ${hashtag}: HTTP ${res.status}`)
+        const body = await res.text().catch(() => '')
+        if (body.includes('exceeded') || body.includes('quota') || body.includes('not subscribed')) {
+          throw new Error(`Quota exceeded or not subscribed (HTTP ${res.status})`)
+        }
+        console.warn(`[ViralIG] ${provider.name} ${hashtag}: HTTP ${res.status}`)
         continue
       }
 
       const data = await res.json()
 
-      // Handle different response shapes
-      const posts = data.data?.items || data.data?.medias || data.items || data.medias || data.data || []
-      const postList = Array.isArray(posts) ? posts : []
-
-      for (const post of postList) {
-        // Only video/reel content
-        const isVideo = post.media_type === 2 || post.is_video || post.video_url || post.type === 'video'
-        if (!isVideo) continue
-
-        const code = post.code || post.shortcode || post.short_code || ''
-        if (!code) continue
-
-        // Skip our own accounts
-        const username = post.user?.username || post.owner?.username || ''
-        if (OWN_ACCOUNTS.has(username)) continue
-
-        const views    = post.play_count || post.video_view_count || post.view_count || 0
-        const likes    = post.like_count || post.likes?.count || 0
-        const comments = post.comment_count || post.comments?.count || 0
-        const saves    = post.save_count || post.saved_count || 0
-        const shares   = post.share_count || post.reshare_count || 0
-        const ts = post.taken_at
-          ? new Date((typeof post.taken_at === 'number' && post.taken_at < 2000000000) ? post.taken_at * 1000 : post.taken_at)
-          : null
-
-        // Max 7 days old (we prefer 24h but widen to ensure results)
-        const ageMs = ts ? Date.now() - ts.getTime() : Infinity
-        if (ageMs > 7 * 24 * 60 * 60 * 1000) continue
-
-        // Thumbnail: try multiple fields the API might return
-        const thumbnail = post.thumbnail_url
-          || post.display_url
-          || post.image_versions2?.candidates?.[0]?.url
-          || post.carousel_media?.[0]?.image_versions2?.candidates?.[0]?.url
-          || post.thumbnail_src
-          || post.cover_frame_url
-          || ''
-
-        // Video URL for direct download
-        const videoUrl = post.video_url
-          || post.video_versions?.[0]?.url
-          || post.clips?.video_url
-          || ''
-
-        // Extract hashtags — prefer API's parsed array, fallback to regex from caption text
-        const fullCaption = post.caption?.text || post.caption || ''
-        const captionHashtags = Array.isArray(post.caption?.hashtags) ? post.caption.hashtags : []
-        const hashtags = captionHashtags.length > 0
-          ? captionHashtags.slice(0, 8)
-          : (fullCaption.match(/#[\w\u00C0-\u024F]+/g) || []).slice(0, 8)
-
-        const engagementRate = views > 0 ? (likes + comments + saves + shares) / views : 0
-        const virality = calculateViralityScore({ views, likes, comments, saves, shares, ageMs })
-
-        allVideos.push({
-          id: code,
-          url: `https://www.instagram.com/reel/${code}/`,
-          caption: fullCaption.slice(0, 120),
-          hashtags,
-          thumbnail,
-          videoUrl,
-          creator: username ? `@${username}` : 'Unknown',
-          views,
-          likes,
-          comments,
-          saves,
-          shares,
-          virality,
-          engagementRate: Math.round(engagementRate * 1000) / 10, // e.g. 5.2%
-          createdAt: ts?.toISOString() || new Date().toISOString(),
-          ageHours: Math.round(ageMs / (60 * 60 * 1000)),
-          hashtag,
-          viralLabel: getViralLabel(virality, views, engagementRate),
-        })
+      // Check for quota error in JSON body
+      if (data.message && (data.message.includes('exceeded') || data.message.includes('not subscribed'))) {
+        throw new Error(data.message)
       }
 
-      // Rate limit between hashtag calls
+      // Handle different response shapes across providers
+      const posts = data.data?.items || data.data?.medias || data.items || data.medias
+        || data.data?.edge_hashtag_to_media?.edges?.map(e => e.node)
+        || (Array.isArray(data.data) ? data.data : [])
+      const postList = Array.isArray(posts) ? posts : []
+
+      console.log(`[ViralIG] ${provider.name} #${hashtag}: ${postList.length} posts`)
+
+      for (const post of postList) {
+        const parsed = parsePost(post, hashtag)
+        if (parsed) allVideos.push(parsed)
+      }
+
       await new Promise(r => setTimeout(r, 500))
     } catch (e) {
-      console.warn(`[ViralIG] RapidAPI ${hashtag} error:`, e.message)
+      // Re-throw quota errors to trigger provider fallback
+      if (e.message?.includes('exceeded') || e.message?.includes('quota') || e.message?.includes('not subscribed')) {
+        throw e
+      }
+      console.warn(`[ViralIG] ${provider.name} #${hashtag} error:`, e.message)
     }
   }
 
-  // Deduplicate by post ID
+  // Deduplicate
   const seen = new Set()
   const unique = allVideos.filter(v => {
     if (seen.has(v.id)) return false
@@ -265,33 +224,91 @@ async function fetchFromRapidAPI(apiKey) {
     return true
   })
 
-  // Prefer last-24h content; if fewer than 5, fill with older
-  const ONE_DAY = 24 * 60 * 60 * 1000
+  // Prefer last-24h content, fill with older
   const recent = unique.filter(v => v.ageHours <= 24).sort((a, b) => b.virality - a.virality)
-  const older  = unique.filter(v => v.ageHours > 24).sort((a, b) => b.virality - a.virality)
+  const older = unique.filter(v => v.ageHours > 24).sort((a, b) => b.virality - a.virality)
 
-  const top = [...recent, ...older].slice(0, 5)
-
-  return top.map(v => ({
-    ...v,
-    viralityLabel: formatVirality(v),
-  }))
+  return [...recent, ...older].slice(0, 5)
 }
 
-function formatVirality(v) {
-  if (v.views >= 1000000) return `${(v.views / 1000000).toFixed(1)}M views`
-  if (v.views >= 1000) return `${(v.views / 1000).toFixed(0)}K views`
-  if (v.views > 0) return `${v.views} views`
-  return v.viralLabel || 'New'
+/**
+ * Parse a single post from any provider into our standard format.
+ * Returns null if the post should be skipped.
+ */
+function parsePost(post, hashtag) {
+  // Only video/reel content
+  const isVideo = post.media_type === 2 || post.is_video || post.video_url || post.type === 'video'
+    || post.product_type === 'clips' // Instagram's internal type for reels
+  if (!isVideo) return null
+
+  const code = post.code || post.shortcode || post.short_code || ''
+  if (!code) return null
+
+  // Skip own accounts
+  const username = post.user?.username || post.owner?.username || ''
+  if (OWN_ACCOUNTS.has(username)) return null
+
+  const views    = post.play_count || post.video_view_count || post.view_count || 0
+  const likes    = post.like_count || post.likes?.count || 0
+  const comments = post.comment_count || post.comments?.count || 0
+  const saves    = post.save_count || post.saved_count || 0
+  const shares   = post.share_count || post.reshare_count || 0
+
+  const ts = post.taken_at
+    ? new Date((typeof post.taken_at === 'number' && post.taken_at < 2000000000) ? post.taken_at * 1000 : post.taken_at)
+    : null
+
+  const ageMs = ts ? Date.now() - ts.getTime() : Infinity
+  if (ageMs > 7 * 24 * 60 * 60 * 1000) return null // max 7 days
+
+  // Thumbnail
+  const thumbnail = post.thumbnail_url
+    || post.display_url
+    || post.image_versions2?.candidates?.[0]?.url
+    || post.carousel_media?.[0]?.image_versions2?.candidates?.[0]?.url
+    || post.thumbnail_src
+    || post.cover_frame_url
+    || ''
+
+  // Video URL
+  const videoUrl = post.video_url
+    || post.video_versions?.[0]?.url
+    || post.clips?.video_url
+    || ''
+
+  // Hashtags
+  const fullCaption = typeof post.caption === 'string' ? post.caption : (post.caption?.text || '')
+  const captionHashtags = Array.isArray(post.caption?.hashtags) ? post.caption.hashtags : []
+  const hashtags = captionHashtags.length > 0
+    ? captionHashtags.slice(0, 8)
+    : (fullCaption.match(/#[\w\u00C0-\u024F]+/g) || []).slice(0, 8)
+
+  const engagementRate = views > 0 ? (likes + comments + saves + shares) / views : 0
+  const virality = calculateViralityScore({ views, likes, comments, saves, shares, ageMs })
+
+  return {
+    id: code,
+    url: `https://www.instagram.com/reel/${code}/`,
+    caption: fullCaption.slice(0, 120),
+    hashtags,
+    thumbnail,
+    videoUrl,
+    creator: username ? `@${username}` : 'Unknown',
+    views, likes, comments, saves, shares,
+    virality,
+    engagementRate: Math.round(engagementRate * 1000) / 10,
+    createdAt: ts?.toISOString() || new Date().toISOString(),
+    ageHours: Math.round(ageMs / (60 * 60 * 1000)),
+    hashtag,
+    viralLabel: getViralLabel(virality, views, engagementRate),
+  }
 }
 
 /**
  * Download a reel video by shortcode.
- * 1. Check cache for stored videoUrl (from hashtag scrape)
- * 2. Fall back to API post_info endpoint
  */
 export async function downloadReelVideo(shortcode) {
-  // 1. Check if we already have the video URL cached from the hashtag scrape
+  // 1. Check cache
   const cached = readCache()
   if (cached) {
     const match = cached.videos.find(v => v.id === shortcode)
@@ -302,39 +319,26 @@ export async function downloadReelVideo(shortcode) {
   const apiKey = process.env.RAPIDAPI_KEY
   if (!apiKey) return { ok: false, error: 'No RAPIDAPI_KEY configured' }
 
-  // Try multiple possible endpoint patterns
-  const endpoints = [
-    `/post_info/?shortcode=${shortcode}`,
-    `/media_info/?shortcode=${shortcode}`,
-    `/postinfo/?shortcode=${shortcode}`,
-  ]
-
-  for (const endpoint of endpoints) {
+  for (let attempt = 0; attempt < PROVIDERS.length; attempt++) {
+    const idx = (PROVIDER_INDEX + attempt) % PROVIDERS.length
+    const provider = PROVIDERS[idx]
     try {
-      const res = await fetch(`https://${API_HOST}${endpoint}`, {
+      const res = await fetch(provider.postUrl(shortcode), {
         headers: {
           'Content-Type': 'application/json',
           'X-RapidAPI-Key': apiKey,
-          'X-RapidAPI-Host': API_HOST
+          'X-RapidAPI-Host': provider.host,
         },
         signal: AbortSignal.timeout(15000),
       })
-
       if (!res.ok) continue
-
       const data = await res.json()
+      if (data.message?.includes('exceeded') || data.message?.includes('not subscribed')) continue
+
       const post = data.data || data
-
-      const videoUrl = post.video_url
-        || post.video_versions?.[0]?.url
-        || post.clips?.video_url
-        || post.media?.video_url
-        || ''
-
+      const videoUrl = post.video_url || post.video_versions?.[0]?.url || post.clips?.video_url || post.media?.video_url || ''
       if (videoUrl) return { ok: true, videoUrl }
-    } catch {
-      continue
-    }
+    } catch { continue }
   }
 
   return { ok: false, error: 'Could not find video URL for this reel' }

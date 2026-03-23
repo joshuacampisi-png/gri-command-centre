@@ -167,12 +167,12 @@ function OverviewPage({ data, company }) {
       }).catch(() => setViralReels([]))
     }
     fetchAll()
-    // Auto-refresh sales every 30 seconds while dashboard is open
+    // Auto-refresh sales every 10 seconds while dashboard is open (real-time feel)
     const interval = setInterval(() => {
       fetch('/api/shopify/today-sales').then(r => r.json()).then(d => {
         setSales(d.ok ? d : { ok: false, error: d.error })
       }).catch(() => {})
-    }, 30000)
+    }, 10000)
     return () => clearInterval(interval)
   }, [])
 
