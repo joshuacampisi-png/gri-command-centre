@@ -116,6 +116,7 @@ function OverviewPage({ data, company }) {
   const [shippingData, setShippingData] = useState(null)
 
   const [trendingQueries, setTrendingQueries] = useState(null)
+  const [viralReels, setViralReels] = useState(null)
 
   // Wed-Tue week helper: get the Wednesday start for a given week offset (0 = current)
   const getWedTueWeek = useCallback((offset = 0) => {
@@ -160,6 +161,9 @@ function OverviewPage({ data, company }) {
     fetch('/api/trends/trending').then(r => r.json()).then(d => {
       setTrendingQueries(d.ok ? d.queries : [])
     }).catch(() => setTrendingQueries([]))
+    fetch('/api/viral/instagram').then(r => r.json()).then(d => {
+      setViralReels(d.ok ? d.videos : [])
+    }).catch(() => setViralReels([]))
   }, [])
 
   // Shipping revenue: Wed-Tue weekly fetch
@@ -281,6 +285,45 @@ function OverviewPage({ data, company }) {
             </div>
           ) : <p className="muted">No trending queries found</p>}
         </div>
+      </div>
+
+      {/* Viral Instagram Reels */}
+      <div className="ov-card full" style={{ marginTop: 16 }}>
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          Viral Gender Reveal Reels (24h)
+          <span style={{ fontSize: 11, fontWeight: 400, color: '#999', background: '#f3f4f6', padding: '2px 8px', borderRadius: 10 }}>Instagram</span>
+        </h3>
+        {viralReels === null ? <p className="muted">Loading viral reels…</p>
+         : viralReels.length === 0 ? <p className="muted">No viral reels found — add RAPIDAPI_KEY to enable</p>
+         : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
+            {viralReels.slice(0, 5).map((v, i) => (
+              <a key={v.id} href={v.url} target="_blank" rel="noopener noreferrer"
+                style={{
+                  textDecoration: 'none', color: 'inherit', padding: 12, borderRadius: 10,
+                  border: '1px solid #e5e7eb', background: i === 0 ? '#FFF7ED' : '#fff',
+                  transition: 'box-shadow 0.15s',
+                }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <span style={{ fontSize: 18, fontWeight: 800, color: i === 0 ? '#E43F7B' : '#2D3A4A' }}>#{i + 1}</span>
+                  <span style={{
+                    fontSize: 11, fontWeight: 700, padding: '2px 6px', borderRadius: 6,
+                    background: i === 0 ? '#E43F7B' : '#3AB4C0', color: '#fff',
+                  }}>{v.viralityLabel || `${((v.views || 0) / 1000).toFixed(0)}K`}</span>
+                </div>
+                <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 4, lineHeight: 1.3,
+                  overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                  {v.caption || 'Gender reveal reel'}
+                </div>
+                <div style={{ fontSize: 11, color: '#888', marginBottom: 4 }}>{v.creator}</div>
+                <div style={{ display: 'flex', gap: 8, fontSize: 10, color: '#666' }}>
+                  {v.views > 0 && <span>{(v.views / 1000).toFixed(0)}K views</span>}
+                  {v.likes > 0 && <span>{(v.likes / 1000).toFixed(0)}K likes</span>}
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Active Hires Table */}

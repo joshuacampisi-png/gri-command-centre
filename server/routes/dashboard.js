@@ -103,6 +103,16 @@ router.get('/shopify/sales-range', async (req, res) => {
   }
 })
 
+// ── Viral Instagram Reels ──
+router.get('/viral/instagram', async (_req, res) => {
+  try {
+    const { getViralInstagramReels } = await import('../lib/viral-instagram.js')
+    res.json(await getViralInstagramReels())
+  } catch (e) {
+    res.json({ ok: false, videos: [], error: e.message })
+  }
+})
+
 router.post('/slack/report', async (req, res) => res.json(await postSlackMessage(req.body)))
 router.post('/slack/role/:role', async (req, res) => res.json(await postRoleMessage(req.params.role, req.body?.text || 'Role test message')))
 router.post('/slack/test', async (_req, res) => res.json(await postInitialCommandCentreMessage()))
