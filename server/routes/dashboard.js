@@ -36,6 +36,13 @@ router.patch('/auto-tasks/:id', (req, res) => {
   res.json({ ok: true, task })
 })
 
+// ── DELETE completed/rejected auto tasks + deduplicate ───
+router.post('/auto-tasks/cleanup', async (_req, res) => {
+  const { deduplicateAndClean } = await import('../lib/auto-task-store.js')
+  const result = deduplicateAndClean()
+  res.json({ ok: true, ...result })
+})
+
 router.get('/dashboard', async (req, res) => {
   try {
     const company = req.query.company === 'All' || !req.query.company ? 'All' : normalizeCompany(req.query.company)

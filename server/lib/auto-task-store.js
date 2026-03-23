@@ -294,3 +294,34 @@ export async function createAutoTask({
   console.log(`[AutoTaskStore] ✅ New task stored: ${title.slice(0, 60)}`)
   return { task, qa }
 }
+
+// ── Cleanup: remove Done/Rejected/Completed + deduplicate ────
+
+export function deduplicateAndClean() {
+  const tasks = loadTasks()
+  const before = tasks.length
+
+  // Remove completed/rejected tasks
+  const active = tasks.filter(t => !['Done', 'Completed', 'Rejected'].includes(t.status))
+
+  // Deduplicate by issue+page (keep newest)
+  const seen = new Set()
+  const deduped = []
+  for (const t of active) {
+    const fp = makeFingerprint(t.issue || t.title, t.page || '')
+    if (seen.has(fp)) continue
+    seen.add(fp)
+    deduped.push(t)
+  }
+
+  saveTasks(deduped)
+
+  // Ensure all removed tasks are fingerprinted so they never come back
+  for (const t of tasks) {
+    if (t.issue && t.page) markAsSeen(t.issue, t.page)
+  }
+
+  const removed = before - deduped.length
+  console.log(`[AutoTaskStore] Cleanup: ${before} → ${deduped.length} tasks (removed ${removed})`)
+  return { before, after: deduped.length, removed }
+}

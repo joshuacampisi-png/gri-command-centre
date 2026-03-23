@@ -10,7 +10,7 @@
 
 import { runSEOCrawl } from './seo-crawler.js'
 import { runFullFlywheelWithBriefs } from './seo-task-writer.js'
-import { rebuildFingerprints } from './auto-task-store.js'
+import { rebuildFingerprints, deduplicateAndClean } from './auto-task-store.js'
 import { env } from './env.js'
 
 const JOSH_CHAT = '8040702286'
@@ -52,8 +52,10 @@ export async function startFlywheel() {
   console.log('[Flywheel] 🚀 24/7 SEO Flywheel activated — GRI only, daily at 2:00am AEST')
 
   // Rebuild fingerprints from existing tasks (survives Railway redeploys)
+  // Then clean up any duplicates/completed tasks from previous runs
   try {
     await rebuildFingerprints()
+    deduplicateAndClean()
   } catch (e) {
     console.error('[Flywheel] Fingerprint rebuild failed:', e.message)
   }
