@@ -287,41 +287,151 @@ function OverviewPage({ data, company }) {
         </div>
       </div>
 
-      {/* Viral Instagram Reels */}
-      <div className="ov-card full" style={{ marginTop: 16 }}>
-        <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          Viral Gender Reveal Reels (24h)
-          <span style={{ fontSize: 11, fontWeight: 400, color: '#999', background: '#f3f4f6', padding: '2px 8px', borderRadius: 10 }}>Instagram</span>
-        </h3>
-        {viralReels === null ? <p className="muted">Loading viral reels…</p>
-         : viralReels.length === 0 ? <p className="muted">No viral reels found — add RAPIDAPI_KEY to enable</p>
-         : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
-            {viralReels.slice(0, 5).map((v, i) => (
-              <a key={v.id} href={v.url} target="_blank" rel="noopener noreferrer"
-                style={{
-                  textDecoration: 'none', color: 'inherit', padding: 12, borderRadius: 10,
-                  border: '1px solid #e5e7eb', background: i === 0 ? '#FFF7ED' : '#fff',
-                  transition: 'box-shadow 0.15s',
+      {/* Viral Instagram Reels — Social Media Style */}
+      <div className="ov-card full" style={{ marginTop: 16, background: 'linear-gradient(135deg, #fafafa 0%, #f0f0f5 100%)', border: '1px solid #e0e0e8' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: 10, margin: 0 }}>
+            <span style={{ background: 'linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontSize: 20 }}>
+              IG
+            </span>
+            Trending Reels
+            <span style={{ fontSize: 11, fontWeight: 500, color: '#fff', background: 'linear-gradient(90deg, #E43F7B, #F77737)', padding: '3px 10px', borderRadius: 12 }}>LIVE</span>
+          </h3>
+          <span style={{ fontSize: 11, color: '#999' }}>Top 5 gender reveal reels by virality score</span>
+        </div>
+        {viralReels === null ? (
+          <div style={{ textAlign: 'center', padding: 32 }}>
+            <div style={{ fontSize: 28, marginBottom: 8, animation: 'pulse 1.5s infinite' }}>...</div>
+            <p className="muted">Scanning Instagram for viral reels...</p>
+          </div>
+        ) : viralReels.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: 32, color: '#888' }}>
+            <div style={{ fontSize: 32, marginBottom: 8, opacity: 0.5 }}>No reels found</div>
+            <p className="muted">Add RAPIDAPI_KEY to Railway env vars to enable</p>
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 14 }}>
+            {viralReels.slice(0, 5).map((v, i) => {
+              const labelColors = {
+                'VIRAL': { bg: 'linear-gradient(90deg, #ff0050, #ff3366)', text: '#fff' },
+                'Blowing Up': { bg: 'linear-gradient(90deg, #F77737, #E43F7B)', text: '#fff' },
+                'Trending': { bg: 'linear-gradient(90deg, #405DE6, #5B51D8)', text: '#fff' },
+                'Rising': { bg: '#10b981', text: '#fff' },
+                'New': { bg: '#6b7280', text: '#fff' },
+              }
+              const lc = labelColors[v.viralLabel] || labelColors['New']
+              const isTop = i === 0
+              return (
+                <div key={v.id} style={{
+                  borderRadius: 14, overflow: 'hidden',
+                  border: isTop ? '2px solid #E43F7B' : '1px solid #e0e0e8',
+                  background: '#fff',
+                  boxShadow: isTop ? '0 4px 20px rgba(228,63,123,0.15)' : '0 1px 4px rgba(0,0,0,0.06)',
+                  transition: 'transform 0.15s, box-shadow 0.15s',
+                  position: 'relative',
                 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                  <span style={{ fontSize: 18, fontWeight: 800, color: i === 0 ? '#E43F7B' : '#2D3A4A' }}>#{i + 1}</span>
-                  <span style={{
-                    fontSize: 11, fontWeight: 700, padding: '2px 6px', borderRadius: 6,
-                    background: i === 0 ? '#E43F7B' : '#3AB4C0', color: '#fff',
-                  }}>{v.viralityLabel || `${((v.views || 0) / 1000).toFixed(0)}K`}</span>
+                  {/* Rank badge */}
+                  <div style={{
+                    position: 'absolute', top: 8, left: 8, zIndex: 2,
+                    width: 28, height: 28, borderRadius: '50%',
+                    background: isTop ? 'linear-gradient(135deg, #E43F7B, #F77737)' : 'rgba(0,0,0,0.6)',
+                    color: '#fff', fontSize: 13, fontWeight: 800,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>{i + 1}</div>
+
+                  {/* Viral status badge */}
+                  <div style={{
+                    position: 'absolute', top: 8, right: 8, zIndex: 2,
+                    background: lc.bg, color: lc.text,
+                    fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 8,
+                    letterSpacing: 0.3, textTransform: 'uppercase',
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+                  }}>{v.viralLabel || 'New'}</div>
+
+                  {/* Gradient placeholder for video thumbnail */}
+                  <div style={{
+                    height: 140, position: 'relative',
+                    background: isTop
+                      ? 'linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)'
+                      : `linear-gradient(135deg, hsl(${200 + i * 30}, 60%, 65%), hsl(${230 + i * 30}, 50%, 55%))`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <a href={v.url} target="_blank" rel="noopener noreferrer"
+                      style={{ color: '#fff', fontSize: 36, textDecoration: 'none', opacity: 0.9, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}>
+                      &#9654;
+                    </a>
+                    {/* Age label */}
+                    <span style={{
+                      position: 'absolute', bottom: 6, left: 8,
+                      fontSize: 10, color: '#fff', background: 'rgba(0,0,0,0.55)',
+                      padding: '2px 6px', borderRadius: 6,
+                    }}>{v.ageHours != null ? (v.ageHours < 24 ? `${v.ageHours}h ago` : `${Math.round(v.ageHours / 24)}d ago`) : 'Recent'}</span>
+                  </div>
+
+                  {/* Content */}
+                  <div style={{ padding: '10px 12px 8px' }}>
+                    <div style={{
+                      fontSize: 12, fontWeight: 600, lineHeight: 1.35, marginBottom: 6,
+                      overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+                      minHeight: 32,
+                    }}>{v.caption || 'Gender reveal reel'}</div>
+
+                    <div style={{ fontSize: 11, color: '#E43F7B', fontWeight: 600, marginBottom: 8 }}>{v.creator}</div>
+
+                    {/* Stats row */}
+                    <div style={{ display: 'flex', gap: 10, fontSize: 11, color: '#555', marginBottom: 10, flexWrap: 'wrap' }}>
+                      {v.views > 0 && <span title="Views">&#128065; {v.views >= 1000000 ? `${(v.views/1000000).toFixed(1)}M` : v.views >= 1000 ? `${(v.views/1000).toFixed(0)}K` : v.views}</span>}
+                      {v.likes > 0 && <span title="Likes">&#10084;&#65039; {v.likes >= 1000 ? `${(v.likes/1000).toFixed(0)}K` : v.likes}</span>}
+                      {v.comments > 0 && <span title="Comments">&#128172; {v.comments >= 1000 ? `${(v.comments/1000).toFixed(0)}K` : v.comments}</span>}
+                      {v.engagementRate > 0 && <span title="Engagement rate" style={{ color: v.engagementRate > 5 ? '#10b981' : '#888' }}>{v.engagementRate}%</span>}
+                    </div>
+
+                    {/* Action buttons */}
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <a href={v.url} target="_blank" rel="noopener noreferrer"
+                        style={{
+                          flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+                          fontSize: 11, fontWeight: 600, padding: '7px 0', borderRadius: 8,
+                          background: 'linear-gradient(90deg, #405DE6, #5B51D8)', color: '#fff',
+                          textDecoration: 'none', border: 'none', cursor: 'pointer',
+                        }}>&#128279; View</a>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault()
+                          const btn = e.currentTarget
+                          btn.textContent = 'Downloading...'
+                          btn.disabled = true
+                          fetch(`/api/viral/instagram/download/${v.id}`)
+                            .then(r => {
+                              if (!r.ok) throw new Error('Download failed')
+                              return r.blob()
+                            })
+                            .then(blob => {
+                              const url = URL.createObjectURL(blob)
+                              const a = document.createElement('a')
+                              a.href = url
+                              a.download = `reel-${v.id}.mp4`
+                              a.click()
+                              URL.revokeObjectURL(url)
+                              btn.innerHTML = '&#10003; Done'
+                              setTimeout(() => { btn.innerHTML = '&#11015; Save'; btn.disabled = false }, 2000)
+                            })
+                            .catch(() => {
+                              btn.innerHTML = '&#10060; Failed'
+                              setTimeout(() => { btn.innerHTML = '&#11015; Save'; btn.disabled = false }, 2000)
+                            })
+                        }}
+                        style={{
+                          flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+                          fontSize: 11, fontWeight: 600, padding: '7px 0', borderRadius: 8,
+                          background: '#111', color: '#fff',
+                          border: 'none', cursor: 'pointer',
+                        }}>&#11015; Save</button>
+                    </div>
+                  </div>
                 </div>
-                <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 4, lineHeight: 1.3,
-                  overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                  {v.caption || 'Gender reveal reel'}
-                </div>
-                <div style={{ fontSize: 11, color: '#888', marginBottom: 4 }}>{v.creator}</div>
-                <div style={{ display: 'flex', gap: 8, fontSize: 10, color: '#666' }}>
-                  {v.views > 0 && <span>{(v.views / 1000).toFixed(0)}K views</span>}
-                  {v.likes > 0 && <span>{(v.likes / 1000).toFixed(0)}K likes</span>}
-                </div>
-              </a>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>

@@ -243,3 +243,36 @@ function formatVirality(v) {
   if (v.views > 0) return `${v.views} views`
   return v.viralLabel || 'New'
 }
+
+/**
+ * Download a reel video by shortcode.
+ * Uses the Instagram Scraper 2025 API to get the video URL from a post.
+ */
+export async function downloadReelVideo(shortcode) {
+  const apiKey = process.env.RAPIDAPI_KEY
+  if (!apiKey) return { ok: false, error: 'No RAPIDAPI_KEY configured' }
+
+  try {
+    // Try the post info endpoint to get video URL
+    const res = await fetch(`https://${API_HOST}/post_info/?shortcode=${shortcode}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-RapidAPI-Key': apiKey,
+        'X-RapidAPI-Host': API_HOST
+      },
+      signal: AbortSignal.timeout(15000),
+    })
+
+    if (!res.ok) return { ok: false, error: `API returned ${res.status}` }
+
+    const data = await res.json()
+    const post = data.data || data
+
+    const videoUrl = post.video_url || post.video_versions?.[0]?.url || post.clips?.video_url || ''
+    if (!videoUrl) return { ok: false, error: 'No video URL found for this reel' }
+
+    return { ok: true, videoUrl }
+  } catch (e) {
+    return { ok: false, error: e.message }
+  }
+}

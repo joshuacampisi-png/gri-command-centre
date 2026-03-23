@@ -113,6 +113,31 @@ router.get('/viral/instagram', async (_req, res) => {
   }
 })
 
+// ── Download Instagram Reel video ──
+router.get('/viral/instagram/download/:shortcode', async (req, res) => {
+  try {
+    const { downloadReelVideo } = await import('../lib/viral-instagram.js')
+    const result = await downloadReelVideo(req.params.shortcode)
+    if (!result.ok) return res.status(400).json(result)
+    // Proxy the video as a download
+    const videoRes = await fetch(result.videoUrl, { signal: AbortSignal.timeout(30000) })
+    if (!videoRes.ok) return res.status(502).json({ ok: false, error: 'Failed to fetch video' })
+    res.setHeader('Content-Type', 'video/mp4')
+    res.setHeader('Content-Disposition', `attachment; filename="reel-${req.params.shortcode}.mp4"`)
+    const reader = videoRes.body.getReader()
+    const pump = async () => {
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) { res.end(); return }
+        res.write(value)
+      }
+    }
+    await pump()
+  } catch (e) {
+    if (!res.headersSent) res.status(500).json({ ok: false, error: e.message })
+  }
+})
+
 router.post('/slack/report', async (req, res) => res.json(await postSlackMessage(req.body)))
 router.post('/slack/role/:role', async (req, res) => res.json(await postRoleMessage(req.params.role, req.body?.text || 'Role test message')))
 router.post('/slack/test', async (_req, res) => res.json(await postInitialCommandCentreMessage()))
