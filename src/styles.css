@@ -172,6 +172,43 @@ button:hover { opacity: .88; }
 .env-row  { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 6px 0; border-bottom: 1px solid #E8ECF4; color: #1a1a2e; }
 .env-row:last-child { border-bottom: none; }
 
+/* ── Overview mobile carousel ────────────────────────────────────────────── */
+.ov-stats-carousel::-webkit-scrollbar,
+.ov-reels-scroll::-webkit-scrollbar { display: none; }
+
+/* Desktop: stats as grid, reels as grid */
+@media (min-width: 901px) {
+  .ov-stats-carousel {
+    display: grid !important; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    overflow: visible !important;
+  }
+  .ov-stat-card { min-width: unset !important; }
+  .ov-reels-scroll {
+    display: grid !important; grid-template-columns: repeat(5, 1fr); gap: 14px;
+    overflow: visible !important; margin: 0 !important; padding: 0 0 8px !important;
+  }
+  .ov-reel-card { width: unset !important; min-width: unset !important; }
+}
+
+/* Tablet: 2-col stats, reels scroll */
+@media (min-width: 601px) and (max-width: 900px) {
+  .ov-stats-carousel {
+    display: grid !important; grid-template-columns: repeat(2, 1fr); gap: 14px;
+    overflow: visible !important;
+  }
+  .ov-stat-card { min-width: unset !important; }
+}
+
+/* Mobile: everything scrolls horizontally */
+@media (max-width: 600px) {
+  .overview-mobile .page-header { flex-direction: column; gap: 4px; }
+  .overview-mobile .page-title { font-size: 22px; }
+  .ov-stats-carousel { padding: 0 0 8px !important; }
+  .ov-stat-card { min-width: 75vw !important; }
+  .ov-reel-card { width: 65vw !important; min-width: 65vw !important; }
+  .ov-reels-subtitle { display: none; }
+}
+
 /* ── Responsive ───────────────────────────────────────────────────────────── */
 @media (max-width: 1200px) { .themes-layout { grid-template-columns: 300px 1fr; } }
 @media (max-width: 900px)  { .app { grid-template-columns: 1fr; } .sidebar { border-right: none; border-bottom: 1px solid #E8ECF4; } .themes-layout { grid-template-columns: 1fr; } .compare-view { grid-template-columns: 1fr; } }

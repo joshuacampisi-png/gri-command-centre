@@ -228,18 +228,33 @@ function OverviewPage({ data, company }) {
   const monthlyHires = hires.filter(h => h.createdAt >= monthStart)
   const monthlyRevenue = monthlyHires.reduce((sum, h) => sum + (h.revenue || 0), 0)
 
+  // Reusable carousel scroll style
+  const carouselStyle = {
+    display: 'flex', gap: 14, overflowX: 'auto', scrollSnapType: 'x mandatory',
+    WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none',
+    paddingBottom: 4,
+  }
+  const carouselCardStyle = { scrollSnapAlign: 'start', flex: '0 0 auto' }
+
+  const fmtNum = n => {
+    if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`
+    if (n >= 1000) return `${(n / 1000).toFixed(0)}K`
+    return String(n)
+  }
+
   return (
-    <div className="page">
+    <div className="page overview-mobile">
       <PageHeader title="Overview" subtitle={`Command Centre — ${COMPANIES[company]?.name || company}`} />
 
-      <div className="ov-grid" style={{ gridTemplateColumns: '1fr 1fr 1fr 1fr' }}>
-        {/* Shopify Sales */}
-        <div className="ov-card">
+      {/* ── Stats Carousel — swipeable on mobile, grid on desktop ── */}
+      <div className="ov-stats-carousel" style={carouselStyle}>
+        {/* Today's Sales */}
+        <div className="ov-card ov-stat-card" style={{ ...carouselCardStyle, minWidth: 260 }}>
           <h3>Today's Sales</h3>
-          {!sales ? <p className="muted">Loading sales…</p>
+          {!sales ? <p className="muted">Loading sales...</p>
            : !sales.ok ? <p className="muted">Sales data unavailable</p>
            : <>
-              <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#E43F7B', marginBottom: 8 }}>
+              <div style={{ fontSize: '2.4rem', fontWeight: 800, color: '#E43F7B', marginBottom: 8 }}>
                 ${sales.revenue.toFixed(2)}
               </div>
               <div className="kv-row"><span>Orders</span><strong>{sales.orders}</strong></div>
@@ -247,36 +262,36 @@ function OverviewPage({ data, company }) {
             </>}
         </div>
 
-        {/* Shipping Revenue — Wed-Tue weekly */}
-        <div className="ov-card">
+        {/* Shipping Revenue */}
+        <div className="ov-card ov-stat-card" style={{ ...carouselCardStyle, minWidth: 280 }}>
           <h3>Shipping Revenue</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 10 }}>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
             {shippingWeeks.map(w => (
               <button key={w.offset} onClick={() => setShippingWeekOffset(w.offset)}
                 style={{
-                  padding: '6px 10px', fontSize: 12, borderRadius: 8, cursor: 'pointer', textAlign: 'left',
+                  padding: '5px 10px', fontSize: 11, borderRadius: 8, cursor: 'pointer',
                   border: shippingWeekOffset === w.offset ? '2px solid #3AB4C0' : '1px solid #e5e7eb',
                   background: shippingWeekOffset === w.offset ? '#F0FDFA' : '#fff',
                   color: shippingWeekOffset === w.offset ? '#0F766E' : '#555',
                   fontWeight: shippingWeekOffset === w.offset ? 600 : 400,
                 }}>
-                {w.label}{w.isCurrent ? ' (current)' : ''}
+                {w.label}{w.isCurrent ? ' (now)' : ''}
               </button>
             ))}
           </div>
           {shippingData ? <>
-            <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#3AB4C0', marginBottom: 8 }}>
+            <div style={{ fontSize: '2.4rem', fontWeight: 800, color: '#3AB4C0', marginBottom: 8 }}>
               ${shippingData.shipping.toFixed(2)}
             </div>
             <div className="kv-row"><span>Orders</span><strong>{shippingData.orders}</strong></div>
             <div className="kv-row"><span>Total sales</span><strong>${shippingData.revenue.toFixed(2)}</strong></div>
-          </> : <p className="muted">Loading…</p>}
+          </> : <p className="muted">Loading...</p>}
         </div>
 
         {/* TNT Hires */}
-        <div className="ov-card">
+        <div className="ov-card ov-stat-card" style={{ ...carouselCardStyle, minWidth: 240 }}>
           <h3>TNT Hires</h3>
-          <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#2D3A4A', marginBottom: 8 }}>
+          <div style={{ fontSize: '2.4rem', fontWeight: 800, color: '#2D3A4A', marginBottom: 8 }}>
             {activeHires.length}
           </div>
           <div className="kv-row"><span>Monthly revenue</span><strong style={{ color: '#E43F7B' }}>${monthlyRevenue.toFixed(2)}</strong></div>
@@ -285,10 +300,10 @@ function OverviewPage({ data, company }) {
           <div className="kv-row"><span>This month</span><strong>{monthlyHires.length} bookings</strong></div>
         </div>
 
-        {/* Google Trends Top 5 */}
-        <div className="ov-card">
+        {/* Trending Now */}
+        <div className="ov-card ov-stat-card" style={{ ...carouselCardStyle, minWidth: 260 }}>
           <h3>Trending Now (24h)</h3>
-          {trendingQueries === null ? <p className="muted">Loading trends…</p>
+          {trendingQueries === null ? <p className="muted">Loading trends...</p>
            : top5.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {top5.map((t, i) => (
@@ -302,9 +317,9 @@ function OverviewPage({ data, company }) {
         </div>
       </div>
 
-      {/* Viral Instagram Reels — Social Media Style */}
-      <div className="ov-card full" style={{ marginTop: 16, background: 'linear-gradient(135deg, #fafafa 0%, #f0f0f5 100%)', border: '1px solid #e0e0e8' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+      {/* ── Viral Instagram Reels — Horizontal Scroll Carousel ── */}
+      <div className="ov-card full" style={{ marginTop: 16, background: 'linear-gradient(135deg, #fafafa 0%, #f0f0f5 100%)', border: '1px solid #e0e0e8', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
           <h3 style={{ display: 'flex', alignItems: 'center', gap: 10, margin: 0 }}>
             <span style={{ background: 'linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontSize: 20 }}>
               IG
@@ -312,8 +327,8 @@ function OverviewPage({ data, company }) {
             Trending Reels
             <span style={{ fontSize: 11, fontWeight: 500, color: '#fff', background: 'linear-gradient(90deg, #E43F7B, #F77737)', padding: '3px 10px', borderRadius: 12 }}>LIVE</span>
           </h3>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 11, color: '#999' }}>Top 5 gender reveal reels by virality score</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span className="ov-reels-subtitle" style={{ fontSize: 11, color: '#999' }}>Top 5 by virality</span>
             <button
               onClick={() => {
                 setViralReels(null)
@@ -330,36 +345,36 @@ function OverviewPage({ data, company }) {
         </div>
         {viralReels === null ? (
           <div style={{ textAlign: 'center', padding: 32 }}>
-            <div style={{ fontSize: 28, marginBottom: 8, animation: 'pulse 1.5s infinite' }}>...</div>
             <p className="muted">Scanning Instagram for viral reels...</p>
           </div>
         ) : viralReels.length === 0 ? (
           <div style={{ textAlign: 'center', padding: 32, color: '#888' }}>
-            <div style={{ fontSize: 32, marginBottom: 8, opacity: 0.5 }}>No reels found</div>
-            <p className="muted">Add RAPIDAPI_KEY to Railway env vars to enable</p>
+            <p className="muted">No viral reels found — add RAPIDAPI_KEY to enable</p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 14 }}>
+          <div className="ov-reels-scroll" style={{
+            ...carouselStyle, gap: 14, margin: '0 -18px', padding: '0 18px 8px',
+          }}>
             {viralReels.slice(0, 5).map((v, i) => {
               const labelColors = {
-                'VIRAL': { bg: 'linear-gradient(90deg, #ff0050, #ff3366)', text: '#fff' },
-                'Blowing Up': { bg: 'linear-gradient(90deg, #F77737, #E43F7B)', text: '#fff' },
-                'Trending': { bg: 'linear-gradient(90deg, #405DE6, #5B51D8)', text: '#fff' },
-                'Rising': { bg: '#10b981', text: '#fff' },
-                'New': { bg: '#6b7280', text: '#fff' },
+                'VIRAL': { bg: 'linear-gradient(90deg, #ff0050, #ff3366)' },
+                'Blowing Up': { bg: 'linear-gradient(90deg, #F77737, #E43F7B)' },
+                'Trending': { bg: 'linear-gradient(90deg, #405DE6, #5B51D8)' },
+                'Rising': { bg: '#10b981' },
+                'New': { bg: '#6b7280' },
               }
               const lc = labelColors[v.viralLabel] || labelColors['New']
               const isTop = i === 0
               return (
-                <div key={v.id} style={{
-                  borderRadius: 14, overflow: 'hidden',
+                <div key={v.id} className="ov-reel-card" style={{
+                  ...carouselCardStyle,
+                  width: 220, minWidth: 220, borderRadius: 16, overflow: 'hidden',
                   border: isTop ? '2px solid #E43F7B' : '1px solid #e0e0e8',
                   background: '#fff',
-                  boxShadow: isTop ? '0 4px 20px rgba(228,63,123,0.15)' : '0 1px 4px rgba(0,0,0,0.06)',
-                  transition: 'transform 0.15s, box-shadow 0.15s',
+                  boxShadow: isTop ? '0 4px 20px rgba(228,63,123,0.15)' : '0 1px 6px rgba(0,0,0,0.06)',
                   position: 'relative',
                 }}>
-                  {/* Rank badge */}
+                  {/* Rank */}
                   <div style={{
                     position: 'absolute', top: 8, left: 8, zIndex: 2,
                     width: 28, height: 28, borderRadius: '50%',
@@ -367,67 +382,59 @@ function OverviewPage({ data, company }) {
                     color: '#fff', fontSize: 13, fontWeight: 800,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}>{i + 1}</div>
-
-                  {/* Viral status badge */}
+                  {/* Viral badge */}
                   <div style={{
                     position: 'absolute', top: 8, right: 8, zIndex: 2,
-                    background: lc.bg, color: lc.text,
-                    fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 8,
+                    background: lc.bg, color: '#fff',
+                    fontSize: 9, fontWeight: 700, padding: '3px 8px', borderRadius: 8,
                     letterSpacing: 0.3, textTransform: 'uppercase',
                     boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
                   }}>{v.viralLabel || 'New'}</div>
 
-                  {/* Video thumbnail */}
+                  {/* Thumbnail */}
                   <a href={v.url} target="_blank" rel="noopener noreferrer" style={{
-                    display: 'block', height: 180, position: 'relative', overflow: 'hidden',
-                    background: v.thumbnail
-                      ? '#000'
-                      : isTop
-                        ? 'linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)'
-                        : `linear-gradient(135deg, hsl(${200 + i * 30}, 60%, 65%), hsl(${230 + i * 30}, 50%, 55%))`,
+                    display: 'block', height: 260, position: 'relative', overflow: 'hidden',
+                    background: v.thumbnail ? '#000' : isTop
+                      ? 'linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)'
+                      : `linear-gradient(135deg, hsl(${200 + i * 30}, 60%, 65%), hsl(${230 + i * 30}, 50%, 55%))`,
                   }}>
-                    {v.thumbnail && <img src={v.thumbnail} alt={v.caption || 'Reel thumbnail'} style={{
+                    {v.thumbnail && <img src={v.thumbnail} alt="" style={{
                       width: '100%', height: '100%', objectFit: 'cover', display: 'block',
-                    }} onError={(e) => { e.target.style.display = 'none' }} />}
-                    {/* Play button overlay */}
+                    }} onError={e => { e.target.style.display = 'none' }} />}
                     <div style={{
                       position: 'absolute', inset: 0,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      background: 'rgba(0,0,0,0.15)',
-                      transition: 'background 0.2s',
+                      background: 'rgba(0,0,0,0.1)',
                     }}>
                       <div style={{
-                        width: 44, height: 44, borderRadius: '50%',
+                        width: 48, height: 48, borderRadius: '50%',
                         background: 'rgba(255,255,255,0.9)', display: 'flex',
                         alignItems: 'center', justifyContent: 'center',
                         boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
                       }}>
-                        <span style={{ fontSize: 18, marginLeft: 3, color: '#E43F7B' }}>&#9654;</span>
+                        <span style={{ fontSize: 20, marginLeft: 3, color: '#E43F7B' }}>&#9654;</span>
                       </div>
                     </div>
-                    {/* Age label */}
                     <span style={{
-                      position: 'absolute', bottom: 6, left: 8,
+                      position: 'absolute', bottom: 8, left: 8,
                       fontSize: 10, color: '#fff', background: 'rgba(0,0,0,0.6)',
                       padding: '2px 8px', borderRadius: 6, fontWeight: 600,
                     }}>{v.ageHours != null ? (v.ageHours < 24 ? `${v.ageHours}h ago` : `${Math.round(v.ageHours / 24)}d ago`) : 'Recent'}</span>
-                    {/* Views overlay */}
                     {v.views > 0 && <span style={{
-                      position: 'absolute', bottom: 6, right: 8,
+                      position: 'absolute', bottom: 8, right: 8,
                       fontSize: 10, color: '#fff', background: 'rgba(0,0,0,0.6)',
                       padding: '2px 8px', borderRadius: 6, fontWeight: 600,
-                    }}>&#9654; {v.views >= 1000000 ? `${(v.views/1000000).toFixed(1)}M` : v.views >= 1000 ? `${(v.views/1000).toFixed(0)}K` : v.views}</span>}
+                    }}>&#9654; {fmtNum(v.views)}</span>}
                   </a>
 
                   {/* Content */}
-                  <div style={{ padding: '10px 12px 8px' }}>
+                  <div style={{ padding: '10px 12px 10px' }}>
                     <div style={{
                       fontSize: 12, fontWeight: 600, lineHeight: 1.35, marginBottom: 4,
                       overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
                       minHeight: 32,
                     }}>{v.caption || 'Gender reveal reel'}</div>
 
-                    {/* Hashtags */}
                     {v.hashtags && v.hashtags.length > 0 && (
                       <div style={{
                         fontSize: 10, color: '#405DE6', marginBottom: 6, lineHeight: 1.5,
@@ -435,56 +442,44 @@ function OverviewPage({ data, company }) {
                       }}>{v.hashtags.join(' ')}</div>
                     )}
 
-                    <div style={{ fontSize: 11, color: '#E43F7B', fontWeight: 600, marginBottom: 8 }}>{v.creator}</div>
+                    <div style={{ fontSize: 11, color: '#E43F7B', fontWeight: 600, marginBottom: 6 }}>{v.creator}</div>
 
-                    {/* Stats row */}
-                    <div style={{ display: 'flex', gap: 10, fontSize: 11, color: '#555', marginBottom: 10, flexWrap: 'wrap' }}>
-                      {v.views > 0 && <span title="Views">&#128065; {v.views >= 1000000 ? `${(v.views/1000000).toFixed(1)}M` : v.views >= 1000 ? `${(v.views/1000).toFixed(0)}K` : v.views}</span>}
-                      {v.likes > 0 && <span title="Likes">&#10084;&#65039; {v.likes >= 1000 ? `${(v.likes/1000).toFixed(0)}K` : v.likes}</span>}
-                      {v.comments > 0 && <span title="Comments">&#128172; {v.comments >= 1000 ? `${(v.comments/1000).toFixed(0)}K` : v.comments}</span>}
-                      {v.engagementRate > 0 && <span title="Engagement rate" style={{ color: v.engagementRate > 5 ? '#10b981' : '#888' }}>{v.engagementRate}%</span>}
+                    <div style={{ display: 'flex', gap: 8, fontSize: 11, color: '#555', marginBottom: 10, flexWrap: 'wrap' }}>
+                      {v.views > 0 && <span>&#128065; {fmtNum(v.views)}</span>}
+                      {v.likes > 0 && <span>&#10084;&#65039; {fmtNum(v.likes)}</span>}
+                      {v.comments > 0 && <span>&#128172; {fmtNum(v.comments)}</span>}
+                      {v.engagementRate > 0 && <span style={{ color: v.engagementRate > 5 ? '#10b981' : '#888' }}>{v.engagementRate}%</span>}
                     </div>
 
-                    {/* Action buttons */}
                     <div style={{ display: 'flex', gap: 6 }}>
                       <a href={v.url} target="_blank" rel="noopener noreferrer"
                         style={{
                           flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
-                          fontSize: 11, fontWeight: 600, padding: '7px 0', borderRadius: 8,
+                          fontSize: 11, fontWeight: 600, padding: '8px 0', borderRadius: 8,
                           background: 'linear-gradient(90deg, #405DE6, #5B51D8)', color: '#fff',
-                          textDecoration: 'none', border: 'none', cursor: 'pointer',
+                          textDecoration: 'none',
                         }}>&#128279; View</a>
                       <button
                         onClick={(e) => {
                           e.preventDefault()
                           const btn = e.currentTarget
-                          btn.textContent = 'Downloading...'
+                          btn.textContent = '...'
                           btn.disabled = true
                           fetch(`/api/viral/instagram/download/${v.id}`)
-                            .then(r => {
-                              if (!r.ok) throw new Error('Download failed')
-                              return r.blob()
-                            })
+                            .then(r => { if (!r.ok) throw new Error(); return r.blob() })
                             .then(blob => {
                               const url = URL.createObjectURL(blob)
                               const a = document.createElement('a')
-                              a.href = url
-                              a.download = `reel-${v.id}.mp4`
-                              a.click()
+                              a.href = url; a.download = `reel-${v.id}.mp4`; a.click()
                               URL.revokeObjectURL(url)
-                              btn.innerHTML = '&#10003; Done'
-                              setTimeout(() => { btn.innerHTML = '&#11015; Save'; btn.disabled = false }, 2000)
+                              btn.innerHTML = '&#10003;'; setTimeout(() => { btn.innerHTML = '&#11015; Save'; btn.disabled = false }, 2000)
                             })
-                            .catch(() => {
-                              btn.innerHTML = '&#10060; Failed'
-                              setTimeout(() => { btn.innerHTML = '&#11015; Save'; btn.disabled = false }, 2000)
-                            })
+                            .catch(() => { btn.innerHTML = '&#10060;'; setTimeout(() => { btn.innerHTML = '&#11015; Save'; btn.disabled = false }, 2000) })
                         }}
                         style={{
                           flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
-                          fontSize: 11, fontWeight: 600, padding: '7px 0', borderRadius: 8,
-                          background: '#111', color: '#fff',
-                          border: 'none', cursor: 'pointer',
+                          fontSize: 11, fontWeight: 600, padding: '8px 0', borderRadius: 8,
+                          background: '#111', color: '#fff', border: 'none', cursor: 'pointer',
                         }}>&#11015; Save</button>
                     </div>
                   </div>
@@ -495,34 +490,36 @@ function OverviewPage({ data, company }) {
         )}
       </div>
 
-      {/* Active Hires Table */}
+      {/* Active Hires — Scrollable on mobile */}
       {activeHires.length > 0 && (
-        <div className="ov-card full" style={{ marginTop: 16 }}>
+        <div className="ov-card full" style={{ marginTop: 16, overflow: 'hidden' }}>
           <h3>Active Hire Bookings</h3>
-          <table className="data-table" style={{ width: '100%' }}>
-            <thead>
-              <tr>
-                <th>Customer</th>
-                <th>Order</th>
-                <th>Event Date</th>
-                <th>Status</th>
-                <th>Bond</th>
-                <th>Contract</th>
-              </tr>
-            </thead>
-            <tbody>
-              {activeHires.map(h => (
-                <tr key={h.id}>
-                  <td><strong>{h.customerName}</strong></td>
-                  <td>{h.orderNumber}</td>
-                  <td>{h.eventDate}</td>
-                  <td><span className={`pill ${h.status === 'confirmed' ? 'on' : ''}`}>{h.status?.replace(/_/g, ' ') || '—'}</span></td>
-                  <td><span style={{ color: h.bondStatus === 'paid' ? '#10B981' : '#E43F7B', fontWeight: 600 }}>{h.bondStatus === 'paid' ? 'Paid' : 'Pending'}</span></td>
-                  <td>{h.contractStatus === 'signed' ? '✅ Signed' : h.contractStatus === 'sent' ? '📧 Sent' : 'Not Sent'}</td>
+          <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <table className="data-table" style={{ width: '100%', minWidth: 600 }}>
+              <thead>
+                <tr>
+                  <th>Customer</th>
+                  <th>Order</th>
+                  <th>Event Date</th>
+                  <th>Status</th>
+                  <th>Bond</th>
+                  <th>Contract</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {activeHires.map(h => (
+                  <tr key={h.id}>
+                    <td><strong>{h.customerName}</strong></td>
+                    <td>{h.orderNumber}</td>
+                    <td>{h.eventDate}</td>
+                    <td><span className={`pill ${h.status === 'confirmed' ? 'on' : ''}`}>{h.status?.replace(/_/g, ' ') || '—'}</span></td>
+                    <td><span style={{ color: h.bondStatus === 'paid' ? '#10B981' : '#E43F7B', fontWeight: 600 }}>{h.bondStatus === 'paid' ? 'Paid' : 'Pending'}</span></td>
+                    <td>{h.contractStatus === 'signed' ? 'Signed' : h.contractStatus === 'sent' ? 'Sent' : 'Not Sent'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
