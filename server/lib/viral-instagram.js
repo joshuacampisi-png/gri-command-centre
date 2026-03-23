@@ -21,6 +21,19 @@ const DATA_DIR = join(process.cwd(), 'data')
 const CACHE_FILE = join(DATA_DIR, 'viral-instagram-cache.json')
 if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true })
 
+// Clear stale cache on startup — ensures new fields (thumbnails, hashtags) come through
+try {
+  if (existsSync(CACHE_FILE)) {
+    const old = JSON.parse(readFileSync(CACHE_FILE, 'utf8'))
+    const firstVideo = old.videos?.[0]
+    // If cache is missing thumbnail field, it's from an old version — nuke it
+    if (firstVideo && !firstVideo.thumbnail) {
+      writeFileSync(CACHE_FILE, '{}')
+      console.log('[ViralIG] Cleared stale cache — missing thumbnail data')
+    }
+  }
+} catch { /* ignore */ }
+
 const CACHE_TTL = 60 * 60 * 1000 // 1 hour
 const API_HOST = 'instagram-scraper-20251.p.rapidapi.com'
 const HASHTAGS = ['genderreveal', 'genderrevealparty', 'genderrevealideas']
@@ -45,10 +58,13 @@ function writeCache(videos) {
 /**
  * Get top 5 viral gender reveal Instagram reels.
  * Prioritises last 24h content, falls back to 7 days if nothing recent.
+ * @param {boolean} forceRefresh - skip cache and fetch fresh data
  */
-export async function getViralInstagramReels() {
-  const cached = readCache()
-  if (cached) return { ok: true, videos: cached.videos, cached: true }
+export async function getViralInstagramReels(forceRefresh = false) {
+  if (!forceRefresh) {
+    const cached = readCache()
+    if (cached) return { ok: true, videos: cached.videos, cached: true }
+  }
 
   const apiKey = process.env.RAPIDAPI_KEY
   if (!apiKey) {

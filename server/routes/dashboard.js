@@ -104,10 +104,11 @@ router.get('/shopify/sales-range', async (req, res) => {
 })
 
 // ── Viral Instagram Reels ──
-router.get('/viral/instagram', async (_req, res) => {
+router.get('/viral/instagram', async (req, res) => {
   try {
     const { getViralInstagramReels } = await import('../lib/viral-instagram.js')
-    res.json(await getViralInstagramReels())
+    const forceRefresh = req.query.refresh === '1'
+    res.json(await getViralInstagramReels(forceRefresh))
   } catch (e) {
     res.json({ ok: false, videos: [], error: e.message })
   }
