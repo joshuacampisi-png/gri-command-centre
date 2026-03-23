@@ -202,9 +202,12 @@ async function fetchFromRapidAPI(apiKey) {
           || post.clips?.video_url
           || ''
 
-        // Extract hashtags from caption
+        // Extract hashtags — prefer API's parsed array, fallback to regex from caption text
         const fullCaption = post.caption?.text || post.caption || ''
-        const hashtags = (fullCaption.match(/#[\w\u00C0-\u024F]+/g) || []).slice(0, 8)
+        const captionHashtags = Array.isArray(post.caption?.hashtags) ? post.caption.hashtags : []
+        const hashtags = captionHashtags.length > 0
+          ? captionHashtags.slice(0, 8)
+          : (fullCaption.match(/#[\w\u00C0-\u024F]+/g) || []).slice(0, 8)
 
         const engagementRate = views > 0 ? (likes + comments + saves + shares) / views : 0
         const virality = calculateViralityScore({ views, likes, comments, saves, shares, ageMs })
