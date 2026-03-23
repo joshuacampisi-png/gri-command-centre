@@ -110,6 +110,51 @@ export function markAsSeen(issue, page) {
   saveFingerprints(fps)
 }
 
+// ── Rebuild fingerprints from existing tasks on startup ──────
+// Prevents duplicates after Railway redeploy wipes the fingerprint file.
+// Scans both local auto-tasks AND Notion tasks to rebuild the set.
+
+export async function rebuildFingerprints() {
+  const fps = loadFingerprints()
+  const startSize = fps.size
+
+  // 1. Local auto-tasks
+  const tasks = loadTasks()
+  for (const t of tasks) {
+    if (t.issue && t.page) {
+      fps.add(makeFingerprint(t.issue, t.page))
+    }
+  }
+
+  // 2. Notion tasks (all statuses: Backlog, In Progress, Done, Completed, Rejected)
+  try {
+    const { getNotionSnapshot } = await import('../connectors/notion.js')
+    const snapshot = await getNotionSnapshot('All')
+    for (const t of (snapshot.tasks || [])) {
+      if (t.title && t.taskType === 'SEO') {
+        // Extract issue and page from task title format: "[SEO] issue - /page/path"
+        const m = t.title.match(/^\[SEO\]\s*(.+?)\s*-\s*(\/\S+)/)
+        if (m) {
+          fps.add(makeFingerprint(m[1], m[2]))
+        }
+        // Also fingerprint by raw title + any page path found
+        const pathMatch = t.title.match(/(\/[^\s—–\u2014\u2013]+)/)
+        if (pathMatch) {
+          fps.add(makeFingerprint(t.title, pathMatch[1]))
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('[AutoTaskStore] Could not load Notion tasks for dedup rebuild:', e.message)
+  }
+
+  saveFingerprints(fps)
+  const added = fps.size - startSize
+  if (added > 0) {
+    console.log(`[AutoTaskStore] Rebuilt fingerprints: ${fps.size} total (+${added} recovered from existing tasks)`)
+  }
+}
+
 // ── Task store CRUD ───────────────────────────────────────────
 
 export function loadTasks() {
