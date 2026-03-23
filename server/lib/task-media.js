@@ -3,7 +3,7 @@ import path from 'node:path'
 import crypto from 'node:crypto'
 import { env } from './env.js'
 
-const mediaDir = '/Users/wogbot/.openclaw/workspace/command-centre-app/public/task-media'
+const mediaDir = path.join(process.cwd(), 'public/task-media')
 
 function extensionFromPath(filePath = '') {
   const ext = path.extname(filePath).toLowerCase()

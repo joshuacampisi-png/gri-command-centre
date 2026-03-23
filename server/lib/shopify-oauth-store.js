@@ -1,9 +1,11 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { join } from 'node:path'
 
-const storePath = '/Users/wogbot/.openclaw/workspace/command-centre-app/.shopify-oauth.json'
+const DATA_DIR = join(process.cwd(), 'data')
+const storePath = join(DATA_DIR, 'shopify-oauth.json')
 
 async function ensureDir() {
-  await mkdir('/Users/wogbot/.openclaw/workspace/command-centre-app', { recursive: true })
+  await mkdir(DATA_DIR, { recursive: true })
 }
 
 export async function loadShopifyOAuthState() {

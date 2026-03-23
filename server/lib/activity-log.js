@@ -1,7 +1,10 @@
 import { writeFile, readFile, mkdir } from 'node:fs/promises'
-import { dirname } from 'node:path'
+import { join } from 'node:path'
+import { mkdirSync, existsSync } from 'node:fs'
 
-const LOG_PATH = '/Users/wogbot/.openclaw/workspace/command-centre-app/.activity-log.json'
+const DATA_DIR = join(process.cwd(), 'data')
+if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true })
+const LOG_PATH = join(DATA_DIR, 'activity-log.json')
 
 export async function logActivity(entry) {
   let entries = []

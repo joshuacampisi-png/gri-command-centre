@@ -4,7 +4,7 @@ import crypto from 'node:crypto'
 import { chromium, devices } from 'playwright'
 import { buildReviewUrls } from './review-urls.js'
 
-const captureDir = '/Users/wogbot/.openclaw/workspace/command-centre-app/public/review-captures'
+const captureDir = path.join(process.cwd(), 'public/review-captures')
 const desktopViewport = { width: 1440, height: 1200 }
 const mobileDevice = devices['iPhone 13']
 

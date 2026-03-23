@@ -11,9 +11,10 @@
 
 import { writeFile, readFile } from 'fs/promises'
 import { existsSync } from 'fs'
+import { join } from 'path'
 import { callClaude } from './claude-guard.js'
 import { env } from './env.js'
-const KNOWLEDGE_BASE = '/Users/wogbot/.openclaw/workspace/command-centre-app/data/seo-knowledge-base.json'
+const KNOWLEDGE_BASE = join(process.cwd(), 'data/seo-knowledge-base.json')
 
 /**
  * Sources for SEO knowledge
@@ -360,7 +361,7 @@ async function loadKnowledgeBase() {
 }
 
 async function saveKnowledgeBase(kb) {
-  const dir = '/Users/wogbot/.openclaw/workspace/command-centre-app/data'
+  const dir = join(process.cwd(), 'data')
   if (!existsSync(dir)) {
     await import('fs/promises').then(fs => fs.mkdir(dir, { recursive: true }))
   }

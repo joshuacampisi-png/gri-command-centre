@@ -106,8 +106,8 @@ app.use('/api/shopify/webhook', express.json({
   verify: (req, _res, buf) => { req.rawBody = buf.toString('utf8'); }
 }))
 app.use(express.json())
-app.use('/task-media', express.static('/Users/wogbot/.openclaw/workspace/command-centre-app/public/task-media'))
-app.use('/review-captures', express.static('/Users/wogbot/.openclaw/workspace/command-centre-app/public/review-captures'))
+app.use('/task-media', express.static(join(process.cwd(), 'public/task-media')))
+app.use('/review-captures', express.static(join(process.cwd(), 'public/review-captures')))
 
 // Serve built frontend from /dist — same origin, no CORS issues
 import { join, dirname } from 'path'
