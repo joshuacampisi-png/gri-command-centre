@@ -297,7 +297,21 @@ function OverviewPage({ data, company }) {
             Trending Reels
             <span style={{ fontSize: 11, fontWeight: 500, color: '#fff', background: 'linear-gradient(90deg, #E43F7B, #F77737)', padding: '3px 10px', borderRadius: 12 }}>LIVE</span>
           </h3>
-          <span style={{ fontSize: 11, color: '#999' }}>Top 5 gender reveal reels by virality score</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 11, color: '#999' }}>Top 5 gender reveal reels by virality score</span>
+            <button
+              onClick={() => {
+                setViralReels(null)
+                fetch('/api/viral/instagram?refresh=1').then(r => r.json()).then(d => {
+                  setViralReels(d.ok ? d.videos : [])
+                }).catch(() => setViralReels([]))
+              }}
+              style={{
+                fontSize: 11, fontWeight: 600, padding: '5px 14px', borderRadius: 8,
+                background: 'linear-gradient(90deg, #E43F7B, #F77737)', color: '#fff',
+                border: 'none', cursor: 'pointer', whiteSpace: 'nowrap',
+              }}>Refresh</button>
+          </div>
         </div>
         {viralReels === null ? (
           <div style={{ textAlign: 'center', padding: 32 }}>
