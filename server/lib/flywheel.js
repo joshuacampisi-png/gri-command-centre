@@ -51,13 +51,17 @@ export async function startFlywheel() {
   flywheelActive = true
   console.log('[Flywheel] 🚀 24/7 SEO Flywheel activated — GRI only, daily at 2:00am AEST')
 
-  // Rebuild fingerprints from existing tasks (survives Railway redeploys)
-  // Then clean up any duplicates/completed tasks from previous runs
+  // ONE-TIME WIPE: clear all stale auto-tasks from previous runs
+  // Then rebuild fingerprints so nothing ever comes back
   try {
+    const { writeFileSync } = await import('fs')
+    const { join } = await import('path')
+    const tasksFile = join(process.cwd(), 'data', 'auto-tasks.json')
+    writeFileSync(tasksFile, '[]')
+    console.log('[Flywheel] Wiped auto-tasks.json clean — fresh start')
     await rebuildFingerprints()
-    deduplicateAndClean()
   } catch (e) {
-    console.error('[Flywheel] Fingerprint rebuild failed:', e.message)
+    console.error('[Flywheel] Startup cleanup failed:', e.message)
   }
 
   // ── Daily at 2:00am AEST (16:00 UTC) ──
