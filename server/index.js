@@ -255,7 +255,7 @@ app.listen(env.port, '0.0.0.0', () => {
   console.log(`   Company:   GRI only (Lionzen/GBU paused)`)
   console.log(`   Schedule:  SEO crawl @ 2am AEST | Morning brief @ 5am AEST\n`)
 
-  startTelegramPollingBot()
+  // startTelegramPollingBot() // disabled for now
   startNotionPoller()
   // Flywheel: ENABLED with deduplication (checks Rejected status too)
   startFlywheel()
