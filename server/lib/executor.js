@@ -8,7 +8,7 @@
  */
 
 import { getNotionSnapshot, updateTaskState } from '../connectors/notion.js'
-import { runAutoFix, proposeTextFix } from '../routes/automation.js'
+import { runAutoFix } from '../routes/automation.js'
 import { env } from './env.js'
 
 const BOT_TOKEN = '8578276920:AAFuoogSGgrA0QZyb17pm5FttNNIiuOXGqc'
@@ -109,46 +109,21 @@ async function scanAndExecute() {
     for (const task of candidates) {
       // Mark as processed immediately to avoid retry spam
       processedTaskIds.add(task.id)
-      
+
       try {
-        // ── AUTO-FIX ALL SEO TASKS (meta descriptions, H1s) ──
         console.log(`[Executor] Auto-fixing: ${task.title}`)
-        
-        const { generateMetaDescription, generateH1 } = await import('./simple-seo-fixer.js')
-        const pathMatch = task.title.match(/\/[^\s—–\u2014\u2013]*/)
-        const pagePath = pathMatch ? pathMatch[0].trim() : null
-        
-        if (!pagePath) {
-          console.log(`[Executor] → Skipped (no path found): ${task.title}`)
-          continue
-        }
-        
-        let fixResult = null
-        
-        if (task.title.toLowerCase().includes('meta description')) {
-          // Generate meta description
-          fixResult = await generateMetaDescription(pagePath)
-          if (fixResult.ok && fixResult.valid) {
-            // TODO: Update Shopify page meta (requires theme liquid edit or metafield)
-            console.log(`[Executor] ✅ Generated meta: ${fixResult.newValue}`)
-            fixed.push({ title: task.title, action: 'meta-generated', summary: fixResult.newValue })
-            await updateTaskState(task.id, { status: 'Completed', executionStage: 'Live' }).catch(() => {})
-            executionStats.tasksExecuted++
-          }
-        } else if (task.title.toLowerCase().includes('h1')) {
-          // Generate H1
-          fixResult = await generateH1(pagePath)
-          if (fixResult.ok && fixResult.valid) {
-            // TODO: Update Shopify page H1 (requires theme liquid edit)
-            console.log(`[Executor] ✅ Generated H1: ${fixResult.h1}`)
-            fixed.push({ title: task.title, action: 'h1-generated', summary: fixResult.h1 })
-            await updateTaskState(task.id, { status: 'Completed', executionStage: 'Live' }).catch(() => {})
-            executionStats.tasksExecuted++
-          }
+
+        // Route ALL auto-fixable tasks through runAutoFix (handles meta, H1, alt text, 404s)
+        const result = await runAutoFix({ taskId: task.id, title: task.title, issueType: task.taskType || 'SEO' })
+
+        if (result.ok) {
+          console.log(`[Executor] ✅ Fixed: ${task.title} (${result.action})`)
+          fixed.push({ title: task.title, action: result.action, summary: result.summary?.what || 'Fixed' })
+          executionStats.tasksExecuted++
         } else {
-          console.log(`[Executor] → Skipped (not auto-fixable): ${task.title}`)
+          console.log(`[Executor] → Skipped: ${task.title} — ${result.summary?.what || 'no handler'}`)
         }
-        
+
       } catch (e) {
         executionStats.tasksFailed++
         failed.push({ title: task.title, error: e.message })

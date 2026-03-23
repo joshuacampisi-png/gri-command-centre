@@ -281,7 +281,7 @@ Keep it under 200 words total. Be direct and data-backed. Australian English.`
 
   try {
     const msg = await callClaude({
-      model: 'claude-sonnet-4-5',
+      model: 'claude-sonnet-4-20250514',
       max_tokens: 400,
       messages: [{ role: 'user', content: prompt }]
     }, 'seo-task-writer')

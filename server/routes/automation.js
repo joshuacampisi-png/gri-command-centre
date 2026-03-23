@@ -301,7 +301,7 @@ http://127.0.0.1:4173/
     const pageLabel = `"${handle.replace(/-/g, ' ')}" page on Gender Reveal Ideas Australia`
 
     const claudeRes = await callClaude({
-      model: 'claude-sonnet-4-5',
+      model: 'claude-sonnet-4-20250514',
       max_tokens: 100,
       messages: [{ role: 'user', content: `Write a concise, keyword-optimised H1 heading for the ${pageLabel}. Requirements: 30-60 characters, include a relevant keyword naturally, use title case. No quotes, no punctuation at the end. Just the heading text.` }]
     }, 'automation-h1')
@@ -501,7 +501,7 @@ export async function runAutoFix({ taskId, fileKey, title = '', issueType = '', 
     if (pagePath === '/') {
       const oldValue = await fetchCurrentMeta('/')
       const claudeRes = await callClaude({
-        model: 'claude-sonnet-4-5',
+        model: 'claude-sonnet-4-20250514',
         max_tokens: 200,
         messages: [{ role: 'user', content: `Write a compelling Shopify SEO meta description (140–155 chars) for the homepage of Gender Reveal Ideas Australia (genderrevealideas.com.au). High-value keywords to include: gender reveal, Australia, smoke bombs, confetti cannons, dry ice reveals, balloon reveals. Mention it's Australia's largest store. End with a short CTA. No quotes, no bullets. Just the text.` }]
       }, 'automation-meta')
@@ -572,7 +572,7 @@ export async function runAutoFix({ taskId, fileKey, title = '', issueType = '', 
       const settingsAsset = await getThemeAsset(LIVE_THEME_ID, 'config/settings_data.json')
       const settings = JSON.parse(settingsAsset?.value || '{}')
       const claudeRes = await callClaude({
-        model: 'claude-sonnet-4-5',
+        model: 'claude-sonnet-4-20250514',
         max_tokens: 200,
         messages: [{ role: 'user', content: `Write a compelling Shopify SEO meta description (120–155 chars) for the "All Products" catalog page on Gender Reveal Ideas Australia (genderrevealideas.com.au). Include main keyword, mention Australia, end with CTA. No quotes, no bullets. Just the text.` }]
       }, 'automation-meta')
@@ -599,7 +599,7 @@ export async function runAutoFix({ taskId, fileKey, title = '', issueType = '', 
     const oldValue = await fetchCurrentMeta(pagePath)
     const pageLabel = isCollection ? `collection page for "${handle.replace(/-/g,' ')}"` : `page "${handle.replace(/-/g,' ')}"`
     const claudeRes = await callClaude({
-      model: 'claude-sonnet-4-5',
+      model: 'claude-sonnet-4-20250514',
       max_tokens: 200,
       messages: [{ role: 'user', content: `Write a compelling Shopify SEO meta description for the ${pageLabel} on the Gender Reveal Ideas Australia store (genderrevealideas.com.au).\nRules: 120–155 characters exactly. Include the main keyword naturally. Mention Australia or Australian if relevant. End with a call to action. No quotes, no bullet points. Just the description text.` }]
     }, 'automation-meta')
@@ -651,7 +651,7 @@ export async function runAutoFix({ taskId, fileKey, title = '', issueType = '', 
       for (const img of (product.images || [])) {
         if (!img.alt || img.alt.trim() === '') {
           const claudeRes = await callClaude({
-            model: 'claude-sonnet-4-5',
+            model: 'claude-sonnet-4-20250514',
             max_tokens: 60,
             messages: [{ role: 'user', content: `Write a short, descriptive alt text (max 10 words) for a product image of "${product.title}" sold on Gender Reveal Ideas Australia. Just the alt text, no quotes.` }]
           }, 'automation-alt-text')
