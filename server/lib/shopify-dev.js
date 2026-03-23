@@ -198,6 +198,49 @@ export async function setCollectionMetaDescription(handle, description) {
   return { id: collection.id, handle, description, updated: !!data[type] }
 }
 
+// Set collection SEO title (meta title)
+export async function setCollectionSeoTitle(handle, seoTitle) {
+  const result = await getCollectionByHandle(handle)
+  if (!result) throw new Error(`Collection not found: ${handle}`)
+  const { type, collection } = result
+  const data = await shopifyAdminFetch(`/${type}s/${collection.id}.json`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      [type]: {
+        id: collection.id,
+        metafields: [{
+          key: 'title_tag',
+          namespace: 'global',
+          value: seoTitle,
+          type: 'single_line_text_field'
+        }]
+      }
+    })
+  })
+  return { id: collection.id, handle, seoTitle, updated: !!data[type] }
+}
+
+// Set page SEO title (meta title)
+export async function setPageSeoTitle(handle, seoTitle) {
+  const page = await resolvePageHandle(handle)
+  if (!page) throw new Error(`Page not found: ${handle}`)
+  const data = await shopifyAdminFetch(`/pages/${page.id}.json`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      page: {
+        id: page.id,
+        metafields: [{
+          key: 'title_tag',
+          namespace: 'global',
+          value: seoTitle,
+          type: 'single_line_text_field'
+        }]
+      }
+    })
+  })
+  return { id: page.id, handle, seoTitle, updated: !!data.page }
+}
+
 // Get page by handle
 export async function getPageByHandle(handle) {
   const data = await shopifyAdminFetch(`/pages.json?handle=${encodeURIComponent(handle)}&limit=1`)

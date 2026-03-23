@@ -3,7 +3,7 @@ import { AUTOMATION_PHASES } from '../lib/automation-phases.js'
 import { shopifyPolicy } from '../lib/shopify-policy.js'
 import { runSEOCrawl } from '../lib/seo-crawler.js'
 import { runFullFlywheelWithBriefs } from '../lib/seo-task-writer.js'
-import { getThemeAsset, listThemeAssets, updateThemeAsset, writeThemeAssetDirect, createRedirect, setCollectionMetaDescription, setPageMetaDescription, setPageTitle, listProducts, setProductImageAltText } from '../lib/shopify-dev.js'
+import { getThemeAsset, listThemeAssets, updateThemeAsset, writeThemeAssetDirect, createRedirect, setCollectionMetaDescription, setPageMetaDescription, setPageTitle, setCollectionSeoTitle, setPageSeoTitle, listProducts, setProductImageAltText } from '../lib/shopify-dev.js'
 import { updateTaskState } from '../connectors/notion.js'
 import { postSlackMessage } from '../connectors/slack.js'
 import { env } from '../lib/env.js'
@@ -627,7 +627,76 @@ export async function runAutoFix({ taskId, fileKey, title = '', issueType = '', 
     return { ok: true, action: 'meta-description', path: pagePath, summary }
   }
 
-  // ── Route 4: Alt text — Claude generates + pushes via Products API ──
+  // ── Route 4: Title too long — shorten meta title via Claude + push via API ──
+  if (titleLower.includes('title too long') || titleLower.includes('title too short')) {
+    const pathMatch = title.match(/\/[^\s—–\u2014\u2013]+/)
+    const pagePath = pathMatch ? pathMatch[0].trim() : null
+    if (!pagePath) throw new Error('Could not extract page path from task title')
+
+    const isCollection = pagePath.startsWith('/collections/')
+    const isPage = pagePath.startsWith('/pages/')
+    const handle = pagePath.split('/').pop()
+
+    // Fetch current live title
+    let currentTitle = null
+    try {
+      const res = await fetch(`https://genderrevealideas.com.au${pagePath}`, {
+        headers: { 'User-Agent': 'PabloEscobot-TitleAudit/1.0' },
+        signal: AbortSignal.timeout(8000)
+      })
+      const html = await res.text()
+      const m = html.match(/<title[^>]*>([^<]+)<\/title>/i)
+      currentTitle = m ? m[1].trim() : null
+    } catch {}
+
+    const charMatch = title.match(/(\d+)\s*chars?/i)
+    const currentLen = charMatch ? parseInt(charMatch[1]) : (currentTitle?.length || 0)
+
+    const claudeRes = await callClaude({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 100,
+      messages: [{ role: 'user', content: `Rewrite this Shopify page title to be under 60 characters while keeping the primary keyword and brand name.
+
+Current title (${currentLen} chars): "${currentTitle || handle.replace(/-/g, ' ')}"
+Page: ${pagePath}
+Store: Gender Reveal Ideas (genderrevealideas.com.au)
+
+Rules:
+- MUST be 50-60 characters (including spaces)
+- Keep the primary keyword (e.g. "gender reveal decorations")
+- Include brand: "Gender Reveal Ideas" or "GRI"
+- Use separator: | or -
+- Australian English
+- Natural, compelling
+
+Write ONLY the new title text. No quotes, no explanation.` }]
+    }, 'automation-title-fix')
+
+    const newTitle = claudeRes.content[0].text.trim().replace(/^["']|["']$/g, '')
+
+    // Push to Shopify
+    if (isCollection) {
+      await setCollectionSeoTitle(handle, newTitle)
+    } else if (isPage) {
+      await setPageSeoTitle(handle, newTitle)
+    }
+
+    if (taskId) await updateTaskState(taskId, { status: 'Completed', executionStage: 'Live' }).catch(() => {})
+    const summary = {
+      what: `Meta title shortened from ${currentLen} to ${newTitle.length} chars on ${pagePath}`,
+      how: `Claude generated an optimised title under 60 chars. Pushed via Shopify Admin API.`,
+      benefit: `Title no longer truncated in Google SERPs — full brand visibility and keyword coverage.`,
+      oldValue: currentTitle,
+      newValue: newTitle,
+      liveUrl: `https://genderrevealideas.com.au${pagePath}`,
+      timestamp
+    }
+    await sendTelegram(`🚨 *TITLE FIXED!*\n\n*${pagePath}*\n⏱ ${timestamp}\n\n❌ OLD (${currentLen} chars): "${currentTitle}"\n✅ NEW (${newTitle.length} chars): "${newTitle}"\n\n— Pablo Escobot 🚀`)
+    await logActivity({ type: 'title-fix', title, summary, liveUrl: summary.liveUrl, newValue: newTitle })
+    return { ok: true, action: 'title-fix', path: pagePath, summary }
+  }
+
+  // ── Route 5: Alt text — Claude generates + pushes via Products API ──
   if (titleLower.includes('alt text') || titleLower.includes('missing alt')) {
     const pathMatch = title.match(/\/[^\s—–\u2014\u2013]+/)
     const pagePath = pathMatch ? pathMatch[0].trim() : '/'
@@ -647,18 +716,38 @@ export async function runAutoFix({ taskId, fileKey, title = '', issueType = '', 
     let updated = 0
     const changes = []
 
+    // Derive collection context from the page path for more relevant alt text
+    const collectionName = isCollection ? handle.replace(/-/g, ' ') : 'gender reveal'
+
     for (const product of targets) {
       for (const img of (product.images || [])) {
         if (!img.alt || img.alt.trim() === '') {
-          const claudeRes = await callClaude({
-            model: 'claude-sonnet-4-20250514',
-            max_tokens: 60,
-            messages: [{ role: 'user', content: `Write a short, descriptive alt text (max 10 words) for a product image of "${product.title}" sold on Gender Reveal Ideas Australia. Just the alt text, no quotes.` }]
-          }, 'automation-alt-text')
-          const altText = claudeRes.content[0].text.trim().replace(/^"|"$/g, '').slice(0, 125)
-          await setProductImageAltText(product.id, img.id, altText)
-          changes.push({ product: product.title, productHandle: product.handle, imageId: img.id, altText })
-          updated++
+          try {
+            // Use Claude vision to describe what's actually in the image
+            const imageUrl = img.src
+            const claudeRes = await callClaude({
+              model: 'claude-sonnet-4-20250514',
+              max_tokens: 80,
+              messages: [{ role: 'user', content: [
+                { type: 'image', source: { type: 'url', url: imageUrl } },
+                { type: 'text', text: `Write alt text for this product image. Product: "${product.title}". Collection: "${collectionName}". Store: Gender Reveal Ideas Australia.
+
+Rules:
+- Describe what you SEE in the image (colours, objects, packaging, people, setup)
+- Include the product type and collection context
+- Max 15 words, no quotes
+- Be specific: "Pink confetti cannon shooting confetti at outdoor gender reveal party" NOT "Gender reveal product"
+
+Write ONLY the alt text.` }
+              ] }]
+            }, 'automation-alt-text')
+            const altText = claudeRes.content[0].text.trim().replace(/^"|"$/g, '').slice(0, 125)
+            await setProductImageAltText(product.id, img.id, altText)
+            changes.push({ product: product.title, productHandle: product.handle, imageId: img.id, altText })
+            updated++
+          } catch (imgErr) {
+            console.error(`[AutoFix] Alt text failed for ${product.title} image ${img.id}:`, imgErr.message)
+          }
         }
       }
     }

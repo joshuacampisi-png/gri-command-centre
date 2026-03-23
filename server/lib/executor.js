@@ -41,6 +41,8 @@ const AUTO_FIX_PATTERNS = [
   /HTTP 404/i,
   /broken link/i,
   /dead url/i,
+  /title too long/i,
+  /title too short/i,
 ]
 
 function needsApproval(title = '') {
