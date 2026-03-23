@@ -151,27 +151,42 @@ function OverviewPage({ data, company }) {
   }, [])
 
   useEffect(() => {
-    fetch('/api/hires').then(r => r.json()).then(d => setHires(d.hires || [])).catch(() => {})
-    fetch('/api/trends').then(r => r.json()).then(d => {
-      if (d.ok && d.data) setTrends(d.data)
-    }).catch(() => {})
-    fetch('/api/shopify/today-sales').then(r => r.json()).then(d => {
-      setSales(d.ok ? d : { ok: false, error: d.error })
-    }).catch(() => setSales({ ok: false, error: 'Failed to load' }))
-    fetch('/api/trends/trending').then(r => r.json()).then(d => {
-      setTrendingQueries(d.ok ? d.queries : [])
-    }).catch(() => setTrendingQueries([]))
-    fetch('/api/viral/instagram').then(r => r.json()).then(d => {
-      setViralReels(d.ok ? d.videos : [])
-    }).catch(() => setViralReels([]))
+    const fetchAll = () => {
+      fetch('/api/hires').then(r => r.json()).then(d => setHires(d.hires || [])).catch(() => {})
+      fetch('/api/trends').then(r => r.json()).then(d => {
+        if (d.ok && d.data) setTrends(d.data)
+      }).catch(() => {})
+      fetch('/api/shopify/today-sales').then(r => r.json()).then(d => {
+        setSales(d.ok ? d : { ok: false, error: d.error })
+      }).catch(() => setSales({ ok: false, error: 'Failed to load' }))
+      fetch('/api/trends/trending').then(r => r.json()).then(d => {
+        setTrendingQueries(d.ok ? d.queries : [])
+      }).catch(() => setTrendingQueries([]))
+      fetch('/api/viral/instagram').then(r => r.json()).then(d => {
+        setViralReels(d.ok ? d.videos : [])
+      }).catch(() => setViralReels([]))
+    }
+    fetchAll()
+    // Auto-refresh sales every 30 seconds while dashboard is open
+    const interval = setInterval(() => {
+      fetch('/api/shopify/today-sales').then(r => r.json()).then(d => {
+        setSales(d.ok ? d : { ok: false, error: d.error })
+      }).catch(() => {})
+    }, 30000)
+    return () => clearInterval(interval)
   }, [])
 
-  // Shipping revenue: Wed-Tue weekly fetch
+  // Shipping revenue: Wed-Tue weekly fetch + auto-refresh every 30s
   useEffect(() => {
-    const { from, to } = getWedTueWeek(shippingWeekOffset)
-    fetch(`/api/shopify/sales-range?from=${from}&to=${to}`).then(r => r.json()).then(d => {
-      setShippingData(d.ok ? d : null)
-    }).catch(() => setShippingData(null))
+    const fetchShipping = () => {
+      const { from, to } = getWedTueWeek(shippingWeekOffset)
+      fetch(`/api/shopify/sales-range?from=${from}&to=${to}`).then(r => r.json()).then(d => {
+        setShippingData(d.ok ? d : null)
+      }).catch(() => setShippingData(null))
+    }
+    fetchShipping()
+    const interval = setInterval(fetchShipping, 30000)
+    return () => clearInterval(interval)
   }, [shippingWeekOffset, getWedTueWeek])
 
   // Build the week buttons: current week + last 3 weeks
