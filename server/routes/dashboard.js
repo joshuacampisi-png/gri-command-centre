@@ -142,17 +142,14 @@ router.get('/shopify/sales-range', async (req, res) => {
 // ── Shipping Protection Stats (live from Shopify API) ──
 router.get('/shopify/shipping-protection', async (_req, res) => {
   try {
-    // Get today's data
-    const todayData = await getShopifyTodayOrders()
-
-    // Get this month range (1st to today AEST)
     const now = new Date()
     const aestNow = new Date(now.getTime() + (10 * 60 * 60 * 1000))
     const aestDate = aestNow.toISOString().slice(0, 10)
-    const monthStart = aestDate.slice(0, 8) + '01'
-    const monthData = await getShopifyOrdersRange(monthStart, aestDate)
 
-    // Get this week (Wed-Tue)
+    // Today
+    const todayData = await getShopifyOrdersRange(aestDate, aestDate)
+
+    // This week (Wed-Tue)
     const aestDay = aestNow.getUTCDay()
     const daysSinceWed = (aestDay - 3 + 7) % 7
     const wed = new Date(aestNow)
@@ -163,29 +160,37 @@ router.get('/shopify/shipping-protection', async (_req, res) => {
     const tueStr = tue.toISOString().slice(0, 10)
     const weekData = await getShopifyOrdersRange(wedStr, tueStr)
 
-    // Count protection in today's orders
-    const PROT_ID = 8156417196121
-    let todayProtCount = 0
-    for (const item of (todayData.items || [])) {
-      const hasProt = (item.lineItems || []).some(
-        li => li.product_id === PROT_ID || (li.title || '').toLowerCase().includes('shipping protection')
-      )
-      if (hasProt) todayProtCount++
-    }
+    // This month
+    const monthStart = aestDate.slice(0, 8) + '01'
+    const monthData = await getShopifyOrdersRange(monthStart, aestDate)
 
-    // Lifetime: pull all orders from when shipping protection was introduced
-    const lifetimeData = await getShopifyOrdersRange('2025-01-01', aestDate)
+    // Lifetime: query month by month from when protection started to avoid pagination limits
+    let lifetimeCount = 0, lifetimeRevenue = 0
+    const startYear = 2025, startMonth = 1
+    const endYear = aestNow.getUTCFullYear(), endMonth = aestNow.getUTCMonth() + 1
+    for (let y = startYear; y <= endYear; y++) {
+      const mStart = y === startYear ? startMonth : 1
+      const mEnd = y === endYear ? endMonth : 12
+      for (let m = mStart; m <= mEnd; m++) {
+        const from = `${y}-${String(m).padStart(2, '0')}-01`
+        const lastDay = new Date(y, m, 0).getDate()
+        const to = `${y}-${String(m).padStart(2, '0')}-${lastDay}`
+        const chunk = await getShopifyOrdersRange(from, to)
+        lifetimeCount += chunk.protectionCount || 0
+        lifetimeRevenue += chunk.protectionRevenue || 0
+      }
+    }
 
     res.json({
       ok: true,
-      today: { count: todayProtCount, revenue: todayProtCount * 3.00 },
+      today: { count: todayData.protectionCount || 0, revenue: todayData.protectionRevenue || 0 },
       week: { count: weekData.protectionCount || 0, revenue: weekData.protectionRevenue || 0 },
       month: { count: monthData.protectionCount || 0, revenue: monthData.protectionRevenue || 0 },
-      lifetime: { count: lifetimeData.protectionCount || 0, revenue: lifetimeData.protectionRevenue || 0 },
+      lifetime: { count: lifetimeCount, revenue: lifetimeRevenue },
       pricePerOrder: 3.00,
     })
   } catch (e) {
-    // Fallback to webhook tracker
+    console.error('[shipping-protection] Error:', e.message)
     try {
       const { getShippingProtection } = await import('../lib/sales-tracker.js')
       res.json(getShippingProtection())
