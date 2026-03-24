@@ -9,7 +9,7 @@ export async function getShopifyClientCredentialsToken() {
     throw new Error('Missing Shopify client credentials configuration')
   }
 
-  const response = await fetch(`https://shopify.com/authentication/${env.shopify.storeDomain}/oauth/token`, {
+  const response = await fetch(`https://${env.shopify.storeDomain}/admin/oauth/access_token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

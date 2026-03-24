@@ -12,12 +12,14 @@ async function effectiveAdminToken() {
     const oauth = await loadShopifyOAuthState()
     if (oauth.accessToken) return oauth.accessToken
   } catch {}
-  // 2. Fall back to custom app admin token
-  if (env.shopify.adminAccessToken) return env.shopify.adminAccessToken
-  // 3. Fall back to client credentials
+  // 2. Prefer client credentials (auto-grants write_orders scope)
   if (env.shopify.apiKey && env.shopify.apiSecret) {
-    return getShopifyClientCredentialsToken()
+    try {
+      return await getShopifyClientCredentialsToken()
+    } catch {}
   }
+  // 3. Fall back to custom app admin token
+  if (env.shopify.adminAccessToken) return env.shopify.adminAccessToken
   return ''
 }
 
