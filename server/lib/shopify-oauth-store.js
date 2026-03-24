@@ -1,12 +1,7 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
-import { join } from 'node:path'
+import { readFile, writeFile } from 'node:fs/promises'
+import { dataFile } from './data-dir.js'
 
-const DATA_DIR = join(process.cwd(), 'data')
-const storePath = join(DATA_DIR, 'shopify-oauth.json')
-
-async function ensureDir() {
-  await mkdir(DATA_DIR, { recursive: true })
-}
+const storePath = dataFile('shopify-oauth.json')
 
 export async function loadShopifyOAuthState() {
   try {
@@ -18,7 +13,6 @@ export async function loadShopifyOAuthState() {
 }
 
 export async function saveShopifyOAuthState(data) {
-  await ensureDir()
   const current = await loadShopifyOAuthState()
   const next = { ...current, ...data }
   await writeFile(storePath, JSON.stringify(next, null, 2), 'utf8')

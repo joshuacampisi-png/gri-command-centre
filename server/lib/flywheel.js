@@ -55,8 +55,8 @@ export async function startFlywheel() {
   // Then rebuild fingerprints so nothing ever comes back
   try {
     const { writeFileSync } = await import('fs')
-    const { join } = await import('path')
-    const tasksFile = join(process.cwd(), 'data', 'auto-tasks.json')
+    const { dataFile } = await import('./data-dir.js')
+    const tasksFile = dataFile('auto-tasks.json')
     writeFileSync(tasksFile, '[]')
     console.log('[Flywheel] Wiped auto-tasks.json clean — fresh start')
     await rebuildFingerprints()

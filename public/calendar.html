@@ -205,6 +205,7 @@ tr:last-child td { border-bottom: none; }
   <div class="modal" onclick="event.stopPropagation()">
     <button class="modal-close" onclick="closeVideoModal()">&#10005;</button>
     <video id="modal-video" controls style="width:100%;max-height:70vh;border-radius:8px"></video>
+    <img id="modal-image" style="width:100%;max-height:70vh;border-radius:8px;object-fit:contain;display:none" />
   </div>
 </div>
 
@@ -272,7 +273,7 @@ function cardHTML(e) {
     ${e.thumbnail ? `<img class="card-thumb" src="${e.thumbnail}" alt="">` : ''}
     <div class="card-info">
       <div class="card-top"><span class="brand-dot" style="background:${bc}"></span><span>${PLATFORM_ICONS[e.platform]||''}</span><span class="card-time">${e.time}</span></div>
-      ${e.hook ? `<div class="card-hook">${esc(e.hook)}</div>` : ''}
+      ${(e.hook || e.caption) ? `<div class="card-hook">${esc(e.hook || e.caption)}</div>` : ''}
       <div class="card-top">${statusPill(e.status)}${e.videoUrl ? `<a class="dl-btn" href="${e.videoUrl}" download onclick="event.stopPropagation()">&#11015; Download</a>` : ''}</div>
     </div>
   </div>`
@@ -395,8 +396,8 @@ function renderList() {
       <td>${PLATFORM_ICONS[e.platform]||''} ${e.platform}</td>
       <td class="hook-cell">${esc(e.hook||'\u2014')}</td>
       <td>${statusPill(e.status)}</td>
-      <td>${e.thumbnail ? `<img class="list-thumb" src="${e.thumbnail}">` : '\u2014'}</td>
-      <td onclick="event.stopPropagation()">${e.videoUrl ? `<a class="dl-link" href="${e.videoUrl}" download>&#11015;</a>` : ''}</td>
+      <td>${e.thumbnail ? `<img class="list-thumb" src="${e.thumbnail}" onclick="event.stopPropagation();${e.videoUrl ? (e.mediaType === 'image' ? `openVideoModal('${e.videoUrl}')` : `openVideoModal('${e.videoUrl}')`) : ''}">` : '\u2014'}</td>
+      <td onclick="event.stopPropagation()">${e.videoUrl ? `<a class="dl-link" href="${e.videoUrl}" download>&#11015;</a> <button class="play-btn" onclick="openVideoModal('${e.videoUrl}')" style="font-size:11px;padding:2px 6px">&#9654;</button>` : ''}</td>
     </tr>`
   })
   html += '</tbody></table></div>'
@@ -445,7 +446,7 @@ async function bulkDelete() {
 // Drawer
 function openNewEntry(date) {
   editingEntry = null
-  drawerVideoUrl = null; drawerThumbnail = null; drawerVideoName = ''; drawerVideoSize = 0
+  drawerVideoUrl = null; drawerThumbnail = null; drawerVideoName = ''; drawerVideoSize = 0; drawerMediaType = null
   $('drawer-title').textContent = 'New Entry'
   $('f-brand').value = BRANDS[0]
   $('f-platform').value = PLATFORMS[0]
@@ -469,6 +470,7 @@ function openEditEntry(id) {
   drawerThumbnail = e.thumbnail || null
   drawerVideoName = e.videoName || ''
   drawerVideoSize = e.videoSize || 0
+  drawerMediaType = e.mediaType || (e.videoUrl ? (e.videoUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? 'image' : 'video') : null)
   $('drawer-title').textContent = 'Edit Entry'
   $('f-brand').value = e.brand
   $('f-platform').value = e.platform
@@ -597,13 +599,25 @@ async function handleDelete() {
 }
 
 function openVideoModal(url) {
-  $('modal-video').src = url
+  const isImg = /\.(jpg|jpeg|png|gif|webp)$/i.test(url)
+  if (isImg) {
+    $('modal-video').style.display = 'none'
+    $('modal-image').style.display = 'block'
+    $('modal-image').src = url
+  } else {
+    $('modal-image').style.display = 'none'
+    $('modal-video').style.display = 'block'
+    $('modal-video').src = url
+  }
   $('video-modal').classList.remove('hidden')
 }
 
 function closeVideoModal() {
   $('modal-video').pause()
   $('modal-video').src = ''
+  $('modal-video').style.display = 'block'
+  $('modal-image').src = ''
+  $('modal-image').style.display = 'none'
   $('video-modal').classList.add('hidden')
 }
 

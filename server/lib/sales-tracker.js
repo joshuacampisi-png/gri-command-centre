@@ -2,18 +2,15 @@
  * Sales Tracker — records daily sales + shipping + shipping protection from Shopify webhook events
  * Stores to data/daily-sales.json so we don't need read_orders scope
  */
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs'
-import { join } from 'path'
+import { existsSync, readFileSync, writeFileSync } from 'fs'
+import { dataFile } from './data-dir.js'
 
-const DATA_DIR = join(process.cwd(), 'data')
-const SALES_FILE = join(DATA_DIR, 'daily-sales.json')
-const PROTECTION_FILE = join(DATA_DIR, 'shipping-protection.json')
+const SALES_FILE = dataFile('daily-sales.json')
+const PROTECTION_FILE = dataFile('shipping-protection.json')
 
 // Shipping Protection product ID from Shopify
 const SHIPPING_PROTECTION_PRODUCT_ID = 8156417196121
 const SHIPPING_PROTECTION_PRICE = 3.00
-
-if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true })
 
 function readSales() {
   if (!existsSync(SALES_FILE)) return {}

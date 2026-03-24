@@ -11,10 +11,10 @@
 
 import { writeFile, readFile } from 'fs/promises'
 import { existsSync } from 'fs'
-import { join } from 'path'
 import { callClaude } from './claude-guard.js'
 import { env } from './env.js'
-const KNOWLEDGE_BASE = join(process.cwd(), 'data/seo-knowledge-base.json')
+import { dataFile } from './data-dir.js'
+const KNOWLEDGE_BASE = dataFile('seo-knowledge-base.json')
 
 /**
  * Sources for SEO knowledge
@@ -361,10 +361,5 @@ async function loadKnowledgeBase() {
 }
 
 async function saveKnowledgeBase(kb) {
-  const dir = join(process.cwd(), 'data')
-  if (!existsSync(dir)) {
-    await import('fs/promises').then(fs => fs.mkdir(dir, { recursive: true }))
-  }
-  
   await writeFile(KNOWLEDGE_BASE, JSON.stringify(kb, null, 2), 'utf8')
 }

@@ -5,9 +5,9 @@
 
 import { writeFile, readFile } from 'fs/promises'
 import { existsSync } from 'fs'
-import { join } from 'path'
+import { dataFile } from './data-dir.js'
 
-const LEARNING_LOG = join(process.cwd(), 'data/seo-learnings.json')
+const LEARNING_LOG = dataFile('seo-learnings.json')
 
 /**
  * Log an SEO change with its context
@@ -198,11 +198,6 @@ async function loadLearnings() {
 }
 
 async function saveLearnings(learnings) {
-  const dir = join(process.cwd(), 'data')
-  if (!existsSync(dir)) {
-    await import('fs/promises').then(fs => fs.mkdir(dir, { recursive: true }))
-  }
-  
   await writeFile(LEARNING_LOG, JSON.stringify(learnings, null, 2), 'utf8')
 }
 

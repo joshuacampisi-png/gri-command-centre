@@ -5,10 +5,9 @@
  */
 
 import { readFileSync, writeFileSync, existsSync } from 'fs'
-import { join } from 'path'
+import { dataFile } from './data-dir.js'
 
-const DATA_DIR = join(process.cwd(), 'data')
-const CONFIG_FILE = join(DATA_DIR, 'competitor-config.json')
+const CONFIG_FILE = dataFile('competitor-config.json')
 
 // Default competitor list
 const DEFAULT_COMPETITORS = {

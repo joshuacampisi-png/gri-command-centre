@@ -1,17 +1,10 @@
 import { Router } from 'express'
-import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from 'fs'
-import { join, dirname } from 'path'
-import { fileURLToPath } from 'url'
+import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'fs'
 import multer from 'multer'
+import { dataFile, dataDir } from '../lib/data-dir.js'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
-const ROOT = join(__dirname, '..', '..')
-const DATA_FILE = join(ROOT, 'data', 'calendar-entries.json')
-const VIDEO_DIR = join(ROOT, 'public', 'calendar-videos')
-
-mkdirSync(join(ROOT, 'data'), { recursive: true })
-
-mkdirSync(VIDEO_DIR, { recursive: true })
+const DATA_FILE = dataFile('calendar-entries.json')
+const VIDEO_DIR = dataDir('calendar-videos')
 
 function loadEntries() {
   if (!existsSync(DATA_FILE)) return []

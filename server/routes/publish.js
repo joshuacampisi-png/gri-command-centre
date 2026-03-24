@@ -9,15 +9,14 @@
 
 import { Router } from 'express'
 import { readFileSync, writeFileSync, existsSync } from 'fs'
-import { join } from 'path'
 import { readTrendsCache } from '../lib/google-trends.js'
 import { publishToShopify, hasShopifyPublishConfig } from '../lib/shopify-publisher.js'
 import { generateFullArticle } from '../lib/article-generator.js'
 import { VOLCANO_CANNON_ARTICLE } from '../lib/test-articles.js'
+import { dataFile } from '../lib/data-dir.js'
 
 const router = Router()
-const DATA_DIR    = join(process.cwd(), 'data')
-const PUBLISH_FILE = join(DATA_DIR, 'published-articles.json')
+const PUBLISH_FILE = dataFile('published-articles.json')
 
 // ── Published articles store ──────────────────────────────────
 

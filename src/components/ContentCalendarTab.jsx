@@ -25,7 +25,9 @@ async function fetchEntries() {
 }
 
 async function saveEntry(entry) {
-  await fetch(`${API}/entries`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entry) })
+  const res = await fetch(`${API}/entries`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entry) })
+  if (!res.ok) throw new Error(`Save failed: ${res.status}`)
+  return res.json()
 }
 
 async function deleteEntryAPI(id) {
@@ -121,7 +123,7 @@ function MediaModal({ url, type, onClose }) {
 
 // ── Entry Drawer ──────────────────────────────────────────────────────────────
 
-function EntryDrawer({ entry, onSave, onDelete, onClose }) {
+function EntryDrawer({ entry, isNew, onSave, onDelete, onClose }) {
   const [form, setForm] = useState(entry || {
     id: uid(), brand: BRANDS[0], platform: PLATFORMS[0], date: fmtDate(new Date()),
     time: '09:00', caption: '', hook: '', cta: '', status: 'Draft', notes: '',
@@ -171,7 +173,7 @@ function EntryDrawer({ entry, onSave, onDelete, onClose }) {
     <div className="cc-drawer-overlay" onClick={onClose}>
       <div className="cc-drawer" onClick={e => e.stopPropagation()}>
         <div className="cc-drawer-head">
-          <h3>{entry ? 'Edit Entry' : 'New Entry'}</h3>
+          <h3>{isNew ? 'New Entry' : 'Edit Entry'}</h3>
           <button className="cc-drawer-x" onClick={onClose}>✕</button>
         </div>
         <div className="cc-drawer-body">
@@ -291,7 +293,7 @@ function EntryCard({ entry, onClick, onDragStart }) {
           <span className="cc-platform-icon">{PLATFORM_ICONS[entry.platform] || '📱'}</span>
           <span className="cc-card-time">{entry.time}</span>
         </div>
-        {entry.hook && <div className="cc-card-hook">{entry.hook}</div>}
+        {(entry.hook || entry.caption) && <div className="cc-card-hook">{entry.hook || entry.caption}</div>}
         <div className="cc-card-top">
           <span className="cc-status-pill" style={{ background: STATUS_COLORS[entry.status] + '22', color: STATUS_COLORS[entry.status], border: `1px solid ${STATUS_COLORS[entry.status]}44` }}>{entry.status}</span>
           {entry.videoUrl && <a className="cc-card-dl" href={entry.videoUrl} download onClick={e => e.stopPropagation()}>&#11015; Download</a>}
@@ -612,6 +614,7 @@ export default function ContentCalendarTab() {
       {drawer && (
         <EntryDrawer
           entry={drawer.mode === 'edit' ? drawer.entry : drawerEntry}
+          isNew={drawer.mode === 'new'}
           onSave={handleSaveEntry}
           onDelete={deleteEntry}
           onClose={closeDrawer}

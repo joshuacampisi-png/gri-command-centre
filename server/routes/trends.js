@@ -5,10 +5,10 @@ import { Router } from 'express'
 import { readTrendsCache, runTrendsScan, isTrendsScanning, GENDER_REVEAL_KEYWORDS, hasDfsCredentials, TIME_RANGE_MAP, fetchTrendingQueries } from '../lib/google-trends.js'
 import { generateBlogBrief } from '../lib/trends-blog-generator.js'
 import { readFileSync, writeFileSync } from 'fs'
-import { join } from 'path'
+import { dataFile } from '../lib/data-dir.js'
 
 const router = Router()
-const CACHE_FILE = join(process.cwd(), 'data', 'trends-cache.json')
+const CACHE_FILE = dataFile('trends-cache.json')
 
 // GET /api/trends — full timeseries data for charts
 router.get('/', (_req, res) => {

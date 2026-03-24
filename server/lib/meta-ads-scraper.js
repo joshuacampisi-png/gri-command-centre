@@ -4,17 +4,14 @@
  * Stores ad images locally for persistent viewing.
  */
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
+import { readFileSync, writeFileSync, existsSync } from 'fs'
 import { join } from 'path'
 import { getCompetitors } from './competitor-config.js'
 import { appendScan, getLatestScan } from './competitor-history.js'
+import { dataFile, dataDir } from './data-dir.js'
 
-const DATA_DIR = join(process.cwd(), 'data', 'meta-ads')
-const IMAGES_DIR = join(DATA_DIR, 'images')
-const CACHE_FILE = join(DATA_DIR, 'meta-ads-cache.json')
-
-if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true })
-if (!existsSync(IMAGES_DIR)) mkdirSync(IMAGES_DIR, { recursive: true })
+const IMAGES_DIR = dataDir('meta-ads', 'images')
+const CACHE_FILE = dataFile('meta-ads/meta-ads-cache.json')
 
 /**
  * Search Meta Ad Library for a page/domain

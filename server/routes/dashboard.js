@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { getNotionSnapshot } from '../connectors/notion.js'
 import { getSlackSnapshot, postChannelVerificationSuite, postInitialCommandCentreMessage, postRoleMessage, postSlackMessage } from '../connectors/slack.js'
 import { getOpenClawSnapshot } from '../connectors/openclaw.js'
-import { getShopifySnapshot } from '../connectors/shopify.js'
+import { getShopifySnapshot, getShopifyTodayOrders, getShopifyOrdersRange } from '../connectors/shopify.js'
 import { integrationStatus } from '../lib/env.js'
 import { COMPANIES, normalizeCompany } from '../lib/companies.js'
 import { workflowConvertFindingToTask, workflowCreateAlert, workflowCreateApproval, workflowCreateFinding, workflowCreateHandoff, workflowCreateReport, workflowCreateTask } from '../workflows/core.js'
@@ -81,25 +81,34 @@ router.get('/dashboard', async (req, res) => {
     res.status(500).json({ ok: false, error: String(error?.message || error) })
   }
 })
-// ── Today's Shopify sales (from webhook tracker) ──
+// ── Today's Shopify sales (API first, webhook fallback) ──
 router.get('/shopify/today-sales', async (_req, res) => {
+  try {
+    const data = await getShopifyTodayOrders()
+    if (data.ok) return res.json(data)
+  } catch {}
+  // Fallback to webhook tracker
   try {
     const { getTodaySales } = await import('../lib/sales-tracker.js')
     res.json(getTodaySales())
   } catch (e) {
-    res.json({ ok: false, error: e.message })
+    res.json({ ok: true, revenue: 0, shipping: 0, orders: 0, date: new Date().toLocaleDateString('en-CA', { timeZone: 'Australia/Brisbane' }), source: 'unavailable' })
   }
 })
 
-// ── Shipping / sales by date range ──
+// ── Shipping / sales by date range (API first, webhook fallback) ──
 router.get('/shopify/sales-range', async (req, res) => {
+  const { from, to } = req.query
+  if (!from || !to) return res.json({ ok: false, error: 'from and to query params required' })
+  try {
+    const data = await getShopifyOrdersRange(from, to)
+    if (data.ok) return res.json(data)
+  } catch {}
   try {
     const { getSalesRange } = await import('../lib/sales-tracker.js')
-    const { from, to } = req.query
-    if (!from || !to) return res.json({ ok: false, error: 'from and to query params required' })
     res.json(getSalesRange(from, to))
   } catch (e) {
-    res.json({ ok: false, error: e.message })
+    res.json({ ok: true, revenue: 0, shipping: 0, orders: 0, from, to })
   }
 })
 

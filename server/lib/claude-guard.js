@@ -11,13 +11,10 @@
  */
 
 import { readFileSync, writeFileSync, existsSync } from 'fs'
-import { join, dirname } from 'path'
-import { fileURLToPath } from 'url'
 import Anthropic from '@anthropic-ai/sdk'
+import { dataFile } from './data-dir.js'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
-const USAGE_FILE = join(__dirname, '../../data/claude-usage.json')
-const DATA_DIR   = join(__dirname, '../../data')
+const USAGE_FILE = dataFile('claude-usage.json')
 
 // Pricing per million tokens (claude-sonnet-4-20250514)
 const PRICE_INPUT_PER_M  = 3.00   // $3.00 per 1M input tokens

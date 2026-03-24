@@ -5,11 +5,10 @@
  */
 
 import { readFileSync, writeFileSync, existsSync } from 'fs'
-import { join } from 'path'
+import { dataFile } from './data-dir.js'
 
-const DATA_DIR      = join(process.cwd(), 'data')
-const SNAPSHOT_FILE = join(DATA_DIR, 'keyword-snapshot.json')  // previous day's rankings
-const DROPS_FILE    = join(DATA_DIR, 'rank-drops.json')        // pending blog triggers
+const SNAPSHOT_FILE = dataFile('keyword-snapshot.json')  // previous day's rankings
+const DROPS_FILE    = dataFile('rank-drops.json')        // pending blog triggers
 
 const DROP_THRESHOLD = parseInt(process.env.KW_DROP_TRIGGER || '3') // 3+ position drop triggers article
 

@@ -8,12 +8,10 @@
  * ─────────────────────────────────────────────────────────────
  */
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
-import { join } from 'path'
+import { readFileSync, writeFileSync, existsSync } from 'fs'
+import { dataFile } from './data-dir.js'
 
-const DATA_DIR   = join(process.cwd(), 'data')
-const CACHE_FILE = join(DATA_DIR, 'trends-cache.json')
-if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true })
+const CACHE_FILE = dataFile('trends-cache.json')
 
 const LOCATION_CODE = 2036 // Australia
 

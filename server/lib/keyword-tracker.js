@@ -5,17 +5,13 @@
  * Viewkey URL: https://app.keyword.com/projects/IfZYQs3/a778b1b5a9a7aa283a041d387fe89f85
  */
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
-import { join } from 'path'
+import { readFileSync, writeFileSync, existsSync } from 'fs'
+import { dataFile } from './data-dir.js'
 
-const DATA_DIR   = join(process.cwd(), 'data')
-const CACHE_FILE = join(DATA_DIR, 'keyword-cache.json')
-const LOG_FILE   = join(DATA_DIR, 'keyword-api.log')
+const CACHE_FILE = dataFile('keyword-cache.json')
+const LOG_FILE   = dataFile('keyword-api.log')
 const VIEWKEY_URL = process.env.KEYWORD_COM_VIEWKEY_URL ||
   'https://app.keyword.com/projects/IfZYQs3/a778b1b5a9a7aa283a041d387fe89f85'
-
-// Ensure data dir exists
-if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true })
 
 // ── Alert thresholds ──
 const THRESHOLDS = {

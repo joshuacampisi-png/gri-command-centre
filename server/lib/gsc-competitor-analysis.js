@@ -7,10 +7,9 @@
  */
 
 import { readFileSync } from 'fs'
-import { join } from 'path'
+import { dataFile } from './data-dir.js'
 
-const DATA_DIR = join(process.cwd(), 'data/gsc')
-const QUERIES_FILE = join(DATA_DIR, 'queries-2026-03.csv')
+const QUERIES_FILE = dataFile('gsc/queries-2026-03.csv')
 
 // Top 5 GRI competitors in gender reveal space
 const COMPETITORS = {

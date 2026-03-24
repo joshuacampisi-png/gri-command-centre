@@ -4,14 +4,11 @@
  * Stores: organic rankings, Google Ads data, Meta ads data
  */
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
-import { join } from 'path'
-
-const DATA_DIR = join(process.cwd(), 'data', 'competitor-history')
-if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true })
+import { readFileSync, writeFileSync, existsSync } from 'fs'
+import { dataFile } from './data-dir.js'
 
 function historyFile(type) {
-  return join(DATA_DIR, `${type}-history.json`)
+  return dataFile(`competitor-history/${type}-history.json`)
 }
 
 function readHistory(type) {

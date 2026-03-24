@@ -1,10 +1,7 @@
-import { writeFile, readFile, mkdir } from 'node:fs/promises'
-import { join } from 'node:path'
-import { mkdirSync, existsSync } from 'node:fs'
+import { writeFile, readFile } from 'node:fs/promises'
+import { dataFile } from './data-dir.js'
 
-const DATA_DIR = join(process.cwd(), 'data')
-if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true })
-const LOG_PATH = join(DATA_DIR, 'activity-log.json')
+const LOG_PATH = dataFile('activity-log.json')
 
 export async function logActivity(entry) {
   let entries = []

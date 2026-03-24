@@ -12,15 +12,12 @@
  * ─────────────────────────────────────────────────────────────
  */
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
-import { join } from 'path'
+import { readFileSync, writeFileSync, existsSync } from 'fs'
 import { randomUUID } from 'crypto'
+import { dataFile } from './data-dir.js'
 
-const DATA_DIR         = join(process.cwd(), 'data')
-const TASKS_FILE       = join(DATA_DIR, 'auto-tasks.json')
-const FINGERPRINT_FILE = join(DATA_DIR, 'seo-task-fingerprints.json')
-
-if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true })
+const TASKS_FILE       = dataFile('auto-tasks.json')
+const FINGERPRINT_FILE = dataFile('seo-task-fingerprints.json')
 
 // ── Shopify page existence pre-flight ─────────────────────────
 // Checks Shopify Admin API before any task is created.

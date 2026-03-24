@@ -9,14 +9,11 @@
  *   Gender Reveal Express — genderrevealexpress.com.au
  */
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
-import { join } from 'path'
+import { readFileSync, writeFileSync, existsSync } from 'fs'
+import { dataFile } from './data-dir.js'
 
-const DATA_DIR      = join(process.cwd(), 'data')
-const COMP_FILE     = join(DATA_DIR, 'competitor-cache.json')
-const LOG_FILE      = join(DATA_DIR, 'competitor.log')
-
-if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true })
+const COMP_FILE     = dataFile('competitor-cache.json')
+const LOG_FILE      = dataFile('competitor.log')
 
 export const COMPETITORS = {
   gri:     { name: 'Gender Reveal Ideas', domain: 'genderrevealideas.com.au',    color: '#ef4444' },
