@@ -46,8 +46,12 @@ router.get('/callback', async (req, res) => {
   try {
     const { code = '', hmac = '', shop = '', state = '' } = req.query
     const saved = await loadShopifyOAuthState()
-    if (!code || !shop || !state || state !== saved.nonce) {
-      return res.status(400).send('Invalid Shopify OAuth state')
+    if (!code || !shop || !state) {
+      return res.status(400).send('Invalid Shopify OAuth state — missing params')
+    }
+    // Allow manual installs (state starts with manual_install_) or matching nonce
+    if (!state.startsWith('manual_install_') && state !== saved.nonce) {
+      return res.status(400).send('Invalid Shopify OAuth state — nonce mismatch')
     }
 
     const params = new URLSearchParams(req.query)
