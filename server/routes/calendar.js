@@ -5,12 +5,11 @@ import { fileURLToPath } from 'url'
 import multer from 'multer'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const PERSIST_DIR = process.env.RAILWAY_VOLUME_MOUNT_PATH || join(__dirname, '..', '..')
-const DATA_DIR = join(PERSIST_DIR, 'data')
-const DATA_FILE = join(DATA_DIR, 'calendar-entries.json')
-const VIDEO_DIR = join(PERSIST_DIR, 'public', 'calendar-videos')
+const ROOT = join(__dirname, '..', '..')
+const DATA_FILE = join(ROOT, 'data', 'calendar-entries.json')
+const VIDEO_DIR = join(ROOT, 'public', 'calendar-videos')
 
-mkdirSync(DATA_DIR, { recursive: true })
+mkdirSync(join(ROOT, 'data'), { recursive: true })
 
 mkdirSync(VIDEO_DIR, { recursive: true })
 
