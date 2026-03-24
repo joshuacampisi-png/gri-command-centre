@@ -86,7 +86,10 @@ router.get('/shopify/today-sales', async (_req, res) => {
   try {
     const data = await getShopifyTodayOrders()
     if (data.ok) return res.json(data)
-  } catch {}
+    console.error('[today-sales] API returned not ok:', data.error)
+  } catch (e) {
+    console.error('[today-sales] API error:', e.message)
+  }
   // Fallback to webhook tracker
   try {
     const { getTodaySales } = await import('../lib/sales-tracker.js')
@@ -96,6 +99,27 @@ router.get('/shopify/today-sales', async (_req, res) => {
   }
 })
 
+// ── Shopify API diagnostic ──
+router.get('/shopify/diag', async (_req, res) => {
+  const { env } = await import('../lib/env.js')
+  const { getShopifyClientCredentialsToken } = await import('../lib/shopify-client-credentials.js')
+  const { loadShopifyOAuthState } = await import('../lib/shopify-oauth-store.js')
+  const result = { storeDomain: env.shopify.storeDomain, hasApiKey: !!env.shopify.apiKey, hasApiSecret: !!env.shopify.apiSecret, hasAdminToken: !!env.shopify.adminAccessToken }
+  try {
+    const oauth = await loadShopifyOAuthState()
+    result.hasOAuthToken = !!oauth.accessToken
+  } catch (e) { result.oauthError = e.message }
+  try {
+    const token = await getShopifyClientCredentialsToken()
+    result.clientCredToken = token ? token.slice(0, 12) + '...' : 'empty'
+  } catch (e) { result.clientCredError = e.message }
+  try {
+    const data = await getShopifyTodayOrders()
+    result.todaySales = { ok: data.ok, orders: data.orders, revenue: data.revenue, error: data.error }
+  } catch (e) { result.todaySalesError = e.message }
+  res.json(result)
+})
+
 // ── Shipping / sales by date range (API first, webhook fallback) ──
 router.get('/shopify/sales-range', async (req, res) => {
   const { from, to } = req.query
@@ -103,7 +127,10 @@ router.get('/shopify/sales-range', async (req, res) => {
   try {
     const data = await getShopifyOrdersRange(from, to)
     if (data.ok) return res.json(data)
-  } catch {}
+    console.error('[sales-range] API returned not ok:', data.error)
+  } catch (e) {
+    console.error('[sales-range] API error:', e.message)
+  }
   try {
     const { getSalesRange } = await import('../lib/sales-tracker.js')
     res.json(getSalesRange(from, to))
