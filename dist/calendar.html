@@ -139,6 +139,8 @@ tr:last-child td { border-bottom: none; }
   .month-grid { font-size: 11px; }
   .month-cell { min-height: 50px; padding: 4px; }
 }
+.dl-btn { display: inline-flex; align-items: center; background: rgba(228,63,123,0.1); color: #E43F7B; border: none; border-radius: 4px; font-size: 11px; font-weight: 600; padding: 2px 6px; text-decoration: none; margin-left: 4px; }
+.dl-btn:hover { background: rgba(228,63,123,0.2); }
 </style>
 </head>
 <body>
@@ -182,7 +184,7 @@ tr:last-child td { border-bottom: none; }
       <label class="field"><span>Caption</span><textarea rows="3" id="f-caption" placeholder="Post caption..."></textarea></label>
       <label class="field"><span>Call to Action</span><input type="text" id="f-cta" placeholder="e.g. Shop now, Link in bio"></label>
       <div class="dropzone" id="dropzone" ondragover="event.preventDefault()" ondrop="handleDrop(event)" onclick="document.getElementById('f-file').click()">
-        <input type="file" id="f-file" accept=".mp4,.mov,.webm" hidden onchange="handleDrop(event)">
+        <input type="file" id="f-file" accept=".mp4,.mov,.webm,.jpg,.jpeg,.png,.gif,.webp" hidden onchange="handleDrop(event)">
         <div id="drop-content">
           <div class="drop-prompt"><span class="drop-icon">&#127916;</span><span>Drop MP4, MOV or WEBM here or click to browse</span></div>
         </div>
@@ -271,7 +273,7 @@ function cardHTML(e) {
     <div class="card-info">
       <div class="card-top"><span class="brand-dot" style="background:${bc}"></span><span>${PLATFORM_ICONS[e.platform]||''}</span><span class="card-time">${e.time}</span></div>
       ${e.hook ? `<div class="card-hook">${esc(e.hook)}</div>` : ''}
-      ${statusPill(e.status)}
+      <div class="card-top">${statusPill(e.status)}${e.videoUrl ? `<a class="dl-btn" href="${e.videoUrl}" download onclick="event.stopPropagation()">&#11015; Download</a>` : ''}</div>
     </div>
   </div>`
 }
@@ -486,43 +488,51 @@ function closeDrawer() { $('drawer-overlay').classList.add('hidden') }
 
 function renderDropzone() {
   if (drawerThumbnail) {
+    const isVid = drawerMediaType === 'video'
     $('drop-content').innerHTML = `<div class="thumb-row">
       <img class="thumb-img" src="${drawerThumbnail}">
       <div class="thumb-meta">
         <span class="thumb-name">${esc(drawerVideoName)}</span>
         <span class="thumb-size">${fmtSize(drawerVideoSize)}</span>
-        ${drawerVideoUrl ? `<button class="play-btn" onclick="event.stopPropagation();openVideoModal('${drawerVideoUrl}')">&#9654; Preview</button>
+        <span id="upload-done" style="display:none;color:#22C55E;font-size:11px;font-weight:700">Upload Complete</span>
+        ${drawerVideoUrl ? `${isVid ? `<button class="play-btn" onclick="event.stopPropagation();openVideoModal('${drawerVideoUrl}')">&#9654; Preview</button>` : ''}
         <a class="play-btn" href="${drawerVideoUrl}" download onclick="event.stopPropagation()">&#11015; Download</a>` : ''}
       </div>
       <button class="remove-vid" onclick="event.stopPropagation();removeDrawerVideo()">&#10005;</button>
     </div>`
   } else {
-    $('drop-content').innerHTML = '<div class="drop-prompt"><span class="drop-icon">&#127916;</span><span>Drop MP4, MOV or WEBM here or click to browse</span></div>'
+    $('drop-content').innerHTML = '<div class="drop-prompt"><span class="drop-icon">&#127916;</span><span>Drop video or image here, or click to browse</span></div>'
   }
 }
 
 async function removeDrawerVideo() {
   if (drawerVideoUrl) await fetch(API + '/video/' + drawerVideoUrl.split('/').pop(), { method: 'DELETE' }).catch(() => {})
-  drawerVideoUrl = null; drawerThumbnail = null; drawerVideoName = ''; drawerVideoSize = 0
+  drawerVideoUrl = null; drawerThumbnail = null; drawerVideoName = ''; drawerVideoSize = 0; drawerMediaType = null
   renderDropzone()
 }
+
+let drawerMediaType = null
+let uploadDoneTimer = null
 
 async function handleDrop(e) {
   e.preventDefault()
   const file = e.dataTransfer?.files?.[0] || e.target?.files?.[0]
   if (!file) return
   const ext = file.name.split('.').pop().toLowerCase()
-  if (!['mp4','mov','webm'].includes(ext)) return
+  const isVideo = ['mp4','mov','webm'].includes(ext)
+  const isImage = ['jpg','jpeg','png','gif','webp'].includes(ext)
+  if (!isVideo && !isImage) return
 
   // Grab thumbnail
-  const thumb = await grabThumbnail(file)
+  const thumb = isVideo ? await grabThumbnail(file) : URL.createObjectURL(file)
   drawerThumbnail = thumb
   drawerVideoName = file.name
   drawerVideoSize = file.size
+  drawerMediaType = isVideo ? 'video' : 'image'
   renderDropzone()
 
   // Upload
-  $('drop-content').innerHTML = '<div class="drop-prompt"><span class="drop-icon">&#9203;</span><span>Uploading video...</span></div>'
+  $('drop-content').innerHTML = '<div class="drop-prompt"><span class="drop-icon">&#9203;</span><span>Uploading...</span></div>'
   const form = new FormData()
   form.append('video', file)
   try {
@@ -530,8 +540,12 @@ async function handleDrop(e) {
     const data = await res.json()
     drawerVideoUrl = data.url
     drawerVideoSize = data.size
-  } catch { drawerThumbnail = null; drawerVideoName = ''; drawerVideoSize = 0 }
-  renderDropzone()
+    drawerMediaType = data.type || drawerMediaType
+    renderDropzone()
+    // Show Upload Complete
+    const doneEl = document.getElementById('upload-done')
+    if (doneEl) { doneEl.style.display = 'inline'; clearTimeout(uploadDoneTimer); uploadDoneTimer = setTimeout(() => doneEl.style.display = 'none', 3000) }
+  } catch { drawerThumbnail = null; drawerVideoName = ''; drawerVideoSize = 0; drawerMediaType = null; renderDropzone() }
 }
 
 function grabThumbnail(file) {
@@ -567,7 +581,8 @@ async function handleSave() {
     videoUrl: drawerVideoUrl,
     thumbnail: drawerThumbnail,
     videoName: drawerVideoName,
-    videoSize: drawerVideoSize
+    videoSize: drawerVideoSize,
+    mediaType: drawerMediaType
   }
   await fetch(API + '/entries', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(entry) })
   closeDrawer()

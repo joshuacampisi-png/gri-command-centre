@@ -8,7 +8,9 @@ const STATUSES = ['Draft', 'Scheduled', 'Published', 'Paused']
 const STATUS_COLORS = { Draft: '#9CA3AF', Scheduled: '#3B82F6', Published: '#22C55E', Paused: '#F59E0B' }
 const BRAND_COLORS = { 'Gender Reveal Ideas': '#EC4899', 'LionZen': '#14B8A6' }
 const PLATFORM_ICONS = { 'Instagram Reels': '📸', 'TikTok': '🎵', 'Facebook': '📘', 'YouTube Shorts': '▶️' }
-const ACCEPT_VIDEO = '.mp4,.mov,.webm'
+const ACCEPT_MEDIA = '.mp4,.mov,.webm,.jpg,.jpeg,.png,.gif,.webp'
+const VIDEO_EXTS = ['mp4', 'mov', 'webm']
+const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp']
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8) }
 function fmtDate(d) { return d.toISOString().slice(0, 10) }
@@ -101,13 +103,17 @@ function grabThumbnail(file) {
 
 // ── Video Preview Modal ───────────────────────────────────────────────────────
 
-function VideoModal({ url, onClose }) {
+function MediaModal({ url, type, onClose }) {
   if (!url) return null
+  const isImage = type === 'image' || /\.(jpg|jpeg|png|gif|webp)$/i.test(url)
   return (
     <div className="cc-modal-overlay" onClick={onClose}>
       <div className="cc-modal" onClick={e => e.stopPropagation()}>
-        <button className="cc-modal-close" onClick={onClose}>✕</button>
-        <video src={url} controls autoPlay style={{ width: '100%', maxHeight: '70vh', borderRadius: 8 }} />
+        <button className="cc-modal-close" onClick={onClose}>&#10005;</button>
+        {isImage
+          ? <img src={url} alt="" style={{ width: '100%', maxHeight: '70vh', objectFit: 'contain', borderRadius: 8 }} />
+          : <video src={url} controls autoPlay style={{ width: '100%', maxHeight: '70vh', borderRadius: 8 }} />
+        }
       </div>
     </div>
   )
@@ -119,10 +125,11 @@ function EntryDrawer({ entry, onSave, onDelete, onClose }) {
   const [form, setForm] = useState(entry || {
     id: uid(), brand: BRANDS[0], platform: PLATFORMS[0], date: fmtDate(new Date()),
     time: '09:00', caption: '', hook: '', cta: '', status: 'Draft', notes: '',
-    videoName: '', videoSize: 0, thumbnail: null, videoUrl: null
+    videoName: '', videoSize: 0, thumbnail: null, videoUrl: null, mediaType: null
   })
   const [videoPreview, setVideoPreview] = useState(null)
   const [uploading, setUploading] = useState(false)
+  const [uploadDone, setUploadDone] = useState(false)
   const fileRef = useRef()
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
@@ -132,14 +139,19 @@ function EntryDrawer({ entry, onSave, onDelete, onClose }) {
     const file = e.dataTransfer?.files?.[0] || e.target?.files?.[0]
     if (!file) return
     const ext = file.name.split('.').pop().toLowerCase()
-    if (!['mp4', 'mov', 'webm'].includes(ext)) return
-    const thumb = await grabThumbnail(file)
-    setForm(f => ({ ...f, videoName: file.name, videoSize: file.size, thumbnail: thumb }))
+    const isVideo = VIDEO_EXTS.includes(ext)
+    const isImage = IMAGE_EXTS.includes(ext)
+    if (!isVideo && !isImage) return
+    const thumb = isVideo ? await grabThumbnail(file) : URL.createObjectURL(file)
+    setForm(f => ({ ...f, videoName: file.name, videoSize: file.size, thumbnail: thumb, mediaType: isVideo ? 'video' : 'image' }))
     setUploading(true)
+    setUploadDone(false)
     try {
       const data = await uploadVideo(file)
-      setForm(f => ({ ...f, videoUrl: data.url, videoSize: data.size }))
-    } catch { setForm(f => ({ ...f, videoName: '', videoSize: 0, thumbnail: null })) }
+      setForm(f => ({ ...f, videoUrl: data.url, videoSize: data.size, mediaType: data.type || (isVideo ? 'video' : 'image') }))
+      setUploadDone(true)
+      setTimeout(() => setUploadDone(false), 3000)
+    } catch { setForm(f => ({ ...f, videoName: '', videoSize: 0, thumbnail: null, mediaType: null })) }
     setUploading(false)
   }
 
@@ -198,18 +210,18 @@ function EntryDrawer({ entry, onSave, onDelete, onClose }) {
             <input type="text" value={form.cta} onChange={e => set('cta', e.target.value)} placeholder="e.g. Shop now, Link in bio" />
           </label>
 
-          {/* Video drop zone */}
+          {/* Media drop zone */}
           <div
             className="cc-dropzone"
             onDragOver={e => e.preventDefault()}
             onDrop={handleDrop}
             onClick={() => !uploading && fileRef.current?.click()}
           >
-            <input ref={fileRef} type="file" accept={ACCEPT_VIDEO} hidden onChange={handleDrop} />
+            <input ref={fileRef} type="file" accept={ACCEPT_MEDIA} hidden onChange={handleDrop} />
             {uploading ? (
               <div className="cc-drop-prompt">
-                <span className="cc-drop-icon">⏳</span>
-                <span>Uploading video...</span>
+                <span className="cc-drop-icon">&#9203;</span>
+                <span>Uploading...</span>
               </div>
             ) : form.thumbnail ? (
               <div className="cc-thumb-row">
@@ -217,19 +229,20 @@ function EntryDrawer({ entry, onSave, onDelete, onClose }) {
                 <div className="cc-thumb-meta">
                   <span className="cc-thumb-name">{form.videoName}</span>
                   <span className="cc-thumb-size">{fmtSize(form.videoSize)}</span>
+                  {uploadDone && <span className="cc-upload-done">Upload Complete</span>}
                   {form.videoUrl && (
                     <>
-                      <button className="cc-play-btn" onClick={e => { e.stopPropagation(); setVideoPreview(form.videoUrl) }}>▶ Preview</button>
-                      <a className="cc-play-btn" href={form.videoUrl} download onClick={e => e.stopPropagation()} style={{ textDecoration: 'none' }}>⬇ Download</a>
+                      {form.mediaType === 'video' && <button className="cc-play-btn" onClick={e => { e.stopPropagation(); setVideoPreview(form.videoUrl) }}>&#9654; Preview</button>}
+                      <a className="cc-play-btn" href={form.videoUrl} download onClick={e => e.stopPropagation()} style={{ textDecoration: 'none' }}>&#11015; Download</a>
                     </>
                   )}
                 </div>
-                <button className="cc-remove-vid" onClick={e => { e.stopPropagation(); deleteVideo(form.videoUrl); set('thumbnail', null); set('videoUrl', null); set('videoName', ''); set('videoSize', 0) }}>✕</button>
+                <button className="cc-remove-vid" onClick={e => { e.stopPropagation(); deleteVideo(form.videoUrl); set('thumbnail', null); set('videoUrl', null); set('videoName', ''); set('videoSize', 0); set('mediaType', null) }}>&#10005;</button>
               </div>
             ) : (
               <div className="cc-drop-prompt">
-                <span className="cc-drop-icon">🎬</span>
-                <span>Drop MP4, MOV or WEBM here or click to browse</span>
+                <span className="cc-drop-icon">&#127916;</span>
+                <span>Drop video or image here, or click to browse</span>
               </div>
             )}
           </div>
@@ -245,7 +258,7 @@ function EntryDrawer({ entry, onSave, onDelete, onClose }) {
           <button className="btn-sec" onClick={onClose}>Cancel</button>
           <button className="cc-btn cc-btn-save" onClick={handleSubmit}>Save</button>
         </div>
-        <VideoModal url={videoPreview} onClose={() => setVideoPreview(null)} />
+        <MediaModal url={videoPreview} onClose={() => setVideoPreview(null)} />
       </div>
     </div>
   )
@@ -269,7 +282,10 @@ function EntryCard({ entry, onClick, onDragStart }) {
           <span className="cc-card-time">{entry.time}</span>
         </div>
         {entry.hook && <div className="cc-card-hook">{entry.hook}</div>}
-        <span className="cc-status-pill" style={{ background: STATUS_COLORS[entry.status] + '22', color: STATUS_COLORS[entry.status], border: `1px solid ${STATUS_COLORS[entry.status]}44` }}>{entry.status}</span>
+        <div className="cc-card-top">
+          <span className="cc-status-pill" style={{ background: STATUS_COLORS[entry.status] + '22', color: STATUS_COLORS[entry.status], border: `1px solid ${STATUS_COLORS[entry.status]}44` }}>{entry.status}</span>
+          {entry.videoUrl && <a className="cc-card-dl" href={entry.videoUrl} download onClick={e => e.stopPropagation()}>&#11015; Download</a>}
+        </div>
       </div>
     </div>
   )
@@ -471,7 +487,7 @@ export default function ContentCalendarTab() {
   const [view, setView] = useState('week')
   const [weekOffset, setWeekOffset] = useState(0)
   const [drawer, setDrawer] = useState(null)
-  const [videoModal, setVideoModal] = useState(null)
+  const [videoModal, setMediaModal] = useState(null)
   const fileInputRef = useRef()
 
   // Load entries from server on mount
@@ -595,7 +611,7 @@ export default function ContentCalendarTab() {
         />
       )}
 
-      <VideoModal url={videoModal} onClose={() => setVideoModal(null)} />
+      <MediaModal url={videoModal} onClose={() => setMediaModal(null)} />
     </div>
   )
 }

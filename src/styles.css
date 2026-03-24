@@ -1746,6 +1746,9 @@ button:hover { opacity: .88; }
 
 .cc-dl-link { font-size: 16px; text-decoration: none; display: inline-block; padding: 2px 6px; border-radius: 4px; }
 .cc-dl-link:hover { background: rgba(228,63,123,0.1); }
+.cc-upload-done { color: #22C55E; font-size: 11px; font-weight: 700; }
+.cc-card-dl { display: inline-flex; align-items: center; justify-content: center; background: rgba(228,63,123,0.1); color: #E43F7B; border: none; border-radius: 4px; font-size: 11px; font-weight: 600; padding: 2px 6px; text-decoration: none; margin-top: 2px; }
+.cc-card-dl:hover { background: rgba(228,63,123,0.2); }
 
 /* Animations */
 @keyframes ccFadeIn { from { opacity: 0; } to { opacity: 1; } }

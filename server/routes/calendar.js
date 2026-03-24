@@ -29,7 +29,7 @@ const upload = multer({
     }
   }),
   fileFilter: (_req, file, cb) => {
-    const allowed = ['video/mp4', 'video/quicktime', 'video/webm']
+    const allowed = ['video/mp4', 'video/quicktime', 'video/webm', 'image/jpeg', 'image/png', 'image/gif', 'image/webp']
     cb(null, allowed.includes(file.mimetype))
   },
   limits: { fileSize: 500 * 1024 * 1024 }
@@ -89,10 +89,11 @@ router.post('/entries/bulk-delete', (req, res) => {
   res.json({ ok: true })
 })
 
-// Upload video
+// Upload media (video or image)
 router.post('/upload', upload.single('video'), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: 'No valid video file' })
-  res.json({ url: `/calendar-videos/${req.file.filename}`, filename: req.file.filename, size: req.file.size })
+  if (!req.file) return res.status(400).json({ error: 'No valid media file' })
+  const isImage = req.file.mimetype.startsWith('image/')
+  res.json({ url: `/calendar-videos/${req.file.filename}`, filename: req.file.filename, size: req.file.size, type: isImage ? 'image' : 'video' })
 })
 
 // Delete video
