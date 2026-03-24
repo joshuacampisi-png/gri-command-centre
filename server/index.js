@@ -109,7 +109,8 @@ app.use('/api/shopify/webhook', express.json({
 app.use(express.json())
 app.use('/task-media', express.static(join(process.cwd(), 'public/task-media')))
 app.use('/review-captures', express.static(join(process.cwd(), 'public/review-captures')))
-app.use('/calendar-videos', express.static(join(process.cwd(), 'public/calendar-videos')))
+const calPersist = process.env.RAILWAY_VOLUME_MOUNT_PATH || process.cwd()
+app.use('/calendar-videos', express.static(join(calPersist, 'public/calendar-videos')))
 app.use('/api/calendar', calendarRoutes)
 
 // Serve built frontend from /dist — same origin, no CORS issues
