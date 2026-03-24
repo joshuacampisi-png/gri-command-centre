@@ -138,6 +138,14 @@ app.use('/api/contract', contractRoutes)
 app.use('/api/shopify/webhook', shopifyWebhookRoutes)
 app.use('/api/square/webhook', squareWebhookRoutes)
 
+// Env debug — shows which vars are SET (no values exposed)
+app.get('/api/env-debug', (_req, res) => {
+  const keys = ['SHOPIFY_STORE_DOMAIN','SHOPIFY_ADMIN_ACCESS_TOKEN','NOTION_TOKEN','TELEGRAM_BOT_TOKEN','ANTHROPIC_API_KEY','PORT','DASHBOARD_PASSWORD']
+  const result = {}
+  keys.forEach(k => { result[k] = Boolean(process.env[k]) ? `SET(${String(process.env[k]).length}chars)` : 'MISSING' })
+  res.json(result)
+})
+
 // Claude usage safety dashboard
 app.get('/api/claude-usage', (_req, res) => res.json(getUsageSummary()))
 
