@@ -7,7 +7,7 @@ import GSCVisibility from './components/GSCVisibility'
 import MarketShare from './components/MarketShare'
 import TNTDashboard from './components/TNTDashboard'
 
-const NAV = ['Overview', 'Tasks', 'Completed', 'Keywords', 'Competitors', 'Trends', 'TNT Hire', 'Themes', 'Theme Editor', 'Settings']
+const NAV = ['Overview', 'Tasks', 'Completed', 'Keywords', 'Competitors', 'Trends', 'TNT Hire']
 
 const COMPANIES = {
   GRI:     { name: 'Gender Reveal Ideas', description: 'Gender reveal party supplies',          accent: '#ef4444' },
@@ -117,6 +117,7 @@ function OverviewPage({ data, company }) {
 
   const [trendingQueries, setTrendingQueries] = useState(null)
   const [viralReels, setViralReels] = useState(null)
+  const [protection, setProtection] = useState(null)
 
   // Wed-Tue week helper: get the Wednesday start for a given week offset (0 = current)
   const getWedTueWeek = useCallback((offset = 0) => {
@@ -165,12 +166,18 @@ function OverviewPage({ data, company }) {
       fetch('/api/viral/instagram').then(r => r.json()).then(d => {
         setViralReels(d.ok ? d.videos : [])
       }).catch(() => setViralReels([]))
+      fetch('/api/shopify/shipping-protection').then(r => r.json()).then(d => {
+        setProtection(d.ok ? d : null)
+      }).catch(() => setProtection(null))
     }
     fetchAll()
-    // Auto-refresh sales every 10 seconds while dashboard is open (real-time feel)
+    // Auto-refresh sales + protection every 10 seconds while dashboard is open
     const interval = setInterval(() => {
       fetch('/api/shopify/today-sales').then(r => r.json()).then(d => {
         setSales(d.ok ? d : { ok: false, error: d.error })
+      }).catch(() => {})
+      fetch('/api/shopify/shipping-protection').then(r => r.json()).then(d => {
+        setProtection(d.ok ? d : null)
       }).catch(() => {})
     }, 10000)
     return () => clearInterval(interval)
@@ -298,6 +305,26 @@ function OverviewPage({ data, company }) {
           <div className="kv-row"><span>Active hires</span><strong>{activeHires.length}</strong></div>
           <div className="kv-row"><span>Awaiting bond</span><strong style={{ color: awaitingBond.length ? '#E43F7B' : '#10B981' }}>{awaitingBond.length}</strong></div>
           <div className="kv-row"><span>This month</span><strong>{monthlyHires.length} bookings</strong></div>
+        </div>
+
+        {/* Shipping Protection */}
+        <div className="ov-card ov-stat-card" style={{ ...carouselCardStyle, minWidth: 240 }}>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 16 }}>&#128230;</span> Shipping Protection
+          </h3>
+          {!protection ? <p className="muted">Loading...</p> : <>
+            <div style={{ fontSize: '2.4rem', fontWeight: 800, color: '#10B981', marginBottom: 8 }}>
+              ${protection.lifetime.revenue.toFixed(2)}
+            </div>
+            <div style={{ fontSize: 10, color: '#888', marginBottom: 10, fontWeight: 500 }}>LIFETIME TOTAL</div>
+            <div className="kv-row"><span>Today</span><strong style={{ color: '#10B981' }}>${protection.today.revenue.toFixed(2)} <span style={{ color: '#888', fontWeight: 400 }}>({protection.today.count})</span></strong></div>
+            <div className="kv-row"><span>This week</span><strong style={{ color: '#3AB4C0' }}>${protection.week.revenue.toFixed(2)} <span style={{ color: '#888', fontWeight: 400 }}>({protection.week.count})</span></strong></div>
+            <div className="kv-row"><span>This month</span><strong style={{ color: '#E43F7B' }}>${protection.month.revenue.toFixed(2)} <span style={{ color: '#888', fontWeight: 400 }}>({protection.month.count})</span></strong></div>
+            <div className="kv-row"><span>Lifetime orders</span><strong>{protection.lifetime.count}</strong></div>
+            <div style={{ marginTop: 8, padding: '6px 10px', background: '#F0FDF4', borderRadius: 8, fontSize: 11, color: '#059669', fontWeight: 600, textAlign: 'center' }}>
+              ${protection.pricePerOrder.toFixed(2)} per order
+            </div>
+          </>}
         </div>
 
         {/* Trending Now */}

@@ -103,6 +103,16 @@ router.get('/shopify/sales-range', async (req, res) => {
   }
 })
 
+// ── Shipping Protection Stats ──
+router.get('/shopify/shipping-protection', async (_req, res) => {
+  try {
+    const { getShippingProtection } = await import('../lib/sales-tracker.js')
+    res.json(getShippingProtection())
+  } catch (e) {
+    res.json({ ok: false, error: e.message })
+  }
+})
+
 // ── Viral Instagram Reels ──
 router.get('/viral/instagram', async (req, res) => {
   try {

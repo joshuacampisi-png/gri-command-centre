@@ -179,7 +179,7 @@ button:hover { opacity: .88; }
 /* Desktop: stats as grid, reels as grid */
 @media (min-width: 901px) {
   .ov-stats-carousel {
-    display: grid !important; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    display: grid !important; grid-template-columns: repeat(5, 1fr); gap: 16px;
     overflow: visible !important;
   }
   .ov-stat-card { min-width: unset !important; }

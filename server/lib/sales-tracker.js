@@ -1,5 +1,5 @@
 /**
- * Sales Tracker — records daily sales + shipping from Shopify webhook events
+ * Sales Tracker — records daily sales + shipping + shipping protection from Shopify webhook events
  * Stores to data/daily-sales.json so we don't need read_orders scope
  */
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs'
@@ -7,6 +7,11 @@ import { join } from 'path'
 
 const DATA_DIR = join(process.cwd(), 'data')
 const SALES_FILE = join(DATA_DIR, 'daily-sales.json')
+const PROTECTION_FILE = join(DATA_DIR, 'shipping-protection.json')
+
+// Shipping Protection product ID from Shopify
+const SHIPPING_PROTECTION_PRODUCT_ID = 8156417196121
+const SHIPPING_PROTECTION_PRICE = 3.00
 
 if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true })
 
@@ -48,6 +53,91 @@ export function recordOrder(order) {
 
   writeSales(sales)
   console.log(`[sales-tracker] Recorded ${order.name}: $${total.toFixed(2)} (shipping $${shipping.toFixed(2)}) — day total: $${sales[date].revenue.toFixed(2)}`)
+
+  // Track shipping protection if this order has it
+  const hasProtection = (order.line_items || []).some(
+    item => item.product_id === SHIPPING_PROTECTION_PRODUCT_ID
+      || (item.title || '').toLowerCase().includes('shipping protection')
+  )
+  if (hasProtection) {
+    recordShippingProtection(order.name, date)
+  }
+}
+
+// ── Shipping Protection Tracker ─────────────────────────────────────────────
+
+function readProtection() {
+  if (!existsSync(PROTECTION_FILE)) return { lifetime: { count: 0, revenue: 0 }, daily: {}, orders: [] }
+  try { return JSON.parse(readFileSync(PROTECTION_FILE, 'utf8')) } catch { return { lifetime: { count: 0, revenue: 0 }, daily: {}, orders: [] } }
+}
+
+function writeProtection(data) {
+  writeFileSync(PROTECTION_FILE, JSON.stringify(data, null, 2))
+}
+
+function recordShippingProtection(orderName, date) {
+  const prot = readProtection()
+
+  // Prevent double counting
+  if (prot.orders.includes(orderName)) return
+
+  prot.lifetime.count += 1
+  prot.lifetime.revenue += SHIPPING_PROTECTION_PRICE
+
+  if (!prot.daily[date]) prot.daily[date] = { count: 0, revenue: 0 }
+  prot.daily[date].count += 1
+  prot.daily[date].revenue += SHIPPING_PROTECTION_PRICE
+
+  prot.orders.push(orderName)
+
+  writeProtection(prot)
+  console.log(`[sales-tracker] Shipping protection recorded for ${orderName} — lifetime: $${prot.lifetime.revenue.toFixed(2)} (${prot.lifetime.count} orders)`)
+}
+
+/**
+ * Get shipping protection stats
+ */
+export function getShippingProtection() {
+  const prot = readProtection()
+  const date = todayKey()
+  const today = prot.daily[date] || { count: 0, revenue: 0 }
+
+  // This week (Wed-Tue)
+  const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Australia/Brisbane' }))
+  const day = now.getDay()
+  const daysSinceWed = (day - 3 + 7) % 7
+  const wed = new Date(now)
+  wed.setDate(now.getDate() - daysSinceWed)
+  wed.setHours(0, 0, 0, 0)
+  const wedKey = wed.toLocaleDateString('en-CA', { timeZone: 'Australia/Brisbane' })
+  const tueKey = new Date(wed.getTime() + 6 * 86400000).toLocaleDateString('en-CA', { timeZone: 'Australia/Brisbane' })
+
+  let weekCount = 0, weekRevenue = 0
+  for (const [d, v] of Object.entries(prot.daily)) {
+    if (d >= wedKey && d <= tueKey) {
+      weekCount += v.count
+      weekRevenue += v.revenue
+    }
+  }
+
+  // This month
+  const monthKey = date.slice(0, 7) // YYYY-MM
+  let monthCount = 0, monthRevenue = 0
+  for (const [d, v] of Object.entries(prot.daily)) {
+    if (d.startsWith(monthKey)) {
+      monthCount += v.count
+      monthRevenue += v.revenue
+    }
+  }
+
+  return {
+    ok: true,
+    today: { count: today.count, revenue: today.revenue },
+    week: { count: weekCount, revenue: weekRevenue },
+    month: { count: monthCount, revenue: monthRevenue },
+    lifetime: prot.lifetime,
+    pricePerOrder: SHIPPING_PROTECTION_PRICE,
+  }
 }
 
 /**
