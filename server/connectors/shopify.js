@@ -121,19 +121,25 @@ export async function getShopifyOrdersRange(fromDate, toDate) {
   const utcFrom = new Date(fromDate + 'T00:00:00+10:00')
   const utcTo = new Date(toDate + 'T23:59:59+10:00')
 
+  // Paginate using created_at_max cursor (descending) to avoid since_id overlap bug
   let allOrders = []
-  let page = 1
-  let hasMore = true
-  let sinceId = null
+  let cursor = utcTo.toISOString()
 
-  while (hasMore) {
-    let url = `/orders.json?status=any&created_at_min=${utcFrom.toISOString()}&created_at_max=${utcTo.toISOString()}&limit=250`
-    if (sinceId) url += `&since_id=${sinceId}`
+  for (let page = 0; page < 10; page++) {
+    const url = `/orders.json?status=any&created_at_min=${utcFrom.toISOString()}&created_at_max=${cursor}&limit=250`
     const data = await shopifyFetch(url)
     const batch = data.orders || []
-    allOrders = allOrders.concat(batch)
-    if (batch.length < 250) { hasMore = false } else { sinceId = batch[batch.length - 1].id; page++ }
-    if (page > 10) break // Safety cap at ~2500 orders
+    if (batch.length === 0) break
+
+    // Deduplicate by ID
+    const existingIds = new Set(allOrders.map(o => o.id))
+    const newOrders = batch.filter(o => !existingIds.has(o.id))
+    allOrders = allOrders.concat(newOrders)
+
+    if (batch.length < 250) break
+    // Move cursor to oldest order in this batch
+    const oldest = batch.reduce((min, o) => o.created_at < min ? o.created_at : min, batch[0].created_at)
+    cursor = oldest
   }
 
   const validOrders = allOrders.filter(o =>
