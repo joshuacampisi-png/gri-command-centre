@@ -173,12 +173,15 @@ router.get('/shopify/shipping-protection', async (_req, res) => {
       if (hasProt) todayProtCount++
     }
 
+    // Lifetime: pull all orders from when shipping protection was introduced
+    const lifetimeData = await getShopifyOrdersRange('2025-01-01', aestDate)
+
     res.json({
       ok: true,
       today: { count: todayProtCount, revenue: todayProtCount * 3.00 },
       week: { count: weekData.protectionCount || 0, revenue: weekData.protectionRevenue || 0 },
       month: { count: monthData.protectionCount || 0, revenue: monthData.protectionRevenue || 0 },
-      lifetime: { count: monthData.protectionCount || 0, revenue: monthData.protectionRevenue || 0 },
+      lifetime: { count: lifetimeData.protectionCount || 0, revenue: lifetimeData.protectionRevenue || 0 },
       pricePerOrder: 3.00,
     })
   } catch (e) {

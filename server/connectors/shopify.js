@@ -140,10 +140,13 @@ export async function getShopifyOrdersRange(fromDate, toDate) {
     o.financial_status !== 'voided' && o.cancelled_at === null
   )
 
-  let revenue = 0, shipping = 0, orderCount = 0, protectionCount = 0, protectionRevenue = 0
+  let revenue = 0, shipping = 0, orderCount = 0, protectionCount = 0, protectionRevenue = 0, productRevenue = 0
   for (const order of validOrders) {
-    revenue += parseFloat(order.total_price || 0)
-    shipping += (order.shipping_lines || []).reduce((sum, s) => sum + parseFloat(s.price || 0), 0)
+    const total = parseFloat(order.total_price || 0)
+    const subtotal = parseFloat(order.subtotal_price || 0)
+    const ship = (order.shipping_lines || []).reduce((sum, s) => sum + parseFloat(s.price || 0), 0)
+    revenue += total
+    shipping += ship
     orderCount++
     const hasProtection = (order.line_items || []).some(
       li => li.product_id === SHIPPING_PROTECTION_PRODUCT_ID
@@ -153,9 +156,11 @@ export async function getShopifyOrdersRange(fromDate, toDate) {
       protectionCount++
       protectionRevenue += SHIPPING_PROTECTION_PRICE
     }
+    // Product revenue = subtotal minus shipping protection line items
+    productRevenue += subtotal - (hasProtection ? SHIPPING_PROTECTION_PRICE : 0)
   }
 
-  return { ok: true, revenue, shipping, orders: orderCount, protectionCount, protectionRevenue, from: fromDate, to: toDate }
+  return { ok: true, revenue, productRevenue, shipping, orders: orderCount, protectionCount, protectionRevenue, from: fromDate, to: toDate }
 }
 
 export async function getShopifySnapshot() {
