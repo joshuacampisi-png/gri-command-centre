@@ -2,10 +2,8 @@ import dotenv from 'dotenv'
 import { fileURLToPath } from 'url'
 import { dirname, resolve } from 'path'
 
-import { existsSync } from 'fs'
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const envPath = resolve(__dirname, '../../.env')
-if (existsSync(envPath)) dotenv.config({ path: envPath })
+dotenv.config({ path: resolve(__dirname, '../../.env') })
 
 export const env = {
   port: Number(process.env.PORT || 8787),
