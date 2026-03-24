@@ -9,20 +9,47 @@ const STATUS_COLORS = { Draft: '#9CA3AF', Scheduled: '#3B82F6', Published: '#22C
 const BRAND_COLORS = { 'Gender Reveal Ideas': '#EC4899', 'LionZen': '#14B8A6' }
 const PLATFORM_ICONS = { 'Instagram Reels': '📸', 'TikTok': '🎵', 'Facebook': '📘', 'YouTube Shorts': '▶️' }
 const ACCEPT_VIDEO = '.mp4,.mov,.webm'
-const LS_KEY = 'cc-entries'
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8) }
 function fmtDate(d) { return d.toISOString().slice(0, 10) }
 function fmtSize(b) { if (b < 1024) return b + ' B'; if (b < 1048576) return (b / 1024).toFixed(1) + ' KB'; return (b / 1048576).toFixed(1) + ' MB' }
 function parseDate(s) { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d) }
 
-function loadEntries() {
-  try { const raw = localStorage.getItem(LS_KEY); return raw ? JSON.parse(raw) : [] }
-  catch { return [] }
+const API = '/api/calendar'
+
+async function fetchEntries() {
+  const res = await fetch(`${API}/entries`)
+  return res.ok ? res.json() : []
 }
-function saveEntries(entries) {
-  const safe = entries.map(({ videoUrl, ...rest }) => rest)
-  localStorage.setItem(LS_KEY, JSON.stringify(safe))
+
+async function saveEntry(entry) {
+  await fetch(`${API}/entries`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entry) })
+}
+
+async function deleteEntryAPI(id) {
+  await fetch(`${API}/entries/${id}`, { method: 'DELETE' })
+}
+
+async function bulkStatusAPI(ids, status) {
+  await fetch(`${API}/entries/bulk-status`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids, status }) })
+}
+
+async function bulkDeleteAPI(ids) {
+  await fetch(`${API}/entries/bulk-delete`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids }) })
+}
+
+async function uploadVideo(file) {
+  const form = new FormData()
+  form.append('video', file)
+  const res = await fetch(`${API}/upload`, { method: 'POST', body: form })
+  if (!res.ok) throw new Error('Upload failed')
+  return res.json()
+}
+
+async function deleteVideo(url) {
+  if (!url) return
+  const filename = url.split('/').pop()
+  await fetch(`${API}/video/${filename}`, { method: 'DELETE' }).catch(() => {})
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -95,6 +122,7 @@ function EntryDrawer({ entry, onSave, onDelete, onClose }) {
     videoName: '', videoSize: 0, thumbnail: null, videoUrl: null
   })
   const [videoPreview, setVideoPreview] = useState(null)
+  const [uploading, setUploading] = useState(false)
   const fileRef = useRef()
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
@@ -106,8 +134,13 @@ function EntryDrawer({ entry, onSave, onDelete, onClose }) {
     const ext = file.name.split('.').pop().toLowerCase()
     if (!['mp4', 'mov', 'webm'].includes(ext)) return
     const thumb = await grabThumbnail(file)
-    const url = URL.createObjectURL(file)
-    setForm(f => ({ ...f, videoName: file.name, videoSize: file.size, thumbnail: thumb, videoUrl: url }))
+    setForm(f => ({ ...f, videoName: file.name, videoSize: file.size, thumbnail: thumb }))
+    setUploading(true)
+    try {
+      const data = await uploadVideo(file)
+      setForm(f => ({ ...f, videoUrl: data.url, videoSize: data.size }))
+    } catch { setForm(f => ({ ...f, videoName: '', videoSize: 0, thumbnail: null })) }
+    setUploading(false)
   }
 
   const handleSubmit = () => { onSave(form); onClose() }
@@ -170,20 +203,28 @@ function EntryDrawer({ entry, onSave, onDelete, onClose }) {
             className="cc-dropzone"
             onDragOver={e => e.preventDefault()}
             onDrop={handleDrop}
-            onClick={() => fileRef.current?.click()}
+            onClick={() => !uploading && fileRef.current?.click()}
           >
             <input ref={fileRef} type="file" accept={ACCEPT_VIDEO} hidden onChange={handleDrop} />
-            {form.thumbnail ? (
+            {uploading ? (
+              <div className="cc-drop-prompt">
+                <span className="cc-drop-icon">⏳</span>
+                <span>Uploading video...</span>
+              </div>
+            ) : form.thumbnail ? (
               <div className="cc-thumb-row">
                 <img src={form.thumbnail} alt="" className="cc-thumb" />
                 <div className="cc-thumb-meta">
                   <span className="cc-thumb-name">{form.videoName}</span>
                   <span className="cc-thumb-size">{fmtSize(form.videoSize)}</span>
                   {form.videoUrl && (
-                    <button className="cc-play-btn" onClick={e => { e.stopPropagation(); setVideoPreview(form.videoUrl) }}>▶ Preview</button>
+                    <>
+                      <button className="cc-play-btn" onClick={e => { e.stopPropagation(); setVideoPreview(form.videoUrl) }}>▶ Preview</button>
+                      <a className="cc-play-btn" href={form.videoUrl} download onClick={e => e.stopPropagation()} style={{ textDecoration: 'none' }}>⬇ Download</a>
+                    </>
                   )}
                 </div>
-                <button className="cc-remove-vid" onClick={e => { e.stopPropagation(); set('thumbnail', null); set('videoUrl', null); set('videoName', ''); set('videoSize', 0) }}>✕</button>
+                <button className="cc-remove-vid" onClick={e => { e.stopPropagation(); deleteVideo(form.videoUrl); set('thumbnail', null); set('videoUrl', null); set('videoName', ''); set('videoSize', 0) }}>✕</button>
               </div>
             ) : (
               <div className="cc-drop-prompt">
@@ -389,11 +430,11 @@ function ListView({ entries, onClickEntry, onBulkAction }) {
           <thead>
             <tr>
               <th><input type="checkbox" checked={selected.size === filtered.length && filtered.length > 0} onChange={toggleAll} /></th>
-              <th>Date</th><th>Time</th><th>Brand</th><th>Platform</th><th>Hook</th><th>Status</th><th>Thumb</th>
+              <th>Date</th><th>Time</th><th>Brand</th><th>Platform</th><th>Hook</th><th>Status</th><th>Thumb</th><th></th>
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 && <tr><td colSpan={8} className="muted" style={{ textAlign: 'center', padding: 24 }}>No entries match filters</td></tr>}
+            {filtered.length === 0 && <tr><td colSpan={9} className="muted" style={{ textAlign: 'center', padding: 24 }}>No entries match filters</td></tr>}
             {filtered.map(e => (
               <tr key={e.id} className={selected.has(e.id) ? 'cc-row-sel' : ''} onClick={() => onClickEntry(e)}>
                 <td onClick={ev => ev.stopPropagation()}><input type="checkbox" checked={selected.has(e.id)} onChange={() => toggle(e.id)} /></td>
@@ -404,6 +445,7 @@ function ListView({ entries, onClickEntry, onBulkAction }) {
                 <td className="cc-hook-cell">{e.hook || '—'}</td>
                 <td><span className="cc-status-pill" style={{ background: STATUS_COLORS[e.status] + '22', color: STATUS_COLORS[e.status], border: `1px solid ${STATUS_COLORS[e.status]}44` }}>{e.status}</span></td>
                 <td>{e.thumbnail ? <img src={e.thumbnail} className="cc-list-thumb" alt="" /> : '—'}</td>
+                <td onClick={ev => ev.stopPropagation()}>{e.videoUrl ? <a className="cc-dl-link" href={e.videoUrl} download>⬇</a> : ''}</td>
               </tr>
             ))}
           </tbody>
@@ -425,20 +467,22 @@ function ListView({ entries, onClickEntry, onBulkAction }) {
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export default function ContentCalendarTab() {
-  const [entries, setEntries] = useState(loadEntries)
+  const [entries, setEntries] = useState([])
   const [view, setView] = useState('week')
   const [weekOffset, setWeekOffset] = useState(0)
-  const [drawer, setDrawer] = useState(null) // null | { mode: 'new', date } | { mode: 'edit', entry }
+  const [drawer, setDrawer] = useState(null)
   const [videoModal, setVideoModal] = useState(null)
   const fileInputRef = useRef()
 
-  useEffect(() => { saveEntries(entries) }, [entries])
+  // Load entries from server on mount
+  useEffect(() => { fetchEntries().then(setEntries) }, [])
 
   const openNew = (date) => setDrawer({ mode: 'new', date })
   const openEdit = (entry) => setDrawer({ mode: 'edit', entry })
   const closeDrawer = () => setDrawer(null)
 
-  const saveEntry = (form) => {
+  const handleSaveEntry = async (form) => {
+    await saveEntry(form)
     setEntries(prev => {
       const idx = prev.findIndex(e => e.id === form.id)
       if (idx >= 0) { const next = [...prev]; next[idx] = form; return next }
@@ -446,33 +490,45 @@ export default function ContentCalendarTab() {
     })
   }
 
-  const deleteEntry = (id) => setEntries(prev => prev.filter(e => e.id !== id))
-
-  const reschedule = (id, newDate) => {
-    setEntries(prev => prev.map(e => e.id === id ? { ...e, date: newDate } : e))
+  const deleteEntry = async (id) => {
+    await deleteEntryAPI(id)
+    setEntries(prev => prev.filter(e => e.id !== id))
   }
 
-  const bulkAction = (type, ids, value) => {
-    if (type === 'status') setEntries(prev => prev.map(e => ids.includes(e.id) ? { ...e, status: value } : e))
-    if (type === 'delete') setEntries(prev => prev.filter(e => !ids.includes(e.id)))
+  const reschedule = async (id, newDate) => {
+    const entry = entries.find(e => e.id === id)
+    if (!entry) return
+    const updated = { ...entry, date: newDate }
+    await saveEntry(updated)
+    setEntries(prev => prev.map(e => e.id === id ? updated : e))
+  }
+
+  const bulkAction = async (type, ids, value) => {
+    if (type === 'status') {
+      await bulkStatusAPI(ids, value)
+      setEntries(prev => prev.map(e => ids.includes(e.id) ? { ...e, status: value } : e))
+    }
+    if (type === 'delete') {
+      await bulkDeleteAPI(ids)
+      setEntries(prev => prev.filter(e => !ids.includes(e.id)))
+    }
   }
 
   const exportJSON = () => {
-    const safe = entries.map(({ videoUrl, ...rest }) => rest)
-    const blob = new Blob([JSON.stringify(safe, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url; a.download = `content-calendar-${fmtDate(new Date())}.json`; a.click()
-    URL.revokeObjectURL(url)
+    window.open(`${API}/export`, '_blank')
   }
 
-  const importJSON = (e) => {
+  const importJSON = async (e) => {
     const file = e.target.files?.[0]
     if (!file) return
     const reader = new FileReader()
-    reader.onload = () => {
-      try { const data = JSON.parse(reader.result); if (Array.isArray(data)) setEntries(data) }
-      catch { alert('Invalid JSON file') }
+    reader.onload = async () => {
+      try {
+        const data = JSON.parse(reader.result)
+        if (!Array.isArray(data)) return alert('Invalid JSON file')
+        await fetch(`${API}/import`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+        setEntries(data)
+      } catch { alert('Invalid JSON file') }
     }
     reader.readAsText(file)
     e.target.value = ''
@@ -533,7 +589,7 @@ export default function ContentCalendarTab() {
       {drawer && (
         <EntryDrawer
           entry={drawer.mode === 'edit' ? drawer.entry : drawerEntry}
-          onSave={saveEntry}
+          onSave={handleSaveEntry}
           onDelete={deleteEntry}
           onClose={closeDrawer}
         />

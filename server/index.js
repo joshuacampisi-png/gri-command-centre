@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import dashboardRoutes from './routes/dashboard.js'
+import calendarRoutes from './routes/calendar.js'
 import telegramIntakeRoutes from './routes/telegram-intake.js'
 import telegramBotRoutes from './routes/telegram-bot.js'
 import shopifyOauthRoutes from './routes/shopify-oauth.js'
@@ -108,6 +109,8 @@ app.use('/api/shopify/webhook', express.json({
 app.use(express.json())
 app.use('/task-media', express.static(join(process.cwd(), 'public/task-media')))
 app.use('/review-captures', express.static(join(process.cwd(), 'public/review-captures')))
+app.use('/calendar-videos', express.static(join(process.cwd(), 'public/calendar-videos')))
+app.use('/api/calendar', calendarRoutes)
 
 // Serve built frontend from /dist — same origin, no CORS issues
 import { join, dirname } from 'path'
@@ -237,6 +240,11 @@ app.post('/api/morning-brief/send', async (_req, res) => {
   } catch (e) {
     res.status(500).json({ ok: false, error: e.message })
   }
+})
+
+// Standalone calendar page for marketing team
+app.get('/calendar', (_req, res) => {
+  res.sendFile(join(__dirname, '..', 'public', 'calendar.html'))
 })
 
 // SPA fallback — serve index.html for non-API routes (must be AFTER all API routes)

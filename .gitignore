@@ -6,6 +6,9 @@ data/*.json
 data/*.log
 data/contracts/
 data/gsc/
+data/competitor-history/
+data/meta-ads/
+public/calendar-videos/
 *.tmp
 .DS_Store
 .run/
