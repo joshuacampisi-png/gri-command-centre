@@ -265,8 +265,8 @@ function OverviewPage({ data, company }) {
 
       {/* ── Stats Carousel — swipeable on mobile, grid on desktop ── */}
       <div className="ov-stats-carousel" style={carouselStyle}>
-        {/* Today's Sales */}
-        <div className="ov-card ov-stat-card" style={{ ...carouselCardStyle, minWidth: 260 }}>
+        {/* Today's Sales + Month to Date */}
+        <div className="ov-card ov-stat-card" style={{ ...carouselCardStyle, minWidth: 280 }}>
           <h3>Today's Sales</h3>
           {!sales ? <p className="muted">Loading sales...</p>
            : !sales.ok ? <p className="muted">Sales data unavailable</p>
@@ -275,8 +275,16 @@ function OverviewPage({ data, company }) {
                 ${sales.revenue.toFixed(2)}
               </div>
               <div className="kv-row"><span>Orders</span><strong>{sales.orders}</strong></div>
-              <div className="kv-row"><span>Date</span><span className="muted">{sales.date}</span></div>
             </>}
+          {monthStats && <>
+            <div style={{ borderTop: '1px solid #E8ECF4', marginTop: 12, paddingTop: 12 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: '#7C3AED', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>Month to Date</div>
+              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#7C3AED', marginBottom: 6 }}>
+                ${monthStats.revenue.toFixed(2)}
+              </div>
+              <div className="kv-row"><span>Orders</span><strong>{monthStats.orders}</strong></div>
+            </div>
+          </>}
         </div>
 
         {/* Shipping Revenue */}
@@ -337,20 +345,6 @@ function OverviewPage({ data, company }) {
           </>}
         </div>
 
-        {/* Month to Date */}
-        <div className="ov-card ov-stat-card" style={{ ...carouselCardStyle, minWidth: 260 }}>
-          <h3>Month to Date</h3>
-          {!monthStats ? <p className="muted">Loading...</p> : <>
-            <div style={{ fontSize: '2.4rem', fontWeight: 800, color: '#7C3AED', marginBottom: 8 }}>
-              ${monthStats.revenue.toFixed(2)}
-            </div>
-            <div style={{ fontSize: 10, color: '#888', marginBottom: 10, fontWeight: 500 }}>TOTAL REVENUE</div>
-            <div className="kv-row"><span>Orders</span><strong>{monthStats.orders}</strong></div>
-            <div className="kv-row"><span>Shipping revenue</span><strong style={{ color: '#3AB4C0' }}>${monthStats.shipping.toFixed(2)}</strong></div>
-            <div className="kv-row"><span>Shipping protection</span><strong style={{ color: '#10B981' }}>${monthStats.protectionRevenue.toFixed(2)} <span style={{ color: '#888', fontWeight: 400 }}>({monthStats.protectionCount})</span></strong></div>
-            <div style={{ marginTop: 8, fontSize: 10, color: '#888' }}>{monthStats.monthStart} to {monthStats.today}</div>
-          </>}
-        </div>
 
         {/* Trending Now */}
         <div className="ov-card ov-stat-card" style={{ ...carouselCardStyle, minWidth: 260 }}>
