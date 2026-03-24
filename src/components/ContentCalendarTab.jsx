@@ -155,7 +155,17 @@ function EntryDrawer({ entry, onSave, onDelete, onClose }) {
     setUploading(false)
   }
 
-  const handleSubmit = () => { onSave(form); onClose() }
+  const [saving, setSaving] = useState(false)
+  const handleSubmit = async () => {
+    setSaving(true)
+    try {
+      await onSave(form)
+      onClose()
+    } catch (err) {
+      alert('Failed to save entry. Please try again.')
+    }
+    setSaving(false)
+  }
 
   return (
     <div className="cc-drawer-overlay" onClick={onClose}>
@@ -256,7 +266,7 @@ function EntryDrawer({ entry, onSave, onDelete, onClose }) {
           {entry && <button className="cc-btn cc-btn-danger" onClick={() => { onDelete(entry.id); onClose() }}>Delete</button>}
           <div style={{ flex: 1 }} />
           <button className="btn-sec" onClick={onClose}>Cancel</button>
-          <button className="cc-btn cc-btn-save" onClick={handleSubmit}>Save</button>
+          <button className="cc-btn cc-btn-save" onClick={handleSubmit} disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
         </div>
         <MediaModal url={videoPreview} onClose={() => setVideoPreview(null)} />
       </div>
@@ -499,11 +509,8 @@ export default function ContentCalendarTab() {
 
   const handleSaveEntry = async (form) => {
     await saveEntry(form)
-    setEntries(prev => {
-      const idx = prev.findIndex(e => e.id === form.id)
-      if (idx >= 0) { const next = [...prev]; next[idx] = form; return next }
-      return [...prev, form]
-    })
+    const fresh = await fetchEntries()
+    setEntries(fresh)
   }
 
   const deleteEntry = async (id) => {
