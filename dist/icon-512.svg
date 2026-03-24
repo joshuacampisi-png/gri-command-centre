@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="64" fill="#0a0a0a"/>
+  <rect x="16" y="16" width="480" height="480" rx="56" fill="none" stroke="#00d4aa" stroke-width="3" opacity="0.6"/>
+  <text x="256" y="200" text-anchor="middle" font-family="monospace" font-weight="bold" font-size="72" fill="#00d4aa">AI</text>
+  <text x="256" y="290" text-anchor="middle" font-family="monospace" font-weight="bold" font-size="48" fill="#e0e0e0">COMMAND</text>
+  <text x="256" y="355" text-anchor="middle" font-family="monospace" font-weight="bold" font-size="48" fill="#e0e0e0">CENTRE</text>
+  <circle cx="72" cy="72" r="8" fill="#00d4aa" opacity="0.8"/>
+  <circle cx="440" cy="72" r="8" fill="#00d4aa" opacity="0.8"/>
+  <circle cx="72" cy="440" r="8" fill="#00d4aa" opacity="0.8"/>
+  <circle cx="440" cy="440" r="8" fill="#00d4aa" opacity="0.8"/>
+</svg>
