@@ -1,12 +1,20 @@
 import { env } from '../lib/env.js'
 import { getShopifyClientCredentialsToken } from '../lib/shopify-client-credentials.js'
+import { loadShopifyOAuthState } from '../lib/shopify-oauth-store.js'
 
 function adminUrl(path = '') {
   return `https://${env.shopify.storeDomain}/admin/api/2025-01${path}`
 }
 
 async function effectiveAdminToken() {
+  // 1. Prefer OAuth token (has read_orders scope)
+  try {
+    const oauth = await loadShopifyOAuthState()
+    if (oauth.accessToken) return oauth.accessToken
+  } catch {}
+  // 2. Fall back to custom app admin token
   if (env.shopify.adminAccessToken) return env.shopify.adminAccessToken
+  // 3. Fall back to client credentials
   if (env.shopify.apiKey && env.shopify.apiSecret) {
     return getShopifyClientCredentialsToken()
   }
