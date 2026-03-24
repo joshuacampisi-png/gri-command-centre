@@ -112,11 +112,73 @@ router.get('/shopify/sales-range', async (req, res) => {
   }
 })
 
-// ── Shipping Protection Stats ──
+// ── Shipping Protection Stats (live from Shopify API) ──
 router.get('/shopify/shipping-protection', async (_req, res) => {
   try {
-    const { getShippingProtection } = await import('../lib/sales-tracker.js')
-    res.json(getShippingProtection())
+    // Get today's data
+    const todayData = await getShopifyTodayOrders()
+
+    // Get this month range (1st to today AEST)
+    const now = new Date()
+    const aestNow = new Date(now.getTime() + (10 * 60 * 60 * 1000))
+    const aestDate = aestNow.toISOString().slice(0, 10)
+    const monthStart = aestDate.slice(0, 8) + '01'
+    const monthData = await getShopifyOrdersRange(monthStart, aestDate)
+
+    // Get this week (Wed-Tue)
+    const aestDay = aestNow.getUTCDay()
+    const daysSinceWed = (aestDay - 3 + 7) % 7
+    const wed = new Date(aestNow)
+    wed.setUTCDate(aestNow.getUTCDate() - daysSinceWed)
+    const wedStr = wed.toISOString().slice(0, 10)
+    const tue = new Date(wed)
+    tue.setUTCDate(wed.getUTCDate() + 6)
+    const tueStr = tue.toISOString().slice(0, 10)
+    const weekData = await getShopifyOrdersRange(wedStr, tueStr)
+
+    // Count protection in today's orders
+    const PROT_ID = 8156417196121
+    let todayProtCount = 0
+    for (const item of (todayData.items || [])) {
+      const hasProt = (item.lineItems || []).some(
+        li => li.product_id === PROT_ID || (li.title || '').toLowerCase().includes('shipping protection')
+      )
+      if (hasProt) todayProtCount++
+    }
+
+    res.json({
+      ok: true,
+      today: { count: todayProtCount, revenue: todayProtCount * 3.00 },
+      week: { count: weekData.protectionCount || 0, revenue: weekData.protectionRevenue || 0 },
+      month: { count: monthData.protectionCount || 0, revenue: monthData.protectionRevenue || 0 },
+      lifetime: { count: monthData.protectionCount || 0, revenue: monthData.protectionRevenue || 0 },
+      pricePerOrder: 3.00,
+    })
+  } catch (e) {
+    // Fallback to webhook tracker
+    try {
+      const { getShippingProtection } = await import('../lib/sales-tracker.js')
+      res.json(getShippingProtection())
+    } catch {
+      res.json({ ok: false, error: e.message })
+    }
+  }
+})
+
+// ── Month-to-date stats (revenue, shipping, protection) ──
+router.get('/shopify/month-stats', async (_req, res) => {
+  try {
+    const now = new Date()
+    const aestNow = new Date(now.getTime() + (10 * 60 * 60 * 1000))
+    const aestDate = aestNow.toISOString().slice(0, 10)
+    const monthStart = aestDate.slice(0, 8) + '01'
+    const data = await getShopifyOrdersRange(monthStart, aestDate)
+    res.json({
+      ok: true,
+      ...data,
+      monthStart,
+      today: aestDate,
+    })
   } catch (e) {
     res.json({ ok: false, error: e.message })
   }

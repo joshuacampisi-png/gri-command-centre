@@ -3,7 +3,7 @@ import { getShopifyClientCredentialsToken } from '../lib/shopify-client-credenti
 import { loadShopifyOAuthState } from '../lib/shopify-oauth-store.js'
 
 function adminUrl(path = '') {
-  return `https://${env.shopify.storeDomain}/admin/api/2025-01${path}`
+  return `https://${env.shopify.storeDomain}/admin/api/2026-01${path}`
 }
 
 async function effectiveAdminToken() {
@@ -57,15 +57,14 @@ export async function getShopifyTodayOrders() {
     return { ok: false, error: 'Missing Shopify credentials' }
   }
 
-  // Get start of today in AEST (UTC+10)
+  // Get start of today in AEST (UTC+10) — midnight AEST = 14:00 UTC previous day
   const now = new Date()
-  const aest = new Date(now.toLocaleString('en-US', { timeZone: 'Australia/Brisbane' }))
-  const todayStart = new Date(aest.getFullYear(), aest.getMonth(), aest.getDate())
-  // Convert back to UTC for Shopify API
-  const utcStart = new Date(todayStart.getTime() - (10 * 60 * 60 * 1000))
+  const aestNow = new Date(now.getTime() + (10 * 60 * 60 * 1000))
+  const aestDate = aestNow.toISOString().slice(0, 10) // YYYY-MM-DD in AEST
+  const utcMidnightAEST = new Date(aestDate + 'T00:00:00+10:00')
 
   let allOrders = []
-  let url = `/orders.json?status=any&created_at_min=${utcStart.toISOString()}&limit=250`
+  let url = `/orders.json?status=any&created_at_min=${utcMidnightAEST.toISOString()}&limit=250`
 
   while (url) {
     const data = await shopifyFetch(url)
@@ -101,12 +100,15 @@ export async function getShopifyTodayOrders() {
     })
   }
 
-  const dateStr = aest.toLocaleDateString('en-CA', { timeZone: 'Australia/Brisbane' })
-  return { ok: true, revenue, shipping, orders: orderCount, items, date: dateStr }
+  return { ok: true, revenue, shipping, orders: orderCount, items, date: aestDate }
 }
 
+// Shipping Protection product ID
+const SHIPPING_PROTECTION_PRODUCT_ID = 8156417196121
+const SHIPPING_PROTECTION_PRICE = 3.00
+
 /**
- * Fetch orders for a date range from Shopify REST API
+ * Fetch orders for a date range from Shopify REST API with pagination
  */
 export async function getShopifyOrdersRange(fromDate, toDate) {
   const token = await effectiveAdminToken()
@@ -114,31 +116,44 @@ export async function getShopifyOrdersRange(fromDate, toDate) {
     return { ok: false, error: 'Missing Shopify credentials' }
   }
 
-  // Convert AEST dates to UTC
-  const utcFrom = new Date(new Date(fromDate + 'T00:00:00+10:00').toISOString())
-  const utcTo = new Date(new Date(toDate + 'T23:59:59+10:00').toISOString())
+  const utcFrom = new Date(fromDate + 'T00:00:00+10:00')
+  const utcTo = new Date(toDate + 'T23:59:59+10:00')
 
   let allOrders = []
-  let url = `/orders.json?status=any&created_at_min=${utcFrom.toISOString()}&created_at_max=${utcTo.toISOString()}&limit=250`
+  let page = 1
+  let hasMore = true
+  let sinceId = null
 
-  while (url) {
+  while (hasMore) {
+    let url = `/orders.json?status=any&created_at_min=${utcFrom.toISOString()}&created_at_max=${utcTo.toISOString()}&limit=250`
+    if (sinceId) url += `&since_id=${sinceId}`
     const data = await shopifyFetch(url)
-    allOrders = allOrders.concat(data.orders || [])
-    url = null
+    const batch = data.orders || []
+    allOrders = allOrders.concat(batch)
+    if (batch.length < 250) { hasMore = false } else { sinceId = batch[batch.length - 1].id; page++ }
+    if (page > 10) break // Safety cap at ~2500 orders
   }
 
   const validOrders = allOrders.filter(o =>
     o.financial_status !== 'voided' && o.cancelled_at === null
   )
 
-  let revenue = 0, shipping = 0, orderCount = 0
+  let revenue = 0, shipping = 0, orderCount = 0, protectionCount = 0, protectionRevenue = 0
   for (const order of validOrders) {
     revenue += parseFloat(order.total_price || 0)
     shipping += (order.shipping_lines || []).reduce((sum, s) => sum + parseFloat(s.price || 0), 0)
     orderCount++
+    const hasProtection = (order.line_items || []).some(
+      li => li.product_id === SHIPPING_PROTECTION_PRODUCT_ID
+        || (li.title || '').toLowerCase().includes('shipping protection')
+    )
+    if (hasProtection) {
+      protectionCount++
+      protectionRevenue += SHIPPING_PROTECTION_PRICE
+    }
   }
 
-  return { ok: true, revenue, shipping, orders: orderCount, from: fromDate, to: toDate }
+  return { ok: true, revenue, shipping, orders: orderCount, protectionCount, protectionRevenue, from: fromDate, to: toDate }
 }
 
 export async function getShopifySnapshot() {

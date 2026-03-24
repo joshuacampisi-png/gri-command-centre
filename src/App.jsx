@@ -121,6 +121,7 @@ function OverviewPage({ data, company }) {
   const [trendingQueries, setTrendingQueries] = useState(null)
   const [viralReels, setViralReels] = useState(null)
   const [protection, setProtection] = useState(null)
+  const [monthStats, setMonthStats] = useState(null)
 
   // Wed-Tue week helper: get the Wednesday start for a given week offset (0 = current)
   const getWedTueWeek = useCallback((offset = 0) => {
@@ -172,9 +173,12 @@ function OverviewPage({ data, company }) {
       fetch('/api/shopify/shipping-protection').then(r => r.json()).then(d => {
         setProtection(d.ok ? d : null)
       }).catch(() => setProtection(null))
+      fetch('/api/shopify/month-stats').then(r => r.json()).then(d => {
+        setMonthStats(d.ok ? d : null)
+      }).catch(() => setMonthStats(null))
     }
     fetchAll()
-    // Auto-refresh sales + protection every 10 seconds while dashboard is open
+    // Auto-refresh sales + protection + month stats every 30 seconds
     const interval = setInterval(() => {
       fetch('/api/shopify/today-sales').then(r => r.json()).then(d => {
         setSales(d.ok ? d : { ok: false, error: d.error })
@@ -182,7 +186,10 @@ function OverviewPage({ data, company }) {
       fetch('/api/shopify/shipping-protection').then(r => r.json()).then(d => {
         setProtection(d.ok ? d : null)
       }).catch(() => {})
-    }, 10000)
+      fetch('/api/shopify/month-stats').then(r => r.json()).then(d => {
+        setMonthStats(d.ok ? d : null)
+      }).catch(() => {})
+    }, 30000)
     return () => clearInterval(interval)
   }, [])
 
@@ -327,6 +334,21 @@ function OverviewPage({ data, company }) {
             <div style={{ marginTop: 8, padding: '6px 10px', background: '#F0FDF4', borderRadius: 8, fontSize: 11, color: '#059669', fontWeight: 600, textAlign: 'center' }}>
               ${protection.pricePerOrder.toFixed(2)} per order
             </div>
+          </>}
+        </div>
+
+        {/* Month to Date */}
+        <div className="ov-card ov-stat-card" style={{ ...carouselCardStyle, minWidth: 260 }}>
+          <h3>Month to Date</h3>
+          {!monthStats ? <p className="muted">Loading...</p> : <>
+            <div style={{ fontSize: '2.4rem', fontWeight: 800, color: '#7C3AED', marginBottom: 8 }}>
+              ${monthStats.revenue.toFixed(2)}
+            </div>
+            <div style={{ fontSize: 10, color: '#888', marginBottom: 10, fontWeight: 500 }}>TOTAL REVENUE</div>
+            <div className="kv-row"><span>Orders</span><strong>{monthStats.orders}</strong></div>
+            <div className="kv-row"><span>Shipping revenue</span><strong style={{ color: '#3AB4C0' }}>${monthStats.shipping.toFixed(2)}</strong></div>
+            <div className="kv-row"><span>Shipping protection</span><strong style={{ color: '#10B981' }}>${monthStats.protectionRevenue.toFixed(2)} <span style={{ color: '#888', fontWeight: 400 }}>({monthStats.protectionCount})</span></strong></div>
+            <div style={{ marginTop: 8, fontSize: 10, color: '#888' }}>{monthStats.monthStart} to {monthStats.today}</div>
           </>}
         </div>
 
