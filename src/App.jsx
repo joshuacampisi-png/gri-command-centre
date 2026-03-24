@@ -7,8 +7,9 @@ import BlogApproval from './components/BlogApproval'
 import GSCVisibility from './components/GSCVisibility'
 import MarketShare from './components/MarketShare'
 import TNTDashboard from './components/TNTDashboard'
+import ReturnsTab from './components/ReturnsTab'
 
-const NAV = ['Overview', 'Tasks', 'Completed', 'Keywords', 'Competitors', 'Trends', 'TNT Hire']
+const NAV = ['Overview', 'Tasks', 'Completed', 'Keywords', 'Competitors', 'Trends', 'TNT Hire', 'Returns']
 
 const COMPANIES = {
   GRI:     { name: 'Gender Reveal Ideas', description: 'Gender reveal party supplies',          accent: '#ef4444' },
@@ -2630,7 +2631,7 @@ export default function App() {
   const integ   = data?.integrations || {}
   const profile = COMPANIES[company] || COMPANIES.GRI
 
-  const navIcons = { Overview:'◉', Tasks:'☑', Completed:'✅', Keywords:'📈', Competitors:'⚔', Trends:'📊', 'TNT Hire':'💥', Themes:'◈', 'Theme Editor':'✏', Settings:'⚙' }
+  const navIcons = { Overview:'◉', Tasks:'☑', Completed:'✅', Keywords:'📈', Competitors:'⚔', Trends:'📊', 'TNT Hire':'💥', Returns:'↩', Themes:'◈', 'Theme Editor':'✏', Settings:'⚙' }
 
   const goEditor = theme => { setEditorTheme(theme); setActive('Theme Editor') }
 
@@ -2679,6 +2680,7 @@ export default function App() {
             {active==='Competitors'  && <CompetitorIntelligence />}
             {active==='Trends'       && <TrendsIntelligencePage />}
             {active==='TNT Hire'    && <TNTDashboard />}
+            {active==='Returns'     && <ReturnsTab />}
             {active==='Themes'       && <ThemesPage      data={data} onOpenEditor={goEditor} />}
             {active==='Theme Editor' && <ThemeEditorPage data={data} initialTheme={editorTheme} />}
             {active==='Settings'     && <SettingsPage    data={data} company={company} onCompanyChange={setCompany} />}
