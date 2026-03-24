@@ -1,5 +1,5 @@
 node_modules/
-dist/
+# dist/ — now tracked so deploys include built frontend
 .env
 .env.local
 data/*.json

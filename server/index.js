@@ -24,7 +24,7 @@ import { startExecutor, stopExecutor, getExecutorStatus, executeTaskById } from 
 import { handleApproval, getPendingApprovals } from './lib/approval-queue.js'
 import { startMorningBrief, sendMorningBrief } from './lib/morning-brief.js'
 import { startSEOLearningCrons } from './lib/seo-learning-cron.js'
-import { startCompetitorCrons } from './lib/competitor-cron.js'
+import { scheduleCompetitorIntelCron } from './lib/competitor-intel-cron.js'
 import { startTrendsScheduler } from './lib/trends-scheduler.js'
 import { startKeywordScheduler } from './lib/keyword-tracker.js'
 import { getUsageSummary } from './lib/claude-guard.js'
@@ -266,7 +266,7 @@ app.listen(env.port, '0.0.0.0', () => {
   // Keep monitoring systems:
   startMorningBrief()
   startSEOLearningCrons()
-  startCompetitorCrons()
+  scheduleCompetitorIntelCron()
   startKeywordScheduler()
   startTrendsScheduler()
 

@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { fetchDashboard, fetchThemeAssets, fetchThemeAsset, saveThemeAsset } from './api'
 import KeywordRankings from './components/KeywordRankings'
 import CompetitorComparison from './components/CompetitorComparison'
+import CompetitorIntelligence from './components/CompetitorIntelligence'
 import BlogApproval from './components/BlogApproval'
 import GSCVisibility from './components/GSCVisibility'
 import MarketShare from './components/MarketShare'
@@ -2675,7 +2676,7 @@ export default function App() {
             {active==='Tasks'        && <TasksPage       data={data} />}
             {active==='Completed'    && <CompletedPage   data={data} />}
             {active==='Keywords'     && <KeywordTrackerPage />}
-            {active==='Competitors'  && <CompetitorTrackerPage />}
+            {active==='Competitors'  && <CompetitorIntelligence />}
             {active==='Trends'       && <TrendsIntelligencePage />}
             {active==='TNT Hire'    && <TNTDashboard />}
             {active==='Themes'       && <ThemesPage      data={data} onOpenEditor={goEditor} />}
