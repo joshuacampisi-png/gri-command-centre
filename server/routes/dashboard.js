@@ -149,16 +149,16 @@ router.get('/shopify/shipping-protection', async (_req, res) => {
     // Today
     const todayData = await getShopifyOrdersRange(aestDate, aestDate)
 
-    // This week (Wed-Tue)
+    // This week (standard Mon-Sun)
     const aestDay = aestNow.getUTCDay()
-    const daysSinceWed = (aestDay - 3 + 7) % 7
-    const wed = new Date(aestNow)
-    wed.setUTCDate(aestNow.getUTCDate() - daysSinceWed)
-    const wedStr = wed.toISOString().slice(0, 10)
-    const tue = new Date(wed)
-    tue.setUTCDate(wed.getUTCDate() + 6)
-    const tueStr = tue.toISOString().slice(0, 10)
-    const weekData = await getShopifyOrdersRange(wedStr, tueStr)
+    const daysSinceMon = (aestDay === 0 ? 6 : aestDay - 1)
+    const mon = new Date(aestNow)
+    mon.setUTCDate(aestNow.getUTCDate() - daysSinceMon)
+    const monStr = mon.toISOString().slice(0, 10)
+    const sun = new Date(mon)
+    sun.setUTCDate(mon.getUTCDate() + 6)
+    const sunStr = sun.toISOString().slice(0, 10)
+    const weekData = await getShopifyOrdersRange(monStr, sunStr)
 
     // This month
     const monthStart = aestDate.slice(0, 8) + '01'
