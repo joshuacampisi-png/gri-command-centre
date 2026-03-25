@@ -3,6 +3,17 @@ import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'fs'
 import multer from 'multer'
 import { dataFile, dataDir } from '../lib/data-dir.js'
 
+const router = Router()
+
+// Allow cross-origin requests from marketing calendar site
+router.use((_req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*')
+  res.header('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
+  res.header('Access-Control-Allow-Headers', 'Content-Type')
+  if (_req.method === 'OPTIONS') return res.sendStatus(200)
+  next()
+})
+
 const DATA_FILE = dataFile('calendar-entries.json')
 const VIDEO_DIR = dataDir('calendar-videos')
 
@@ -30,8 +41,6 @@ const upload = multer({
   },
   limits: { fileSize: 500 * 1024 * 1024 }
 })
-
-const router = Router()
 
 // Get all entries
 router.get('/entries', (_req, res) => {

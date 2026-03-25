@@ -14,6 +14,7 @@ import competitorRoutes from './routes/competitors.js'
 import trendsRoutes from './routes/trends.js'
 import publishRoutes from './routes/publish.js'
 import hiresRoutes from './routes/hires.js'
+import returnsRoutes from './routes/returns.js'
 import contractRoutes from './routes/contract.js'
 import shopifyWebhookRoutes from './routes/shopify-webhook.js'
 import squareWebhookRoutes from './routes/square-webhook.js'
@@ -140,6 +141,7 @@ app.use('/api/competitors', competitorRoutes)
 app.use('/api/trends', trendsRoutes)
 app.use('/api/publish', publishRoutes)
 app.use('/api/hires', hiresRoutes)
+app.use('/api/returns', returnsRoutes)
 app.use('/api/contract', contractRoutes)
 app.use('/api/shopify/webhook', shopifyWebhookRoutes)
 app.use('/api/square/webhook', squareWebhookRoutes)
@@ -257,8 +259,17 @@ app.post('/api/morning-brief/send', async (_req, res) => {
 })
 
 // Standalone calendar page for marketing team
-app.get('/calendar', (_req, res) => {
-  res.sendFile(join(__dirname, '..', 'public', 'calendar.html'))
+// If CALENDAR_SOURCE_URL is set, the calendar fetches from the main command centre instead of local
+app.get('/calendar', async (_req, res) => {
+  const sourceUrl = process.env.CALENDAR_SOURCE_URL
+  if (sourceUrl) {
+    const { readFileSync } = await import('fs')
+    let html = readFileSync(join(__dirname, '..', 'public', 'calendar.html'), 'utf8')
+    html = html.replace("const API = '/api/calendar'", `const API = '${sourceUrl}/api/calendar'`)
+    res.type('html').send(html)
+  } else {
+    res.sendFile(join(__dirname, '..', 'public', 'calendar.html'))
+  }
 })
 
 // SPA fallback — serve index.html for non-API routes (must be AFTER all API routes)

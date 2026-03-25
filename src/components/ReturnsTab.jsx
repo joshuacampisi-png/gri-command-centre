@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 const REASONS = ['Change of Mind', 'Faulty / Defective', 'Wrong Item Sent', 'Damaged in Transit', 'Other']
 
@@ -13,10 +13,20 @@ export function ReturnsTab() {
   const [form, setForm] = useState(empty)
   const [entries, setEntries] = useState([])
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
-  const submit = e => {
+  // Load returns from API on mount
+  useEffect(() => {
+    fetch('/api/returns')
+      .then(r => r.json())
+      .then(d => { if (d.ok) setEntries(d.returns || []) })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  const submit = async e => {
     e.preventDefault()
     if (!form.customer.trim() || !form.order.trim() || !form.amount || !form.products.trim() || !form.reason) {
       setError('All fields are required.')
@@ -25,20 +35,42 @@ export function ReturnsTab() {
     const amt = parseFloat(form.amount)
     if (isNaN(amt) || amt <= 0) { setError('Enter a valid amount.'); return }
     setError('')
-    setEntries(prev => [{
-      id: Date.now(),
+
+    const entry = {
       customer: form.customer.trim(),
       order: form.order.trim().replace(/^#?/, '#'),
       amount: amt,
       products: form.products.trim(),
       reason: form.reason,
       date: fmtDate(new Date()),
-    }, ...prev])
-    setForm(empty)
+    }
+
+    try {
+      const res = await fetch('/api/returns', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(entry),
+      })
+      const data = await res.json()
+      if (data.ok) {
+        setEntries(prev => [data.return, ...prev])
+        setForm(empty)
+      } else {
+        setError(data.error || 'Failed to save return.')
+      }
+    } catch {
+      setError('Failed to save return. Please try again.')
+    }
   }
 
-  const remove = id => setEntries(prev => prev.filter(e => e.id !== id))
-  const total = entries.reduce((s, e) => s + e.amount, 0)
+  const remove = async id => {
+    try {
+      await fetch(`/api/returns/${id}`, { method: 'DELETE' })
+      setEntries(prev => prev.filter(e => e.id !== id))
+    } catch {}
+  }
+
+  const total = entries.reduce((s, e) => s + (e.amount || 0), 0)
 
   return (
     <div className="returns-tab">
@@ -61,7 +93,7 @@ export function ReturnsTab() {
             <label className="returns-label">
               <span className="returns-label-text">Reason</span>
               <select className="returns-input returns-select" value={form.reason} onChange={e => set('reason', e.target.value)}>
-                <option value="">Select reason…</option>
+                <option value="">Select reason...</option>
                 {REASONS.map(r => <option key={r} value={r}>{r}</option>)}
               </select>
             </label>
@@ -77,33 +109,35 @@ export function ReturnsTab() {
 
       <div className="returns-section">
         <h3 className="returns-heading">Refunds Ledger</h3>
-        <div className="returns-table-wrap">
-          <div className="returns-table-header">
-            <span className="rt-col rt-num">#</span>
-            <span className="rt-col rt-name">Customer</span>
-            <span className="rt-col rt-order">Order</span>
-            <span className="rt-col rt-products">Products</span>
-            <span className="rt-col rt-reason">Reason</span>
-            <span className="rt-col rt-amount">Amount</span>
-            <span className="rt-col rt-date">Date Lodged</span>
-            <span className="rt-col rt-action"></span>
-          </div>
-          {entries.length === 0 && (
-            <div className="returns-empty">No refunds lodged yet.</div>
-          )}
-          {entries.map((e, i) => (
-            <div key={e.id} className={`returns-row ${i % 2 === 1 ? 'alt' : ''}`}>
-              <span className="rt-col rt-num">{entries.length - i}</span>
-              <span className="rt-col rt-name">{e.customer}</span>
-              <span className="rt-col rt-order">{e.order}</span>
-              <span className="rt-col rt-products">{e.products}</span>
-              <span className="rt-col rt-reason">{e.reason}</span>
-              <span className="rt-col rt-amount">${e.amount.toFixed(2)}</span>
-              <span className="rt-col rt-date">{e.date}</span>
-              <span className="rt-col rt-action"><button className="returns-delete" onClick={() => remove(e.id)} title="Remove">&times;</button></span>
+        {loading ? <div className="returns-empty">Loading returns...</div> : (
+          <div className="returns-table-wrap">
+            <div className="returns-table-header">
+              <span className="rt-col rt-num">#</span>
+              <span className="rt-col rt-name">Customer</span>
+              <span className="rt-col rt-order">Order</span>
+              <span className="rt-col rt-products">Products</span>
+              <span className="rt-col rt-reason">Reason</span>
+              <span className="rt-col rt-amount">Amount</span>
+              <span className="rt-col rt-date">Date Lodged</span>
+              <span className="rt-col rt-action"></span>
             </div>
-          ))}
-        </div>
+            {entries.length === 0 && (
+              <div className="returns-empty">No refunds lodged yet.</div>
+            )}
+            {entries.map((e, i) => (
+              <div key={e.id} className={`returns-row ${i % 2 === 1 ? 'alt' : ''}`}>
+                <span className="rt-col rt-num">{entries.length - i}</span>
+                <span className="rt-col rt-name">{e.customer}</span>
+                <span className="rt-col rt-order">{e.order}</span>
+                <span className="rt-col rt-products">{e.products}</span>
+                <span className="rt-col rt-reason">{e.reason}</span>
+                <span className="rt-col rt-amount">${(e.amount || 0).toFixed(2)}</span>
+                <span className="rt-col rt-date">{e.date}</span>
+                <span className="rt-col rt-action"><button className="returns-delete" onClick={() => remove(e.id)} title="Remove">&times;</button></span>
+              </div>
+            ))}
+          </div>
+        )}
         <div className="returns-total">Total Refunded: <strong>${total.toFixed(2)}</strong></div>
       </div>
     </div>
