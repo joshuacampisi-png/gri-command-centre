@@ -122,6 +122,7 @@ function OverviewPage({ data, company }) {
   const [viralReels, setViralReels] = useState(null)
   const [protection, setProtection] = useState(null)
   const [monthStats, setMonthStats] = useState(null)
+  const [yearStats, setYearStats] = useState(null)
 
   // Wed-Tue week helper: get the Wednesday start for a given week offset (0 = current)
   const getWedTueWeek = useCallback((offset = 0) => {
@@ -176,6 +177,9 @@ function OverviewPage({ data, company }) {
       fetch('/api/shopify/month-stats').then(r => r.json()).then(d => {
         setMonthStats(d.ok ? d : null)
       }).catch(() => setMonthStats(null))
+      fetch('/api/shopify/year-stats').then(r => r.json()).then(d => {
+        setYearStats(d.ok ? d : null)
+      }).catch(() => setYearStats(null))
     }
     fetchAll()
     // Auto-refresh sales + protection + month stats every 30 seconds
@@ -283,6 +287,15 @@ function OverviewPage({ data, company }) {
                 ${monthStats.revenue.toFixed(2)}
               </div>
               <div className="kv-row"><span>Orders</span><strong>{monthStats.orders}</strong></div>
+            </div>
+          </>}
+          {yearStats && <>
+            <div style={{ borderTop: '1px solid #E8ECF4', marginTop: 12, paddingTop: 12 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: '#0EA5E9', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>Year to Date</div>
+              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0EA5E9', marginBottom: 6 }}>
+                ${yearStats.revenue.toFixed(2)}
+              </div>
+              <div className="kv-row"><span>Orders</span><strong>{yearStats.orders}</strong></div>
             </div>
           </>}
         </div>

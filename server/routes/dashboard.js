@@ -219,6 +219,25 @@ router.get('/shopify/month-stats', async (_req, res) => {
   }
 })
 
+// ── Year to Date stats ──
+router.get('/shopify/year-stats', async (_req, res) => {
+  try {
+    const now = new Date()
+    const aestNow = new Date(now.getTime() + (10 * 60 * 60 * 1000))
+    const aestDate = aestNow.toISOString().slice(0, 10)
+    const yearStart = aestDate.slice(0, 5) + '01-01'
+    const data = await getShopifyOrdersRange(yearStart, aestDate)
+    res.json({
+      ok: true,
+      ...data,
+      yearStart,
+      today: aestDate,
+    })
+  } catch (e) {
+    res.json({ ok: false, error: e.message })
+  }
+})
+
 // ── Viral Instagram Reels ──
 router.get('/viral/instagram', async (req, res) => {
   try {
