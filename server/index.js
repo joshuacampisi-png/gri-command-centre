@@ -107,7 +107,7 @@ if (DASHBOARD_PASSWORD && DASHBOARD_PASSWORD !== 'changeme') {
 app.use('/api/shopify/webhook', express.json({
   verify: (req, _res, buf) => { req.rawBody = buf.toString('utf8'); }
 }))
-app.use(express.json())
+app.use(express.json({ limit: '10mb' }))
 app.use('/task-media', express.static(join(process.cwd(), 'public/task-media')))
 app.use('/review-captures', express.static(join(process.cwd(), 'public/review-captures')))
 // Serve calendar videos from same dir multer writes to (data-dir resolver)
@@ -287,7 +287,7 @@ app.listen(env.port, '0.0.0.0', () => {
   console.log(`   Company:   GRI only (Lionzen/GBU paused)`)
   console.log(`   Schedule:  SEO crawl @ 2am AEST | Morning brief @ 5am AEST\n`)
 
-  // startTelegramPollingBot() // disabled for now
+  startTelegramPollingBot()
   startNotionPoller()
   // Flywheel: ENABLED with deduplication (checks Rejected status too)
   startFlywheel()
