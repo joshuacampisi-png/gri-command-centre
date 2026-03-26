@@ -301,7 +301,10 @@ function renderList() {
     const hookText = e.hook || e.caption || '\u2014'
     html += `<tr class="${selectedIds.has(e.id)?'row-sel':''}" onclick="openEditEntry('${e.id}')">
       <td onclick="event.stopPropagation()"><input type="checkbox" ${selectedIds.has(e.id)?'checked':''} onchange="toggleSelect('${e.id}')"></td>
-      <td style="white-space:nowrap">${e.liveDate ? `<span style="font-size:10px;color:#059669;font-weight:600">LIVE</span><br>${e.liveDate}` : e.date}</td>
+      <td style="white-space:nowrap" onclick="event.stopPropagation()">${(e.statusHistory && e.statusHistory.length > 0) ?
+        e.statusHistory.map((h, i) =>
+          `<div style="display:flex;align-items:center;gap:4px"><span style="font-size:10px;font-weight:600;color:${STATUS_COLORS[h.status]||'#888'}">${h.status}</span><span style="font-size:10px;color:#7C8DB0">${h.date}</span><button onclick="event.stopPropagation();removeHistoryItem('${e.id}',${i})" style="background:none;border:none;color:#ccc;font-size:10px;padding:0;cursor:pointer" title="Remove">&#10005;</button></div>`
+        ).join('') : `<span style="font-size:12px;color:#7C8DB0">${e.date}</span>`}</td>
       <td>${PLATFORM_ICONS[e.platform]||''} ${e.platform}</td>
       <td class="hook-cell">${esc(hookText)}</td>
       <td>${statusPill(e.status)}</td>
@@ -406,6 +409,15 @@ function openEditEntry(id) {
 
 function closeDrawer() { $('drawer-overlay').classList.add('hidden') }
 
+async function removeHistoryItem(id, index) {
+  const entry = entries.find(e => e.id === id)
+  if (!entry) return
+  entry.statusHistory = (entry.statusHistory || []).filter((_, i) => i !== index)
+  if (entry.statusHistory.length === 0) entry.liveDate = null
+  await fetch(API + '/entries', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(entry) })
+  render()
+}
+
 function renderDropzone() {
   if (drawerThumbnail) {
     const isVid = drawerMediaType === 'video'
@@ -492,7 +504,22 @@ async function handleSave() {
     date: $('f-date').value,
     time: $('f-time').value,
     status: $('f-status').value,
-    liveDate: $('f-status').value === 'Live' ? (editingEntry?.liveDate || fmtDate(new Date())) : (editingEntry?.liveDate || null),
+    statusHistory: (() => {
+      const newStatus = $('f-status').value
+      if (newStatus === 'Scheduled' || newStatus === 'Draft') return []
+      const history = [...(editingEntry?.statusHistory || [])]
+      if (editingEntry && newStatus !== editingEntry.status) {
+        history.push({ status: newStatus, date: fmtDate(new Date()) })
+      } else if (!editingEntry && newStatus !== 'Draft') {
+        history.push({ status: newStatus, date: fmtDate(new Date()) })
+      }
+      return history
+    })(),
+    liveDate: (() => {
+      const newStatus = $('f-status').value
+      if (newStatus === 'Scheduled' || newStatus === 'Draft') return null
+      return newStatus === 'Live' ? (editingEntry?.liveDate || fmtDate(new Date())) : (editingEntry?.liveDate || null)
+    })(),
     hook: $('f-hook').value,
     caption: $('f-caption').value,
     cta: $('f-cta').value,

@@ -208,8 +208,15 @@ function EntryDrawer({ entry, isNew, onSave, onDelete, onClose }) {
               <span>Status</span>
               <select value={form.status} onChange={e => {
                 const newStatus = e.target.value
-                set('status', newStatus)
-                if (newStatus === 'Live' && !form.liveDate) set('liveDate', fmtDate(new Date()))
+                if (newStatus === 'Scheduled' || newStatus === 'Draft') {
+                  setForm(f => ({ ...f, status: newStatus, statusHistory: [], liveDate: null }))
+                } else {
+                  const history = [...(form.statusHistory || [])]
+                  if (newStatus !== form.status) {
+                    history.push({ status: newStatus, date: fmtDate(new Date()) })
+                  }
+                  setForm(f => ({ ...f, status: newStatus, statusHistory: history, liveDate: newStatus === 'Live' && !f.liveDate ? fmtDate(new Date()) : f.liveDate }))
+                }
               }}>
                 {STATUSES.map(s => <option key={s}>{s}</option>)}
               </select>
@@ -475,7 +482,23 @@ function ListView({ entries, onClickEntry, onBulkAction, onUpdateEntry }) {
             {filtered.map(e => (
               <tr key={e.id} className={selected.has(e.id) ? 'cc-row-sel' : ''} onClick={() => onClickEntry(e)}>
                 <td onClick={ev => ev.stopPropagation()}><input type="checkbox" checked={selected.has(e.id)} onChange={() => toggle(e.id)} /></td>
-                <td style={{ whiteSpace: 'nowrap' }}>{e.liveDate ? <><span style={{ fontSize: 10, color: '#059669', fontWeight: 600 }}>LIVE</span><br/>{e.liveDate}</> : e.date}</td>
+                <td style={{ whiteSpace: 'nowrap' }} onClick={ev => ev.stopPropagation()}>
+                  {(e.statusHistory && e.statusHistory.length > 0) ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      {e.statusHistory.map((h, i) => (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <span style={{ fontSize: 10, fontWeight: 600, color: STATUS_COLORS[h.status] || '#888' }}>{h.status}</span>
+                          <span style={{ fontSize: 10, color: '#7C8DB0' }}>{h.date}</span>
+                          <button onClick={() => {
+                            const updated = { ...e, statusHistory: e.statusHistory.filter((_, j) => j !== i) }
+                            if (updated.statusHistory.length === 0) updated.liveDate = null
+                            onUpdateEntry(updated)
+                          }} style={{ background: 'none', border: 'none', color: '#ccc', fontSize: 10, padding: 0, cursor: 'pointer', lineHeight: 1 }} title="Remove">&#10005;</button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : <span style={{ fontSize: 12, color: '#7C8DB0' }}>{e.date}</span>}
+                </td>
                 <td>{PLATFORM_ICONS[e.platform]} {e.platform}</td>
                 <td className="cc-hook-cell">{e.hook || e.caption || '—'}</td>
                 <td><span className="cc-status-pill" style={{ background: STATUS_COLORS[e.status] + '22', color: STATUS_COLORS[e.status], border: `1px solid ${STATUS_COLORS[e.status]}44` }}>{e.status}</span></td>
