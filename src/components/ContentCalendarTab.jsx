@@ -6,6 +6,9 @@ const BRANDS = ['Gender Reveal Ideas', 'LionZen']
 const PLATFORMS = ['Instagram Reels', 'TikTok', 'Facebook', 'YouTube Shorts']
 const STATUSES = ['Draft', 'Scheduled', 'Published', 'Paused']
 const STATUS_COLORS = { Draft: '#9CA3AF', Scheduled: '#3B82F6', Published: '#22C55E', Paused: '#F59E0B' }
+const AD_STATUSES = ['Scheduled', 'Live', 'Scaling', 'Paused']
+const AD_STATUS_COLORS = { Scheduled: '#9CA3AF', Live: '#059669', Scaling: '#7C3AED', Paused: '#DC2626' }
+const AD_STATUS_BG = { Scheduled: '#E5E7EB', Live: '#D1FAE5', Scaling: '#EDE9FE', Paused: '#FEE2E2' }
 const BRAND_COLORS = { 'Gender Reveal Ideas': '#EC4899', 'LionZen': '#14B8A6' }
 const PLATFORM_ICONS = { 'Instagram Reels': '📸', 'TikTok': '🎵', 'Facebook': '📘', 'YouTube Shorts': '▶️' }
 const ACCEPT_MEDIA = '.mp4,.mov,.webm,.jpg,.jpeg,.png,.gif,.webp'
@@ -205,9 +208,16 @@ function EntryDrawer({ entry, isNew, onSave, onDelete, onClose }) {
           </div>
           <div className="cc-field-row">
             <label className="cc-field">
-              <span>Status</span>
+              <span>Content Status</span>
               <select value={form.status} onChange={e => set('status', e.target.value)}>
                 {STATUSES.map(s => <option key={s}>{s}</option>)}
+              </select>
+            </label>
+            <label className="cc-field">
+              <span>Ad Status</span>
+              <select value={form.adStatus || ''} onChange={e => set('adStatus', e.target.value)}>
+                <option value="">None</option>
+                {AD_STATUSES.map(s => <option key={s}>{s}</option>)}
               </select>
             </label>
           </div>
@@ -261,6 +271,10 @@ function EntryDrawer({ entry, isNew, onSave, onDelete, onClose }) {
             )}
           </div>
 
+          <label className="cc-field">
+            <span>R6 Ad Notes</span>
+            <textarea rows={3} value={form.adNotes || ''} onChange={e => set('adNotes', e.target.value)} placeholder="Ad performance notes... Was this ad successful or not? Key learnings..." />
+          </label>
           <label className="cc-field">
             <span>Notes</span>
             <textarea rows={2} value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Optional notes..." />
@@ -425,17 +439,19 @@ function MonthView({ entries, onClickEntry, onClickDay }) {
 
 // ── List View ─────────────────────────────────────────────────────────────────
 
-function ListView({ entries, onClickEntry, onBulkAction }) {
+function ListView({ entries, onClickEntry, onBulkAction, onUpdateEntry }) {
   const [selected, setSelected] = useState(new Set())
   const [brandFilter, setBrandFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [adFilter, setAdFilter] = useState('')
 
   const filtered = useMemo(() => {
     let list = [...entries]
     if (brandFilter) list = list.filter(e => e.brand === brandFilter)
     if (statusFilter) list = list.filter(e => e.status === statusFilter)
-    return list.sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time))
-  }, [entries, brandFilter, statusFilter])
+    if (adFilter) list = list.filter(e => e.adStatus === adFilter)
+    return list.sort((a, b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time))
+  }, [entries, brandFilter, statusFilter, adFilter])
 
   const toggleAll = () => {
     if (selected.size === filtered.length) setSelected(new Set())
@@ -454,28 +470,56 @@ function ListView({ entries, onClickEntry, onBulkAction }) {
           <option value="">All Statuses</option>
           {STATUSES.map(s => <option key={s}>{s}</option>)}
         </select>
+        <select className="select" value={adFilter} onChange={e => setAdFilter(e.target.value)}>
+          <option value="">All Ad Statuses</option>
+          {AD_STATUSES.map(s => <option key={s}>{s}</option>)}
+        </select>
       </div>
       <div className="cc-table-wrap">
         <table className="cc-table">
           <thead>
             <tr>
               <th><input type="checkbox" checked={selected.size === filtered.length && filtered.length > 0} onChange={toggleAll} /></th>
-              <th>Date</th><th>Time</th><th>Brand</th><th>Platform</th><th>Hook</th><th>Status</th><th>Thumb</th><th></th>
+              <th>Date</th><th>Brand</th><th>Platform</th><th>Hook / Caption</th><th>Status</th><th>Preview</th><th>Ad Status</th><th style={{ minWidth: 180 }}>R6 Ad Notes</th><th></th>
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 && <tr><td colSpan={9} className="muted" style={{ textAlign: 'center', padding: 24 }}>No entries match filters</td></tr>}
+            {filtered.length === 0 && <tr><td colSpan={10} className="muted" style={{ textAlign: 'center', padding: 24 }}>No content yet. Click + New Entry to add your first piece.</td></tr>}
             {filtered.map(e => (
               <tr key={e.id} className={selected.has(e.id) ? 'cc-row-sel' : ''} onClick={() => onClickEntry(e)}>
                 <td onClick={ev => ev.stopPropagation()}><input type="checkbox" checked={selected.has(e.id)} onChange={() => toggle(e.id)} /></td>
-                <td>{e.date}</td>
-                <td>{e.time}</td>
+                <td style={{ whiteSpace: 'nowrap' }}>{e.date}</td>
                 <td><span className="cc-brand-dot" style={{ background: BRAND_COLORS[e.brand] }} />{e.brand}</td>
                 <td>{PLATFORM_ICONS[e.platform]} {e.platform}</td>
-                <td className="cc-hook-cell">{e.hook || '—'}</td>
+                <td className="cc-hook-cell">{e.hook || e.caption || '—'}</td>
                 <td><span className="cc-status-pill" style={{ background: STATUS_COLORS[e.status] + '22', color: STATUS_COLORS[e.status], border: `1px solid ${STATUS_COLORS[e.status]}44` }}>{e.status}</span></td>
-                <td>{e.thumbnail ? <img src={e.thumbnail} className="cc-list-thumb" alt="" /> : '—'}</td>
-                <td onClick={ev => ev.stopPropagation()}>{e.videoUrl ? <a className="cc-dl-link" href={e.videoUrl} download>⬇</a> : ''}</td>
+                <td onClick={ev => ev.stopPropagation()}>
+                  {e.thumbnail ? <img src={e.thumbnail} className="cc-list-thumb" alt="" /> : '—'}
+                  {e.videoUrl && <a className="cc-dl-link" href={e.videoUrl} download>⬇</a>}
+                </td>
+                <td onClick={ev => ev.stopPropagation()}>
+                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                    {AD_STATUSES.map(s => (
+                      <button key={s} onClick={() => onUpdateEntry({ ...e, adStatus: e.adStatus === s ? '' : s })}
+                        style={{
+                          border: 'none', padding: '3px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
+                          cursor: 'pointer', transition: 'all .15s',
+                          background: AD_STATUS_BG[s], color: AD_STATUS_COLORS[s],
+                          opacity: e.adStatus === s ? 1 : 0.35,
+                          boxShadow: e.adStatus === s ? '0 1px 4px rgba(0,0,0,0.15)' : 'none'
+                        }}>{s}</button>
+                    ))}
+                  </div>
+                </td>
+                <td onClick={ev => ev.stopPropagation()}>
+                  <textarea
+                    defaultValue={e.adNotes || ''}
+                    placeholder="Ad notes..."
+                    onBlur={ev => { if (ev.target.value !== (e.adNotes || '')) onUpdateEntry({ ...e, adNotes: ev.target.value }) }}
+                    style={{ width: '100%', minHeight: 32, maxHeight: 80, border: '1px solid #E8ECF4', borderRadius: 6, padding: '6px 8px', fontSize: 12, resize: 'vertical', outline: 'none', fontFamily: 'inherit' }}
+                  />
+                </td>
+                <td></td>
               </tr>
             ))}
           </tbody>
@@ -528,6 +572,11 @@ export default function ContentCalendarTab() {
     const updated = { ...entry, date: newDate }
     await saveEntry(updated)
     setEntries(prev => prev.map(e => e.id === id ? updated : e))
+  }
+
+  const handleUpdateEntry = async (updated) => {
+    await saveEntry(updated)
+    setEntries(prev => prev.map(e => e.id === updated.id ? updated : e))
   }
 
   const bulkAction = async (type, ids, value) => {
@@ -586,6 +635,7 @@ export default function ContentCalendarTab() {
         entries={entries}
         onClickEntry={openEdit}
         onBulkAction={bulkAction}
+        onUpdateEntry={handleUpdateEntry}
       />
 
       {drawer && (
