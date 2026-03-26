@@ -110,10 +110,9 @@ app.use('/api/shopify/webhook', express.json({
 app.use(express.json())
 app.use('/task-media', express.static(join(process.cwd(), 'public/task-media')))
 app.use('/review-captures', express.static(join(process.cwd(), 'public/review-captures')))
-// Serve calendar videos from persistent volume if available, fall back to public dir
-const calendarVideoDir = process.env.RAILWAY_VOLUME_MOUNT_PATH
-  ? join(process.env.RAILWAY_VOLUME_MOUNT_PATH, 'calendar-videos')
-  : join(process.cwd(), 'public/calendar-videos')
+// Serve calendar videos from same dir multer writes to (data-dir resolver)
+import { dataDir as _calVidDir } from './lib/data-dir.js'
+const calendarVideoDir = _calVidDir('calendar-videos')
 app.use('/calendar-videos', express.static(calendarVideoDir))
 // Also serve from public dir as fallback for old uploads
 app.use('/calendar-videos', express.static(join(process.cwd(), 'public/calendar-videos')))

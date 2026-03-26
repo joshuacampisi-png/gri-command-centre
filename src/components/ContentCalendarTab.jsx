@@ -144,17 +144,15 @@ function EntryDrawer({ entry, isNew, onSave, onDelete, onClose }) {
     const isVideo = VIDEO_EXTS.includes(ext)
     const isImage = IMAGE_EXTS.includes(ext)
     if (!isVideo && !isImage) return
-    const thumb = isVideo ? await grabThumbnail(file) : await new Promise(resolve => {
-      const reader = new FileReader()
-      reader.onload = () => resolve(reader.result)
-      reader.readAsDataURL(file)
-    })
-    setForm(f => ({ ...f, videoName: file.name, videoSize: file.size, thumbnail: thumb, mediaType: isVideo ? 'video' : 'image' }))
+    const localThumb = isVideo ? await grabThumbnail(file) : URL.createObjectURL(file)
+    setForm(f => ({ ...f, videoName: file.name, videoSize: file.size, thumbnail: localThumb, mediaType: isVideo ? 'video' : 'image' }))
     setUploading(true)
     setUploadDone(false)
     try {
       const data = await uploadVideo(file)
-      setForm(f => ({ ...f, videoUrl: data.url, videoSize: data.size, mediaType: data.type || (isVideo ? 'video' : 'image') }))
+      // Use the server URL as thumbnail for images (avoids huge base64 in JSON)
+      const serverThumb = isImage ? data.url : (isVideo ? localThumb : data.url)
+      setForm(f => ({ ...f, videoUrl: data.url, videoSize: data.size, thumbnail: serverThumb, mediaType: data.type || (isVideo ? 'video' : 'image') }))
       setUploadDone(true)
       setTimeout(() => setUploadDone(false), 3000)
     } catch { setForm(f => ({ ...f, videoName: '', videoSize: 0, thumbnail: null, mediaType: null })) }
@@ -248,8 +246,8 @@ function EntryDrawer({ entry, isNew, onSave, onDelete, onClose }) {
                   {uploadDone && <span className="cc-upload-done">Upload Complete</span>}
                   {form.videoUrl && (
                     <>
-                      {form.mediaType === 'video' && <button className="cc-play-btn" onClick={e => { e.stopPropagation(); setVideoPreview(form.videoUrl) }}>&#9654; Preview</button>}
-                      <a className="cc-play-btn" href={form.videoUrl} download onClick={e => e.stopPropagation()} style={{ textDecoration: 'none' }}>&#11015; Download</a>
+                      <button className="cc-play-btn" onClick={e => { e.stopPropagation(); setVideoPreview(form.videoUrl) }}>{form.mediaType === 'video' ? '\u25B6 Preview' : '\uD83D\uDD0D View'}</button>
+                      <a className="cc-play-btn" href={form.videoUrl} download={form.videoName || true} onClick={e => e.stopPropagation()} style={{ textDecoration: 'none' }}>&#11015; Download</a>
                     </>
                   )}
                 </div>
