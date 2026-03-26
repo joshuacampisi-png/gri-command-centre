@@ -4,8 +4,8 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 
 const BRANDS = ['Gender Reveal Ideas', 'LionZen']
 const PLATFORMS = ['Instagram Reels', 'TikTok', 'Facebook', 'YouTube Shorts']
-const STATUSES = ['Draft', 'Scheduled', 'Live', 'Scaling', 'Published', 'Paused']
-const STATUS_COLORS = { Draft: '#9CA3AF', Scheduled: '#3B82F6', Live: '#059669', Scaling: '#7C3AED', Published: '#22C55E', Paused: '#DC2626' }
+const STATUSES = ['Draft', 'Scheduled', 'Live', 'Scaling', 'Paused']
+const STATUS_COLORS = { Draft: '#9CA3AF', Scheduled: '#3B82F6', Live: '#059669', Scaling: '#7C3AED', Paused: '#DC2626' }
 const BRAND_COLORS = { 'Gender Reveal Ideas': '#EC4899', 'LionZen': '#14B8A6' }
 const PLATFORM_ICONS = { 'Instagram Reels': '📸', 'TikTok': '🎵', 'Facebook': '📘', 'YouTube Shorts': '▶️' }
 const ACCEPT_MEDIA = '.mp4,.mov,.webm,.jpg,.jpeg,.png,.gif,.webp'
