@@ -571,8 +571,8 @@ export default function ContentCalendarTab() {
     <div className="page cc-page">
       <div className="page-header">
         <div>
-          <h2 className="page-title">Content Calendar</h2>
-          <p className="page-sub">Schedule and manage social content across brands</p>
+          <h2 className="page-title">Ads Testing</h2>
+          <p className="page-sub">Manage and track ad creative performance</p>
         </div>
         <div className="page-actions">
           <input ref={fileInputRef} type="file" accept=".json" hidden onChange={importJSON} />
@@ -582,36 +582,11 @@ export default function ContentCalendarTab() {
         </div>
       </div>
 
-      <div className="cc-view-pills">
-        {[['week', 'Week'], ['month', 'Month'], ['list', 'List']].map(([k, label]) => (
-          <button key={k} className={`cc-pill ${view === k ? 'cc-pill-active' : ''}`} onClick={() => setView(k)}>{label}</button>
-        ))}
-      </div>
-
-      {view === 'week' && (
-        <WeekView
-          entries={entries}
-          weekOffset={weekOffset}
-          setWeekOffset={setWeekOffset}
-          onClickEntry={openEdit}
-          onClickDay={openNew}
-          onReschedule={reschedule}
-        />
-      )}
-      {view === 'month' && (
-        <MonthView
-          entries={entries}
-          onClickEntry={openEdit}
-          onClickDay={openNew}
-        />
-      )}
-      {view === 'list' && (
-        <ListView
-          entries={entries}
-          onClickEntry={openEdit}
-          onBulkAction={bulkAction}
-        />
-      )}
+      <ListView
+        entries={entries}
+        onClickEntry={openEdit}
+        onBulkAction={bulkAction}
+      />
 
       {drawer && (
         <EntryDrawer
