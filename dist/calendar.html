@@ -291,7 +291,7 @@ function renderList() {
     <select class="select" id="list-status-filter" onchange="renderList()"><option value="">All Statuses</option>${STATUSES.map(s => `<option ${sf===s?'selected':''}>${s}</option>`).join('')}</select>
   </div><div class="table-wrap"><table><thead><tr>
     <th style="width:40px"><input type="checkbox" onchange="toggleAll(this.checked)" ${selectedIds.size===filtered.length&&filtered.length?'checked':''}></th>
-    <th>Date</th><th>Brand</th><th>Platform</th><th>Hook / Caption</th><th>Status</th><th>Preview</th><th></th>
+    <th>Date</th><th>Platform</th><th>Hook / Caption</th><th>Status</th><th>Preview</th><th style="min-width:180px">R6 Ad Notes</th><th></th>
   </tr></thead><tbody>`
 
   if (!filtered.length) html += '<tr><td colspan="10" class="muted" style="text-align:center;padding:24px">No content yet. Click + New Content to add your first piece.</td></tr>'
@@ -302,11 +302,11 @@ function renderList() {
     html += `<tr class="${selectedIds.has(e.id)?'row-sel':''}" onclick="openEditEntry('${e.id}')">
       <td onclick="event.stopPropagation()"><input type="checkbox" ${selectedIds.has(e.id)?'checked':''} onchange="toggleSelect('${e.id}')"></td>
       <td style="white-space:nowrap">${e.date}</td>
-      <td><span class="brand-dot" style="background:${bc}"></span> ${esc(e.brand)}</td>
       <td>${PLATFORM_ICONS[e.platform]||''} ${e.platform}</td>
       <td class="hook-cell">${esc(hookText)}</td>
       <td>${statusPill(e.status)}</td>
       <td onclick="event.stopPropagation()">${e.thumbnail ? `<img class="list-thumb" src="${e.thumbnail}" onclick="${e.videoUrl ? `openVideoModal('${e.videoUrl}')` : ''}">` : '\u2014'}${e.videoUrl ? ` <button class="play-btn" onclick="openVideoModal('${e.videoUrl}')" style="font-size:11px;padding:2px 6px">&#9654;</button>` : ''}</td>
+      <td onclick="event.stopPropagation()"><textarea class="r6-notes" data-notes-id="${e.id}" placeholder="Ad notes..." oninput="onNotesInput('${e.id}')">${esc(e.adNotes || '')}</textarea></td>
       <td onclick="event.stopPropagation()">${e.videoUrl ? `<a class="dl-link" href="${e.videoUrl}" download title="Download">&#11015;</a>` : ''}</td>
     </tr>`
   })

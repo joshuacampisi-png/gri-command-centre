@@ -463,7 +463,7 @@ function ListView({ entries, onClickEntry, onBulkAction, onUpdateEntry }) {
           <thead>
             <tr>
               <th><input type="checkbox" checked={selected.size === filtered.length && filtered.length > 0} onChange={toggleAll} /></th>
-              <th>Date</th><th>Brand</th><th>Platform</th><th>Hook / Caption</th><th>Status</th><th>Preview</th><th></th>
+              <th>Date</th><th>Platform</th><th>Hook / Caption</th><th>Status</th><th>Preview</th><th style={{ minWidth: 180 }}>R6 Ad Notes</th><th></th>
             </tr>
           </thead>
           <tbody>
@@ -472,13 +472,20 @@ function ListView({ entries, onClickEntry, onBulkAction, onUpdateEntry }) {
               <tr key={e.id} className={selected.has(e.id) ? 'cc-row-sel' : ''} onClick={() => onClickEntry(e)}>
                 <td onClick={ev => ev.stopPropagation()}><input type="checkbox" checked={selected.has(e.id)} onChange={() => toggle(e.id)} /></td>
                 <td style={{ whiteSpace: 'nowrap' }}>{e.date}</td>
-                <td><span className="cc-brand-dot" style={{ background: BRAND_COLORS[e.brand] }} />{e.brand}</td>
                 <td>{PLATFORM_ICONS[e.platform]} {e.platform}</td>
                 <td className="cc-hook-cell">{e.hook || e.caption || '—'}</td>
                 <td><span className="cc-status-pill" style={{ background: STATUS_COLORS[e.status] + '22', color: STATUS_COLORS[e.status], border: `1px solid ${STATUS_COLORS[e.status]}44` }}>{e.status}</span></td>
                 <td onClick={ev => ev.stopPropagation()}>
                   {e.thumbnail ? <img src={e.thumbnail} className="cc-list-thumb" alt="" /> : '—'}
                   {e.videoUrl && <a className="cc-dl-link" href={e.videoUrl} download>⬇</a>}
+                </td>
+                <td onClick={ev => ev.stopPropagation()}>
+                  <textarea
+                    defaultValue={e.adNotes || ''}
+                    placeholder="Ad notes..."
+                    onBlur={ev => { if (ev.target.value !== (e.adNotes || '')) onUpdateEntry({ ...e, adNotes: ev.target.value }) }}
+                    style={{ width: '100%', minHeight: 32, maxHeight: 80, border: '1px solid #E8ECF4', borderRadius: 6, padding: '6px 8px', fontSize: 12, resize: 'vertical', outline: 'none', fontFamily: 'inherit' }}
+                  />
                 </td>
                 <td></td>
               </tr>
