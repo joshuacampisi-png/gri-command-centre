@@ -13,7 +13,6 @@ const router = Router();
 // TNT product IDs that trigger auto-hire creation
 const TNT_PRODUCT_IDS = [
   7988691927129,  // TNT Gender Reveal Self Hire
-  8137632710745,  // Giant Inflatable Baby Costume Hire (copy)
 ];
 
 /**
