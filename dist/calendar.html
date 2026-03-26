@@ -153,12 +153,7 @@ tr:last-child td { border-bottom: none; }
         <label class="field"><span>Time</span><input type="time" id="f-time"></label>
       </div>
       <div class="field-row">
-        <label class="field"><span>Content Status</span><select id="f-status"><option>Draft</option><option>Scheduled</option><option>Published</option><option>Paused</option></select></label>
-        <div class="field">
-          <span>Ad Status</span>
-          <div id="ad-status-btns" style="display:flex;gap:6px;flex-wrap:wrap"></div>
-          <input type="hidden" id="f-adstatus">
-        </div>
+        <label class="field"><span>Status</span><select id="f-status"><option>Draft</option><option>Scheduled</option><option>Live</option><option>Scaling</option><option>Published</option><option>Paused</option></select></label>
       </div>
       <label class="field"><span>Hook</span><input type="text" id="f-hook" placeholder="Attention-grabbing hook line"></label>
       <label class="field"><span>Caption</span><textarea rows="3" id="f-caption" placeholder="Post caption..."></textarea></label>
@@ -197,8 +192,7 @@ tr:last-child td { border-bottom: none; }
 const API = '/api/calendar'
 const BRANDS = ['Gender Reveal Ideas', 'LionZen']
 const PLATFORMS = ['Instagram Reels', 'TikTok', 'Facebook', 'YouTube Shorts']
-const STATUSES = ['Draft', 'Scheduled', 'Published', 'Paused']
-const AD_STATUSES = ['Scheduled', 'Live', 'Scaling', 'Paused']
+const STATUSES = ['Draft', 'Scheduled', 'Live', 'Scaling', 'Published', 'Paused']
 const AD_STATUS_COLORS = { Scheduled: '#9CA3AF', Live: '#059669', Scaling: '#7C3AED', Paused: '#DC2626' }
 const AD_STATUS_CLASSES = { Scheduled: 'ad-scheduled', Live: 'ad-live', Scaling: 'ad-scaling', Paused: 'ad-paused' }
 const STATUS_COLORS = { Draft: '#9CA3AF', Scheduled: '#3B82F6', Published: '#22C55E', Paused: '#F59E0B' }
@@ -287,20 +281,17 @@ function render() {
 function renderList() {
   const bf = $('list-brand-filter')?.value || ''
   const sf = $('list-status-filter')?.value || ''
-  const af = $('list-ad-filter')?.value || ''
   let filtered = [...entries]
   if (bf) filtered = filtered.filter(e => e.brand === bf)
   if (sf) filtered = filtered.filter(e => e.status === sf)
-  if (af) filtered = filtered.filter(e => e.adStatus === af)
   filtered.sort((a,b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time))
 
   let html = `<div class="list-filters">
     <select class="select" id="list-brand-filter" onchange="renderList()"><option value="">All Brands</option>${BRANDS.map(b => `<option ${bf===b?'selected':''}>${b}</option>`).join('')}</select>
     <select class="select" id="list-status-filter" onchange="renderList()"><option value="">All Statuses</option>${STATUSES.map(s => `<option ${sf===s?'selected':''}>${s}</option>`).join('')}</select>
-    <select class="select" id="list-ad-filter" onchange="renderList()"><option value="">All Ad Statuses</option>${AD_STATUSES.map(s => `<option ${af===s?'selected':''}>${s}</option>`).join('')}</select>
   </div><div class="table-wrap"><table><thead><tr>
     <th style="width:40px"><input type="checkbox" onchange="toggleAll(this.checked)" ${selectedIds.size===filtered.length&&filtered.length?'checked':''}></th>
-    <th>Date</th><th>Brand</th><th>Platform</th><th>Hook / Caption</th><th>Status</th><th>Ad Status</th><th>Preview</th><th></th>
+    <th>Date</th><th>Brand</th><th>Platform</th><th>Hook / Caption</th><th>Status</th><th>Preview</th><th></th>
   </tr></thead><tbody>`
 
   if (!filtered.length) html += '<tr><td colspan="10" class="muted" style="text-align:center;padding:24px">No content yet. Click + New Content to add your first piece.</td></tr>'
@@ -315,7 +306,6 @@ function renderList() {
       <td>${PLATFORM_ICONS[e.platform]||''} ${e.platform}</td>
       <td class="hook-cell">${esc(hookText)}</td>
       <td>${statusPill(e.status)}</td>
-      <td>${e.adStatus ? `<span class="status-pill" style="background:${AD_STATUS_COLORS[e.adStatus]}22;color:${AD_STATUS_COLORS[e.adStatus]};border:1px solid ${AD_STATUS_COLORS[e.adStatus]}44">${e.adStatus}</span>` : '<span class="muted">\u2014</span>'}</td>
       <td onclick="event.stopPropagation()">${e.thumbnail ? `<img class="list-thumb" src="${e.thumbnail}" onclick="${e.videoUrl ? `openVideoModal('${e.videoUrl}')` : ''}">` : '\u2014'}${e.videoUrl ? ` <button class="play-btn" onclick="openVideoModal('${e.videoUrl}')" style="font-size:11px;padding:2px 6px">&#9654;</button>` : ''}</td>
       <td onclick="event.stopPropagation()">${e.videoUrl ? `<a class="dl-link" href="${e.videoUrl}" download title="Download">&#11015;</a>` : ''}</td>
     </tr>`
@@ -328,11 +318,9 @@ function renderList() {
 function toggleAll(checked) {
   const bf = $('list-brand-filter')?.value || ''
   const sf = $('list-status-filter')?.value || ''
-  const af = $('list-ad-filter')?.value || ''
   let filtered = [...entries]
   if (bf) filtered = filtered.filter(e => e.brand === bf)
   if (sf) filtered = filtered.filter(e => e.status === sf)
-  if (af) filtered = filtered.filter(e => e.adStatus === af)
   selectedIds = checked ? new Set(filtered.map(e => e.id)) : new Set()
   renderList()
 }
