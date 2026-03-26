@@ -369,14 +369,12 @@ function openNewEntry(date) {
   $('f-date').value = date || fmtDate(new Date())
   $('f-time').value = '09:00'
   $('f-status').value = 'Draft'
-  $('f-adstatus').value = ''
   $('f-hook').value = ''
   $('f-caption').value = ''
   $('f-cta').value = ''
   $('f-adnotes').value = ''
   $('f-notes').value = ''
   $('btn-delete').classList.add('hidden')
-  renderAdStatusButtons()
   renderDropzone()
   $('drawer-overlay').classList.remove('hidden')
 }
@@ -396,31 +394,17 @@ function openEditEntry(id) {
   $('f-date').value = e.date
   $('f-time').value = e.time
   $('f-status').value = e.status
-  $('f-adstatus').value = e.adStatus || ''
   $('f-hook').value = e.hook || ''
   $('f-caption').value = e.caption || ''
   $('f-cta').value = e.cta || ''
   $('f-adnotes').value = e.adNotes || ''
   $('f-notes').value = e.notes || ''
   $('btn-delete').classList.remove('hidden')
-  renderAdStatusButtons()
   renderDropzone()
   $('drawer-overlay').classList.remove('hidden')
 }
 
 function closeDrawer() { $('drawer-overlay').classList.add('hidden') }
-
-function renderAdStatusButtons() {
-  const current = $('f-adstatus').value
-  $('ad-status-btns').innerHTML = AD_STATUSES.map(s =>
-    `<button type="button" onclick="toggleAdStatus('${s}')" style="border:none;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;background:${AD_STATUS_COLORS[s]}22;color:${AD_STATUS_COLORS[s]};opacity:${current===s?'1':'0.35'};box-shadow:${current===s?'0 2px 6px rgba(0,0,0,0.15)':'none'};transform:${current===s?'scale(1.05)':'scale(1)'}">${s}</button>`
-  ).join('')
-}
-
-function toggleAdStatus(s) {
-  $('f-adstatus').value = $('f-adstatus').value === s ? '' : s
-  renderAdStatusButtons()
-}
 
 function renderDropzone() {
   if (drawerThumbnail) {
@@ -508,7 +492,6 @@ async function handleSave() {
     date: $('f-date').value,
     time: $('f-time').value,
     status: $('f-status').value,
-    adStatus: $('f-adstatus').value,
     hook: $('f-hook').value,
     caption: $('f-caption').value,
     cta: $('f-cta').value,
