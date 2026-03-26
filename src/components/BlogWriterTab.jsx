@@ -104,7 +104,7 @@ function MetaBlock({ article }) {
   )
 }
 
-function ImagePairRow({ label, pair }) {
+function ImagePairRow({ label, pair, onRegenerate, regenerating }) {
   const getOverall = () => {
     const d = pair.desktop.status
     const m = pair.mobile.status
@@ -116,11 +116,20 @@ function ImagePairRow({ label, pair }) {
 
   const variantChip = (variant) => {
     const s = pair[variant]
+    const isRegen = regenerating === variant || regenerating === 'both'
     return (
       <span className="bw-img-variant">
         {variant}
         {s.status === 'done' && s.url ? (
-          <a href={s.url} target="_blank" rel="noreferrer" className="bw-img-view">view</a>
+          <>
+            <a href={s.url} target="_blank" rel="noreferrer" className="bw-img-view">view</a>
+            <button
+              className="bw-img-regen-btn"
+              onClick={() => onRegenerate(variant)}
+              disabled={isRegen}
+              title={`Regenerate ${variant}`}
+            >↻</button>
+          </>
         ) : (
           <span className="bw-img-status" style={{ color: DOT_COLORS[s.status] }}>{s.status}</span>
         )}
@@ -129,6 +138,7 @@ function ImagePairRow({ label, pair }) {
   }
 
   const overall = getOverall()
+  const canRegenBoth = pair.desktop.status === 'done' && pair.mobile.status === 'done'
 
   return (
     <div className="bw-img-row">
@@ -138,18 +148,30 @@ function ImagePairRow({ label, pair }) {
         {variantChip('desktop')}
         <span className="bw-img-sep">·</span>
         {variantChip('mobile')}
+        {canRegenBoth && (
+          <button
+            className="bw-img-regen-pair"
+            onClick={() => onRegenerate('both')}
+            disabled={!!regenerating}
+            title="Regenerate both"
+          >↻ pair</button>
+        )}
       </div>
     </div>
   )
 }
 
-function ImagePanel({ imagePairs, imageProgress, phase }) {
+function ImagePanel({ imagePairs, imageProgress, phase, onRegenerate, onRegenAll, regeneratingMap, regenAllRunning }) {
   const availablePlacements = PLACEMENTS.filter(p => imagePairs[p])
   if (availablePlacements.length === 0) return null
 
   const pct = imageProgress.total > 0
     ? Math.round((imageProgress.done / imageProgress.total) * 100)
     : 0
+
+  const allDone = availablePlacements.every(p =>
+    imagePairs[p].desktop.status === 'done' && imagePairs[p].mobile.status === 'done'
+  )
 
   return (
     <div className="bw-images-panel">
@@ -163,10 +185,25 @@ function ImagePanel({ imagePairs, imageProgress, phase }) {
             <div className="bw-images-progress-bar" style={{ width: `${pct}%` }} />
           </div>
         )}
+        {allDone && phase === 'complete' && (
+          <button
+            className="btn-outline bw-regen-all-btn"
+            onClick={onRegenAll}
+            disabled={regenAllRunning}
+          >
+            {regenAllRunning ? '↻ Regenerating…' : '↻ Regenerate All Images'}
+          </button>
+        )}
       </div>
       <div className="bw-images-list">
         {availablePlacements.map(p => (
-          <ImagePairRow key={p} label={PLACEMENT_LABELS[p]} pair={imagePairs[p]} />
+          <ImagePairRow
+            key={p}
+            label={PLACEMENT_LABELS[p]}
+            pair={imagePairs[p]}
+            onRegenerate={(variant) => onRegenerate(p, variant)}
+            regenerating={regeneratingMap[p] || null}
+          />
         ))}
       </div>
     </div>
@@ -192,6 +229,8 @@ export default function BlogWriterTab() {
   const [imagePairs, setImagePairs] = useState({})
   const [imageProgress, setImageProgress] = useState({ done: 0, total: 0 })
   const [finalOutput, setFinalOutput] = useState('')
+  const [regeneratingMap, setRegeneratingMap] = useState({}) // { placement: 'desktop'|'mobile'|'both' }
+  const [regenAllRunning, setRegenAllRunning] = useState(false)
 
   // Load history + check Higgsfield config on mount
   useEffect(() => {
@@ -215,6 +254,96 @@ export default function BlogWriterTab() {
     if (!data.ok) throw new Error(data.error || 'Image generation failed')
     return data.imageUrl
   }, [])
+
+  // Regenerate a single image variant (or both) for a placement
+  const handleRegenImage = useCallback(async (placement, variant) => {
+    // variant: 'desktop' | 'mobile' | 'both'
+    const variants = variant === 'both' ? ['desktop', 'mobile'] : [variant]
+    setRegeneratingMap(prev => ({ ...prev, [placement]: variant }))
+
+    for (const v of variants) {
+      const pair = imagePairs[placement]
+      if (!pair) continue
+
+      setImagePairs(prev => ({
+        ...prev,
+        [placement]: { ...prev[placement], [v]: { ...prev[placement][v], status: 'generating' } },
+      }))
+
+      try {
+        const url = await generateSingleImage(pair[v].prompt, pair[v].aspectRatio)
+        setImagePairs(prev => ({
+          ...prev,
+          [placement]: { ...prev[placement], [v]: { ...prev[placement][v], url, status: 'done' } },
+        }))
+      } catch (e) {
+        setImagePairs(prev => ({
+          ...prev,
+          [placement]: { ...prev[placement], [v]: { ...prev[placement][v], status: 'failed' } },
+        }))
+      }
+    }
+
+    setRegeneratingMap(prev => {
+      const next = { ...prev }
+      delete next[placement]
+      return next
+    })
+
+    // Reassemble final output with updated pairs
+    setImagePairs(latest => {
+      const output = assembleFinalOutput(blocks, latest)
+      setFinalOutput(output)
+      return latest
+    })
+  }, [imagePairs, blocks, generateSingleImage])
+
+  // Regenerate all images
+  const handleRegenAll = useCallback(async () => {
+    setRegenAllRunning(true)
+    const availablePlacements = PLACEMENTS.filter(p => imagePairs[p])
+
+    for (const placement of availablePlacements) {
+      for (const v of ['desktop', 'mobile']) {
+        const pair = imagePairs[placement]
+        if (!pair) continue
+
+        setRegeneratingMap(prev => ({ ...prev, [placement]: v }))
+        setImagePairs(prev => ({
+          ...prev,
+          [placement]: { ...prev[placement], [v]: { ...prev[placement][v], status: 'generating' } },
+        }))
+
+        try {
+          const url = await generateSingleImage(pair[v].prompt, pair[v].aspectRatio)
+          setImagePairs(prev => ({
+            ...prev,
+            [placement]: { ...prev[placement], [v]: { ...prev[placement][v], url, status: 'done' } },
+          }))
+        } catch (e) {
+          setImagePairs(prev => ({
+            ...prev,
+            [placement]: { ...prev[placement], [v]: { ...prev[placement][v], status: 'failed' } },
+          }))
+        }
+
+        setRegeneratingMap(prev => {
+          const next = { ...prev }
+          delete next[placement]
+          return next
+        })
+      }
+    }
+
+    // Reassemble final output
+    setImagePairs(latest => {
+      const output = assembleFinalOutput(blocks, latest)
+      setFinalOutput(output)
+      return latest
+    })
+
+    setRegenAllRunning(false)
+  }, [imagePairs, blocks, generateSingleImage])
 
   const handleGenerate = useCallback(async () => {
     if (!keyword.trim() || phase === 'writing' || phase === 'generating-images') return
@@ -456,7 +585,15 @@ export default function BlogWriterTab() {
 
       {/* Image generation panel */}
       {(phase === 'generating-images' || phase === 'complete') && Object.keys(imagePairs).length > 0 && (
-        <ImagePanel imagePairs={imagePairs} imageProgress={imageProgress} phase={phase} />
+        <ImagePanel
+          imagePairs={imagePairs}
+          imageProgress={imageProgress}
+          phase={phase}
+          onRegenerate={handleRegenImage}
+          onRegenAll={handleRegenAll}
+          regeneratingMap={regeneratingMap}
+          regenAllRunning={regenAllRunning}
+        />
       )}
 
       {/* Article preview (after writing complete) */}

@@ -1860,6 +1860,13 @@ button:hover { opacity: .88; }
 .bw-img-view:hover { text-decoration: underline; }
 .bw-img-status { margin-left: 4px; }
 .bw-img-sep { color: #3a3a5a; margin: 0 2px; font-size: 11px; }
+.bw-img-regen-btn { background: none; border: 1px solid #3a3a5a; border-radius: 3px; color: #7c6af7; font-size: 10px; padding: 1px 4px; margin-left: 4px; cursor: pointer; line-height: 1; }
+.bw-img-regen-btn:hover { background: rgba(124,106,247,0.1); border-color: #7c6af7; }
+.bw-img-regen-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.bw-img-regen-pair { background: none; border: 1px solid #3a3a5a; border-radius: 3px; color: #7c6af7; font-size: 10px; padding: 1px 6px; margin-left: 8px; cursor: pointer; line-height: 1; }
+.bw-img-regen-pair:hover { background: rgba(124,106,247,0.1); border-color: #7c6af7; }
+.bw-img-regen-pair:disabled { opacity: 0.4; cursor: not-allowed; }
+.bw-regen-all-btn { margin-left: auto; font-size: 11px; padding: 4px 12px; }
 
 /* Body preview picture tags */
 .bw-body-content picture { display: block; width: 100%; margin: 16px 0; border-radius: 8px; overflow: hidden; }
