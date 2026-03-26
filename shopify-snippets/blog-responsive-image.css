@@ -1,0 +1,42 @@
+/* Blog responsive images */
+.blog-image {
+  display: block;
+  width: 100%;
+  margin: 32px 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.blog-image--hero {
+  margin: 0 0 40px;
+  border-radius: 10px;
+}
+
+.blog-image__img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+/* Desktop hero: full width, 16:9 natural ratio */
+@media (min-width: 768px) {
+  .blog-image--hero .blog-image__img {
+    aspect-ratio: 16 / 9;
+  }
+  .blog-image:not(.blog-image--hero) .blog-image__img {
+    aspect-ratio: 16 / 9;
+  }
+}
+
+/* Mobile: tall crop fills screen width cleanly */
+@media (max-width: 767px) {
+  .blog-image--hero .blog-image__img {
+    aspect-ratio: 9 / 16;
+    max-height: 80vh;
+  }
+  .blog-image:not(.blog-image--hero) .blog-image__img {
+    aspect-ratio: 9 / 16;
+    max-height: 60vh;
+  }
+}

@@ -1,0 +1,26 @@
+{% comment %}
+  Responsive blog image snippet
+  Usage: {% render 'blog-responsive-image', desktop_url: block.settings.desktop_url, mobile_url: block.settings.mobile_url, alt: block.settings.alt, is_hero: false %}
+{% endcomment %}
+
+{% assign loading = 'lazy' %}
+{% assign fetchpriority = '' %}
+{% if is_hero %}
+  {% assign loading = 'eager' %}
+  {% assign fetchpriority = 'high' %}
+{% endif %}
+
+<picture class="blog-image{% if is_hero %} blog-image--hero{% endif %}">
+  {%- if mobile_url != blank -%}
+    <source media="(max-width: 767px)" srcset="{{ mobile_url }}">
+  {%- endif -%}
+  <img
+    src="{{ desktop_url }}"
+    alt="{{ alt | escape }}"
+    width="1200"
+    height="675"
+    loading="{{ loading }}"
+    {% if fetchpriority != '' %}fetchpriority="{{ fetchpriority }}"{% endif %}
+    class="blog-image__img"
+  >
+</picture>

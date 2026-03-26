@@ -16,6 +16,7 @@ import publishRoutes from './routes/publish.js'
 import hiresRoutes from './routes/hires.js'
 import returnsRoutes from './routes/returns.js'
 import contractRoutes from './routes/contract.js'
+import blogWriterRoutes from './routes/blog-writer.js'
 import shopifyWebhookRoutes from './routes/shopify-webhook.js'
 import squareWebhookRoutes from './routes/square-webhook.js'
 import { env } from './lib/env.js'
@@ -142,6 +143,7 @@ app.use('/api/publish', publishRoutes)
 app.use('/api/hires', hiresRoutes)
 app.use('/api/returns', returnsRoutes)
 app.use('/api/contract', contractRoutes)
+app.use('/api/blog-writer', blogWriterRoutes)
 app.use('/api/shopify/webhook', shopifyWebhookRoutes)
 app.use('/api/square/webhook', squareWebhookRoutes)
 
@@ -287,7 +289,7 @@ app.listen(env.port, '0.0.0.0', () => {
   console.log(`   Company:   GRI only (Lionzen/GBU paused)`)
   console.log(`   Schedule:  SEO crawl @ 2am AEST | Morning brief @ 5am AEST\n`)
 
-  startTelegramPollingBot()
+  startTelegramPollingBot() // Task intake bot (separate from Pablo)
   startNotionPoller()
   // Flywheel: ENABLED with deduplication (checks Rejected status too)
   startFlywheel()
