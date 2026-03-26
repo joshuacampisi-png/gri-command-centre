@@ -154,7 +154,11 @@ tr:last-child td { border-bottom: none; }
       </div>
       <div class="field-row">
         <label class="field"><span>Content Status</span><select id="f-status"><option>Draft</option><option>Scheduled</option><option>Published</option><option>Paused</option></select></label>
-        <label class="field"><span>Ad Status</span><select id="f-adstatus"><option value="">None</option><option value="Scheduled">Scheduled</option><option value="Live">Live</option><option value="Scaling">Scaling</option><option value="Paused">Paused</option></select></label>
+        <div class="field">
+          <span>Ad Status</span>
+          <div id="ad-status-btns" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+          <input type="hidden" id="f-adstatus">
+        </div>
       </div>
       <label class="field"><span>Hook</span><input type="text" id="f-hook" placeholder="Attention-grabbing hook line"></label>
       <label class="field"><span>Caption</span><textarea rows="3" id="f-caption" placeholder="Post caption..."></textarea></label>
@@ -296,7 +300,7 @@ function renderList() {
     <select class="select" id="list-ad-filter" onchange="renderList()"><option value="">All Ad Statuses</option>${AD_STATUSES.map(s => `<option ${af===s?'selected':''}>${s}</option>`).join('')}</select>
   </div><div class="table-wrap"><table><thead><tr>
     <th style="width:40px"><input type="checkbox" onchange="toggleAll(this.checked)" ${selectedIds.size===filtered.length&&filtered.length?'checked':''}></th>
-    <th>Date</th><th>Brand</th><th>Platform</th><th>Hook / Caption</th><th>Status</th><th>Preview</th><th>Ad Status</th><th style="min-width:180px">R6 Ad Notes</th><th></th>
+    <th>Date</th><th>Brand</th><th>Platform</th><th>Hook / Caption</th><th>Status</th><th>Ad Status</th><th>Preview</th><th></th>
   </tr></thead><tbody>`
 
   if (!filtered.length) html += '<tr><td colspan="10" class="muted" style="text-align:center;padding:24px">No content yet. Click + New Content to add your first piece.</td></tr>'
@@ -311,9 +315,8 @@ function renderList() {
       <td>${PLATFORM_ICONS[e.platform]||''} ${e.platform}</td>
       <td class="hook-cell">${esc(hookText)}</td>
       <td>${statusPill(e.status)}</td>
+      <td>${e.adStatus ? `<span class="status-pill" style="background:${AD_STATUS_COLORS[e.adStatus]}22;color:${AD_STATUS_COLORS[e.adStatus]};border:1px solid ${AD_STATUS_COLORS[e.adStatus]}44">${e.adStatus}</span>` : '<span class="muted">\u2014</span>'}</td>
       <td onclick="event.stopPropagation()">${e.thumbnail ? `<img class="list-thumb" src="${e.thumbnail}" onclick="${e.videoUrl ? `openVideoModal('${e.videoUrl}')` : ''}">` : '\u2014'}${e.videoUrl ? ` <button class="play-btn" onclick="openVideoModal('${e.videoUrl}')" style="font-size:11px;padding:2px 6px">&#9654;</button>` : ''}</td>
-      <td onclick="event.stopPropagation()">${adStatusHTML(e)}</td>
-      <td onclick="event.stopPropagation()"><textarea class="r6-notes" data-notes-id="${e.id}" placeholder="Ad notes..." oninput="onNotesInput('${e.id}')">${esc(e.adNotes || '')}</textarea></td>
       <td onclick="event.stopPropagation()">${e.videoUrl ? `<a class="dl-link" href="${e.videoUrl}" download title="Download">&#11015;</a>` : ''}</td>
     </tr>`
   })
@@ -385,6 +388,7 @@ function openNewEntry(date) {
   $('f-adnotes').value = ''
   $('f-notes').value = ''
   $('btn-delete').classList.add('hidden')
+  renderAdStatusButtons()
   renderDropzone()
   $('drawer-overlay').classList.remove('hidden')
 }
@@ -411,11 +415,24 @@ function openEditEntry(id) {
   $('f-adnotes').value = e.adNotes || ''
   $('f-notes').value = e.notes || ''
   $('btn-delete').classList.remove('hidden')
+  renderAdStatusButtons()
   renderDropzone()
   $('drawer-overlay').classList.remove('hidden')
 }
 
 function closeDrawer() { $('drawer-overlay').classList.add('hidden') }
+
+function renderAdStatusButtons() {
+  const current = $('f-adstatus').value
+  $('ad-status-btns').innerHTML = AD_STATUSES.map(s =>
+    `<button type="button" onclick="toggleAdStatus('${s}')" style="border:none;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;background:${AD_STATUS_COLORS[s]}22;color:${AD_STATUS_COLORS[s]};opacity:${current===s?'1':'0.35'};box-shadow:${current===s?'0 2px 6px rgba(0,0,0,0.15)':'none'};transform:${current===s?'scale(1.05)':'scale(1)'}">${s}</button>`
+  ).join('')
+}
+
+function toggleAdStatus(s) {
+  $('f-adstatus').value = $('f-adstatus').value === s ? '' : s
+  renderAdStatusButtons()
+}
 
 function renderDropzone() {
   if (drawerThumbnail) {

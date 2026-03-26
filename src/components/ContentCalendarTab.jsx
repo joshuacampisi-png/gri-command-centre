@@ -213,13 +213,22 @@ function EntryDrawer({ entry, isNew, onSave, onDelete, onClose }) {
                 {STATUSES.map(s => <option key={s}>{s}</option>)}
               </select>
             </label>
-            <label className="cc-field">
+            <div className="cc-field">
               <span>Ad Status</span>
-              <select value={form.adStatus || ''} onChange={e => set('adStatus', e.target.value)}>
-                <option value="">None</option>
-                {AD_STATUSES.map(s => <option key={s}>{s}</option>)}
-              </select>
-            </label>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {AD_STATUSES.map(s => (
+                  <button key={s} type="button" onClick={() => set('adStatus', form.adStatus === s ? '' : s)}
+                    style={{
+                      border: 'none', padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600,
+                      cursor: 'pointer', transition: 'all .15s',
+                      background: AD_STATUS_BG[s], color: AD_STATUS_COLORS[s],
+                      opacity: form.adStatus === s ? 1 : 0.35,
+                      boxShadow: form.adStatus === s ? '0 2px 6px rgba(0,0,0,0.15)' : 'none',
+                      transform: form.adStatus === s ? 'scale(1.05)' : 'scale(1)'
+                    }}>{s}</button>
+                ))}
+              </div>
+            </div>
           </div>
           <label className="cc-field">
             <span>Hook</span>
@@ -480,11 +489,11 @@ function ListView({ entries, onClickEntry, onBulkAction, onUpdateEntry }) {
           <thead>
             <tr>
               <th><input type="checkbox" checked={selected.size === filtered.length && filtered.length > 0} onChange={toggleAll} /></th>
-              <th>Date</th><th>Brand</th><th>Platform</th><th>Hook / Caption</th><th>Status</th><th>Preview</th><th>Ad Status</th><th style={{ minWidth: 180 }}>R6 Ad Notes</th><th></th>
+              <th>Date</th><th>Brand</th><th>Platform</th><th>Hook / Caption</th><th>Status</th><th>Ad Status</th><th>Preview</th><th></th>
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 && <tr><td colSpan={10} className="muted" style={{ textAlign: 'center', padding: 24 }}>No content yet. Click + New Entry to add your first piece.</td></tr>}
+            {filtered.length === 0 && <tr><td colSpan={9} className="muted" style={{ textAlign: 'center', padding: 24 }}>No content yet. Click + New Entry to add your first piece.</td></tr>}
             {filtered.map(e => (
               <tr key={e.id} className={selected.has(e.id) ? 'cc-row-sel' : ''} onClick={() => onClickEntry(e)}>
                 <td onClick={ev => ev.stopPropagation()}><input type="checkbox" checked={selected.has(e.id)} onChange={() => toggle(e.id)} /></td>
@@ -493,31 +502,10 @@ function ListView({ entries, onClickEntry, onBulkAction, onUpdateEntry }) {
                 <td>{PLATFORM_ICONS[e.platform]} {e.platform}</td>
                 <td className="cc-hook-cell">{e.hook || e.caption || '—'}</td>
                 <td><span className="cc-status-pill" style={{ background: STATUS_COLORS[e.status] + '22', color: STATUS_COLORS[e.status], border: `1px solid ${STATUS_COLORS[e.status]}44` }}>{e.status}</span></td>
+                <td>{e.adStatus ? <span style={{ padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 600, background: AD_STATUS_BG[e.adStatus], color: AD_STATUS_COLORS[e.adStatus] }}>{e.adStatus}</span> : <span className="muted">—</span>}</td>
                 <td onClick={ev => ev.stopPropagation()}>
                   {e.thumbnail ? <img src={e.thumbnail} className="cc-list-thumb" alt="" /> : '—'}
                   {e.videoUrl && <a className="cc-dl-link" href={e.videoUrl} download>⬇</a>}
-                </td>
-                <td onClick={ev => ev.stopPropagation()}>
-                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                    {AD_STATUSES.map(s => (
-                      <button key={s} onClick={() => onUpdateEntry({ ...e, adStatus: e.adStatus === s ? '' : s })}
-                        style={{
-                          border: 'none', padding: '3px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
-                          cursor: 'pointer', transition: 'all .15s',
-                          background: AD_STATUS_BG[s], color: AD_STATUS_COLORS[s],
-                          opacity: e.adStatus === s ? 1 : 0.35,
-                          boxShadow: e.adStatus === s ? '0 1px 4px rgba(0,0,0,0.15)' : 'none'
-                        }}>{s}</button>
-                    ))}
-                  </div>
-                </td>
-                <td onClick={ev => ev.stopPropagation()}>
-                  <textarea
-                    defaultValue={e.adNotes || ''}
-                    placeholder="Ad notes..."
-                    onBlur={ev => { if (ev.target.value !== (e.adNotes || '')) onUpdateEntry({ ...e, adNotes: ev.target.value }) }}
-                    style={{ width: '100%', minHeight: 32, maxHeight: 80, border: '1px solid #E8ECF4', borderRadius: 6, padding: '6px 8px', fontSize: 12, resize: 'vertical', outline: 'none', fontFamily: 'inherit' }}
-                  />
                 </td>
                 <td></td>
               </tr>
