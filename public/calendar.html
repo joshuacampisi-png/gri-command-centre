@@ -237,7 +237,7 @@ monthYear = now.getFullYear()
 monthMonth = now.getMonth()
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8) }
-function fmtDate(d) { return d.toISOString().slice(0, 10) }
+function fmtDate(d) { const y = d.getFullYear(); const m = String(d.getMonth() + 1).padStart(2, '0'); const day = String(d.getDate()).padStart(2, '0'); return `${y}-${m}-${day}` }
 function fmtSize(b) { return b < 1024 ? b + ' B' : b < 1048576 ? (b/1024).toFixed(1) + ' KB' : (b/1048576).toFixed(1) + ' MB' }
 function $(id) { return document.getElementById(id) }
 
@@ -526,7 +526,11 @@ async function handleDrop(e) {
   if (!isVideo && !isImage) return
 
   // Grab thumbnail
-  const thumb = isVideo ? await grabThumbnail(file) : URL.createObjectURL(file)
+  const thumb = isVideo ? await grabThumbnail(file) : await new Promise(resolve => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result)
+    reader.readAsDataURL(file)
+  })
   drawerThumbnail = thumb
   drawerVideoName = file.name
   drawerVideoSize = file.size

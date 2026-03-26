@@ -17,13 +17,18 @@ export function ReturnsTab() {
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
-  // Load returns from API on mount
+  // Load returns from API on mount + auto-refresh every 30s
   useEffect(() => {
-    fetch('/api/returns')
-      .then(r => r.json())
-      .then(d => { if (d.ok) setEntries(d.returns || []) })
-      .catch(() => {})
-      .finally(() => setLoading(false))
+    const loadReturns = () => {
+      fetch('/api/returns')
+        .then(r => r.json())
+        .then(d => { if (d.ok) setEntries(d.returns || []) })
+        .catch(() => {})
+        .finally(() => setLoading(false))
+    }
+    loadReturns()
+    const interval = setInterval(loadReturns, 30000)
+    return () => clearInterval(interval)
   }, [])
 
   const submit = async e => {

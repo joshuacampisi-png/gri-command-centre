@@ -13,7 +13,7 @@ const VIDEO_EXTS = ['mp4', 'mov', 'webm']
 const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp']
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8) }
-function fmtDate(d) { return d.toISOString().slice(0, 10) }
+function fmtDate(d) { const y = d.getFullYear(); const m = String(d.getMonth() + 1).padStart(2, '0'); const day = String(d.getDate()).padStart(2, '0'); return `${y}-${m}-${day}` }
 function fmtSize(b) { if (b < 1024) return b + ' B'; if (b < 1048576) return (b / 1024).toFixed(1) + ' KB'; return (b / 1048576).toFixed(1) + ' MB' }
 function parseDate(s) { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d) }
 
@@ -144,7 +144,11 @@ function EntryDrawer({ entry, isNew, onSave, onDelete, onClose }) {
     const isVideo = VIDEO_EXTS.includes(ext)
     const isImage = IMAGE_EXTS.includes(ext)
     if (!isVideo && !isImage) return
-    const thumb = isVideo ? await grabThumbnail(file) : URL.createObjectURL(file)
+    const thumb = isVideo ? await grabThumbnail(file) : await new Promise(resolve => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result)
+      reader.readAsDataURL(file)
+    })
     setForm(f => ({ ...f, videoName: file.name, videoSize: file.size, thumbnail: thumb, mediaType: isVideo ? 'video' : 'image' }))
     setUploading(true)
     setUploadDone(false)
@@ -268,7 +272,7 @@ function EntryDrawer({ entry, isNew, onSave, onDelete, onClose }) {
           {entry && <button className="cc-btn cc-btn-danger" onClick={() => { onDelete(entry.id); onClose() }}>Delete</button>}
           <div style={{ flex: 1 }} />
           <button className="btn-sec" onClick={onClose}>Cancel</button>
-          <button className="cc-btn cc-btn-save" onClick={handleSubmit} disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
+          <button className="cc-btn cc-btn-save" onClick={handleSubmit} disabled={saving || uploading}>{uploading ? 'Uploading...' : saving ? 'Saving...' : 'Save'}</button>
         </div>
         <MediaModal url={videoPreview} onClose={() => setVideoPreview(null)} />
       </div>
