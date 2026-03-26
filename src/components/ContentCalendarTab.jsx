@@ -206,7 +206,11 @@ function EntryDrawer({ entry, isNew, onSave, onDelete, onClose }) {
           <div className="cc-field-row">
             <label className="cc-field">
               <span>Status</span>
-              <select value={form.status} onChange={e => set('status', e.target.value)}>
+              <select value={form.status} onChange={e => {
+                const newStatus = e.target.value
+                set('status', newStatus)
+                if (newStatus === 'Live' && !form.liveDate) set('liveDate', fmtDate(new Date()))
+              }}>
                 {STATUSES.map(s => <option key={s}>{s}</option>)}
               </select>
             </label>
@@ -471,7 +475,7 @@ function ListView({ entries, onClickEntry, onBulkAction, onUpdateEntry }) {
             {filtered.map(e => (
               <tr key={e.id} className={selected.has(e.id) ? 'cc-row-sel' : ''} onClick={() => onClickEntry(e)}>
                 <td onClick={ev => ev.stopPropagation()}><input type="checkbox" checked={selected.has(e.id)} onChange={() => toggle(e.id)} /></td>
-                <td style={{ whiteSpace: 'nowrap' }}>{e.date}</td>
+                <td style={{ whiteSpace: 'nowrap' }}>{e.liveDate ? <><span style={{ fontSize: 10, color: '#059669', fontWeight: 600 }}>LIVE</span><br/>{e.liveDate}</> : e.date}</td>
                 <td>{PLATFORM_ICONS[e.platform]} {e.platform}</td>
                 <td className="cc-hook-cell">{e.hook || e.caption || '—'}</td>
                 <td><span className="cc-status-pill" style={{ background: STATUS_COLORS[e.status] + '22', color: STATUS_COLORS[e.status], border: `1px solid ${STATUS_COLORS[e.status]}44` }}>{e.status}</span></td>
