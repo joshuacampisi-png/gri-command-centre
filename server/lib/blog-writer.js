@@ -159,16 +159,16 @@ Inline-1 pair: after the closing paragraph of H2 section 2
 Inline-2 pair: after the closing paragraph of H2 section 4
 Inline-3 pair: after the FAQ section, before the conclusion
 
-IMAGE PROMPT ENGINEERING — NANO BANANA PRO STANDARDS
+IMAGE PROMPT ENGINEERING — FLUX 1.1 PRO ULTRA STANDARDS
 
 Write prompts as structured command-line instructions, not sentences. Every prompt must contain all 7 elements:
-1. Subject: specific and concrete, not generic
-2. Scene/environment: exact setting, time of day, atmosphere
-3. Lighting: e.g. "soft diffused natural light from left", "golden hour rim lighting"
-4. Camera: e.g. "shot on full-frame cinema camera", "85mm portrait lens f/1.8"
-5. Style: photorealistic, cinematic, editorial, lifestyle
-6. Brand visual language: bright joyful warm colour palette, real-feeling lifestyle moments, Australian summer light, young parents or family in natural outdoor settings, coloured powder or smoke or confetti caught mid-action, natural expressions. No stock-photo stiffness. No cheesy poses. No studio backgrounds.
-7. Negative constraints: explicitly exclude anything off-brand
+1. Subject: specific and concrete, not generic. Reference real GRI product types (smoke grenades with pull-ring activation, handheld powder cannons, confetti tube cannons, balloon boxes with helium balloons inside). Products should look like real physical products you can buy, not fantasy items.
+2. Scene/environment: exact setting, time of day, atmosphere. Australian outdoor settings: backyards, parks, beaches, bushland clearings. Summer light. Real party setups.
+3. Lighting: e.g. "soft diffused natural light from left", "golden hour rim lighting", "bright midday Australian sun"
+4. Camera: e.g. "shot on full-frame cinema camera", "85mm portrait lens f/1.8", "24mm wide-angle"
+5. Style: photorealistic, cinematic, editorial, lifestyle. Must look like a real photograph, not AI art.
+6. Brand visual language: bright joyful warm colour palette, real-feeling lifestyle moments, Australian summer light, young parents or family in natural outdoor settings, coloured powder or smoke or confetti caught mid-action, natural expressions. Products must resemble actual gender reveal items (cylindrical smoke grenades, tube-shaped cannons, box-style balloon releases). No stock-photo stiffness. No cheesy poses. No studio backgrounds. No fantasy products.
+7. Negative constraints: explicitly exclude anything off-brand. No text overlays, no watermarks, no logos, no unrealistic product designs, no studio lighting, no posed stock photo look.
 
 DESKTOP vs MOBILE PROMPT DIFFERENCE:
 Desktop (16:9): wide horizontal composition, subject placed in left or centre third, environment fills the right side

@@ -1868,6 +1868,12 @@ button:hover { opacity: .88; }
 .bw-img-regen-pair:disabled { opacity: 0.4; cursor: not-allowed; }
 .bw-regen-all-btn { margin-left: auto; font-size: 11px; padding: 4px 12px; }
 
+/* QA score badges */
+.bw-qa-score { font-size: 10px; font-weight: 600; padding: 1px 5px; border-radius: 3px; margin-left: 4px; }
+.bw-qa-score.high { color: #34d399; background: rgba(52,211,153,0.1); }
+.bw-qa-score.mid { color: #f5a623; background: rgba(245,166,35,0.1); }
+.bw-qa-score.low { color: #ef4444; background: rgba(239,68,68,0.1); }
+
 /* Body preview picture tags */
 .bw-body-content picture { display: block; width: 100%; margin: 16px 0; border-radius: 8px; overflow: hidden; }
 .bw-body-content picture img { width: 100%; height: auto; display: block; border-radius: 8px; }

@@ -35,6 +35,7 @@ const PLACEMENT_LABELS = {
 const DOT_COLORS = {
   pending:    '#555',
   generating: '#f5a623',
+  reviewing:  '#a78bfa',
   done:       '#34d399',
   failed:     '#ef4444',
 }
@@ -122,6 +123,12 @@ function ImagePairRow({ label, pair, onRegenerate, regenerating }) {
         {variant}
         {s.status === 'done' && s.url ? (
           <>
+            {s.qaScore > 0 && (
+              <span className={`bw-qa-score ${s.qaScore >= 8 ? 'high' : s.qaScore >= 6 ? 'mid' : 'low'}`}
+                title={s.qaIssues?.join(', ') || 'No issues'}>
+                {s.qaScore}/10
+              </span>
+            )}
             <a href={s.url} target="_blank" rel="noreferrer" className="bw-img-view">view</a>
             <button
               className="bw-img-regen-btn"
@@ -131,7 +138,9 @@ function ImagePairRow({ label, pair, onRegenerate, regenerating }) {
             >↻</button>
           </>
         ) : (
-          <span className="bw-img-status" style={{ color: DOT_COLORS[s.status] }}>{s.status}</span>
+          <span className="bw-img-status" style={{ color: DOT_COLORS[s.status] }}>
+            {s.status === 'reviewing' ? 'QA review' : s.status}
+          </span>
         )}
       </span>
     )
@@ -178,7 +187,7 @@ function ImagePanel({ imagePairs, imageProgress, phase, onRegenerate, onRegenAll
       <div className="bw-images-header">
         <span className="bw-images-title">Images</span>
         <span className="bw-images-count">
-          Nano Banana Pro — {imageProgress.done}/{imageProgress.total} generated
+          FLUX 1.1 Pro Ultra — {imageProgress.done}/{imageProgress.total} generated
         </span>
         {phase === 'generating-images' && (
           <div className="bw-images-progress">
@@ -222,7 +231,7 @@ export default function BlogWriterTab() {
   const [publishing, setPublishing] = useState(false)
   const [history, setHistory] = useState([])
   const [copied, setCopied] = useState(false)
-  const [hasHiggsfield, setHasHiggsfield] = useState(false)
+  const [hasFal, setHasFal] = useState(false)
 
   // Image pipeline state
   const [blocks, setBlocks] = useState([])
@@ -240,7 +249,7 @@ export default function BlogWriterTab() {
       .catch(() => {})
     fetch('/api/blog-writer/image-config')
       .then(r => r.json())
-      .then(d => { if (d.ok) setHasHiggsfield(d.hasHiggsfield) })
+      .then(d => { if (d.ok) setHasFal(d.hasFal) })
       .catch(() => {})
   }, [])
 
@@ -248,12 +257,54 @@ export default function BlogWriterTab() {
     const res = await fetch('/api/blog-writer/generate-image', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, model: 'nanoBananaPro', aspectRatio, resolution: '2K' }),
+      body: JSON.stringify({ prompt, aspectRatio }),
     })
     const data = await res.json()
     if (!data.ok) throw new Error(data.error || 'Image generation failed')
     return data.imageUrl
   }, [])
+
+  // Vision QA: Claude reviews the generated image against prompt + brand standards
+  const reviewImage = useCallback(async (imageUrl, prompt, placement, alt) => {
+    try {
+      const res = await fetch('/api/blog-writer/review-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageUrl, prompt, placement, alt }),
+      })
+      const data = await res.json()
+      if (!data.ok) return { score: 0, pass: true, issues: ['QA unavailable'] }
+      return data.review
+    } catch {
+      // If QA fails, don't block the pipeline — just pass
+      return { score: 0, pass: true, issues: ['QA unavailable'] }
+    }
+  }, [])
+
+  // Generate with QA loop: generate → review → auto-regen if score < 6 (max 2 attempts)
+  const generateWithQA = useCallback(async (prompt, aspectRatio, placement, alt, maxAttempts = 2) => {
+    let currentPrompt = prompt
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const imageUrl = await generateSingleImage(currentPrompt, aspectRatio)
+
+      // Review with Claude vision
+      const review = await reviewImage(imageUrl, currentPrompt, placement, alt)
+
+      if (review.pass || attempt === maxAttempts - 1) {
+        // Accept the image (passed QA or final attempt)
+        return { imageUrl, review }
+      }
+
+      // Failed QA — use refined prompt if available
+      console.log(`[ImageQA] ${placement} scored ${review.score}/10, regenerating with refined prompt`)
+      if (review.refinedPrompt) {
+        currentPrompt = review.refinedPrompt
+      }
+    }
+    // Shouldn't reach here, but safety fallback
+    const imageUrl = await generateSingleImage(currentPrompt, aspectRatio)
+    return { imageUrl, review: { score: 0, pass: true, issues: [] } }
+  }, [generateSingleImage, reviewImage])
 
   // Regenerate a single image variant (or both) for a placement
   const handleRegenImage = useCallback(async (placement, variant) => {
@@ -377,8 +428,8 @@ export default function BlogWriterTab() {
 
       const totalImages = countImages(parsedPairs)
 
-      // If no Higgsfield config or no image tags found, skip image generation
-      if (!hasHiggsfield || totalImages === 0) {
+      // If no Fal.ai config or no image tags found, skip image generation
+      if (!hasFal || totalImages === 0) {
         setPhase('complete')
         // Refresh history
         const hRes = await fetch('/api/blog-writer/history')
@@ -398,61 +449,66 @@ export default function BlogWriterTab() {
       for (const placement of availablePlacements) {
         const pair = parsedPairs[placement]
 
-        // Desktop
-        setImagePairs(prev => ({
-          ...prev,
-          [placement]: { ...prev[placement], desktop: { ...prev[placement].desktop, status: 'generating' } },
-        }))
-        try {
-          const url = await generateSingleImage(pair.desktop.prompt, pair.desktop.aspectRatio)
-          finalPairs[placement] = {
-            ...finalPairs[placement],
-            desktop: { ...finalPairs[placement].desktop, url, status: 'done' },
-          }
+        for (const variant of ['desktop', 'mobile']) {
+          // Set status: generating
           setImagePairs(prev => ({
             ...prev,
-            [placement]: { ...prev[placement], desktop: { ...prev[placement].desktop, url, status: 'done' } },
+            [placement]: { ...prev[placement], [variant]: { ...prev[placement][variant], status: 'generating' } },
           }))
-        } catch (e) {
-          finalPairs[placement] = {
-            ...finalPairs[placement],
-            desktop: { ...finalPairs[placement].desktop, status: 'failed' },
-          }
-          setImagePairs(prev => ({
-            ...prev,
-            [placement]: { ...prev[placement], desktop: { ...prev[placement].desktop, status: 'failed' } },
-          }))
-        }
-        doneCount++
-        setImageProgress({ done: doneCount, total: totalImages })
 
-        // Mobile
-        setImagePairs(prev => ({
-          ...prev,
-          [placement]: { ...prev[placement], mobile: { ...prev[placement].mobile, status: 'generating' } },
-        }))
-        try {
-          const url = await generateSingleImage(pair.mobile.prompt, pair.mobile.aspectRatio)
-          finalPairs[placement] = {
-            ...finalPairs[placement],
-            mobile: { ...finalPairs[placement].mobile, url, status: 'done' },
+          try {
+            const url = await generateSingleImage(pair[variant].prompt, pair[variant].aspectRatio)
+
+            // Set status: reviewing (Claude vision QA)
+            setImagePairs(prev => ({
+              ...prev,
+              [placement]: { ...prev[placement], [variant]: { ...prev[placement][variant], url, status: 'reviewing' } },
+            }))
+
+            const review = await reviewImage(url, pair[variant].prompt, placement, pair.alt)
+
+            // If QA fails and we get a refined prompt, regenerate once
+            if (!review.pass && review.refinedPrompt) {
+              setImagePairs(prev => ({
+                ...prev,
+                [placement]: { ...prev[placement], [variant]: { ...prev[placement][variant], status: 'generating' } },
+              }))
+
+              const regenUrl = await generateSingleImage(review.refinedPrompt, pair[variant].aspectRatio)
+              const regenReview = await reviewImage(regenUrl, review.refinedPrompt, placement, pair.alt)
+
+              finalPairs[placement] = {
+                ...finalPairs[placement],
+                [variant]: { ...finalPairs[placement][variant], url: regenUrl, status: 'done', qaScore: regenReview.score, qaIssues: regenReview.issues },
+              }
+              setImagePairs(prev => ({
+                ...prev,
+                [placement]: { ...prev[placement], [variant]: { ...prev[placement][variant], url: regenUrl, status: 'done', qaScore: regenReview.score, qaIssues: regenReview.issues } },
+              }))
+            } else {
+              finalPairs[placement] = {
+                ...finalPairs[placement],
+                [variant]: { ...finalPairs[placement][variant], url, status: 'done', qaScore: review.score, qaIssues: review.issues },
+              }
+              setImagePairs(prev => ({
+                ...prev,
+                [placement]: { ...prev[placement], [variant]: { ...prev[placement][variant], url, status: 'done', qaScore: review.score, qaIssues: review.issues } },
+              }))
+            }
+          } catch (e) {
+            finalPairs[placement] = {
+              ...finalPairs[placement],
+              [variant]: { ...finalPairs[placement][variant], status: 'failed' },
+            }
+            setImagePairs(prev => ({
+              ...prev,
+              [placement]: { ...prev[placement], [variant]: { ...prev[placement][variant], status: 'failed' } },
+            }))
           }
-          setImagePairs(prev => ({
-            ...prev,
-            [placement]: { ...prev[placement], mobile: { ...prev[placement].mobile, url, status: 'done' } },
-          }))
-        } catch (e) {
-          finalPairs[placement] = {
-            ...finalPairs[placement],
-            mobile: { ...finalPairs[placement].mobile, status: 'failed' },
-          }
-          setImagePairs(prev => ({
-            ...prev,
-            [placement]: { ...prev[placement], mobile: { ...prev[placement].mobile, status: 'failed' } },
-          }))
+
+          doneCount++
+          setImageProgress({ done: doneCount, total: totalImages })
         }
-        doneCount++
-        setImageProgress({ done: doneCount, total: totalImages })
       }
 
       // STEP 4: Assemble final output with <picture> tags
@@ -469,7 +525,7 @@ export default function BlogWriterTab() {
       setError(err.message)
       setPhase('error')
     }
-  }, [keyword, articleType, phase, hasHiggsfield, generateSingleImage])
+  }, [keyword, articleType, phase, hasFal, generateSingleImage])
 
   const handlePublish = useCallback(async () => {
     if (!article) return
@@ -521,7 +577,7 @@ export default function BlogWriterTab() {
           <h2 className="page-title">Blog Writer</h2>
           <p className="page-sub">
             SEO article generator for Gender Reveal Ideas
-            {hasHiggsfield && ' — Higgsfield image pipeline active'}
+            {hasFal && ' — Fal.ai FLUX image pipeline active'}
           </p>
         </div>
       </div>
