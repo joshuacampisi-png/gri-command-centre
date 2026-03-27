@@ -1,28 +1,28 @@
 /**
- * Fal.ai Image Generation Client
+ * Fal.ai Image Generation — Nano Banana Pro
  * ─────────────────────────────────────────────────────────────
+ * All image generation uses Google Nano Banana Pro via Fal.ai.
+ *
  * Two modes:
- * 1. Image-to-Image (when reference product photo available):
- *    Uses FLUX General img2img — takes the real product photo
- *    and varies the scene/background/lighting while keeping
- *    the product nearly identical. Strength 0.3 = product stays,
- *    scene changes.
- * 2. Text-to-Image (fallback, no reference):
- *    Uses FLUX 1.1 Pro Ultra for pure text generation.
+ * 1. Edit mode (reference images available):
+ *    Uses /edit endpoint with image_urls array.
+ *    Passes real product photos so the generated image
+ *    features the actual product. $0.15/image.
+ *
+ * 2. Text-to-image (no reference):
+ *    Pure prompt generation via Nano Banana Pro.
+ *    $0.15/image.
+ *
+ * Both at 2K resolution, native aspect ratio support.
  * ─────────────────────────────────────────────────────────────
  */
 
 const FAL_BASE_URL = 'https://queue.fal.run'
 
-// Image-to-image: product stays, scene varies
-const IMG2IMG_MODEL = 'fal-ai/flux-general/image-to-image'
-// Text-to-image fallback
-const TXT2IMG_MODEL = 'fal-ai/flux-pro/v1.1-ultra'
-
-// Strength controls how much the original image is preserved
-// 0.0 = exact copy, 1.0 = completely new image
-// 0.25-0.35 = product shape/colour/branding preserved, background varies
-const IMG2IMG_STRENGTH = 0.30
+// Nano Banana Pro (Google Gemini 3 Pro Image)
+const NANO_BANANA_PRO = 'fal-ai/nano-banana-pro'
+// Edit endpoint for image-to-image with reference photos
+const NANO_BANANA_EDIT = 'fal-ai/nano-banana-pro/edit'
 
 export function hasFalConfig() {
   return Boolean(process.env.FAL_KEY)
@@ -40,7 +40,7 @@ function getAuthHeaders() {
 /**
  * Poll for image generation result
  */
-async function pollForResult(statusUrl, maxAttempts = 60) {
+async function pollForResult(statusUrl, maxAttempts = 90) {
   const headers = getAuthHeaders()
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -74,48 +74,40 @@ async function pollForResult(statusUrl, maxAttempts = 60) {
     }
   }
 
-  throw new Error('Fal.ai image generation timed out after 120 seconds')
+  throw new Error('Nano Banana Pro generation timed out after 180 seconds')
 }
 
 /**
- * Fetch first valid reference image URL.
- * Returns null if all fetches fail.
+ * Validate reference image URLs — return array of valid ones.
+ * Checks each URL is reachable and serves an image content type.
  */
-async function resolveReferenceImage(referenceImageUrls) {
-  if (!referenceImageUrls || referenceImageUrls.length === 0) return null
+async function resolveReferenceImages(referenceImageUrls) {
+  if (!referenceImageUrls || referenceImageUrls.length === 0) return []
 
-  for (const url of referenceImageUrls.slice(0, 4)) {
+  const valid = []
+  // Nano Banana Pro supports up to 14 reference images
+  for (const url of referenceImageUrls.slice(0, 6)) {
     try {
       const res = await fetch(url, {
+        method: 'HEAD',
         headers: { 'User-Agent': 'Mozilla/5.0 (compatible; WOGBot/1.0)' },
-        signal: AbortSignal.timeout(8000),
+        signal: AbortSignal.timeout(6000),
       })
       if (res.ok) {
         const ct = res.headers.get('content-type') || ''
         if (ct.startsWith('image/')) {
-          console.log(`[Fal.ai] Reference image validated: ${url.slice(0, 80)}...`)
-          return url
+          valid.push(url)
+          console.log(`[Nano Banana Pro] Reference OK: ${url.slice(0, 80)}...`)
         }
       }
     } catch {}
   }
 
-  console.log('[Fal.ai] No valid reference images found, falling back to text-to-image')
-  return null
-}
-
-/**
- * Map aspect ratio string to Fal.ai image_size enum
- */
-function mapAspectRatio(aspectRatio) {
-  const map = {
-    '16:9': 'landscape_16_9',
-    '9:16': 'portrait_16_9',
-    '4:3': 'landscape_4_3',
-    '3:4': 'portrait_4_3',
-    '1:1': 'square_hd',
+  if (valid.length === 0) {
+    console.log('[Nano Banana Pro] No valid reference images found, using text-to-image')
   }
-  return map[aspectRatio] || 'landscape_16_9'
+
+  return valid
 }
 
 /**
@@ -123,6 +115,8 @@ function mapAspectRatio(aspectRatio) {
  */
 async function submitAndPoll(modelId, body) {
   const headers = getAuthHeaders()
+
+  console.log(`[Nano Banana Pro] Submitting to ${modelId}...`)
 
   const submitRes = await fetch(`${FAL_BASE_URL}/${modelId}`, {
     method: 'POST',
@@ -132,7 +126,7 @@ async function submitAndPoll(modelId, body) {
 
   if (!submitRes.ok) {
     const text = await submitRes.text()
-    throw new Error(`Fal.ai submit failed (${submitRes.status}): ${text}`)
+    throw new Error(`Nano Banana Pro submit failed (${submitRes.status}): ${text}`)
   }
 
   const submitData = await submitRes.json()
@@ -141,7 +135,7 @@ async function submitAndPoll(modelId, body) {
 
   if (!requestId) throw new Error('No request ID returned from Fal.ai')
 
-  console.log(`[Fal.ai] Queued request ${requestId}, polling...`)
+  console.log(`[Nano Banana Pro] Queued request ${requestId}, polling...`)
 
   // Check for instant response
   if (submitData.response_url && submitData.status === 'COMPLETED') {
@@ -150,7 +144,7 @@ async function submitAndPoll(modelId, body) {
       const result = await resultRes.json()
       const imageUrl = result.images?.[0]?.url
       if (imageUrl) {
-        console.log(`[Fal.ai] Done (instant): ${imageUrl.slice(0, 80)}...`)
+        console.log(`[Nano Banana Pro] Done (instant): ${imageUrl.slice(0, 80)}...`)
         return { imageUrl, requestId }
       }
     }
@@ -158,24 +152,27 @@ async function submitAndPoll(modelId, body) {
 
   const pollUrl = statusUrl || `${FAL_BASE_URL}/${modelId}/requests/${requestId}/status`
   const imageUrl = await pollForResult(pollUrl)
-  console.log(`[Fal.ai] Done: ${imageUrl.slice(0, 80)}...`)
+  console.log(`[Nano Banana Pro] Done: ${imageUrl.slice(0, 80)}...`)
 
   return { imageUrl, requestId }
 }
 
 /**
- * Generate a single image via Fal.ai
+ * Generate a single image via Nano Banana Pro
  *
- * If referenceImageUrls provided → Image-to-Image mode
- *   Takes the real product photo and varies the scene around it.
- *   Product shape, colour, branding preserved. Scene changes.
+ * If referenceImageUrls provided → Edit mode
+ *   Uses /edit endpoint with image_urls array.
+ *   The real product photos are passed as reference images.
+ *   Prompt describes the scene and context.
+ *   The model uses the reference photos to accurately
+ *   represent the product in the generated scene.
  *
- * If no reference → Text-to-Image fallback
- *   Pure prompt-based generation via FLUX 1.1 Pro Ultra.
+ * If no reference → Text-to-Image
+ *   Pure prompt generation via Nano Banana Pro.
  *
  * @param {object} options
- * @param {string} options.prompt - Scene description prompt
- * @param {string} options.aspectRatio - '16:9' | '9:16' | '1:1'
+ * @param {string} options.prompt - Image generation prompt
+ * @param {string} options.aspectRatio - '16:9' | '9:16' | '1:1' etc
  * @param {string[]} [options.referenceImageUrls] - Real product photo URLs
  * @returns {Promise<{imageUrl: string, requestId: string}>}
  */
@@ -183,35 +180,35 @@ export async function generateImage({ prompt, aspectRatio, referenceImageUrls })
   if (!prompt) throw new Error('prompt required')
   if (!aspectRatio) throw new Error('aspectRatio required')
 
-  const refImageUrl = await resolveReferenceImage(referenceImageUrls)
+  const validRefs = await resolveReferenceImages(referenceImageUrls)
 
-  if (refImageUrl) {
-    // ── IMAGE-TO-IMAGE MODE ──────────────────────────────────
-    // Real product photo as base. Low strength = product preserved.
-    // Prompt describes the scene variation.
-    console.log(`[Fal.ai] IMG2IMG mode (strength ${IMG2IMG_STRENGTH}): "${prompt.slice(0, 60)}..."`)
+  if (validRefs.length > 0) {
+    // ── EDIT MODE — REFERENCE IMAGES ──────────────────────────
+    // Real product photos passed via image_urls.
+    // Nano Banana Pro uses them as visual references
+    // to accurately represent the product in the scene.
+    console.log(`[Nano Banana Pro] EDIT mode with ${validRefs.length} reference image(s): "${prompt.slice(0, 60)}..."`)
 
-    return submitAndPoll(IMG2IMG_MODEL, {
+    return submitAndPoll(NANO_BANANA_EDIT, {
       prompt,
-      image_url: refImageUrl,
-      strength: IMG2IMG_STRENGTH,
-      image_size: mapAspectRatio(aspectRatio),
+      image_urls: validRefs,
       num_images: 1,
-      num_inference_steps: 28,
-      guidance_scale: 3.5,
+      aspect_ratio: aspectRatio,
+      resolution: '2K',
       output_format: 'jpeg',
+      safety_tolerance: '4',
     })
   }
 
-  // ── TEXT-TO-IMAGE FALLBACK ────────────────────────────────
-  console.log(`[Fal.ai] TXT2IMG fallback: "${prompt.slice(0, 60)}..."`)
+  // ── TEXT-TO-IMAGE ──────────────────────────────────────────
+  console.log(`[Nano Banana Pro] TEXT mode: "${prompt.slice(0, 60)}..."`)
 
-  return submitAndPoll(TXT2IMG_MODEL, {
+  return submitAndPoll(NANO_BANANA_PRO, {
     prompt,
-    aspect_ratio: aspectRatio,
     num_images: 1,
+    aspect_ratio: aspectRatio,
+    resolution: '2K',
     output_format: 'jpeg',
-    safety_tolerance: '2',
-    raw: false,
+    safety_tolerance: '4',
   })
 }
