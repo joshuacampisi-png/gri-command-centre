@@ -166,16 +166,30 @@ Inline-1 pair: after the closing paragraph of H2 section 2
 Inline-2 pair: after the closing paragraph of H2 section 4
 Inline-3 pair: after the FAQ section, before the conclusion
 
-IMAGE PROMPT ENGINEERING — FLUX 1.1 PRO ULTRA STANDARDS
+GRI PRODUCT DNA — EXACT VISUAL DESCRIPTIONS (ground truth for all image prompts)
 
-Write prompts as structured command-line instructions, not sentences. Every prompt must contain all 7 elements:
-1. Subject: name the actual product found on the site from the scraped data. Not a generic "smoke bomb". Name it as it appears in the product data. If no product name was found, use the most specific description possible from the keyword. Products should look like real physical products you can buy, not fantasy items.
-2. Scene/environment: exact setting, time of day, atmosphere. Australian outdoor settings: backyards, parks, beaches, bushland clearings. Summer light. Real party setups.
-3. Lighting: e.g. "soft diffused natural light from left", "golden hour rim lighting", "bright midday Australian sun"
-4. Camera: e.g. "shot on full-frame cinema camera", "85mm portrait lens f/1.8", "24mm wide-angle"
-5. Style: photorealistic, cinematic, editorial, lifestyle. Must look like a real photograph, not AI art.
-6. Brand visual language: bright joyful warm colour palette, real-feeling lifestyle moments, Australian summer light, young parents or family in natural outdoor settings, coloured powder or smoke or confetti caught mid-action, natural expressions. Products must resemble actual gender reveal items (cylindrical smoke grenades, tube-shaped cannons, box-style balloon releases). No stock-photo stiffness. No cheesy poses. No studio backgrounds. No fantasy products.
-7. Negative constraints: explicitly exclude anything off-brand. No text overlays, no watermarks, no logos, no unrealistic product designs, no studio lighting, no posed stock photo look.
+MEGA BLASTER: White steel fire extinguisher shape, ~30cm tall. Brass/gold metal valve with red circular pressure gauge cap at top. Chrome/silver carry handle loop and squeeze trigger lever. Gold pull-ring safety pin. White matte steel body. "MEGA BLASTER" text inside teal cloud shape logo. Teal and pink chevron arrows. GRI baby face logo above label. Sprays coloured powder (blue or pink) from nozzle, up to 10m distance, 15 second blast.
+
+MINI BLASTER: White cylindrical bottle/can, ~20cm tall. Black twist-top trigger/nozzle mechanism. White matte body. "MINI BLASTER" in teal/red cloud shape logo. Comes in white cardboard box. Sprays coloured powder.
+
+BIO-CANNON: Long cylindrical tube, ~40-50cm. Hot pink/magenta body. "BIO-CANNON" in large white bold text running vertically. "GENDER REVEAL" white text at top. Black twist mechanism at top. Clear/white cap at bottom. Shoots confetti or powder when twisted.
+
+SMOKE BOMBS: Cylindrical grey/silver metallic canister, ~10-12cm tall. Wire pull-ring on top (grenade-style pin). "PULL WIRE" text on body. Produces thick coloured smoke (blue or pink). Place on ground after pulling wire.
+
+BASKETBALL: Standard size basketball in white square box. "GENDER REVEAL BASKETBALL" in pink/red text. Orange basketball graphic on box. Breaks open on impact releasing coloured powder.
+
+IMAGE PROMPT ENGINEERING — SCENE-ONLY PROMPTS
+
+CRITICAL RULE: The reference image (from referenceImages URLs) drives the product appearance. Your prompt must describe ONLY the scene, environment, and composition around the product. DO NOT describe the product itself in the prompt text because the reference image handles that. If you describe the product in the prompt, the AI will generate a conflicting version that doesn't match the real product.
+
+Write prompts as structured command-line instructions, not sentences. Every prompt must contain these 6 elements:
+
+1. Scene context with product placement: Describe WHERE the product sits in the frame and what is happening around it. Example: "young Australian couple in a sunlit backyard, holding the product up between them, coloured blue powder exploding from the top, guests cheering behind them, balloon arch in pink and blue to the left". Do NOT describe the product shape, colour, or branding.
+2. Environment: exact setting, time of day, atmosphere. Australian outdoor settings only: backyards with grass and fences, parks with eucalyptus trees, beaches, bushland clearings. Summer light. Real party setups with balloons.
+3. Lighting: "soft diffused natural light from left", "golden hour rim lighting", "bright midday Australian sun"
+4. Camera: "shot on full-frame cinema camera, 85mm portrait lens f/1.8", "24mm wide-angle f/8"
+5. Style: "photorealistic, editorial lifestyle, authentic candid moment, warm colour grade, natural skin tones"
+6. Negative constraints: "no studio backgrounds, no white backdrops, no stock photo poses, no text overlays, no watermarks, no AI-looking skin, no fantasy products, no indoor settings, no clinical lighting"
 
 DESKTOP vs MOBILE PROMPT DIFFERENCE:
 Desktop (16:9): wide horizontal composition, subject placed in left or centre third, environment fills the right side

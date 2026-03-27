@@ -131,7 +131,7 @@ export async function generateImage({ prompt, aspectRatio, referenceImageUrls })
 
   if (refImageUrl) {
     body.image_url = refImageUrl
-    body.image_prompt_strength = 0.15 // subtle conditioning — enough to anchor product look
+    body.image_prompt_strength = 0.45 // strong conditioning — product shape, colour, proportions preserved from reference
   }
 
   // Submit to queue

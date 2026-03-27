@@ -269,14 +269,20 @@ BRAND VISUAL STANDARDS:
 - Coloured powder, smoke, or confetti caught mid-action
 - Natural expressions, no cheesy poses
 - No studio backgrounds, no text overlays
-- Products should resemble real GRI products (smoke grenades, confetti cannons, powder cannons)
+
+EXACT PRODUCT APPEARANCE (score against these):
+- MEGA BLASTER: White steel fire extinguisher shape, brass/gold valve top, red pressure gauge, chrome handle and trigger lever, "MEGA BLASTER" teal cloud logo
+- MINI BLASTER: White cylindrical bottle, black twist-top nozzle, "MINI BLASTER" teal/red cloud logo
+- BIO-CANNON: Long hot pink tube (~50cm), "BIO-CANNON" white text, black twist top
+- SMOKE BOMBS: Grey/silver metallic canister, wire pull-ring on top
+- BASKETBALL: White box with orange basketball graphic, "GENDER REVEAL BASKETBALL" pink text
 
 SCORING CRITERIA:
-1. Prompt adherence (does the image match what was requested?)
-2. Brand alignment (does it feel like a GRI image?)
-3. Composition quality (is it well composed for the intended aspect ratio?)
-4. Authenticity (does it look like a real moment, not AI-generated stock?)
-5. Product accuracy (if products are shown, do they look like real gender reveal products?)
+1. Product accuracy (HIGHEST WEIGHT — does the product in the image match the exact description above? Correct shape, correct colour, correct mechanism?)
+2. Scene authenticity (Australian outdoor setting, natural light, real moment feel?)
+3. Composition quality (well composed for the aspect ratio?)
+4. Brand alignment (warm, joyful, celebratory, not clinical or stock-photo?)
+5. Prompt adherence (does the scene match what was requested?)
 
 Respond in EXACTLY this JSON format, nothing else:
 {
