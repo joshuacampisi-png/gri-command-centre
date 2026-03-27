@@ -192,7 +192,7 @@ function ImagePanel({ imagePairs, imageProgress, phase, onRegenerate, onRegenAll
       <div className="bw-images-header">
         <span className="bw-images-title">Images</span>
         <span className="bw-images-count">
-          FLUX 1.1 Pro Ultra — {imageProgress.done}/{imageProgress.total} generated
+          Nano Banana Pro — {imageProgress.done}/{imageProgress.total} generated
         </span>
         {phase === 'generating-images' && (
           <div className="bw-images-progress">
