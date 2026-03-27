@@ -5,6 +5,9 @@
  * POST /api/blog-writer/publish        — publish generated article to Shopify
  * POST /api/blog-writer/generate-image — generate single image via Fal.ai FLUX
  * POST /api/blog-writer/review-image   — Claude vision QA review of generated image
+ * GET  /api/blog-writer/session        — restore working state
+ * PUT  /api/blog-writer/session        — save working state
+ * DELETE /api/blog-writer/session      — clear session
  * GET  /api/blog-writer/image-config   — check Fal.ai config status
  * GET  /api/blog-writer/history        — list generated articles
  * GET  /api/blog-writer/article-types  — list available article types
@@ -21,6 +24,7 @@ import { dataFile } from '../lib/data-dir.js'
 
 const router = Router()
 const HISTORY_FILE = dataFile('blog-writer-history.json')
+const SESSION_FILE = dataFile('blog-writer-session.json')
 
 // ── History store ─────────────────────────────────────────────
 
@@ -33,6 +37,34 @@ function loadHistory() {
 
 function saveHistory(history) {
   writeFileSync(HISTORY_FILE, JSON.stringify(history, null, 2))
+}
+
+// ── Session store (persists blog writer state across tab switches / refreshes) ──
+
+function loadSession() {
+  try {
+    if (!existsSync(SESSION_FILE)) return null
+    const data = JSON.parse(readFileSync(SESSION_FILE, 'utf8'))
+    // Expire sessions older than 24 hours
+    if (data.savedAt && Date.now() - new Date(data.savedAt).getTime() > 24 * 60 * 60 * 1000) {
+      return null
+    }
+    return data
+  } catch { return null }
+}
+
+function saveSession(session) {
+  try {
+    writeFileSync(SESSION_FILE, JSON.stringify({ ...session, savedAt: new Date().toISOString() }, null, 2))
+  } catch (e) {
+    console.error('[BlogWriter] Failed to save session:', e.message)
+  }
+}
+
+function clearSession() {
+  try {
+    if (existsSync(SESSION_FILE)) writeFileSync(SESSION_FILE, '{}')
+  } catch {}
 }
 
 // ── Routes ────────────────────────────────────────────────────
@@ -245,6 +277,28 @@ Rules:
     console.error('[BlogWriterRoute] Image QA error:', err.message)
     return res.status(500).json({ ok: false, error: err.message })
   }
+})
+
+// GET /api/blog-writer/session — restore working state after tab switch / refresh
+router.get('/session', (_req, res) => {
+  const session = loadSession()
+  if (!session || !session.phase) {
+    return res.json({ ok: true, session: null })
+  }
+  return res.json({ ok: true, session })
+})
+
+// PUT /api/blog-writer/session — save working state
+router.put('/session', (req, res) => {
+  const { phase, keyword, articleType, article, blocks, imagePairs, imageProgress, finalOutput, selectedImages, imagesApplied } = req.body
+  saveSession({ phase, keyword, articleType, article, blocks, imagePairs, imageProgress, finalOutput, selectedImages, imagesApplied })
+  return res.json({ ok: true })
+})
+
+// DELETE /api/blog-writer/session — clear session (on discard or publish)
+router.delete('/session', (_req, res) => {
+  clearSession()
+  return res.json({ ok: true })
 })
 
 // GET /api/blog-writer/image-config

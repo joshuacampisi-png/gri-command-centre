@@ -325,7 +325,33 @@ export default function BlogWriterTab() {
   const [selectedImages, setSelectedImages] = useState({}) // { 'hero-desktop': true, 'inline-1-mobile': true, ... }
   const [imagesApplied, setImagesApplied] = useState(false)
 
-  // Load history + check Fal.ai config on mount
+  // Save session to backend (called at key milestones)
+  const saveSession = useCallback((overrides = {}) => {
+    const state = {
+      phase: overrides.phase ?? phase,
+      keyword: overrides.keyword ?? keyword,
+      articleType: overrides.articleType ?? articleType,
+      article: overrides.article ?? article,
+      blocks: overrides.blocks ?? blocks,
+      imagePairs: overrides.imagePairs ?? imagePairs,
+      imageProgress: overrides.imageProgress ?? imageProgress,
+      finalOutput: overrides.finalOutput ?? finalOutput,
+      selectedImages: overrides.selectedImages ?? selectedImages,
+      imagesApplied: overrides.imagesApplied ?? imagesApplied,
+    }
+    // Fire and forget — don't block the UI
+    fetch('/api/blog-writer/session', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(state),
+    }).catch(() => {})
+  }, [phase, keyword, articleType, article, blocks, imagePairs, imageProgress, finalOutput, selectedImages, imagesApplied])
+
+  const clearSession = useCallback(() => {
+    fetch('/api/blog-writer/session', { method: 'DELETE' }).catch(() => {})
+  }, [])
+
+  // Load history, config, and restore session on mount
   useEffect(() => {
     fetch('/api/blog-writer/history')
       .then(r => r.json())
@@ -334,6 +360,29 @@ export default function BlogWriterTab() {
     fetch('/api/blog-writer/image-config')
       .then(r => r.json())
       .then(d => { if (d.ok) setHasFal(d.hasFal) })
+      .catch(() => {})
+
+    // Restore session if one exists
+    fetch('/api/blog-writer/session')
+      .then(r => r.json())
+      .then(d => {
+        if (!d.ok || !d.session || !d.session.phase) return
+        const s = d.session
+        // Only restore if there's meaningful state (article exists or was writing)
+        if (s.phase === 'complete' || s.phase === 'generating-images') {
+          if (s.keyword) setKeyword(s.keyword)
+          if (s.articleType) setArticleType(s.articleType)
+          if (s.article) setArticle(s.article)
+          if (s.blocks) setBlocks(s.blocks)
+          if (s.imagePairs) setImagePairs(s.imagePairs)
+          if (s.imageProgress) setImageProgress(s.imageProgress)
+          if (s.finalOutput) setFinalOutput(s.finalOutput)
+          if (s.selectedImages) setSelectedImages(s.selectedImages)
+          if (s.imagesApplied) setImagesApplied(s.imagesApplied)
+          // If images were still generating, show as complete with whatever was done
+          setPhase('complete')
+        }
+      })
       .catch(() => {})
   }, [])
 
@@ -422,7 +471,8 @@ export default function BlogWriterTab() {
     const output = assembleFinalOutput(blocks, filteredPairs)
     setFinalOutput(output)
     setImagesApplied(true)
-  }, [imagePairs, selectedImages, blocks])
+    saveSession({ finalOutput: output, selectedImages, imagesApplied: true })
+  }, [imagePairs, selectedImages, blocks, saveSession])
 
   // Regenerate a single image variant (or both) for a placement
   const handleRegenImage = useCallback(async (placement, variant) => {
@@ -544,6 +594,9 @@ export default function BlogWriterTab() {
 
       setArticle(data.article)
 
+      // Save session — article is written, safe to restore from here
+      saveSession({ phase: 'generating-images', keyword: keyword.trim(), articleType, article: data.article })
+
       // STEP 2: Parse IMAGE tags from body
       const { blocks: parsedBlocks, imagePairs: parsedPairs } = parseBlogContent(data.article.body_html || '')
       setBlocks(parsedBlocks)
@@ -629,6 +682,17 @@ export default function BlogWriterTab() {
 
           doneCount++
           setImageProgress({ done: doneCount, total: totalImages })
+
+          // Save session after each image — survives tab switch
+          saveSession({
+            phase: 'generating-images',
+            keyword: keyword.trim(),
+            articleType,
+            article: data.article,
+            blocks: parsedBlocks,
+            imagePairs: finalPairs,
+            imageProgress: { done: doneCount, total: totalImages },
+          })
         }
       }
 
@@ -636,6 +700,9 @@ export default function BlogWriterTab() {
       const output = assembleFinalOutput(parsedBlocks, finalPairs)
       setFinalOutput(output)
       setPhase('complete')
+
+      // Save completed session
+      saveSession({ phase: 'complete', finalOutput: output, imagePairs: finalPairs, blocks: parsedBlocks })
 
       // Refresh history
       const hRes = await fetch('/api/blog-writer/history')
@@ -668,6 +735,7 @@ export default function BlogWriterTab() {
       if (!data.ok) throw new Error(data.error || 'Publish failed')
 
       setSuccessMsg(`Published! ${data.liveUrl}`)
+      clearSession()
 
       const hRes = await fetch('/api/blog-writer/history')
       const hData = await hRes.json()
@@ -728,7 +796,8 @@ export default function BlogWriterTab() {
     setImageProgress({ done: 0, total: 0 })
     setSelectedImages({})
     setImagesApplied(false)
-  }, [])
+    clearSession()
+  }, [clearSession])
 
   const isRunning = phase === 'writing' || phase === 'generating-images'
 
