@@ -23,6 +23,7 @@ import { publishToShopify, hasShopifyPublishConfig } from '../lib/shopify-publis
 import { generateImage, hasFalConfig } from '../lib/fal.js'
 import { callClaude } from '../lib/claude-guard.js'
 import { scrapeBrandSite, scrapeWebReferences } from '../lib/scraper.js'
+import { getProductImagesForKeyword } from '../lib/product-images.js'
 import { dataFile } from '../lib/data-dir.js'
 
 const router = Router()
@@ -212,9 +213,11 @@ router.post('/publish', async (req, res) => {
 })
 
 // POST /api/blog-writer/generate-image
-// Generates a single image via Fal.ai FLUX 1.1 Pro Ultra
+// Generates a single image via Nano Banana Pro.
+// If referenceImageUrls are empty or look like garbage (non-Shopify CDN),
+// automatically fetches real product images from Shopify instead.
 router.post('/generate-image', async (req, res) => {
-  const { prompt, aspectRatio, referenceImageUrls } = req.body
+  const { prompt, aspectRatio, referenceImageUrls, keyword } = req.body
 
   if (!prompt) return res.status(400).json({ ok: false, error: 'prompt required' })
   if (!aspectRatio) return res.status(400).json({ ok: false, error: 'aspectRatio required' })
@@ -227,7 +230,23 @@ router.post('/generate-image', async (req, res) => {
   }
 
   try {
-    const result = await generateImage({ prompt, aspectRatio, referenceImageUrls: referenceImageUrls || [] })
+    // Check if provided reference URLs are real Shopify CDN product images
+    const providedRefs = (referenceImageUrls || []).filter(url =>
+      url && (url.includes('cdn.shopify.com') || url.includes('shopifycdn'))
+    )
+
+    let finalRefs = providedRefs
+
+    // If no valid Shopify CDN refs, pull real product images from the registry
+    if (finalRefs.length === 0) {
+      const searchKeyword = keyword || prompt.slice(0, 50)
+      console.log(`[generate-image] No valid product refs, fetching from Shopify for: "${searchKeyword}"`)
+      const { images } = await getProductImagesForKeyword(searchKeyword, 4)
+      finalRefs = images
+      console.log(`[generate-image] Using ${finalRefs.length} real Shopify product images as reference`)
+    }
+
+    const result = await generateImage({ prompt, aspectRatio, referenceImageUrls: finalRefs })
     return res.json({ ok: true, imageUrl: result.imageUrl, requestId: result.requestId })
   } catch (err) {
     console.error('[BlogWriterRoute] Image generation error:', err.message)
@@ -359,6 +378,18 @@ router.delete('/session', (_req, res) => {
 // GET /api/blog-writer/image-config
 router.get('/image-config', (_req, res) => {
   res.json({ ok: true, hasFal: hasFalConfig() })
+})
+
+// GET /api/blog-writer/product-images?keyword=smoke+bombs
+// Debug: see which real product images would be used for a keyword
+router.get('/product-images', async (req, res) => {
+  const keyword = req.query.keyword || 'gender reveal'
+  try {
+    const { images, matchedProducts } = await getProductImagesForKeyword(keyword)
+    res.json({ ok: true, keyword, matchedProducts, images, count: images.length })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
 })
 
 // GET /api/blog-writer/history

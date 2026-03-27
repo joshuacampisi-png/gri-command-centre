@@ -430,12 +430,12 @@ export default function BlogWriterTab() {
     const res = await fetch('/api/blog-writer/generate-image', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, aspectRatio, referenceImageUrls }),
+      body: JSON.stringify({ prompt, aspectRatio, referenceImageUrls, keyword: keyword.trim() }),
     })
     const data = await res.json()
     if (!data.ok) throw new Error(data.error || 'Image generation failed')
     return data.imageUrl
-  }, [])
+  }, [keyword])
 
   // Vision QA: Claude reviews the generated image against prompt + brand standards
   const reviewImage = useCallback(async (imageUrl, prompt, placement, alt) => {
