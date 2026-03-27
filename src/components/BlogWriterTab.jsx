@@ -518,17 +518,43 @@ export default function BlogWriterTab() {
   }, [keyword])
 
   const handleFeedbackComment = useCallback((key, comment) => {
+    const fb = feedbackMap[key] || {}
     setFeedbackMap(prev => ({
       ...prev,
       [key]: { ...prev[key], rating: 'bad', comment },
     }))
-    const fb = feedbackMap[key] || {}
+
+    // Send feedback to backend
     fetch('/api/blog-writer/image-feedback', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ rating: 'bad', comment, placement: fb.placement, variant: fb.variant, prompt: fb.prompt, imageUrl: fb.url, keyword }),
     }).catch(() => {})
-  }, [feedbackMap, keyword])
+
+    // Remove the image from the gallery and blog output
+    const placement = fb.placement
+    const variant = fb.variant
+    if (placement && variant) {
+      setImagePairs(prev => {
+        const updated = {
+          ...prev,
+          [placement]: {
+            ...prev[placement],
+            [variant]: { ...prev[placement][variant], url: undefined, status: 'pending', qaScore: undefined, qaIssues: undefined },
+          },
+        }
+        const output = assembleFinalOutput(blocks, updated)
+        setFinalOutput(output)
+        return updated
+      })
+      setSelectedImages(prev => {
+        const next = { ...prev }
+        delete next[key]
+        return next
+      })
+      setImagesApplied(false)
+    }
+  }, [feedbackMap, keyword, blocks])
 
   // Image selection handlers
   const handleToggleImage = useCallback((key) => {
