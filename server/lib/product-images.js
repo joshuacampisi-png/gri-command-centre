@@ -167,6 +167,70 @@ export async function getProductImagesForKeyword(keyword, maxImages = 6) {
 }
 
 /**
+ * Tier 2: Web search for product images when Shopify has no match.
+ * Searches Google Images (via Custom Search API) or falls back to
+ * scraping the brand's own website search.
+ *
+ * @param {string} keyword
+ * @param {number} maxImages
+ * @returns {Promise<string[]>}
+ */
+export async function searchWebForProductImages(keyword, maxImages = 4) {
+  const images = []
+
+  // Try Google Custom Search API first
+  const googleKey = process.env.GOOGLE_SEARCH_API_KEY
+  const googleCx = process.env.GOOGLE_SEARCH_CX
+  if (googleKey && googleCx) {
+    try {
+      const query = `genderrevealideas.com.au ${keyword} product`
+      const gUrl = `https://www.googleapis.com/customsearch/v1?key=${googleKey}&cx=${googleCx}&q=${encodeURIComponent(query)}&searchType=image&num=${maxImages}&imgSize=large&safe=active`
+      const res = await fetch(gUrl, { signal: AbortSignal.timeout(8000) })
+      if (res.ok) {
+        const data = await res.json()
+        const urls = (data.items || [])
+          .map(item => item.link)
+          .filter(url => url && url.startsWith('http') && !url.endsWith('.svg'))
+          .slice(0, maxImages)
+        if (urls.length > 0) {
+          console.log(`[product-images] Tier 2 Google search found ${urls.length} images for "${keyword}"`)
+          return urls
+        }
+      }
+    } catch (e) {
+      console.warn('[product-images] Google image search failed:', e.message)
+    }
+  }
+
+  // Fallback: try searching the brand's own site
+  try {
+    const searchUrl = `https://genderrevealideas.com.au/search?q=${encodeURIComponent(keyword)}&type=product`
+    const res = await fetch(searchUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; WOGBot/1.0)' },
+      signal: AbortSignal.timeout(8000),
+    })
+    if (res.ok) {
+      const html = await res.text()
+      // Extract Shopify CDN image URLs from the HTML
+      const cdnPattern = /https:\/\/cdn\.shopify\.com\/s\/files\/[^"'\s]+\.(?:jpg|jpeg|png|webp)/gi
+      const matches = html.match(cdnPattern) || []
+      const unique = [...new Set(matches)]
+        .filter(url => !url.includes('logo') && !url.includes('icon') && !url.includes('1x1'))
+        .slice(0, maxImages)
+      if (unique.length > 0) {
+        console.log(`[product-images] Tier 2 site search found ${unique.length} CDN images for "${keyword}"`)
+        return unique
+      }
+    }
+  } catch (e) {
+    console.warn('[product-images] Site search fallback failed:', e.message)
+  }
+
+  console.log(`[product-images] Tier 2 web search found no images for "${keyword}"`)
+  return []
+}
+
+/**
  * Force-refresh the image cache (useful after product updates)
  */
 export async function refreshImageCache() {

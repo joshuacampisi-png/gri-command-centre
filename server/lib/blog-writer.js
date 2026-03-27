@@ -182,14 +182,26 @@ IMAGE PROMPT ENGINEERING — SCENE-ONLY PROMPTS
 
 CRITICAL RULE: The reference image (from referenceImages URLs) drives the product appearance. Your prompt must describe ONLY the scene, environment, and composition around the product. DO NOT describe the product itself in the prompt text because the reference image handles that. If you describe the product in the prompt, the AI will generate a conflicting version that doesn't match the real product.
 
+FALLBACK RULE: If NO reference images are available (referenceImages is empty), you MUST describe the product accurately using the PRODUCT DNA above. In this case, include the exact product description from the DNA (shape, colour, label text, mechanism). This is the only time you describe the product in the prompt.
+
 Write prompts as structured command-line instructions, not sentences. Every prompt must contain these 6 elements:
 
-1. Scene context with product placement: Describe WHERE the product sits in the frame and what is happening around it. Example: "young Australian couple in a sunlit backyard, holding the product up between them, coloured blue powder exploding from the top, guests cheering behind them, balloon arch in pink and blue to the left". Do NOT describe the product shape, colour, or branding.
+1. Scene context with product placement: Describe WHERE the product sits in the frame and what is happening around it. Example: "young Australian couple in a sunlit backyard, holding the product up between them, coloured blue powder exploding from the top, guests cheering behind them, balloon arch in pink and blue to the left". Do NOT describe the product shape, colour, or branding (UNLESS referenceImages is empty).
 2. Environment: exact setting, time of day, atmosphere. Australian outdoor settings only: backyards with grass and fences, parks with eucalyptus trees, beaches, bushland clearings. Summer light. Real party setups with balloons.
 3. Lighting: "soft diffused natural light from left", "golden hour rim lighting", "bright midday Australian sun"
 4. Camera: "shot on full-frame cinema camera, 85mm portrait lens f/1.8", "24mm wide-angle f/8"
 5. Style: "photorealistic, editorial lifestyle, authentic candid moment, warm colour grade, natural skin tones"
-6. Negative constraints: "no studio backgrounds, no white backdrops, no stock photo poses, no text overlays, no watermarks, no AI-looking skin, no fantasy products, no indoor settings, no clinical lighting"
+6. Negative constraints: "no studio backgrounds, no white backdrops, no stock photo poses, no text overlays, no watermarks, no AI-looking skin, no fantasy products, no indoor settings, no clinical lighting, no military equipment, no weapons, no grenades"
+
+GRI PHOTOGRAPHY STYLE DNA — MATCH THIS IN EVERY PROMPT:
+Camera: lifestyle editorial, movement and energy mid-action, never static product-on-white
+DoF: shallow (f/1.8-2.8) product close-ups, wider (f/5.6-8) group/party scenes
+Colour: warm, lifted shadows, vibrant not oversaturated, pink and blue pop against green grass and blue sky
+Product shots: held in hands at chest height, fingers wrapped naturally, couple holding one each
+Action shots: wide frame, smoke/powder filling 40-60% of frame, people visible through coloured cloud
+Party setup: pink and blue balloon arch backdrop, grass underfoot, timber fence background
+Models: real people not stock, mixed ages, pregnant woman present, casual smart clothing
+Backgrounds: Australian outdoor only, green grass, eucalyptus, blue sky, scattered clouds
 
 DESKTOP vs MOBILE PROMPT DIFFERENCE:
 Desktop (16:9): wide horizontal composition, subject placed in left or centre third, environment fills the right side

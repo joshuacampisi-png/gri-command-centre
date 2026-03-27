@@ -23,7 +23,7 @@ import { publishToShopify, hasShopifyPublishConfig } from '../lib/shopify-publis
 import { generateImage, hasFalConfig } from '../lib/fal.js'
 import { callClaude } from '../lib/claude-guard.js'
 import { scrapeBrandSite, scrapeWebReferences } from '../lib/scraper.js'
-import { getProductImagesForKeyword } from '../lib/product-images.js'
+import { getProductImagesForKeyword, searchWebForProductImages } from '../lib/product-images.js'
 import { dataFile } from '../lib/data-dir.js'
 
 const router = Router()
@@ -230,24 +230,51 @@ router.post('/generate-image', async (req, res) => {
   }
 
   try {
-    // Check if provided reference URLs are real Shopify CDN product images
+    const searchKeyword = keyword || prompt.slice(0, 50)
+    let finalRefs = []
+    let tier = 'none'
+
+    // ── TIER 1: Shopify product images (exact match) ─────────
     const providedRefs = (referenceImageUrls || []).filter(url =>
       url && (url.includes('cdn.shopify.com') || url.includes('shopifycdn'))
     )
 
-    let finalRefs = providedRefs
-
-    // If no valid Shopify CDN refs, pull real product images from the registry
-    if (finalRefs.length === 0) {
-      const searchKeyword = keyword || prompt.slice(0, 50)
-      console.log(`[generate-image] No valid product refs, fetching from Shopify for: "${searchKeyword}"`)
-      const { images } = await getProductImagesForKeyword(searchKeyword, 4)
-      finalRefs = images
-      console.log(`[generate-image] Using ${finalRefs.length} real Shopify product images as reference`)
+    if (providedRefs.length > 0) {
+      finalRefs = providedRefs
+      tier = '1-shopify-provided'
+    } else {
+      const { images: shopifyImages, matchedProducts } = await getProductImagesForKeyword(searchKeyword, 4)
+      if (shopifyImages.length > 0) {
+        finalRefs = shopifyImages
+        tier = '1-shopify-registry'
+        console.log(`[generate-image] TIER 1: Using ${finalRefs.length} Shopify images (${matchedProducts.join(', ')})`)
+      }
     }
 
+    // ── TIER 2: Web search for product images ────────────────
+    if (finalRefs.length === 0) {
+      console.log(`[generate-image] TIER 1 miss, trying web search for: "${searchKeyword}"`)
+      const webImages = await searchWebForProductImages(searchKeyword, 4)
+      if (webImages.length > 0) {
+        finalRefs = webImages
+        tier = '2-web-search'
+        console.log(`[generate-image] TIER 2: Using ${finalRefs.length} web search images`)
+      }
+    }
+
+    // ── TIER 3: Text-to-image with Product DNA context ───────
+    if (finalRefs.length === 0) {
+      tier = '3-text-only'
+      console.log(`[generate-image] TIER 3: No reference images found, using text-to-image with Product DNA context`)
+      // The Product DNA is already baked into the system prompt,
+      // so even without reference images the prompt describes
+      // GRI's exact products and photography style.
+    }
+
+    console.log(`[generate-image] Final: tier=${tier}, refs=${finalRefs.length}, aspect=${aspectRatio}`)
+
     const result = await generateImage({ prompt, aspectRatio, referenceImageUrls: finalRefs })
-    return res.json({ ok: true, imageUrl: result.imageUrl, requestId: result.requestId })
+    return res.json({ ok: true, imageUrl: result.imageUrl, requestId: result.requestId, tier })
   } catch (err) {
     console.error('[BlogWriterRoute] Image generation error:', err.message)
     return res.status(500).json({ ok: false, error: err.message })
