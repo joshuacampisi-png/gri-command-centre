@@ -407,6 +407,83 @@ router.get('/image-config', (_req, res) => {
   res.json({ ok: true, hasFal: hasFalConfig() })
 })
 
+// ── Image Feedback Learning System ──────────────────────────
+const FEEDBACK_FILE = dataFile('blog-writer-image-feedback.json')
+
+function loadFeedback() {
+  try {
+    if (existsSync(FEEDBACK_FILE)) return JSON.parse(readFileSync(FEEDBACK_FILE, 'utf-8'))
+  } catch {}
+  return []
+}
+
+function saveFeedback(entries) {
+  writeFileSync(FEEDBACK_FILE, JSON.stringify(entries, null, 2))
+}
+
+// POST /api/blog-writer/image-feedback — store thumbs up/down + comment
+router.post('/image-feedback', (req, res) => {
+  const { rating, comment, placement, variant, prompt, imageUrl, keyword } = req.body
+  if (!rating) return res.status(400).json({ ok: false, error: 'rating required' })
+
+  const entries = loadFeedback()
+  entries.push({
+    rating, // 'good' or 'bad'
+    comment: comment || '',
+    placement,
+    variant,
+    prompt: prompt || '',
+    imageUrl: imageUrl || '',
+    keyword: keyword || '',
+    timestamp: new Date().toISOString(),
+  })
+
+  // Keep last 200 entries
+  const trimmed = entries.slice(-200)
+  saveFeedback(trimmed)
+
+  console.log(`[image-feedback] ${rating} — ${comment || 'no comment'} — keyword: ${keyword}`)
+  return res.json({ ok: true, totalFeedback: trimmed.length })
+})
+
+// POST /api/blog-writer/image-feedback-on-publish — mark all selected images as approved
+router.post('/image-feedback-on-publish', (req, res) => {
+  const { imagePairs, keyword } = req.body
+  if (!imagePairs) return res.status(400).json({ ok: false, error: 'imagePairs required' })
+
+  const entries = loadFeedback()
+  const placements = ['hero', 'inline-1', 'inline-2', 'inline-3']
+
+  for (const p of placements) {
+    if (!imagePairs[p]) continue
+    for (const v of ['desktop', 'mobile']) {
+      const img = imagePairs[p][v]
+      if (img && img.url && img.status === 'done') {
+        entries.push({
+          rating: 'published',
+          comment: 'Auto-approved: selected and published to Shopify',
+          placement: p,
+          variant: v,
+          prompt: img.prompt || '',
+          imageUrl: img.url || '',
+          keyword: keyword || '',
+          timestamp: new Date().toISOString(),
+        })
+      }
+    }
+  }
+
+  saveFeedback(entries.slice(-200))
+  console.log(`[image-feedback] Published — auto-approved images for keyword: ${keyword}`)
+  return res.json({ ok: true })
+})
+
+// GET /api/blog-writer/image-feedback — retrieve feedback for learning context
+router.get('/image-feedback', (_req, res) => {
+  const entries = loadFeedback()
+  return res.json({ ok: true, feedback: entries, total: entries.length })
+})
+
 // GET /api/blog-writer/product-images?keyword=smoke+bombs
 // Debug: see which real product images would be used for a keyword
 router.get('/product-images', async (req, res) => {

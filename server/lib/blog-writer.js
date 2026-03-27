@@ -7,7 +7,9 @@
  * ─────────────────────────────────────────────────────────────
  */
 
+import { readFileSync, existsSync } from 'fs'
 import { callClaude } from './claude-guard.js'
+import { dataFile } from './data-dir.js'
 
 // ── Article type config ───────────────────────────────────────
 
@@ -432,6 +434,48 @@ function buildScrapeContext(brandScrape, webRefs) {
   return ctx
 }
 
+// ── Image feedback learning context ──────────────────────────
+
+function buildFeedbackContext() {
+  try {
+    const feedbackFile = dataFile('blog-writer-image-feedback.json')
+    if (!existsSync(feedbackFile)) return ''
+
+    const entries = JSON.parse(readFileSync(feedbackFile, 'utf-8'))
+    if (!entries || entries.length === 0) return ''
+
+    // Separate good, bad, and published feedback
+    const bad = entries.filter(e => e.rating === 'bad' && e.comment).slice(-15)
+    const good = entries.filter(e => e.rating === 'good' || e.rating === 'published').slice(-10)
+
+    if (bad.length === 0 && good.length === 0) return ''
+
+    let context = '\nIMAGE GENERATION LEARNING — FROM PAST FEEDBACK:\n'
+
+    if (bad.length > 0) {
+      context += '\nTHINGS THAT WENT WRONG (avoid these in your image prompts):\n'
+      for (const fb of bad) {
+        context += `- Keyword "${fb.keyword}", ${fb.placement} ${fb.variant}: "${fb.comment}"\n`
+      }
+    }
+
+    if (good.length > 0) {
+      context += '\nTHINGS THAT WORKED (replicate these patterns):\n'
+      const goodPrompts = good.filter(g => g.prompt).slice(-5)
+      for (const fb of goodPrompts) {
+        context += `- Keyword "${fb.keyword}", ${fb.placement}: prompt style that was approved\n`
+      }
+    }
+
+    context += '\nUse this feedback to improve your image prompts. Avoid patterns from "bad" feedback. Replicate patterns from "good" and "published" feedback.\n'
+
+    return context
+  } catch (e) {
+    console.warn('[BlogWriter] Could not load feedback context:', e.message)
+    return ''
+  }
+}
+
 export async function generateBlogArticle(keyword, options = {}) {
   const articleType = options.articleType || 'informational'
 
@@ -439,7 +483,8 @@ export async function generateBlogArticle(keyword, options = {}) {
 
   const productContext = await fetchProductContext(keyword)
   const scrapeContext = buildScrapeContext(options.brandScrape, options.webRefs)
-  const prompt = buildArticlePrompt(keyword, articleType, productContext, scrapeContext)
+  const feedbackContext = await buildFeedbackContext()
+  const prompt = buildArticlePrompt(keyword, articleType, productContext, scrapeContext) + feedbackContext
 
   const message = await callClaude({
     model: 'claude-sonnet-4-20250514',

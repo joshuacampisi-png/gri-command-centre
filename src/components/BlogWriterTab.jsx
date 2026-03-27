@@ -239,7 +239,38 @@ function ImagePanel({ imagePairs, imageProgress, phase, onRegenerate, onRegenAll
 // Shows generated images as visual thumbnails with checkboxes.
 // User selects which images to include, clicks Apply.
 
-function ImageSelectionGallery({ imagePairs, selectedImages, onToggle, onApply, onSelectAll, onDeselectAll, onDeleteImage }) {
+function FeedbackModal({ imageKey, onSubmit, onClose }) {
+  const [comment, setComment] = useState('')
+  return (
+    <div className="bw-feedback-overlay" onClick={onClose}>
+      <div className="bw-feedback-modal" onClick={e => e.stopPropagation()}>
+        <div className="bw-feedback-modal-header">
+          <span>What's wrong with this image?</span>
+          <button className="bw-feedback-close" onClick={onClose}>×</button>
+        </div>
+        <textarea
+          className="bw-feedback-textarea"
+          value={comment}
+          onChange={e => setComment(e.target.value)}
+          placeholder="e.g. Product doesn't look like ours, wrong colour, too dark, background is indoor..."
+          autoFocus
+        />
+        <div className="bw-feedback-modal-actions">
+          <button className="btn-outline" onClick={onClose}>Cancel</button>
+          <button
+            className="btn-primary"
+            onClick={() => { onSubmit(imageKey, comment); onClose() }}
+            disabled={!comment.trim()}
+          >
+            Submit Feedback
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ImageSelectionGallery({ imagePairs, selectedImages, onToggle, onApply, onSelectAll, onDeselectAll, onDeleteImage, onFeedback, feedbackMap }) {
   const availablePlacements = PLACEMENTS.filter(p => imagePairs[p])
   if (availablePlacements.length === 0) return null
 
@@ -310,6 +341,18 @@ function ImageSelectionGallery({ imagePairs, selectedImages, onToggle, onApply, 
                     </span>
                   )}
                 </div>
+                <div className="bw-gallery-feedback" onClick={e => e.stopPropagation()}>
+                  <button
+                    className={`bw-fb-btn bw-fb-up ${feedbackMap?.[key]?.rating === 'good' ? 'active' : ''}`}
+                    onClick={() => onFeedback(key, 'good', placement, variant, img)}
+                    title="Good image"
+                  >👍</button>
+                  <button
+                    className={`bw-fb-btn bw-fb-down ${feedbackMap?.[key]?.rating === 'bad' ? 'active' : ''}`}
+                    onClick={() => onFeedback(key, 'bad', placement, variant, img)}
+                    title="Bad image — leave feedback"
+                  >👎</button>
+                </div>
               </div>
             )
           })
@@ -333,6 +376,10 @@ export default function BlogWriterTab() {
   const [copied, setCopied] = useState(false)
   const [hasFal, setHasFal] = useState(false)
   const [deleting, setDeleting] = useState(null)
+
+  // Image feedback state
+  const [feedbackMap, setFeedbackMap] = useState({}) // { 'hero-desktop': { rating: 'good'|'bad', comment: '' } }
+  const [feedbackModalKey, setFeedbackModalKey] = useState(null) // key of image awaiting comment
 
   // Scrape state (Stage 1)
   const [scrapeStatus, setScrapeStatus] = useState({ brand: 'pending', web: 'pending' })
@@ -453,6 +500,36 @@ export default function BlogWriterTab() {
     }
   }, [])
 
+  // Image feedback handlers
+  const handleImageFeedback = useCallback((key, rating, placement, variant, img) => {
+    if (rating === 'bad') {
+      // Open comment modal
+      setFeedbackModalKey(key)
+      setFeedbackMap(prev => ({ ...prev, [key]: { rating: 'bad', comment: '', placement, variant, prompt: img.prompt, url: img.url } }))
+    } else {
+      // Thumbs up — save immediately
+      setFeedbackMap(prev => ({ ...prev, [key]: { rating: 'good', comment: '', placement, variant, prompt: img.prompt, url: img.url } }))
+      fetch('/api/blog-writer/image-feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rating: 'good', comment: '', placement, variant, prompt: img.prompt, imageUrl: img.url, keyword }),
+      }).catch(() => {})
+    }
+  }, [keyword])
+
+  const handleFeedbackComment = useCallback((key, comment) => {
+    setFeedbackMap(prev => ({
+      ...prev,
+      [key]: { ...prev[key], rating: 'bad', comment },
+    }))
+    const fb = feedbackMap[key] || {}
+    fetch('/api/blog-writer/image-feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rating: 'bad', comment, placement: fb.placement, variant: fb.variant, prompt: fb.prompt, imageUrl: fb.url, keyword }),
+    }).catch(() => {})
+  }, [feedbackMap, keyword])
+
   // Image selection handlers
   const handleToggleImage = useCallback((key) => {
     setSelectedImages(prev => ({ ...prev, [key]: !prev[key] }))
@@ -477,20 +554,26 @@ export default function BlogWriterTab() {
 
   // Delete a single generated image (clear its URL, reset to pending)
   const handleDeleteImage = useCallback((placement, variant) => {
-    setImagePairs(prev => ({
-      ...prev,
-      [placement]: {
-        ...prev[placement],
-        [variant]: { ...prev[placement][variant], url: undefined, status: 'pending', qaScore: undefined, qaIssues: undefined },
-      },
-    }))
+    setImagePairs(prev => {
+      const updated = {
+        ...prev,
+        [placement]: {
+          ...prev[placement],
+          [variant]: { ...prev[placement][variant], url: undefined, status: 'pending', qaScore: undefined, qaIssues: undefined },
+        },
+      }
+      // Instantly reassemble the blog output without this image
+      const output = assembleFinalOutput(blocks, updated)
+      setFinalOutput(output)
+      return updated
+    })
     setSelectedImages(prev => {
       const next = { ...prev }
       delete next[`${placement}-${variant}`]
       return next
     })
     setImagesApplied(false)
-  }, [])
+  }, [blocks])
 
   // Apply selected images: rebuild final output with only selected images
   const handleApplyImages = useCallback(() => {
@@ -815,6 +898,14 @@ export default function BlogWriterTab() {
       if (!data.ok) throw new Error(data.error || 'Publish failed')
 
       setSuccessMsg(`Published! ${data.liveUrl}`)
+
+      // Auto-learn: mark all selected images as approved
+      fetch('/api/blog-writer/image-feedback-on-publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imagePairs, keyword }),
+      }).catch(() => {})
+
       clearSession()
 
       const hRes = await fetch('/api/blog-writer/history')
@@ -1083,6 +1174,17 @@ export default function BlogWriterTab() {
           onSelectAll={handleSelectAll}
           onDeselectAll={handleDeselectAll}
           onDeleteImage={handleDeleteImage}
+          onFeedback={handleImageFeedback}
+          feedbackMap={feedbackMap}
+        />
+      )}
+
+      {/* Feedback comment modal */}
+      {feedbackModalKey && (
+        <FeedbackModal
+          imageKey={feedbackModalKey}
+          onSubmit={handleFeedbackComment}
+          onClose={() => setFeedbackModalKey(null)}
         />
       )}
 
