@@ -1,17 +1,28 @@
 /**
  * Fal.ai Image Generation Client
  * ─────────────────────────────────────────────────────────────
- * Generates images via Fal.ai FLUX 1.1 Pro Ultra.
- * Supports desktop (16:9) and mobile (9:16) variants at
- * native 2K resolution. Replaces Higgsfield integration.
+ * Two modes:
+ * 1. Image-to-Image (when reference product photo available):
+ *    Uses FLUX General img2img — takes the real product photo
+ *    and varies the scene/background/lighting while keeping
+ *    the product nearly identical. Strength 0.3 = product stays,
+ *    scene changes.
+ * 2. Text-to-Image (fallback, no reference):
+ *    Uses FLUX 1.1 Pro Ultra for pure text generation.
  * ─────────────────────────────────────────────────────────────
  */
 
 const FAL_BASE_URL = 'https://queue.fal.run'
-const FAL_STATUS_URL = 'https://queue.fal.run'
 
-// FLUX 1.1 Pro Ultra — native 2K, strong photorealism, $0.06/image
-const MODEL_ID = 'fal-ai/flux-pro/v1.1-ultra'
+// Image-to-image: product stays, scene varies
+const IMG2IMG_MODEL = 'fal-ai/flux-general/image-to-image'
+// Text-to-image fallback
+const TXT2IMG_MODEL = 'fal-ai/flux-pro/v1.1-ultra'
+
+// Strength controls how much the original image is preserved
+// 0.0 = exact copy, 1.0 = completely new image
+// 0.25-0.35 = product shape/colour/branding preserved, background varies
+const IMG2IMG_STRENGTH = 0.30
 
 export function hasFalConfig() {
   return Boolean(process.env.FAL_KEY)
@@ -46,11 +57,9 @@ async function pollForResult(statusUrl, maxAttempts = 60) {
     const status = (data.status || '').toUpperCase()
 
     if (status === 'COMPLETED') {
-      // Response URL is in the response_url field
       const responseUrl = data.response_url
       if (!responseUrl) throw new Error('Completed but no response_url')
 
-      // Fetch the actual result
       const resultRes = await fetch(responseUrl, { headers })
       if (!resultRes.ok) throw new Error(`Failed to fetch result: ${resultRes.status}`)
 
@@ -63,21 +72,18 @@ async function pollForResult(statusUrl, maxAttempts = 60) {
     if (status === 'FAILED') {
       throw new Error(`Fal.ai generation failed: ${data.error || 'unknown error'}`)
     }
-
-    // IN_QUEUE or IN_PROGRESS — keep polling
   }
 
   throw new Error('Fal.ai image generation timed out after 120 seconds')
 }
 
 /**
- * Fetch first valid reference image URL and return it for conditioning.
+ * Fetch first valid reference image URL.
  * Returns null if all fetches fail.
  */
 async function resolveReferenceImage(referenceImageUrls) {
   if (!referenceImageUrls || referenceImageUrls.length === 0) return null
 
-  // Try each URL until one works
   for (const url of referenceImageUrls.slice(0, 4)) {
     try {
       const res = await fetch(url, {
@@ -85,57 +91,40 @@ async function resolveReferenceImage(referenceImageUrls) {
         signal: AbortSignal.timeout(8000),
       })
       if (res.ok) {
-        // Verify it's actually an image
         const ct = res.headers.get('content-type') || ''
         if (ct.startsWith('image/')) {
-          console.log(`[Fal.ai] Using reference image: ${url.slice(0, 80)}...`)
+          console.log(`[Fal.ai] Reference image validated: ${url.slice(0, 80)}...`)
           return url
         }
       }
     } catch {}
   }
 
-  console.log('[Fal.ai] No valid reference images found, proceeding without')
+  console.log('[Fal.ai] No valid reference images found, falling back to text-to-image')
   return null
 }
 
 /**
- * Generate a single image via Fal.ai FLUX 1.1 Pro Ultra
- * @param {object} options
- * @param {string} options.prompt - Image generation prompt
- * @param {string} options.aspectRatio - '16:9' | '9:16' | '1:1' | '4:3' | '3:4'
- * @param {string[]} [options.referenceImageUrls] - Reference image URLs for conditioning
- * @returns {Promise<{imageUrl: string, requestId: string}>}
+ * Map aspect ratio string to Fal.ai image_size enum
  */
-export async function generateImage({ prompt, aspectRatio, referenceImageUrls }) {
-  if (!prompt) throw new Error('prompt required')
-  if (!aspectRatio) throw new Error('aspectRatio required')
+function mapAspectRatio(aspectRatio) {
+  const map = {
+    '16:9': 'landscape_16_9',
+    '9:16': 'portrait_16_9',
+    '4:3': 'landscape_4_3',
+    '3:4': 'portrait_4_3',
+    '1:1': 'square_hd',
+  }
+  return map[aspectRatio] || 'landscape_16_9'
+}
 
+/**
+ * Submit to Fal.ai queue and poll for result
+ */
+async function submitAndPoll(modelId, body) {
   const headers = getAuthHeaders()
 
-  // Resolve a reference image for conditioning (if provided)
-  const refImageUrl = await resolveReferenceImage(referenceImageUrls)
-  const refCount = referenceImageUrls?.length || 0
-
-  console.log(`[Fal.ai] Submitting ${aspectRatio} image (${refCount} refs): "${prompt.slice(0, 60)}..."`)
-
-  // Build request body — add image_url for reference conditioning
-  const body = {
-    prompt,
-    aspect_ratio: aspectRatio,
-    num_images: 1,
-    output_format: 'jpeg',
-    safety_tolerance: '2',
-    raw: false,
-  }
-
-  if (refImageUrl) {
-    body.image_url = refImageUrl
-    body.image_prompt_strength = 0.45 // strong conditioning — product shape, colour, proportions preserved from reference
-  }
-
-  // Submit to queue
-  const submitRes = await fetch(`${FAL_BASE_URL}/${MODEL_ID}`, {
+  const submitRes = await fetch(`${FAL_BASE_URL}/${modelId}`, {
     method: 'POST',
     headers,
     body: JSON.stringify(body),
@@ -154,7 +143,7 @@ export async function generateImage({ prompt, aspectRatio, referenceImageUrls })
 
   console.log(`[Fal.ai] Queued request ${requestId}, polling...`)
 
-  // If we got a response_url directly (sync response), try fetching result immediately
+  // Check for instant response
   if (submitData.response_url && submitData.status === 'COMPLETED') {
     const resultRes = await fetch(submitData.response_url, { headers })
     if (resultRes.ok) {
@@ -167,10 +156,62 @@ export async function generateImage({ prompt, aspectRatio, referenceImageUrls })
     }
   }
 
-  // Poll for result
-  const pollUrl = statusUrl || `${FAL_STATUS_URL}/${MODEL_ID}/requests/${requestId}/status`
+  const pollUrl = statusUrl || `${FAL_BASE_URL}/${modelId}/requests/${requestId}/status`
   const imageUrl = await pollForResult(pollUrl)
   console.log(`[Fal.ai] Done: ${imageUrl.slice(0, 80)}...`)
 
   return { imageUrl, requestId }
+}
+
+/**
+ * Generate a single image via Fal.ai
+ *
+ * If referenceImageUrls provided → Image-to-Image mode
+ *   Takes the real product photo and varies the scene around it.
+ *   Product shape, colour, branding preserved. Scene changes.
+ *
+ * If no reference → Text-to-Image fallback
+ *   Pure prompt-based generation via FLUX 1.1 Pro Ultra.
+ *
+ * @param {object} options
+ * @param {string} options.prompt - Scene description prompt
+ * @param {string} options.aspectRatio - '16:9' | '9:16' | '1:1'
+ * @param {string[]} [options.referenceImageUrls] - Real product photo URLs
+ * @returns {Promise<{imageUrl: string, requestId: string}>}
+ */
+export async function generateImage({ prompt, aspectRatio, referenceImageUrls }) {
+  if (!prompt) throw new Error('prompt required')
+  if (!aspectRatio) throw new Error('aspectRatio required')
+
+  const refImageUrl = await resolveReferenceImage(referenceImageUrls)
+
+  if (refImageUrl) {
+    // ── IMAGE-TO-IMAGE MODE ──────────────────────────────────
+    // Real product photo as base. Low strength = product preserved.
+    // Prompt describes the scene variation.
+    console.log(`[Fal.ai] IMG2IMG mode (strength ${IMG2IMG_STRENGTH}): "${prompt.slice(0, 60)}..."`)
+
+    return submitAndPoll(IMG2IMG_MODEL, {
+      prompt,
+      image_url: refImageUrl,
+      strength: IMG2IMG_STRENGTH,
+      image_size: mapAspectRatio(aspectRatio),
+      num_images: 1,
+      num_inference_steps: 28,
+      guidance_scale: 3.5,
+      output_format: 'jpeg',
+    })
+  }
+
+  // ── TEXT-TO-IMAGE FALLBACK ────────────────────────────────
+  console.log(`[Fal.ai] TXT2IMG fallback: "${prompt.slice(0, 60)}..."`)
+
+  return submitAndPoll(TXT2IMG_MODEL, {
+    prompt,
+    aspect_ratio: aspectRatio,
+    num_images: 1,
+    output_format: 'jpeg',
+    safety_tolerance: '2',
+    raw: false,
+  })
 }

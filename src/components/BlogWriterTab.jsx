@@ -228,7 +228,7 @@ function ImagePanel({ imagePairs, imageProgress, phase, onRegenerate, onRegenAll
 // Shows generated images as visual thumbnails with checkboxes.
 // User selects which images to include, clicks Apply.
 
-function ImageSelectionGallery({ imagePairs, selectedImages, onToggle, onApply, onSelectAll, onDeselectAll }) {
+function ImageSelectionGallery({ imagePairs, selectedImages, onToggle, onApply, onSelectAll, onDeselectAll, onDeleteImage }) {
   const availablePlacements = PLACEMENTS.filter(p => imagePairs[p])
   if (availablePlacements.length === 0) return null
 
@@ -280,6 +280,11 @@ function ImageSelectionGallery({ imagePairs, selectedImages, onToggle, onApply, 
                 <div className="bw-gallery-checkbox">
                   {isSelected ? '✓' : ''}
                 </div>
+                <button
+                  className="bw-gallery-delete"
+                  onClick={(e) => { e.stopPropagation(); onDeleteImage(placement, variant) }}
+                  title="Remove this image"
+                >×</button>
                 <img
                   src={img.url}
                   alt={pair.alt}
@@ -456,6 +461,23 @@ export default function BlogWriterTab() {
 
   const handleDeselectAll = useCallback(() => {
     setSelectedImages({})
+    setImagesApplied(false)
+  }, [])
+
+  // Delete a single generated image (clear its URL, reset to pending)
+  const handleDeleteImage = useCallback((placement, variant) => {
+    setImagePairs(prev => ({
+      ...prev,
+      [placement]: {
+        ...prev[placement],
+        [variant]: { ...prev[placement][variant], url: undefined, status: 'pending', qaScore: undefined, qaIssues: undefined },
+      },
+    }))
+    setSelectedImages(prev => {
+      const next = { ...prev }
+      delete next[`${placement}-${variant}`]
+      return next
+    })
     setImagesApplied(false)
   }, [])
 
@@ -968,6 +990,7 @@ export default function BlogWriterTab() {
           onApply={handleApplyImages}
           onSelectAll={handleSelectAll}
           onDeselectAll={handleDeselectAll}
+          onDeleteImage={handleDeleteImage}
         />
       )}
 
