@@ -1874,6 +1874,15 @@ button:hover { opacity: .88; }
 .bw-qa-score.mid { color: #f5a623; background: rgba(245,166,35,0.1); }
 .bw-qa-score.low { color: #ef4444; background: rgba(239,68,68,0.1); }
 
+/* Scrape status (Stage 1) */
+.bw-scrape-status { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+.bw-scrape-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #9ca3af; }
+.bw-scrape-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.bw-scrape-count { color: #34d399; font-size: 11px; margin-left: 4px; }
+
+/* Image reference count */
+.bw-img-ref-count { display: block; font-size: 10px; color: #6b7280; font-weight: 400; margin-top: 1px; }
+
 /* Image selection gallery */
 .bw-gallery { background: #1a1a2e; border: 1px solid #2a2a4a; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
 .bw-gallery-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }

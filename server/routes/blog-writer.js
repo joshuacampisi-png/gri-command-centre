@@ -1,7 +1,9 @@
 /**
  * Blog Writer API Routes
  * ─────────────────────────────────────────────────────────────
- * POST /api/blog-writer/generate       — generate article from keyword
+ * POST /api/blog-writer/scrape-brand    — scrape brand site for product images
+ * POST /api/blog-writer/scrape-web      — scrape web for lifestyle reference images
+ * POST /api/blog-writer/generate       — generate article from keyword + scrape context
  * POST /api/blog-writer/publish        — publish generated article to Shopify
  * POST /api/blog-writer/generate-image — generate single image via Fal.ai FLUX
  * POST /api/blog-writer/review-image   — Claude vision QA review of generated image
@@ -20,6 +22,7 @@ import { generateBlogArticle, ARTICLE_TYPES } from '../lib/blog-writer.js'
 import { publishToShopify, hasShopifyPublishConfig } from '../lib/shopify-publisher.js'
 import { generateImage, hasFalConfig } from '../lib/fal.js'
 import { callClaude } from '../lib/claude-guard.js'
+import { scrapeBrandSite, scrapeWebReferences } from '../lib/scraper.js'
 import { dataFile } from '../lib/data-dir.js'
 
 const router = Router()
@@ -74,9 +77,53 @@ router.get('/article-types', (_req, res) => {
   res.json({ ok: true, types: ARTICLE_TYPES })
 })
 
+// POST /api/blog-writer/scrape-brand — scrape brand site for product images
+router.post('/scrape-brand', async (req, res) => {
+  const { keyword } = req.body
+  if (!keyword) return res.status(400).json({ ok: false, error: 'keyword required' })
+
+  try {
+    const result = await scrapeBrandSite(keyword.trim())
+    return res.json({ ok: true, ...result })
+  } catch (err) {
+    console.error('[scrape-brand]', err.message)
+    return res.json({
+      ok: true,
+      brand: 'gri',
+      keyword: keyword.trim(),
+      siteUrl: 'https://genderrevealideas.com.au',
+      productImages: [],
+      productNames: [],
+      productDescriptions: [],
+      productPageUrls: [],
+      error: err.message,
+    })
+  }
+})
+
+// POST /api/blog-writer/scrape-web — scrape web for lifestyle reference images
+router.post('/scrape-web', async (req, res) => {
+  const { keyword } = req.body
+  if (!keyword) return res.status(400).json({ ok: false, error: 'keyword required' })
+
+  try {
+    const result = await scrapeWebReferences(keyword.trim())
+    return res.json({ ok: true, ...result })
+  } catch (err) {
+    console.error('[scrape-web]', err.message)
+    return res.json({
+      ok: true,
+      keyword: keyword.trim(),
+      referenceImages: [],
+      searchQuery: '',
+      error: err.message,
+    })
+  }
+})
+
 // POST /api/blog-writer/generate
 router.post('/generate', async (req, res) => {
-  const { keyword, articleType } = req.body
+  const { keyword, articleType, brandScrape, webRefs } = req.body
 
   if (!keyword || !keyword.trim()) {
     return res.status(400).json({ ok: false, error: 'keyword is required' })
@@ -89,6 +136,8 @@ router.post('/generate', async (req, res) => {
   try {
     const article = await generateBlogArticle(keyword.trim(), {
       articleType: articleType || 'informational',
+      brandScrape: brandScrape || null,
+      webRefs: webRefs || null,
     })
 
     // Save to history
@@ -165,7 +214,7 @@ router.post('/publish', async (req, res) => {
 // POST /api/blog-writer/generate-image
 // Generates a single image via Fal.ai FLUX 1.1 Pro Ultra
 router.post('/generate-image', async (req, res) => {
-  const { prompt, aspectRatio } = req.body
+  const { prompt, aspectRatio, referenceImageUrls } = req.body
 
   if (!prompt) return res.status(400).json({ ok: false, error: 'prompt required' })
   if (!aspectRatio) return res.status(400).json({ ok: false, error: 'aspectRatio required' })
@@ -178,7 +227,7 @@ router.post('/generate-image', async (req, res) => {
   }
 
   try {
-    const result = await generateImage({ prompt, aspectRatio })
+    const result = await generateImage({ prompt, aspectRatio, referenceImageUrls: referenceImageUrls || [] })
     return res.json({ ok: true, imageUrl: result.imageUrl, requestId: result.requestId })
   } catch (err) {
     console.error('[BlogWriterRoute] Image generation error:', err.message)

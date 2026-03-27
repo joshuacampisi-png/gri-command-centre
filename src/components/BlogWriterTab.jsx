@@ -149,10 +149,15 @@ function ImagePairRow({ label, pair, onRegenerate, regenerating }) {
   const overall = getOverall()
   const canRegenBoth = pair.desktop.status === 'done' && pair.mobile.status === 'done'
 
+  const refCount = (pair.desktop.referenceImages?.length || 0)
+
   return (
     <div className="bw-img-row">
       <span className="bw-img-dot" style={{ background: DOT_COLORS[overall] }} />
-      <span className="bw-img-label">{label}</span>
+      <span className="bw-img-label">
+        {label}
+        {refCount > 0 && <span className="bw-img-ref-count">Using {refCount} reference images</span>}
+      </span>
       <div className="bw-img-variants">
         {variantChip('desktop')}
         <span className="bw-img-sep">·</span>
@@ -303,7 +308,7 @@ function ImageSelectionGallery({ imagePairs, selectedImages, onToggle, onApply, 
 export default function BlogWriterTab() {
   const [keyword, setKeyword] = useState('')
   const [articleType, setArticleType] = useState('informational')
-  const [phase, setPhase] = useState('idle') // idle | writing | generating-images | complete | error
+  const [phase, setPhase] = useState('idle') // idle | researching | writing | generating-images | complete | error
   const [article, setArticle] = useState(null)
   const [error, setError] = useState('')
   const [successMsg, setSuccessMsg] = useState('')
@@ -311,7 +316,12 @@ export default function BlogWriterTab() {
   const [history, setHistory] = useState([])
   const [copied, setCopied] = useState(false)
   const [hasFal, setHasFal] = useState(false)
-  const [deleting, setDeleting] = useState(null) // history id being deleted
+  const [deleting, setDeleting] = useState(null)
+
+  // Scrape state (Stage 1)
+  const [scrapeStatus, setScrapeStatus] = useState({ brand: 'pending', web: 'pending' })
+  const [brandScrape, setBrandScrape] = useState(null)
+  const [webRefs, setWebRefs] = useState(null)
 
   // Image pipeline state
   const [blocks, setBlocks] = useState([])
@@ -400,11 +410,11 @@ export default function BlogWriterTab() {
     }
   }, [phase, imagePairs])
 
-  const generateSingleImage = useCallback(async (prompt, aspectRatio) => {
+  const generateSingleImage = useCallback(async (prompt, aspectRatio, referenceImageUrls) => {
     const res = await fetch('/api/blog-writer/generate-image', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, aspectRatio }),
+      body: JSON.stringify({ prompt, aspectRatio, referenceImageUrls }),
     })
     const data = await res.json()
     if (!data.ok) throw new Error(data.error || 'Image generation failed')
@@ -568,9 +578,9 @@ export default function BlogWriterTab() {
   }, [imagePairs, blocks, generateSingleImage])
 
   const handleGenerate = useCallback(async () => {
-    if (!keyword.trim() || phase === 'writing' || phase === 'generating-images') return
+    if (!keyword.trim() || phase === 'writing' || phase === 'generating-images' || phase === 'researching') return
 
-    setPhase('writing')
+    setPhase('researching')
     setError('')
     setSuccessMsg('')
     setArticle(null)
@@ -581,21 +591,57 @@ export default function BlogWriterTab() {
     setImageProgress({ done: 0, total: 0 })
     setSelectedImages({})
     setImagesApplied(false)
+    setBrandScrape(null)
+    setWebRefs(null)
+    setScrapeStatus({ brand: 'pending', web: 'pending' })
 
     try {
-      // STEP 1: Generate blog article via Claude (with IMAGE tags)
+      // STAGE 1: Research — scrape brand site + web references in parallel
+      setScrapeStatus({ brand: 'generating', web: 'generating' })
+
+      const [brandResult, webResult] = await Promise.allSettled([
+        fetch('/api/blog-writer/scrape-brand', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ keyword: keyword.trim() }),
+        }).then(r => r.json()),
+        fetch('/api/blog-writer/scrape-web', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ keyword: keyword.trim() }),
+        }).then(r => r.json()),
+      ])
+
+      const bScrape = brandResult.status === 'fulfilled' ? brandResult.value : null
+      const wRefs = webResult.status === 'fulfilled' ? webResult.value : null
+
+      setBrandScrape(bScrape)
+      setWebRefs(wRefs)
+      setScrapeStatus({
+        brand: bScrape?.productImages?.length > 0 ? 'done' : 'failed',
+        web: wRefs?.referenceImages?.length > 0 ? 'done' : 'failed',
+      })
+
+      // STAGE 2: Write article with scraped context
+      setPhase('writing')
+
       const res = await fetch('/api/blog-writer/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ keyword: keyword.trim(), articleType }),
+        body: JSON.stringify({
+          keyword: keyword.trim(),
+          articleType,
+          brandScrape: bScrape,
+          webRefs: wRefs,
+        }),
       })
       const data = await res.json()
       if (!data.ok) throw new Error(data.error || 'Generation failed')
 
       setArticle(data.article)
 
-      // Save session — article is written, safe to restore from here
-      saveSession({ phase: 'generating-images', keyword: keyword.trim(), articleType, article: data.article })
+      // Save session
+      saveSession({ phase: 'generating-images', keyword: keyword.trim(), articleType, article: data.article, brandScrape: bScrape, webRefs: wRefs })
 
       // STEP 2: Parse IMAGE tags from body
       const { blocks: parsedBlocks, imagePairs: parsedPairs } = parseBlogContent(data.article.body_html || '')
@@ -631,7 +677,7 @@ export default function BlogWriterTab() {
           }))
 
           try {
-            const url = await generateSingleImage(pair[variant].prompt, pair[variant].aspectRatio)
+            const url = await generateSingleImage(pair[variant].prompt, pair[variant].aspectRatio, pair[variant].referenceImages)
 
             // Set status: reviewing (Claude vision QA)
             setImagePairs(prev => ({
@@ -648,7 +694,7 @@ export default function BlogWriterTab() {
                 [placement]: { ...prev[placement], [variant]: { ...prev[placement][variant], status: 'generating' } },
               }))
 
-              const regenUrl = await generateSingleImage(review.refinedPrompt, pair[variant].aspectRatio)
+              const regenUrl = await generateSingleImage(review.refinedPrompt, pair[variant].aspectRatio, pair[variant].referenceImages)
               const regenReview = await reviewImage(regenUrl, review.refinedPrompt, placement, pair.alt)
 
               finalPairs[placement] = {
@@ -799,7 +845,7 @@ export default function BlogWriterTab() {
     clearSession()
   }, [clearSession])
 
-  const isRunning = phase === 'writing' || phase === 'generating-images'
+  const isRunning = phase === 'researching' || phase === 'writing' || phase === 'generating-images'
 
   return (
     <div className="page bw-page">
@@ -843,7 +889,7 @@ export default function BlogWriterTab() {
               onClick={handleGenerate}
               disabled={isRunning || !keyword.trim()}
             >
-              {phase === 'writing' ? '✍ Writing…' : phase === 'generating-images' ? '🖼 Images…' : '✍ Generate Article'}
+              {phase === 'researching' ? '🔍 Researching…' : phase === 'writing' ? '✍ Writing…' : phase === 'generating-images' ? '🖼 Images…' : '✍ Generate Article'}
             </button>
           </div>
         </div>
@@ -859,13 +905,43 @@ export default function BlogWriterTab() {
         </div>
       )}
 
-      {/* Phase: Writing article */}
+      {/* Phase: Researching (Stage 1) */}
+      {phase === 'researching' && (
+        <div className="bw-phase-card">
+          <div className="bw-phase-icon">🔍</div>
+          <div>
+            <strong>Researching products</strong>
+            <div className="bw-scrape-status">
+              <div className="bw-scrape-row">
+                <span className="bw-scrape-dot" style={{ background: scrapeStatus.brand === 'done' ? '#34d399' : scrapeStatus.brand === 'failed' ? '#ef4444' : '#f5a623' }} />
+                <span>Scraping genderrevealideas.com.au...</span>
+                {scrapeStatus.brand === 'done' && brandScrape && (
+                  <span className="bw-scrape-count">{brandScrape.productImages?.length || 0} product images found</span>
+                )}
+              </div>
+              <div className="bw-scrape-row">
+                <span className="bw-scrape-dot" style={{ background: scrapeStatus.web === 'done' ? '#34d399' : scrapeStatus.web === 'failed' ? '#ef4444' : '#f5a623' }} />
+                <span>Gathering web references...</span>
+                {scrapeStatus.web === 'done' && webRefs && (
+                  <span className="bw-scrape-count">{webRefs.referenceImages?.length || 0} reference images found</span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Phase: Writing article (Stage 2) */}
       {phase === 'writing' && (
         <div className="bw-phase-card">
           <div className="bw-phase-icon">✍️</div>
           <div>
             <strong>Writing article</strong>
-            <p className="muted">Claude is generating the full SEO article and engineering 8 image prompts</p>
+            <p className="muted">
+              Claude is generating the full SEO article with{' '}
+              {brandScrape?.productImages?.length ? `${brandScrape.productImages.length} product refs` : 'no product refs'}{' '}
+              and {webRefs?.referenceImages?.length ? `${webRefs.referenceImages.length} web refs` : 'no web refs'}
+            </p>
           </div>
         </div>
       )}

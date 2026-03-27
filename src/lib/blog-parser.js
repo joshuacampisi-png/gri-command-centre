@@ -7,26 +7,33 @@
 
 const PLACEMENTS = ['hero', 'inline-1', 'inline-2', 'inline-3']
 
-const DESKTOP_REGEX = /\[IMAGE_DESKTOP:\s*placement="([^"]+)"\s+aspectRatio="([^"]+)"\s+resolution="([^"]+)"\s+alt="([^"]+)"\s+prompt="([^"]+)"\]/g
-const MOBILE_REGEX  = /\[IMAGE_MOBILE:\s*placement="([^"]+)"\s+aspectRatio="([^"]+)"\s+resolution="([^"]+)"\s+alt="([^"]+)"\s+prompt="([^"]+)"\]/g
+// Regex with optional referenceImages field (backward compatible with old format)
+const DESKTOP_REGEX = /\[IMAGE_DESKTOP:\s*placement="([^"]+)"\s+aspectRatio="([^"]+)"\s+resolution="([^"]+)"\s+alt="([^"]+)"\s+(?:referenceImages="([^"]*)"\s+)?prompt="([^"]+)"\]/g
+const MOBILE_REGEX  = /\[IMAGE_MOBILE:\s*placement="([^"]+)"\s+aspectRatio="([^"]+)"\s+resolution="([^"]+)"\s+alt="([^"]+)"\s+(?:referenceImages="([^"]*)"\s+)?prompt="([^"]+)"\]/g
 
 export function parseBlogContent(raw) {
-  // Collect desktop tags
+  // Collect desktop tags (group 5 = referenceImages, group 6 = prompt)
   const desktopTags = {}
   let m
   while ((m = DESKTOP_REGEX.exec(raw)) !== null) {
+    const refUrls = (m[5] || '').split(',').map(u => u.trim()).filter(u => u.startsWith('http'))
     desktopTags[m[1]] = {
       variant: 'desktop', placement: m[1],
-      aspectRatio: m[2], resolution: m[3], alt: m[4], prompt: m[5],
+      aspectRatio: m[2], resolution: m[3], alt: m[4],
+      referenceImages: refUrls,
+      prompt: m[6],
     }
   }
 
   // Collect mobile tags
   const mobileTags = {}
   while ((m = MOBILE_REGEX.exec(raw)) !== null) {
+    const refUrls = (m[5] || '').split(',').map(u => u.trim()).filter(u => u.startsWith('http'))
     mobileTags[m[1]] = {
       variant: 'mobile', placement: m[1],
-      aspectRatio: m[2], resolution: m[3], alt: m[4], prompt: m[5],
+      aspectRatio: m[2], resolution: m[3], alt: m[4],
+      referenceImages: refUrls,
+      prompt: m[6],
     }
   }
 
@@ -42,11 +49,13 @@ export function parseBlogContent(raw) {
         desktop: {
           prompt: d?.prompt || '',
           aspectRatio: d?.aspectRatio || '16:9',
+          referenceImages: d?.referenceImages || [],
           status: 'pending',
         },
         mobile: {
           prompt: mb?.prompt || '',
           aspectRatio: mb?.aspectRatio || '9:16',
+          referenceImages: mb?.referenceImages || [],
           status: 'pending',
         },
       }

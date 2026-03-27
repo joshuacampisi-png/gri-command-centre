@@ -141,17 +141,24 @@ Every article receives exactly 4 image placements: 1 hero image + 3 inline image
 
 For each placement, output TWO image tags: one desktop, one mobile. Use this EXACT format:
 
-[IMAGE_DESKTOP: placement="hero" aspectRatio="16:9" resolution="2K" alt="[SEO alt text under 125 chars]" prompt="[Nano Banana Pro image prompt]"]
-[IMAGE_MOBILE: placement="hero" aspectRatio="9:16" resolution="2K" alt="[same alt text as desktop]" prompt="[same prompt reframed vertically, tall crop, subject centred]"]
+[IMAGE_DESKTOP: placement="hero" aspectRatio="16:9" resolution="2K" alt="[SEO alt text under 125 chars]" referenceImages="[comma-separated list of up to 4 image URLs from the scraped data provided in the user message]" prompt="[FLUX Pro Ultra image prompt]"]
+[IMAGE_MOBILE: placement="hero" aspectRatio="9:16" resolution="2K" alt="[same alt text as desktop]" referenceImages="[same URLs]" prompt="[same prompt reframed vertically, tall crop, subject centred]"]
 
-[IMAGE_DESKTOP: placement="inline-1" aspectRatio="16:9" resolution="2K" alt="[SEO alt text]" prompt="[prompt]"]
-[IMAGE_MOBILE: placement="inline-1" aspectRatio="9:16" resolution="2K" alt="[same alt text]" prompt="[vertically reframed prompt]"]
+[IMAGE_DESKTOP: placement="inline-1" aspectRatio="16:9" resolution="2K" alt="[SEO alt text]" referenceImages="[relevant URLs from scraped data]" prompt="[prompt]"]
+[IMAGE_MOBILE: placement="inline-1" aspectRatio="9:16" resolution="2K" alt="[same alt text]" referenceImages="[same URLs]" prompt="[vertically reframed prompt]"]
 
-[IMAGE_DESKTOP: placement="inline-2" aspectRatio="16:9" resolution="2K" alt="[SEO alt text]" prompt="[prompt]"]
-[IMAGE_MOBILE: placement="inline-2" aspectRatio="9:16" resolution="2K" alt="[same alt text]" prompt="[vertically reframed prompt]"]
+[IMAGE_DESKTOP: placement="inline-2" aspectRatio="16:9" resolution="2K" alt="[SEO alt text]" referenceImages="[relevant URLs]" prompt="[prompt]"]
+[IMAGE_MOBILE: placement="inline-2" aspectRatio="9:16" resolution="2K" alt="[same alt text]" referenceImages="[same URLs]" prompt="[vertically reframed prompt]"]
 
-[IMAGE_DESKTOP: placement="inline-3" aspectRatio="16:9" resolution="2K" alt="[SEO alt text]" prompt="[prompt]"]
-[IMAGE_MOBILE: placement="inline-3" aspectRatio="9:16" resolution="2K" alt="[same alt text]" prompt="[vertically reframed prompt]"]
+[IMAGE_DESKTOP: placement="inline-3" aspectRatio="16:9" resolution="2K" alt="[SEO alt text]" referenceImages="[relevant URLs]" prompt="[prompt]"]
+[IMAGE_MOBILE: placement="inline-3" aspectRatio="9:16" resolution="2K" alt="[same alt text]" referenceImages="[same URLs]" prompt="[vertically reframed prompt]"]
+
+REFERENCE IMAGE SELECTION RULES:
+For each image placement, select the most relevant 2 to 4 URLs from the scraped data provided in the user message.
+Prioritise product images from the brand website over web reference images.
+Use web reference images as secondary context for lifestyle composition.
+If no scraped images are available, leave referenceImages as an empty string.
+Never invent URLs. Only use URLs provided in the user message.
 
 PLACEMENT POSITIONS IN THE ARTICLE:
 Hero pair: immediately after the H1, before the introduction
@@ -162,7 +169,7 @@ Inline-3 pair: after the FAQ section, before the conclusion
 IMAGE PROMPT ENGINEERING — FLUX 1.1 PRO ULTRA STANDARDS
 
 Write prompts as structured command-line instructions, not sentences. Every prompt must contain all 7 elements:
-1. Subject: specific and concrete, not generic. Reference real GRI product types (smoke grenades with pull-ring activation, handheld powder cannons, confetti tube cannons, balloon boxes with helium balloons inside). Products should look like real physical products you can buy, not fantasy items.
+1. Subject: name the actual product found on the site from the scraped data. Not a generic "smoke bomb". Name it as it appears in the product data. If no product name was found, use the most specific description possible from the keyword. Products should look like real physical products you can buy, not fantasy items.
 2. Scene/environment: exact setting, time of day, atmosphere. Australian outdoor settings: backyards, parks, beaches, bushland clearings. Summer light. Real party setups.
 3. Lighting: e.g. "soft diffused natural light from left", "golden hour rim lighting", "bright midday Australian sun"
 4. Camera: e.g. "shot on full-frame cinema camera", "85mm portrait lens f/1.8", "24mm wide-angle"
@@ -181,7 +188,7 @@ You always output in the EXACT structured format requested. No preamble, no comm
 
 // ── Article prompt ────────────────────────────────────────────
 
-function buildArticlePrompt(keyword, articleType, productContext) {
+function buildArticlePrompt(keyword, articleType, productContext, scrapeContext) {
   const type = ARTICLE_TYPES[articleType] || ARTICLE_TYPES.informational
 
   return `Write a complete, publish-ready SEO blog article for Gender Reveal Ideas (genderrevealideas.com.au).
@@ -192,6 +199,8 @@ WORD COUNT TARGET: ${type.wordRange} words
 GEO: Australia
 
 ${productContext}
+
+${scrapeContext}
 
 OUTPUT THIS EXACT FORMAT (copy the section markers exactly, I will parse by them):
 
@@ -366,13 +375,45 @@ function parseArticleResponse(rawText) {
 
 // ── Main export ───────────────────────────────────────────────
 
+function buildScrapeContext(brandScrape, webRefs) {
+  let ctx = ''
+
+  if (brandScrape && (brandScrape.productImages?.length || brandScrape.productNames?.length)) {
+    ctx += `BRAND WEBSITE SCRAPE RESULTS — genderrevealideas.com.au:\n`
+    if (brandScrape.productNames?.length) {
+      ctx += `Products found: ${brandScrape.productNames.join(', ')}\n`
+    }
+    if (brandScrape.productImages?.length) {
+      ctx += `Product image URLs (use these as reference anchors in your image prompts and in the referenceImages field):\n`
+      ctx += brandScrape.productImages.map((url, i) => `${i + 1}. ${url}`).join('\n') + '\n'
+    }
+    if (brandScrape.productDescriptions?.length) {
+      ctx += `Product descriptions:\n`
+      ctx += brandScrape.productDescriptions.map((d, i) => `${i + 1}. ${d}`).join('\n') + '\n'
+    }
+    ctx += '\n'
+  }
+
+  if (webRefs && webRefs.referenceImages?.length) {
+    ctx += `WEB REFERENCE IMAGES (real-world lifestyle context for image prompts):\n`
+    ctx += webRefs.referenceImages.map((url, i) => `${i + 1}. ${url}`).join('\n') + '\n\n'
+  }
+
+  if (ctx) {
+    ctx += `Use the product names and descriptions to inform your content accuracy. Use the product image URLs and web reference URLs in your IMAGE tag referenceImages fields and as visual anchors in your prompts.\n`
+  }
+
+  return ctx
+}
+
 export async function generateBlogArticle(keyword, options = {}) {
   const articleType = options.articleType || 'informational'
 
   console.log(`[BlogWriter] Generating ${articleType} article for "${keyword}"`)
 
   const productContext = await fetchProductContext(keyword)
-  const prompt = buildArticlePrompt(keyword, articleType, productContext)
+  const scrapeContext = buildScrapeContext(options.brandScrape, options.webRefs)
+  const prompt = buildArticlePrompt(keyword, articleType, productContext, scrapeContext)
 
   const message = await callClaude({
     model: 'claude-sonnet-4-20250514',

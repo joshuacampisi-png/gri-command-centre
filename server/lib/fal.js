@@ -71,32 +71,74 @@ async function pollForResult(statusUrl, maxAttempts = 60) {
 }
 
 /**
+ * Fetch first valid reference image URL and return it for conditioning.
+ * Returns null if all fetches fail.
+ */
+async function resolveReferenceImage(referenceImageUrls) {
+  if (!referenceImageUrls || referenceImageUrls.length === 0) return null
+
+  // Try each URL until one works
+  for (const url of referenceImageUrls.slice(0, 4)) {
+    try {
+      const res = await fetch(url, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; WOGBot/1.0)' },
+        signal: AbortSignal.timeout(8000),
+      })
+      if (res.ok) {
+        // Verify it's actually an image
+        const ct = res.headers.get('content-type') || ''
+        if (ct.startsWith('image/')) {
+          console.log(`[Fal.ai] Using reference image: ${url.slice(0, 80)}...`)
+          return url
+        }
+      }
+    } catch {}
+  }
+
+  console.log('[Fal.ai] No valid reference images found, proceeding without')
+  return null
+}
+
+/**
  * Generate a single image via Fal.ai FLUX 1.1 Pro Ultra
  * @param {object} options
  * @param {string} options.prompt - Image generation prompt
  * @param {string} options.aspectRatio - '16:9' | '9:16' | '1:1' | '4:3' | '3:4'
+ * @param {string[]} [options.referenceImageUrls] - Reference image URLs for conditioning
  * @returns {Promise<{imageUrl: string, requestId: string}>}
  */
-export async function generateImage({ prompt, aspectRatio }) {
+export async function generateImage({ prompt, aspectRatio, referenceImageUrls }) {
   if (!prompt) throw new Error('prompt required')
   if (!aspectRatio) throw new Error('aspectRatio required')
 
   const headers = getAuthHeaders()
 
-  console.log(`[Fal.ai] Submitting ${aspectRatio} image: "${prompt.slice(0, 60)}..."`)
+  // Resolve a reference image for conditioning (if provided)
+  const refImageUrl = await resolveReferenceImage(referenceImageUrls)
+  const refCount = referenceImageUrls?.length || 0
+
+  console.log(`[Fal.ai] Submitting ${aspectRatio} image (${refCount} refs): "${prompt.slice(0, 60)}..."`)
+
+  // Build request body — add image_url for reference conditioning
+  const body = {
+    prompt,
+    aspect_ratio: aspectRatio,
+    num_images: 1,
+    output_format: 'jpeg',
+    safety_tolerance: '2',
+    raw: false,
+  }
+
+  if (refImageUrl) {
+    body.image_url = refImageUrl
+    body.image_prompt_strength = 0.15 // subtle conditioning — enough to anchor product look
+  }
 
   // Submit to queue
   const submitRes = await fetch(`${FAL_BASE_URL}/${MODEL_ID}`, {
     method: 'POST',
     headers,
-    body: JSON.stringify({
-      prompt,
-      aspect_ratio: aspectRatio,
-      num_images: 1,
-      output_format: 'jpeg',
-      safety_tolerance: '2',
-      raw: false,
-    }),
+    body: JSON.stringify(body),
   })
 
   if (!submitRes.ok) {
