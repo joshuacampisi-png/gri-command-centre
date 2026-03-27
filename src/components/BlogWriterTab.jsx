@@ -118,10 +118,12 @@ function ImagePairRow({ label, pair, onRegenerate, regenerating }) {
   const variantChip = (variant) => {
     const s = pair[variant]
     const isRegen = regenerating === variant || regenerating === 'both'
+    const canRegen = s.status === 'done' || s.status === 'failed' || s.status === 'pending'
+    const isActive = s.status === 'generating' || s.status === 'reviewing'
     return (
       <span className="bw-img-variant">
         {variant}
-        {s.status === 'done' && s.url ? (
+        {s.status === 'done' && s.url && (
           <>
             {s.qaScore > 0 && (
               <span className={`bw-qa-score ${s.qaScore >= 8 ? 'high' : s.qaScore >= 6 ? 'mid' : 'low'}`}
@@ -130,24 +132,33 @@ function ImagePairRow({ label, pair, onRegenerate, regenerating }) {
               </span>
             )}
             <a href={s.url} target="_blank" rel="noreferrer" className="bw-img-view">view</a>
-            <button
-              className="bw-img-regen-btn"
-              onClick={() => onRegenerate(variant)}
-              disabled={isRegen}
-              title={`Regenerate ${variant}`}
-            >↻</button>
           </>
-        ) : (
+        )}
+        {(s.status === 'failed' || s.status === 'pending') && (
+          <span className="bw-img-status" style={{ color: DOT_COLORS[s.status] }}>
+            {s.status}
+          </span>
+        )}
+        {isActive && (
           <span className="bw-img-status" style={{ color: DOT_COLORS[s.status] }}>
             {s.status === 'reviewing' ? 'QA review' : s.status}
           </span>
+        )}
+        {canRegen && !isActive && (
+          <button
+            className="bw-img-regen-btn"
+            onClick={() => onRegenerate(variant)}
+            disabled={isRegen}
+            title={`Regenerate ${variant}`}
+          >↻</button>
         )}
       </span>
     )
   }
 
   const overall = getOverall()
-  const canRegenBoth = pair.desktop.status === 'done' && pair.mobile.status === 'done'
+  const canRegenBoth = (pair.desktop.status === 'done' || pair.desktop.status === 'failed') &&
+                        (pair.mobile.status === 'done' || pair.mobile.status === 'failed')
 
   const refCount = (pair.desktop.referenceImages?.length || 0)
 
@@ -199,7 +210,7 @@ function ImagePanel({ imagePairs, imageProgress, phase, onRegenerate, onRegenAll
             <div className="bw-images-progress-bar" style={{ width: `${pct}%` }} />
           </div>
         )}
-        {allDone && phase === 'complete' && (
+        {phase === 'complete' && (
           <button
             className="btn-outline bw-regen-all-btn"
             onClick={onRegenAll}
@@ -383,8 +394,8 @@ export default function BlogWriterTab() {
       .then(d => {
         if (!d.ok || !d.session || !d.session.phase) return
         const s = d.session
-        // Only restore if there's meaningful state (article exists or was writing)
-        if (s.phase === 'complete' || s.phase === 'generating-images') {
+        // Restore any meaningful state — article, images, or in-progress
+        if (s.phase === 'complete' || s.phase === 'generating-images' || s.phase === 'writing' || s.phase === 'researching') {
           if (s.keyword) setKeyword(s.keyword)
           if (s.articleType) setArticleType(s.articleType)
           if (s.article) setArticle(s.article)
@@ -394,8 +405,8 @@ export default function BlogWriterTab() {
           if (s.finalOutput) setFinalOutput(s.finalOutput)
           if (s.selectedImages) setSelectedImages(s.selectedImages)
           if (s.imagesApplied) setImagesApplied(s.imagesApplied)
-          // If images were still generating, show as complete with whatever was done
-          setPhase('complete')
+          // Restore as complete — if something was mid-generation, show what was done
+          setPhase(s.article ? 'complete' : 'idle')
         }
       })
       .catch(() => {})
@@ -646,6 +657,7 @@ export default function BlogWriterTab() {
 
       // STAGE 2: Write article with scraped context
       setPhase('writing')
+      saveSession({ phase: 'writing', keyword: keyword.trim(), articleType })
 
       const res = await fetch('/api/blog-writer/generate', {
         method: 'POST',
