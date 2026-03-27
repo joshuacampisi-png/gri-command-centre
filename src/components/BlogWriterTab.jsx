@@ -219,6 +219,85 @@ function ImagePanel({ imagePairs, imageProgress, phase, onRegenerate, onRegenAll
   )
 }
 
+// ── Image Selection Gallery ──────────────────────────────────
+// Shows generated images as visual thumbnails with checkboxes.
+// User selects which images to include, clicks Apply.
+
+function ImageSelectionGallery({ imagePairs, selectedImages, onToggle, onApply, onSelectAll, onDeselectAll }) {
+  const availablePlacements = PLACEMENTS.filter(p => imagePairs[p])
+  if (availablePlacements.length === 0) return null
+
+  const hasAnyDone = availablePlacements.some(p =>
+    imagePairs[p].desktop.status === 'done' || imagePairs[p].mobile.status === 'done'
+  )
+  if (!hasAnyDone) return null
+
+  const totalSelected = Object.values(selectedImages).filter(Boolean).length
+  const totalAvailable = availablePlacements.reduce((n, p) => {
+    if (imagePairs[p].desktop.status === 'done' && imagePairs[p].desktop.url) n++
+    if (imagePairs[p].mobile.status === 'done' && imagePairs[p].mobile.url) n++
+    return n
+  }, 0)
+
+  return (
+    <div className="bw-gallery">
+      <div className="bw-gallery-header">
+        <span className="bw-gallery-title">Select Images for Article</span>
+        <span className="bw-gallery-count">{totalSelected}/{totalAvailable} selected</span>
+        <div className="bw-gallery-actions">
+          <button className="btn-outline bw-gallery-btn" onClick={onSelectAll}>Select All</button>
+          <button className="btn-outline bw-gallery-btn" onClick={onDeselectAll}>Deselect All</button>
+          <button
+            className="btn-primary bw-gallery-apply"
+            onClick={onApply}
+            disabled={totalSelected === 0}
+          >
+            Apply {totalSelected > 0 ? `(${totalSelected})` : ''} Images
+          </button>
+        </div>
+      </div>
+      <div className="bw-gallery-grid">
+        {availablePlacements.map(placement => {
+          const pair = imagePairs[placement]
+          return ['desktop', 'mobile'].map(variant => {
+            const img = pair[variant]
+            if (img.status !== 'done' || !img.url) return null
+
+            const key = `${placement}-${variant}`
+            const isSelected = !!selectedImages[key]
+
+            return (
+              <div
+                key={key}
+                className={`bw-gallery-card ${isSelected ? 'selected' : ''}`}
+                onClick={() => onToggle(key)}
+              >
+                <div className="bw-gallery-checkbox">
+                  {isSelected ? '✓' : ''}
+                </div>
+                <img
+                  src={img.url}
+                  alt={pair.alt}
+                  className="bw-gallery-thumb"
+                />
+                <div className="bw-gallery-meta">
+                  <span className="bw-gallery-placement">{PLACEMENT_LABELS[placement]}</span>
+                  <span className="bw-gallery-variant">{variant}</span>
+                  {img.qaScore > 0 && (
+                    <span className={`bw-qa-score ${img.qaScore >= 8 ? 'high' : img.qaScore >= 6 ? 'mid' : 'low'}`}>
+                      {img.qaScore}/10
+                    </span>
+                  )}
+                </div>
+              </div>
+            )
+          })
+        })}
+      </div>
+    </div>
+  )
+}
+
 // ── Main component ────────────────────────────────────────────
 
 export default function BlogWriterTab() {
@@ -232,16 +311,21 @@ export default function BlogWriterTab() {
   const [history, setHistory] = useState([])
   const [copied, setCopied] = useState(false)
   const [hasFal, setHasFal] = useState(false)
+  const [deleting, setDeleting] = useState(null) // history id being deleted
 
   // Image pipeline state
   const [blocks, setBlocks] = useState([])
   const [imagePairs, setImagePairs] = useState({})
   const [imageProgress, setImageProgress] = useState({ done: 0, total: 0 })
   const [finalOutput, setFinalOutput] = useState('')
-  const [regeneratingMap, setRegeneratingMap] = useState({}) // { placement: 'desktop'|'mobile'|'both' }
+  const [regeneratingMap, setRegeneratingMap] = useState({})
   const [regenAllRunning, setRegenAllRunning] = useState(false)
 
-  // Load history + check Higgsfield config on mount
+  // Image selection state
+  const [selectedImages, setSelectedImages] = useState({}) // { 'hero-desktop': true, 'inline-1-mobile': true, ... }
+  const [imagesApplied, setImagesApplied] = useState(false)
+
+  // Load history + check Fal.ai config on mount
   useEffect(() => {
     fetch('/api/blog-writer/history')
       .then(r => r.json())
@@ -252,6 +336,20 @@ export default function BlogWriterTab() {
       .then(d => { if (d.ok) setHasFal(d.hasFal) })
       .catch(() => {})
   }, [])
+
+  // Auto-select all images when generation completes
+  useEffect(() => {
+    if (phase === 'complete' && Object.keys(imagePairs).length > 0) {
+      const sel = {}
+      for (const p of PLACEMENTS) {
+        if (!imagePairs[p]) continue
+        if (imagePairs[p].desktop.status === 'done' && imagePairs[p].desktop.url) sel[`${p}-desktop`] = true
+        if (imagePairs[p].mobile.status === 'done' && imagePairs[p].mobile.url) sel[`${p}-mobile`] = true
+      }
+      setSelectedImages(sel)
+      setImagesApplied(false)
+    }
+  }, [phase, imagePairs])
 
   const generateSingleImage = useCallback(async (prompt, aspectRatio) => {
     const res = await fetch('/api/blog-writer/generate-image', {
@@ -276,39 +374,58 @@ export default function BlogWriterTab() {
       if (!data.ok) return { score: 0, pass: true, issues: ['QA unavailable'] }
       return data.review
     } catch {
-      // If QA fails, don't block the pipeline — just pass
       return { score: 0, pass: true, issues: ['QA unavailable'] }
     }
   }, [])
 
-  // Generate with QA loop: generate → review → auto-regen if score < 6 (max 2 attempts)
-  const generateWithQA = useCallback(async (prompt, aspectRatio, placement, alt, maxAttempts = 2) => {
-    let currentPrompt = prompt
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      const imageUrl = await generateSingleImage(currentPrompt, aspectRatio)
+  // Image selection handlers
+  const handleToggleImage = useCallback((key) => {
+    setSelectedImages(prev => ({ ...prev, [key]: !prev[key] }))
+    setImagesApplied(false)
+  }, [])
 
-      // Review with Claude vision
-      const review = await reviewImage(imageUrl, currentPrompt, placement, alt)
+  const handleSelectAll = useCallback(() => {
+    const sel = {}
+    for (const p of PLACEMENTS) {
+      if (!imagePairs[p]) continue
+      if (imagePairs[p].desktop.status === 'done' && imagePairs[p].desktop.url) sel[`${p}-desktop`] = true
+      if (imagePairs[p].mobile.status === 'done' && imagePairs[p].mobile.url) sel[`${p}-mobile`] = true
+    }
+    setSelectedImages(sel)
+    setImagesApplied(false)
+  }, [imagePairs])
 
-      if (review.pass || attempt === maxAttempts - 1) {
-        // Accept the image (passed QA or final attempt)
-        return { imageUrl, review }
-      }
+  const handleDeselectAll = useCallback(() => {
+    setSelectedImages({})
+    setImagesApplied(false)
+  }, [])
 
-      // Failed QA — use refined prompt if available
-      console.log(`[ImageQA] ${placement} scored ${review.score}/10, regenerating with refined prompt`)
-      if (review.refinedPrompt) {
-        currentPrompt = review.refinedPrompt
+  // Apply selected images: rebuild final output with only selected images
+  const handleApplyImages = useCallback(() => {
+    // Build a filtered version of imagePairs where unselected images have no URL
+    const filteredPairs = {}
+    for (const p of PLACEMENTS) {
+      if (!imagePairs[p]) continue
+      filteredPairs[p] = {
+        ...imagePairs[p],
+        desktop: {
+          ...imagePairs[p].desktop,
+          url: selectedImages[`${p}-desktop`] ? imagePairs[p].desktop.url : undefined,
+        },
+        mobile: {
+          ...imagePairs[p].mobile,
+          url: selectedImages[`${p}-mobile`] ? imagePairs[p].mobile.url : undefined,
+        },
       }
     }
-    // Shouldn't reach here, but safety fallback
-    const imageUrl = await generateSingleImage(currentPrompt, aspectRatio)
-    return { imageUrl, review: { score: 0, pass: true, issues: [] } }
-  }, [generateSingleImage, reviewImage])
+
+    const output = assembleFinalOutput(blocks, filteredPairs)
+    setFinalOutput(output)
+    setImagesApplied(true)
+  }, [imagePairs, selectedImages, blocks])
 
   // Regenerate a single image variant (or both) for a placement
   const handleRegenImage = useCallback(async (placement, variant) => {
-    // variant: 'desktop' | 'mobile' | 'both'
     const variants = variant === 'both' ? ['desktop', 'mobile'] : [variant]
     setRegeneratingMap(prev => ({ ...prev, [placement]: variant }))
 
@@ -340,6 +457,8 @@ export default function BlogWriterTab() {
       delete next[placement]
       return next
     })
+
+    setImagesApplied(false)
 
     // Reassemble final output with updated pairs
     setImagePairs(latest => {
@@ -386,6 +505,8 @@ export default function BlogWriterTab() {
       }
     }
 
+    setImagesApplied(false)
+
     // Reassemble final output
     setImagePairs(latest => {
       const output = assembleFinalOutput(blocks, latest)
@@ -408,6 +529,8 @@ export default function BlogWriterTab() {
     setFinalOutput('')
     setCopied(false)
     setImageProgress({ done: 0, total: 0 })
+    setSelectedImages({})
+    setImagesApplied(false)
 
     try {
       // STEP 1: Generate blog article via Claude (with IMAGE tags)
@@ -431,7 +554,6 @@ export default function BlogWriterTab() {
       // If no Fal.ai config or no image tags found, skip image generation
       if (!hasFal || totalImages === 0) {
         setPhase('complete')
-        // Refresh history
         const hRes = await fetch('/api/blog-writer/history')
         const hData = await hRes.json()
         if (hData.ok) setHistory(hData.history || [])
@@ -450,7 +572,6 @@ export default function BlogWriterTab() {
         const pair = parsedPairs[placement]
 
         for (const variant of ['desktop', 'mobile']) {
-          // Set status: generating
           setImagePairs(prev => ({
             ...prev,
             [placement]: { ...prev[placement], [variant]: { ...prev[placement][variant], status: 'generating' } },
@@ -511,7 +632,7 @@ export default function BlogWriterTab() {
         }
       }
 
-      // STEP 4: Assemble final output with <picture> tags
+      // STEP 4: Assemble final output with <picture> tags (all images included by default)
       const output = assembleFinalOutput(parsedBlocks, finalPairs)
       setFinalOutput(output)
       setPhase('complete')
@@ -525,7 +646,7 @@ export default function BlogWriterTab() {
       setError(err.message)
       setPhase('error')
     }
-  }, [keyword, articleType, phase, hasFal, generateSingleImage])
+  }, [keyword, articleType, phase, hasFal, generateSingleImage, reviewImage])
 
   const handlePublish = useCallback(async () => {
     if (!article) return
@@ -534,7 +655,6 @@ export default function BlogWriterTab() {
     setSuccessMsg('')
 
     try {
-      // If we have final output with images, use that as body_html
       const publishArticle = finalOutput
         ? { ...article, body_html: finalOutput }
         : article
@@ -567,6 +687,48 @@ export default function BlogWriterTab() {
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }, [article, finalOutput])
+
+  // Delete a blog from history
+  const handleDelete = useCallback(async (id) => {
+    if (!confirm('Delete this article from history?')) return
+    setDeleting(id)
+    try {
+      const res = await fetch(`/api/blog-writer/history/${id}`, { method: 'DELETE' })
+      const data = await res.json()
+      if (data.ok) {
+        setHistory(prev => prev.filter(h => h.id !== id))
+      }
+    } catch (err) {
+      console.error('Delete failed:', err)
+    } finally {
+      setDeleting(null)
+    }
+  }, [])
+
+  // Regenerate article from a history keyword
+  const handleRegenFromHistory = useCallback((kw, type) => {
+    setKeyword(kw)
+    setArticleType(type || 'informational')
+    // Will trigger generate on next render cycle via the user clicking Generate
+    // or we can auto-trigger
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [])
+
+  // Reset everything for a new article
+  const handleReset = useCallback(() => {
+    setKeyword('')
+    setPhase('idle')
+    setError('')
+    setSuccessMsg('')
+    setArticle(null)
+    setBlocks([])
+    setImagePairs({})
+    setFinalOutput('')
+    setCopied(false)
+    setImageProgress({ done: 0, total: 0 })
+    setSelectedImages({})
+    setImagesApplied(false)
+  }, [])
 
   const isRunning = phase === 'writing' || phase === 'generating-images'
 
@@ -639,7 +801,7 @@ export default function BlogWriterTab() {
         </div>
       )}
 
-      {/* Image generation panel */}
+      {/* Image generation panel (status rows) */}
       {(phase === 'generating-images' || phase === 'complete') && Object.keys(imagePairs).length > 0 && (
         <ImagePanel
           imagePairs={imagePairs}
@@ -652,12 +814,34 @@ export default function BlogWriterTab() {
         />
       )}
 
+      {/* Image selection gallery — visual thumbnails with checkboxes */}
+      {phase === 'complete' && Object.keys(imagePairs).length > 0 && (
+        <ImageSelectionGallery
+          imagePairs={imagePairs}
+          selectedImages={selectedImages}
+          onToggle={handleToggleImage}
+          onApply={handleApplyImages}
+          onSelectAll={handleSelectAll}
+          onDeselectAll={handleDeselectAll}
+        />
+      )}
+
+      {/* Applied confirmation */}
+      {imagesApplied && (
+        <div className="bw-success">
+          ✅ Selected images applied to article. Ready to publish or copy.
+        </div>
+      )}
+
       {/* Article preview (after writing complete) */}
       {article && (phase === 'complete' || phase === 'generating-images') && (
         <div className="bw-article-section">
           <div className="bw-article-header">
             <h3>Generated Article</h3>
             <div className="bw-article-actions">
+              <button className="btn-outline bw-delete-btn" onClick={handleReset} disabled={isRunning}>
+                🗑 Discard
+              </button>
               <button className="btn-outline" onClick={handleCopy} disabled={isRunning}>
                 {copied ? '✅ Copied!' : finalOutput ? '📋 Copy HTML + Images' : '📋 Copy HTML'}
               </button>
@@ -717,6 +901,7 @@ export default function BlogWriterTab() {
               <span className="bw-h-col-seo">SEO</span>
               <span className="bw-h-col-status">Status</span>
               <span className="bw-h-col-date">Date</span>
+              <span className="bw-h-col-actions">Actions</span>
             </div>
             {history.slice(0, 20).map(h => (
               <div key={h.id} className="bw-history-row">
@@ -736,6 +921,19 @@ export default function BlogWriterTab() {
                 </span>
                 <span className="bw-h-col-date">
                   {h.generatedAt ? new Date(h.generatedAt).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) : ''}
+                </span>
+                <span className="bw-h-col-actions">
+                  <button
+                    className="bw-h-action-btn bw-h-regen"
+                    onClick={() => handleRegenFromHistory(h.keyword, h.articleType)}
+                    title="Regenerate this keyword"
+                  >🔄</button>
+                  <button
+                    className="bw-h-action-btn bw-h-delete"
+                    onClick={() => handleDelete(h.id)}
+                    disabled={deleting === h.id}
+                    title="Delete from history"
+                  >{deleting === h.id ? '…' : '🗑'}</button>
                 </span>
               </div>
             ))}

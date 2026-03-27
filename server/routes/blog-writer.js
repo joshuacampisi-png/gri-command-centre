@@ -258,4 +258,18 @@ router.get('/history', (_req, res) => {
   res.json({ ok: true, history })
 })
 
+// DELETE /api/blog-writer/history/:id
+router.delete('/history/:id', (req, res) => {
+  const { id } = req.params
+  const history = loadHistory()
+  const idx = history.findIndex(h => h.id === id)
+  if (idx === -1) {
+    return res.status(404).json({ ok: false, error: 'Article not found in history' })
+  }
+  const removed = history.splice(idx, 1)[0]
+  saveHistory(history)
+  console.log(`[BlogWriterRoute] Deleted from history: "${removed.title}"`)
+  return res.json({ ok: true, deleted: removed.id })
+})
+
 export default router
