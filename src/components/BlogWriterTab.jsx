@@ -879,6 +879,86 @@ export default function BlogWriterTab() {
     clearSession()
   }, [clearSession])
 
+  // Regenerate only images (keep the article)
+  const handleRegenImagesOnly = useCallback(async () => {
+    if (!article || !blocks.length) return
+    const parsedPairs = {}
+    // Re-parse from article to get fresh prompts
+    const { imagePairs: freshPairs } = parseBlogContent(article.body_html || '')
+    const pairsToUse = Object.keys(freshPairs).length > 0 ? freshPairs : imagePairs
+
+    const availablePlacements = PLACEMENTS.filter(p => pairsToUse[p])
+    const totalImages = availablePlacements.length * 2
+
+    // Reset all images to pending
+    const resetPairs = {}
+    for (const p of availablePlacements) {
+      resetPairs[p] = {
+        ...pairsToUse[p],
+        desktop: { ...pairsToUse[p].desktop, url: undefined, status: 'pending', qaScore: undefined, qaIssues: undefined },
+        mobile: { ...pairsToUse[p].mobile, url: undefined, status: 'pending', qaScore: undefined, qaIssues: undefined },
+      }
+    }
+    setImagePairs(resetPairs)
+    setImageProgress({ done: 0, total: totalImages })
+    setPhase('generating-images')
+    setSelectedImages({})
+    setImagesApplied(false)
+
+    let doneCount = 0
+    const finalPairs = { ...resetPairs }
+
+    for (const placement of availablePlacements) {
+      const pair = pairsToUse[placement]
+
+      for (const variant of ['desktop', 'mobile']) {
+        setImagePairs(prev => ({
+          ...prev,
+          [placement]: { ...prev[placement], [variant]: { ...prev[placement][variant], status: 'generating' } },
+        }))
+
+        try {
+          const url = await generateSingleImage(pair[variant].prompt, pair[variant].aspectRatio, pair[variant].referenceImages)
+
+          // Vision QA
+          setImagePairs(prev => ({
+            ...prev,
+            [placement]: { ...prev[placement], [variant]: { ...prev[placement][variant], url, status: 'reviewing' } },
+          }))
+
+          const review = await reviewImage(url, pair[variant].prompt, placement, pair.alt)
+
+          finalPairs[placement] = {
+            ...finalPairs[placement],
+            [variant]: { ...finalPairs[placement][variant], url, status: 'done', qaScore: review.score, qaIssues: review.issues },
+          }
+          setImagePairs(prev => ({
+            ...prev,
+            [placement]: { ...prev[placement], [variant]: { ...prev[placement][variant], url, status: 'done', qaScore: review.score, qaIssues: review.issues } },
+          }))
+        } catch (e) {
+          finalPairs[placement] = {
+            ...finalPairs[placement],
+            [variant]: { ...finalPairs[placement][variant], status: 'failed' },
+          }
+          setImagePairs(prev => ({
+            ...prev,
+            [placement]: { ...prev[placement], [variant]: { ...prev[placement][variant], status: 'failed' } },
+          }))
+        }
+
+        doneCount++
+        setImageProgress({ done: doneCount, total: totalImages })
+        saveSession({ phase: 'generating-images', keyword, articleType, article, blocks, imagePairs: finalPairs, imageProgress: { done: doneCount, total: totalImages } })
+      }
+    }
+
+    const output = assembleFinalOutput(blocks, finalPairs)
+    setFinalOutput(output)
+    setPhase('complete')
+    saveSession({ phase: 'complete', finalOutput: output, imagePairs: finalPairs, blocks })
+  }, [article, blocks, imagePairs, keyword, articleType, generateSingleImage, reviewImage, saveSession])
+
   const isRunning = phase === 'researching' || phase === 'writing' || phase === 'generating-images'
 
   return (
@@ -1019,14 +1099,17 @@ export default function BlogWriterTab() {
           <div className="bw-article-header">
             <h3>Generated Article</h3>
             <div className="bw-article-actions">
-              <button className="btn-outline bw-delete-btn" onClick={handleReset} disabled={isRunning}>
+              <button className="btn-outline bw-delete-btn" onClick={handleReset}>
                 🗑 Discard
               </button>
               <button className="btn-outline" onClick={handleCopy} disabled={isRunning}>
                 {copied ? '✅ Copied!' : finalOutput ? '📋 Copy HTML + Images' : '📋 Copy HTML'}
               </button>
+              <button className="btn-outline" onClick={handleRegenImagesOnly} disabled={isRunning}>
+                🖼 Regenerate Images Only
+              </button>
               <button className="btn-outline" onClick={handleGenerate} disabled={isRunning}>
-                🔄 Regenerate
+                🔄 Regenerate All
               </button>
               <button className="btn-primary" onClick={handlePublish} disabled={publishing || isRunning}>
                 {publishing ? '⏳ Publishing…' : '🚀 Publish to Shopify'}
