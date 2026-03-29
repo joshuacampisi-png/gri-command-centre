@@ -1978,3 +1978,109 @@ button:hover { opacity: .88; }
   .bw-gallery-header { flex-direction: column; align-items: flex-start; }
   .bw-gallery-actions { margin-left: 0; }
 }
+
+/* ── Ads Performance Tab ────────────────────────────────────────────────── */
+
+.ads-page { max-width: 1400px; }
+
+.ads-date-pills { display: flex; gap: 8px; margin-bottom: 20px; }
+.ads-pill { padding: 6px 16px; border-radius: 20px; border: 1px solid #E8ECF4; background: white; color: #7C8DB0; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+.ads-pill:hover { border-color: #E43F7B; color: #E43F7B; }
+.ads-pill-active { background: linear-gradient(135deg, #E43F7B, #d1356b); color: white; border-color: transparent; }
+
+/* KPI Cards */
+.ads-kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+.ads-kpi-card { background: white; border: 1px solid #E8ECF4; border-radius: 14px; padding: 20px; }
+.ads-kpi-label { font-size: 11px; font-weight: 700; letter-spacing: 0.5px; color: #7C8DB0; text-transform: uppercase; margin-bottom: 6px; }
+.ads-kpi-value { font-size: 28px; font-weight: 800; line-height: 1.1; }
+.ads-kpi-delta { font-size: 12px; margin-top: 6px; font-weight: 600; }
+.ads-delta-good { color: #3fb950; }
+.ads-delta-bad { color: #f85149; }
+
+/* Health Summary Bar */
+.ads-health-bar { display: flex; gap: 20px; align-items: center; padding: 12px 16px; background: white; border: 1px solid #E8ECF4; border-radius: 10px; margin-bottom: 20px; }
+.ads-health-item { font-size: 13px; font-weight: 600; }
+
+/* Tables */
+.ads-section { margin-bottom: 24px; }
+.ads-section-title { font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 12px; }
+.ads-table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid #E8ECF4; background: white; }
+.ads-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ads-table th { text-align: left; padding: 10px 12px; font-size: 11px; font-weight: 700; color: #7C8DB0; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 1px solid #E8ECF4; background: #FAFBFE; white-space: nowrap; }
+.ads-table td { padding: 10px 12px; border-bottom: 1px solid #F0F2F8; white-space: nowrap; }
+.ads-campaign-row { cursor: pointer; transition: background 0.1s; }
+.ads-campaign-row:hover { background: #F8F9FC; }
+.ads-row-expanded { background: #F0F2F8; }
+.ads-name-cell { font-weight: 600; color: #1a1a2e; }
+.ads-expand-icon { margin-right: 8px; font-size: 10px; color: #7C8DB0; }
+
+/* Status badges */
+.ads-status-badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+.ads-status-active { background: #3fb95018; color: #3fb950; }
+.ads-status-paused { background: #f8514918; color: #f85149; }
+.ads-status-archived { background: #7C8DB018; color: #7C8DB0; }
+
+/* Fatigue badge */
+.ads-fatigue-badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; border: 1px solid; }
+
+/* Health score */
+.ads-health-score { font-weight: 800; font-size: 15px; }
+
+/* Action buttons */
+.ads-actions { display: flex; gap: 4px; }
+.ads-btn-sm { padding: 4px 8px; border-radius: 6px; border: 1px solid #E8ECF4; background: white; font-size: 12px; cursor: pointer; transition: all 0.1s; }
+.ads-btn-sm:hover { background: #F8F9FC; border-color: #d1356b; }
+.ads-btn-pause:hover { background: #f8514910; border-color: #f85149; }
+.ads-btn-ai { background: #7C3AED10; border-color: #7C3AED44; }
+.ads-btn-ai:hover { background: #7C3AED22; }
+
+/* Ad expand table */
+.ads-ad-expand-row { background: #FAFBFE; }
+.ads-ad-table-wrap { padding: 8px 16px 16px; }
+.ads-ad-table { font-size: 12px; }
+.ads-ad-table th { background: #F0F2F8; }
+.ads-ad-row:hover { background: #F0F2F8; }
+.ads-thumb { width: 48px; height: 48px; border-radius: 6px; object-fit: cover; }
+
+/* AI Recommendation Panel */
+.ads-rec-row { background: #F8F0FF; }
+.ads-rec-panel { padding: 16px 20px; }
+.ads-rec-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-weight: 700; color: #7C3AED; }
+.ads-rec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.ads-rec-item { background: white; padding: 12px; border-radius: 8px; border: 1px solid #E8ECF4; }
+.ads-rec-item strong { display: block; font-size: 11px; text-transform: uppercase; color: #7C8DB0; letter-spacing: 0.3px; margin-bottom: 4px; }
+.ads-rec-item p { margin: 4px 0; font-size: 13px; color: #1a1a2e; line-height: 1.4; }
+
+/* Charts */
+.ads-charts { margin-top: 8px; }
+.ads-charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.ads-chart-card { background: white; border: 1px solid #E8ECF4; border-radius: 14px; padding: 20px; }
+.ads-chart-card h4 { font-size: 13px; font-weight: 700; color: #1a1a2e; margin-bottom: 12px; }
+.ads-chart-tooltip { background: white; border: 1px solid #E8ECF4; border-radius: 8px; padding: 8px 12px; font-size: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.ads-chart-tooltip strong { display: block; margin-bottom: 4px; }
+
+/* Empty / Error / Loading states */
+.ads-empty { color: #7C8DB0; text-align: center; padding: 24px; font-size: 13px; }
+.ads-error { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #f8514910; border: 1px solid #f8514933; border-radius: 10px; margin-bottom: 16px; color: #f85149; font-size: 13px; font-weight: 500; }
+.ads-loading { color: #7C3AED; font-weight: 600; text-align: center; padding: 24px; }
+.ads-loading-wrap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+.ads-skeleton { height: 100px; background: linear-gradient(90deg, #F0F2F8 25%, #E8ECF4 50%, #F0F2F8 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 14px; }
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+.ads-empty-state { text-align: center; padding: 60px 20px; background: white; border: 1px solid #E8ECF4; border-radius: 14px; }
+.ads-empty-icon { font-size: 48px; margin-bottom: 12px; }
+.ads-empty-state h3 { font-size: 18px; color: #1a1a2e; margin-bottom: 8px; }
+.ads-empty-state p { color: #7C8DB0; font-size: 14px; margin-bottom: 16px; }
+.ads-env-block { display: block; text-align: left; max-width: 400px; margin: 0 auto; padding: 12px 16px; background: #F8F9FC; border: 1px solid #E8ECF4; border-radius: 8px; font-size: 12px; white-space: pre-line; color: #1a1a2e; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .ads-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .ads-charts-grid { grid-template-columns: 1fr; }
+  .ads-rec-grid { grid-template-columns: 1fr; }
+  .ads-health-bar { flex-wrap: wrap; gap: 10px; }
+}
+@media (max-width: 600px) {
+  .ads-kpi-grid { grid-template-columns: 1fr; }
+  .ads-date-pills { flex-wrap: wrap; }
+}

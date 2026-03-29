@@ -17,6 +17,7 @@ import hiresRoutes from './routes/hires.js'
 import returnsRoutes from './routes/returns.js'
 import contractRoutes from './routes/contract.js'
 import blogWriterRoutes from './routes/blog-writer.js'
+import adsRoutes from './routes/ads.js'
 import shopifyWebhookRoutes from './routes/shopify-webhook.js'
 import squareWebhookRoutes from './routes/square-webhook.js'
 import { env } from './lib/env.js'
@@ -29,6 +30,7 @@ import { startMorningBrief, sendMorningBrief } from './lib/morning-brief.js'
 import { startSEOLearningCrons } from './lib/seo-learning-cron.js'
 import { scheduleCompetitorIntelCron } from './lib/competitor-intel-cron.js'
 import { startTrendsScheduler } from './lib/trends-scheduler.js'
+import { startAdsSnapshotCron } from './lib/ads-snapshot-cron.js'
 import { startKeywordScheduler } from './lib/keyword-tracker.js'
 import { getUsageSummary } from './lib/claude-guard.js'
 
@@ -144,6 +146,7 @@ app.use('/api/hires', hiresRoutes)
 app.use('/api/returns', returnsRoutes)
 app.use('/api/contract', contractRoutes)
 app.use('/api/blog-writer', blogWriterRoutes)
+app.use('/api/ads', adsRoutes)
 app.use('/api/shopify/webhook', shopifyWebhookRoutes)
 app.use('/api/square/webhook', squareWebhookRoutes)
 
@@ -303,6 +306,7 @@ app.listen(env.port, '0.0.0.0', () => {
   scheduleCompetitorIntelCron()
   startKeywordScheduler()
   startTrendsScheduler()
+  startAdsSnapshotCron()
 
   console.log('✅ Full autonomous mode: ACTIVE')
   console.log('☀️  Morning brief: ACTIVE (5am AEST)')
@@ -310,5 +314,6 @@ app.listen(env.port, '0.0.0.0', () => {
   console.log('🔍 Competitor tracking: ACTIVE (Weekly Mon 4am)')
   console.log('📊 Keyword tracking: ACTIVE (Daily 6am)')
   console.log('📈 Google Trends: ACTIVE (Daily 3am)')
+  console.log('📊 Meta Ads report: ACTIVE (Daily 8am AEST)')
   console.log('🔒 Crash recovery: ACTIVE')
 })

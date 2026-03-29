@@ -11,6 +11,12 @@ const LOG_PATH = '/tmp/centralhubworkbot.log'
 let offset = 0
 let running = false
 
+// Allowed users (Josh + Beatriz)
+const ALLOWED_USER_IDS = [
+  8040702286,  // Josh
+  5113119463   // Beatriz
+]
+
 async function logEvent(event, data = {}) {
   const line = JSON.stringify({ ts: new Date().toISOString(), event, ...data }) + '\n'
   try {
@@ -114,6 +120,18 @@ async function handleMessage(message) {
     text,
     matched
   })
+
+  // Check user allowlist
+  const userId = message.from?.id
+  if (!ALLOWED_USER_IDS.includes(userId)) {
+    await logEvent('user_not_allowed', {
+      userId,
+      username: message.from?.username,
+      chatId: message.chat?.id
+    })
+    await sendFailure(message.chat.id, message.message_id, 'Sorry, you are not authorized to use this bot.')
+    return
+  }
 
   // Handle approval commands
   if (text.startsWith('/approve ') || text.startsWith('/reject ') || text.startsWith('/defer ')) {

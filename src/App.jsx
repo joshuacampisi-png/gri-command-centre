@@ -10,8 +10,9 @@ import TNTDashboard from './components/TNTDashboard'
 import ReturnsTab from './components/ReturnsTab'
 import ContentCalendarTab from './components/ContentCalendarTab'
 import BlogWriterTab from './components/BlogWriterTab'
+import AdsPerformanceTab from './components/AdsPerformanceTab'
 
-const NAV = ['Overview', 'Tasks', 'Completed', 'Keywords', 'Competitors', 'Trends', 'Blog Writer', 'Ads Testing', 'TNT Hire', 'Returns']
+const NAV = ['Overview', 'Tasks', 'Completed', 'Keywords', 'Competitors', 'Trends', 'Blog Writer', 'Ads Testing', 'Ads Performance', 'TNT Hire', 'Returns']
 
 const COMPANIES = {
   GRI:     { name: 'Gender Reveal Ideas', description: 'Gender reveal party supplies',          accent: '#ef4444' },
@@ -2662,7 +2663,7 @@ export default function App() {
   const integ   = data?.integrations || {}
   const profile = COMPANIES[company] || COMPANIES.GRI
 
-  const navIcons = { Overview:'◉', Tasks:'☑', Completed:'✅', Keywords:'📈', Competitors:'⚔', Trends:'📊', 'Blog Writer':'✍', 'Ads Testing':'📅', 'TNT Hire':'💥', Returns:'↩', Themes:'◈', 'Theme Editor':'✏', Settings:'⚙' }
+  const navIcons = { Overview:'◉', Tasks:'☑', Completed:'✅', Keywords:'📈', Competitors:'⚔', Trends:'📊', 'Blog Writer':'✍', 'Ads Testing':'📅', 'Ads Performance':'📊', 'TNT Hire':'💥', Returns:'↩', Themes:'◈', 'Theme Editor':'✏', Settings:'⚙' }
 
   const goEditor = theme => { setEditorTheme(theme); setActive('Theme Editor') }
 
@@ -2712,6 +2713,7 @@ export default function App() {
             {active==='Trends'       && <TrendsIntelligencePage />}
             {active==='Blog Writer' && <BlogWriterTab />}
             {active==='Ads Testing' && <ContentCalendarTab />}
+            {active==='Ads Performance' && <AdsPerformanceTab />}
             {active==='TNT Hire'    && <TNTDashboard />}
             {active==='Returns'     && <ReturnsTab />}
             {active==='Themes'       && <ThemesPage      data={data} onOpenEditor={goEditor} />}

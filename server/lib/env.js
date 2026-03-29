@@ -50,6 +50,11 @@ export const env = {
     liveThemeId: process.env.SHOPIFY_LIVE_THEME_ID || '',
     previewThemeId: process.env.SHOPIFY_PREVIEW_THEME_ID || '',
   },
+  meta: {
+    accessToken: process.env.META_ACCESS_TOKEN || '',
+    adAccountId: process.env.META_AD_ACCOUNT_ID || '',
+    griCampaignIds: process.env.META_GRI_CAMPAIGN_IDS || '',
+  },
   anthropicApiKey: process.env.ANTHROPIC_API_KEY || '',
   dataForSEO: {
     email: process.env.DATAFORSEO_EMAIL || '',
@@ -72,6 +77,7 @@ export function integrationStatus() {
     openclaw: Boolean(env.openclaw.gatewayUrl),
     shopify: Boolean(env.shopify.storeDomain && env.shopify.adminAccessToken),
     anthropic: Boolean(env.anthropicApiKey),
+    meta: Boolean(env.meta.accessToken && env.meta.adAccountId),
     googleSearchConsole: Boolean(env.googleSearchConsole.credentials || env.googleSearchConsole.credentialsPath),
   }
 }
