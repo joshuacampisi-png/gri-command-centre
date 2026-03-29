@@ -32,6 +32,7 @@ import { scheduleCompetitorIntelCron } from './lib/competitor-intel-cron.js'
 import { startTrendsScheduler } from './lib/trends-scheduler.js'
 import { startAdsSnapshotCron } from './lib/ads-snapshot-cron.js'
 import { startRevenueBaselineCron } from './lib/revenue-cron.js'
+import { seedBaselineIfNeeded } from './lib/daily-revenue.js'
 import { startKeywordScheduler } from './lib/keyword-tracker.js'
 import { getUsageSummary } from './lib/claude-guard.js'
 
@@ -309,6 +310,7 @@ app.listen(env.port, '0.0.0.0', () => {
   startKeywordScheduler()
   startTrendsScheduler()
   startAdsSnapshotCron()
+  seedBaselineIfNeeded()
   startRevenueBaselineCron()
 
   console.log('✅ Full autonomous mode: ACTIVE')

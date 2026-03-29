@@ -74,6 +74,26 @@ export async function rollBaselineForward() {
   return { rolled: false, reason: 'API error' }
 }
 
+/**
+ * Seed baseline on first boot if file doesn't exist.
+ * Covers Jan 1-28 2026 orders outside the 60-day API window.
+ */
+export function seedBaselineIfNeeded() {
+  if (fs.existsSync(BASELINE_FILE)) return false
+  const seed = {
+    "2026": {
+      revenue: 46180.62,
+      orders: 431,
+      shipping: 0,
+      through: "2026-01-28",
+      note: "Orders Jan 1-28 outside Shopify 60-day API window"
+    }
+  }
+  fs.writeFileSync(BASELINE_FILE, JSON.stringify(seed, null, 2))
+  console.log('[Revenue] Seeded ytd-baseline.json with 2026 baseline ($46,180.62, 431 orders)')
+  return true
+}
+
 function nextDateStr(dateStr) {
   const d = new Date(dateStr + 'T12:00:00Z')
   d.setDate(d.getDate() + 1)

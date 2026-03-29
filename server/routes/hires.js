@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { getAll, getById, create, update } from '../lib/hire-store.js';
+import { getAll, getById, create, update, clearAll } from '../lib/hire-store.js';
 import { createBondPaymentLink, refundBondPayment } from '../lib/square-client.js';
 import { sendHireEmail } from '../lib/hire-mailer.js';
 import { notifyTNTEvent } from '../lib/tnt-telegram.js';
@@ -51,6 +51,12 @@ router.get('/health', (_req, res) => {
 // GET /api/hires — list all hires
 router.get('/', (req, res) => {
   res.json({ hires: getAll() });
+});
+
+// DELETE /api/hires — clear all hires
+router.delete('/', (_req, res) => {
+  clearAll();
+  res.json({ ok: true, message: 'All hires cleared' });
 });
 
 // GET /api/hires/:id — single hire

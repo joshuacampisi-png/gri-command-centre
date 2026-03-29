@@ -57,6 +57,10 @@ export function create(hire) {
   return record;
 }
 
+export function clearAll() {
+  writeHires([]);
+}
+
 export function update(id, changes) {
   const hires = readHires();
   const idx = hires.findIndex(h => h.id === id);
