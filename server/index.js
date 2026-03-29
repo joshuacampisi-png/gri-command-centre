@@ -31,6 +31,7 @@ import { startSEOLearningCrons } from './lib/seo-learning-cron.js'
 import { scheduleCompetitorIntelCron } from './lib/competitor-intel-cron.js'
 import { startTrendsScheduler } from './lib/trends-scheduler.js'
 import { startAdsSnapshotCron } from './lib/ads-snapshot-cron.js'
+import { startRevenueBaselineCron } from './lib/revenue-cron.js'
 import { startKeywordScheduler } from './lib/keyword-tracker.js'
 import { getUsageSummary } from './lib/claude-guard.js'
 
@@ -292,7 +293,8 @@ app.listen(env.port, '0.0.0.0', () => {
   console.log(`   Company:   GRI only (Lionzen/GBU paused)`)
   console.log(`   Schedule:  SEO crawl @ 2am AEST | Morning brief @ 5am AEST\n`)
 
-  startTelegramPollingBot() // Task intake bot (separate from Pablo)
+  // DISABLED: Conflicts with OpenClaw Gateway Telegram polling (409 Conflict)
+  // startTelegramPollingBot() // Task intake bot (separate from Pablo)
   startNotionPoller()
   // Flywheel: ENABLED with deduplication (checks Rejected status too)
   startFlywheel()
@@ -307,6 +309,7 @@ app.listen(env.port, '0.0.0.0', () => {
   startKeywordScheduler()
   startTrendsScheduler()
   startAdsSnapshotCron()
+  startRevenueBaselineCron()
 
   console.log('✅ Full autonomous mode: ACTIVE')
   console.log('☀️  Morning brief: ACTIVE (5am AEST)')

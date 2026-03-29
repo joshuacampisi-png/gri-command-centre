@@ -225,13 +225,29 @@ router.get('/shopify/year-stats', async (_req, res) => {
     const now = new Date()
     const aestNow = new Date(now.getTime() + (10 * 60 * 60 * 1000))
     const aestDate = aestNow.toISOString().slice(0, 10)
-    const yearStart = aestDate.slice(0, 5) + '01-01'
-    const data = await getShopifyOrdersRange(yearStart, aestDate)
+    const year = aestDate.slice(0, 4)
+    const yearStart = year + '-01-01'
+
+    // Fetch what the API can reach (last ~60 days)
+    const apiData = await getShopifyOrdersRange(yearStart, aestDate)
+
+    // Add baseline for orders outside the 60-day API window
+    const { loadBaseline } = await import('../lib/daily-revenue.js')
+    const baseline = loadBaseline(year)
+
     res.json({
       ok: true,
-      ...data,
+      revenue: Math.round(((apiData.revenue || 0) + (baseline.revenue || 0)) * 100) / 100,
+      productRevenue: apiData.productRevenue || 0,
+      shipping: Math.round(((apiData.shipping || 0) + (baseline.shipping || 0)) * 100) / 100,
+      orders: (apiData.orders || 0) + (baseline.orders || 0),
+      protectionCount: apiData.protectionCount || 0,
+      protectionRevenue: apiData.protectionRevenue || 0,
+      from: yearStart,
+      to: aestDate,
       yearStart,
       today: aestDate,
+      baselineThrough: baseline.through || null,
     })
   } catch (e) {
     res.json({ ok: false, error: e.message })

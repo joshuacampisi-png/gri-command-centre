@@ -2,8 +2,10 @@ import { env } from '../lib/env.js'
 import { getShopifyClientCredentialsToken } from '../lib/shopify-client-credentials.js'
 import { loadShopifyOAuthState } from '../lib/shopify-oauth-store.js'
 
+const SHOPIFY_API_VERSION = '2025-01'
+
 function adminUrl(path = '') {
-  return `https://${env.shopify.storeDomain}/admin/api/2026-01${path}`
+  return `https://${env.shopify.storeDomain}/admin/api/${SHOPIFY_API_VERSION}${path}`
 }
 
 async function effectiveAdminToken() {
@@ -40,6 +42,26 @@ export async function shopifyFetch(path, options = {}) {
     throw new Error(data?.errors ? JSON.stringify(data.errors) : `Shopify API error ${response.status}`)
   }
   return data
+}
+
+async function shopifyFetchWithHeaders(pathOrUrl, options = {}) {
+  const token = await effectiveAdminToken()
+  const url = pathOrUrl.startsWith('http') ? pathOrUrl : adminUrl(pathOrUrl)
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Shopify-Access-Token': token,
+      ...(options.headers || {})
+    }
+  })
+  const text = await response.text()
+  let data = null
+  try { data = JSON.parse(text) } catch { data = { raw: text } }
+  if (!response.ok) {
+    throw new Error(data?.errors ? JSON.stringify(data.errors) : `Shopify API error ${response.status}`)
+  }
+  return { data, headers: response.headers }
 }
 
 export async function getShopifyShop() {
@@ -110,7 +132,29 @@ const SHIPPING_PROTECTION_PRODUCT_ID = 8156417196121
 const SHIPPING_PROTECTION_PRICE = 3.00
 
 /**
- * Fetch orders for a date range from Shopify REST API with pagination
+ * Fetch all orders for a single month chunk using Link-header pagination
+ */
+async function fetchOrdersChunk(fromISO, toISO) {
+  let orders = []
+  let nextUrl = `/orders.json?status=any&created_at_min=${fromISO}&created_at_max=${toISO}&limit=250`
+
+  for (let page = 0; page < 50 && nextUrl; page++) {
+    const result = await shopifyFetchWithHeaders(nextUrl)
+    const batch = result.data.orders || []
+    if (batch.length === 0) break
+    orders = orders.concat(batch)
+
+    nextUrl = null
+    const linkHeader = result.headers?.get?.('link') || result.headers?.link || ''
+    const nextMatch = linkHeader.match(/<([^>]+)>;\s*rel="next"/)
+    if (nextMatch) nextUrl = nextMatch[1]
+    if (batch.length < 250 && !nextUrl) break
+  }
+  return orders
+}
+
+/**
+ * Fetch orders for a date range from Shopify REST API — chunked by month for reliability
  */
 export async function getShopifyOrdersRange(fromDate, toDate) {
   const token = await effectiveAdminToken()
@@ -118,29 +162,40 @@ export async function getShopifyOrdersRange(fromDate, toDate) {
     return { ok: false, error: 'Missing Shopify credentials' }
   }
 
-  const utcFrom = new Date(fromDate + 'T00:00:00+10:00')
-  const utcTo = new Date(toDate + 'T23:59:59+10:00')
+  // Split into monthly chunks to avoid Shopify pagination bugs on large date ranges
+  const chunks = []
+  const [fromY, fromM] = fromDate.split('-').map(Number)
+  const [toY, toM] = toDate.split('-').map(Number)
 
-  // Paginate using created_at_max cursor (descending) to avoid since_id overlap bug
-  let allOrders = []
-  let cursor = utcTo.toISOString()
-
-  for (let page = 0; page < 10; page++) {
-    const url = `/orders.json?status=any&created_at_min=${utcFrom.toISOString()}&created_at_max=${cursor}&limit=250`
-    const data = await shopifyFetch(url)
-    const batch = data.orders || []
-    if (batch.length === 0) break
-
-    // Deduplicate by ID
-    const existingIds = new Set(allOrders.map(o => o.id))
-    const newOrders = batch.filter(o => !existingIds.has(o.id))
-    allOrders = allOrders.concat(newOrders)
-
-    if (batch.length < 250) break
-    // Move cursor to oldest order in this batch
-    const oldest = batch.reduce((min, o) => o.created_at < min ? o.created_at : min, batch[0].created_at)
-    cursor = oldest
+  let y = fromY, m = fromM
+  while (y < toY || (y === toY && m <= toM)) {
+    const mm = String(m).padStart(2, '0')
+    const lastDay = new Date(y, m, 0).getDate()
+    const chunkFrom = (y === fromY && m === fromM) ? fromDate : `${y}-${mm}-01`
+    const chunkTo = (y === toY && m === toM) ? toDate : `${y}-${mm}-${lastDay}`
+    const fromISO = new Date(chunkFrom + 'T00:00:00+10:00').toISOString()
+    const toISO = new Date(chunkTo + 'T23:59:59+10:00').toISOString()
+    chunks.push({ fromISO, toISO, label: `${y}-${mm}` })
+    m++
+    if (m > 12) { m = 1; y++ }
   }
+
+  let allOrders = []
+  for (const chunk of chunks) {
+    const batch = await fetchOrdersChunk(chunk.fromISO, chunk.toISO)
+    console.log(`[YTD] ${chunk.label}: ${batch.length} orders`)
+    allOrders = allOrders.concat(batch)
+  }
+
+  // Deduplicate by order ID in case of overlap
+  const seen = new Set()
+  allOrders = allOrders.filter(o => {
+    if (seen.has(o.id)) return false
+    seen.add(o.id)
+    return true
+  })
+
+  console.log(`[YTD] Total: ${allOrders.length} orders for ${fromDate} to ${toDate}`)
 
   const validOrders = allOrders.filter(o =>
     o.financial_status !== 'voided' && o.cancelled_at === null
