@@ -1,18 +1,35 @@
 /**
  * Keyword Rankings Dashboard Component
  * Shows current keyword positions, rank changes, alerts
+ * With clear improving/declining keyword lists
  */
 
 import { useState, useEffect } from 'react'
 
+// Sanitise change data — ignore fake drops where prevRank is 0/null or change > 30 positions
+function sanitiseKeywords(keywords) {
+  return keywords.map(kw => {
+    const prevRank = kw.prevRank || 0
+    const change = kw.change || 0
+    // Bad data: no previous rank baseline, or impossibly large swings (30+)
+    const isBadData = prevRank === 0 || prevRank === null || Math.abs(change) > 30
+    return {
+      ...kw,
+      change: isBadData ? 0 : change,
+      prevRank: isBadData ? null : prevRank,
+      status: isBadData ? 'STABLE' : kw.status
+    }
+  })
+}
+
 export default function KeywordRankings() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState('all') // all | critical | improving | declining
+  const [filter, setFilter] = useState('all')
 
   useEffect(() => {
     loadData()
-    const interval = setInterval(loadData, 5 * 60 * 1000) // refresh every 5 min
+    const interval = setInterval(loadData, 5 * 60 * 1000)
     return () => clearInterval(interval)
   }, [])
 
@@ -42,7 +59,7 @@ export default function KeywordRankings() {
   if (loading && !data) {
     return (
       <div className="card">
-        <h2>📊 Keyword Rankings</h2>
+        <h2>Keyword Rankings</h2>
         <p>Loading keyword data...</p>
       </div>
     )
@@ -51,31 +68,47 @@ export default function KeywordRankings() {
   if (!data || !data.keywords) {
     return (
       <div className="card">
-        <h2>📊 Keyword Rankings</h2>
+        <h2>Keyword Rankings</h2>
         <p>No keyword data available. <button onClick={triggerRefresh}>Refresh Now</button></p>
       </div>
     )
   }
 
-  const { keywords, stats, alerts, updatedAt } = data
+  const { alerts, updatedAt } = data
+  const keywords = sanitiseKeywords(data.keywords)
 
-  // Filter keywords
+  // Recalculate stats from sanitised data
+  const improving = keywords.filter(k => k.change > 0).sort((a, b) => b.change - a.change)
+  const declining = keywords.filter(k => k.change < 0).sort((a, b) => a.change - b.change)
+  const stable = keywords.filter(k => k.change === 0)
+  const top3 = keywords.filter(k => k.rank !== null && k.rank <= 3)
+  const top10 = keywords.filter(k => k.rank !== null && k.rank <= 10)
+
+  const stats = {
+    total: keywords.length,
+    top3: top3.length,
+    top10: top10.length,
+    improving: improving.length,
+    declining: declining.length
+  }
+
+  // Filter keywords for table
   let filtered = keywords
-  if (filter === 'critical') filtered = keywords.filter(k => k.status === 'CRITICAL')
-  if (filter === 'improving') filtered = keywords.filter(k => k.status === 'IMPROVING')
-  if (filter === 'declining') filtered = keywords.filter(k => k.change < 0)
+  if (filter === 'improving') filtered = improving
+  if (filter === 'declining') filtered = declining
+  if (filter === 'top10') filtered = top10
 
   return (
     <div className="card">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <h2>📊 Keyword Rankings</h2>
+        <h2>Keyword Rankings</h2>
         <button onClick={triggerRefresh} disabled={loading} style={{ fontSize: '0.9rem' }}>
           {loading ? 'Refreshing...' : 'Refresh Now'}
         </button>
       </div>
 
       {/* Stats Summary */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
         <div className="stat-box">
           <div className="stat-value">{stats.total}</div>
           <div className="stat-label">Total Keywords</div>
@@ -96,16 +129,59 @@ export default function KeywordRankings() {
           <div className="stat-value" style={{ color: '#ef4444' }}>{stats.declining}</div>
           <div className="stat-label">Declining</div>
         </div>
-        <div className="stat-box">
-          <div className="stat-value" style={{ color: '#ef4444' }}>{stats.critical}</div>
-          <div className="stat-label">Critical Alerts</div>
-        </div>
       </div>
+
+      {/* Improving & Declining keyword lists side by side */}
+      {(improving.length > 0 || declining.length > 0) && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+          {/* Improving */}
+          <div style={{ padding: '1rem', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px' }}>
+            <h3 style={{ margin: '0 0 0.75rem 0', fontSize: '0.95rem', color: '#166534', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <span style={{ fontSize: '1.1rem' }}>▲</span> Improving ({improving.length})
+            </h3>
+            {improving.length === 0 ? (
+              <p style={{ margin: 0, color: '#6b7280', fontSize: '0.85rem' }}>No keywords improving today</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                {improving.map(kw => (
+                  <div key={kw.id || kw.keyword} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
+                    <span style={{ fontWeight: '500', color: '#1f2937' }}>{kw.keyword}</span>
+                    <span style={{ color: '#16a34a', fontWeight: '600', whiteSpace: 'nowrap', marginLeft: '0.5rem' }}>
+                      +{kw.change} → #{kw.rank}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Declining */}
+          <div style={{ padding: '1rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px' }}>
+            <h3 style={{ margin: '0 0 0.75rem 0', fontSize: '0.95rem', color: '#991b1b', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <span style={{ fontSize: '1.1rem' }}>▼</span> Declining ({declining.length})
+            </h3>
+            {declining.length === 0 ? (
+              <p style={{ margin: 0, color: '#6b7280', fontSize: '0.85rem' }}>No keywords declining today</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                {declining.map(kw => (
+                  <div key={kw.id || kw.keyword} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
+                    <span style={{ fontWeight: '500', color: '#1f2937' }}>{kw.keyword}</span>
+                    <span style={{ color: '#dc2626', fontWeight: '600', whiteSpace: 'nowrap', marginLeft: '0.5rem' }}>
+                      {kw.change} → #{kw.rank}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Alerts */}
       {alerts && alerts.length > 0 && (
         <div style={{ marginBottom: '1.5rem', padding: '1rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px' }}>
-          <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem', color: '#991b1b' }}>⚠️ Alerts ({alerts.length})</h3>
+          <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem', color: '#991b1b' }}>Alerts ({alerts.length})</h3>
           {alerts.slice(0, 5).map((alert, i) => (
             <div key={i} style={{ padding: '0.5rem 0', borderBottom: i < 4 ? '1px solid #fecaca' : 'none' }}>
               <strong>{alert.keyword}</strong>: {alert.message}
@@ -116,30 +192,20 @@ export default function KeywordRankings() {
 
       {/* Filter Tabs */}
       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-        <button
-          className={filter === 'all' ? 'filter-active' : 'filter-inactive'}
-          onClick={() => setFilter('all')}
-        >
-          All ({keywords.length})
-        </button>
-        <button
-          className={filter === 'critical' ? 'filter-active' : 'filter-inactive'}
-          onClick={() => setFilter('critical')}
-        >
-          Critical ({keywords.filter(k => k.status === 'CRITICAL').length})
-        </button>
-        <button
-          className={filter === 'improving' ? 'filter-active' : 'filter-inactive'}
-          onClick={() => setFilter('improving')}
-        >
-          Improving ({keywords.filter(k => k.status === 'IMPROVING').length})
-        </button>
-        <button
-          className={filter === 'declining' ? 'filter-active' : 'filter-inactive'}
-          onClick={() => setFilter('declining')}
-        >
-          Declining ({keywords.filter(k => k.change < 0).length})
-        </button>
+        {[
+          { key: 'all', label: `All (${keywords.length})` },
+          { key: 'top10', label: `Top 10 (${stats.top10})` },
+          { key: 'improving', label: `Improving (${stats.improving})` },
+          { key: 'declining', label: `Declining (${stats.declining})` }
+        ].map(tab => (
+          <button
+            key={tab.key}
+            className={filter === tab.key ? 'filter-active' : 'filter-inactive'}
+            onClick={() => setFilter(tab.key)}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {/* Keywords Table */}
@@ -156,7 +222,7 @@ export default function KeywordRankings() {
           </thead>
           <tbody>
             {filtered.slice(0, 50).map(kw => (
-              <tr key={kw.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
+              <tr key={kw.id || kw.keyword} style={{ borderBottom: '1px solid #f3f4f6' }}>
                 <td style={{ padding: '0.75rem' }}>
                   <div style={{ fontWeight: '500' }}>{kw.keyword}</div>
                   {kw.tags && kw.tags.length > 0 && (
