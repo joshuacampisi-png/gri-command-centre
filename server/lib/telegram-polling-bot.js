@@ -226,9 +226,15 @@ async function pollLoop() {
       }
     } catch (error) {
       const err = String(error?.message || error)
-      console.error('[telegram-polling-bot] poll failed:', err)
-      await logEvent('poll_error', { error: err })
-      await new Promise(resolve => setTimeout(resolve, 3000))
+      // 409 = another consumer called getUpdates (debug curl etc.) — just retry quickly
+      if (err.includes('409') || err.includes('Conflict')) {
+        console.warn('[telegram-polling-bot] 409 conflict — retrying in 2s')
+        await new Promise(resolve => setTimeout(resolve, 2000))
+      } else {
+        console.error('[telegram-polling-bot] poll failed:', err)
+        await logEvent('poll_error', { error: err })
+        await new Promise(resolve => setTimeout(resolve, 3000))
+      }
     }
   }
 }
