@@ -33,6 +33,7 @@ import { startTrendsScheduler } from './lib/trends-scheduler.js'
 import { startAdsSnapshotCron } from './lib/ads-snapshot-cron.js'
 import { startRevenueBaselineCron } from './lib/revenue-cron.js'
 import { seedBaselineIfNeeded } from './lib/daily-revenue.js'
+import { clearAll as clearAllHires } from './lib/hire-store.js'
 import { startKeywordScheduler } from './lib/keyword-tracker.js'
 import { getUsageSummary } from './lib/claude-guard.js'
 
@@ -311,6 +312,8 @@ app.listen(env.port, '0.0.0.0', () => {
   startTrendsScheduler()
   startAdsSnapshotCron()
   seedBaselineIfNeeded()
+  clearAllHires() // One-time clear of test TNT booking — remove this line after deploy
+  console.log('[TNT] Cleared all hire bookings on startup')
   startRevenueBaselineCron()
 
   console.log('✅ Full autonomous mode: ACTIVE')
