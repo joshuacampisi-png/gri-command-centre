@@ -6,12 +6,22 @@
 
 import { useState, useEffect } from 'react'
 
-// Sanitise change data — ignore fake drops where prevRank is 0/null or change > 30 positions
+const LOCATION_LABELS = {
+  'google.com.au': 'AU',
+  'google.co.nz': 'NZ',
+  'google.com': 'US'
+}
+
+function locationLabel(loc) {
+  return LOCATION_LABELS[loc] || loc || ''
+}
+
+// Sanitise: fix bad change data and deduplicate keywords per location
 function sanitiseKeywords(keywords) {
-  return keywords.map(kw => {
+  // First sanitise change data
+  const sanitised = keywords.map(kw => {
     const prevRank = kw.prevRank || 0
     const change = kw.change || 0
-    // Bad data: no previous rank baseline, or impossibly large swings (30+)
     const isBadData = prevRank === 0 || prevRank === null || Math.abs(change) > 30
     return {
       ...kw,
@@ -20,12 +30,24 @@ function sanitiseKeywords(keywords) {
       status: isBadData ? 'STABLE' : kw.status
     }
   })
+
+  // Deduplicate: keep best rank per keyword+location combo
+  const seen = new Map()
+  for (const kw of sanitised) {
+    const key = `${kw.keyword.toLowerCase()}|${kw.location || ''}`
+    const existing = seen.get(key)
+    if (!existing || (kw.rank !== null && (existing.rank === null || kw.rank < existing.rank))) {
+      seen.set(key, kw)
+    }
+  }
+  return Array.from(seen.values())
 }
 
 export default function KeywordRankings() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
+  const [locationFilter, setLocationFilter] = useState('all')
 
   useEffect(() => {
     loadData()
@@ -75,9 +97,17 @@ export default function KeywordRankings() {
   }
 
   const { alerts, updatedAt } = data
-  const keywords = sanitiseKeywords(data.keywords)
+  const allKeywords = sanitiseKeywords(data.keywords)
 
-  // Recalculate stats from sanitised data
+  // Get unique locations for filter
+  const locations = [...new Set(allKeywords.map(k => k.location || ''))].filter(Boolean)
+
+  // Apply location filter
+  const keywords = locationFilter === 'all'
+    ? allKeywords
+    : allKeywords.filter(k => k.location === locationFilter)
+
+  // Recalculate stats from sanitised + filtered data
   const improving = keywords.filter(k => k.change > 0).sort((a, b) => b.change - a.change)
   const declining = keywords.filter(k => k.change < 0).sort((a, b) => a.change - b.change)
   const stable = keywords.filter(k => k.change === 0)
@@ -106,6 +136,27 @@ export default function KeywordRankings() {
           {loading ? 'Refreshing...' : 'Refresh Now'}
         </button>
       </div>
+
+      {/* Location Filter */}
+      {locations.length > 1 && (
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+          <button
+            className={locationFilter === 'all' ? 'filter-active' : 'filter-inactive'}
+            onClick={() => setLocationFilter('all')}
+          >
+            All Markets
+          </button>
+          {locations.map(loc => (
+            <button
+              key={loc}
+              className={locationFilter === loc ? 'filter-active' : 'filter-inactive'}
+              onClick={() => setLocationFilter(loc)}
+            >
+              {locationLabel(loc)}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Stats Summary */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
@@ -145,7 +196,10 @@ export default function KeywordRankings() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                 {improving.map(kw => (
                   <div key={kw.id || kw.keyword} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
-                    <span style={{ fontWeight: '500', color: '#1f2937' }}>{kw.keyword}</span>
+                    <span style={{ fontWeight: '500', color: '#1f2937' }}>
+                      {kw.keyword}
+                      {locations.length > 1 && <span style={{ fontSize: '0.7rem', color: '#6b7280', marginLeft: '0.3rem' }}>({locationLabel(kw.location)})</span>}
+                    </span>
                     <span style={{ color: '#16a34a', fontWeight: '600', whiteSpace: 'nowrap', marginLeft: '0.5rem' }}>
                       +{kw.change} → #{kw.rank}
                     </span>
@@ -166,7 +220,10 @@ export default function KeywordRankings() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                 {declining.map(kw => (
                   <div key={kw.id || kw.keyword} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
-                    <span style={{ fontWeight: '500', color: '#1f2937' }}>{kw.keyword}</span>
+                    <span style={{ fontWeight: '500', color: '#1f2937' }}>
+                      {kw.keyword}
+                      {locations.length > 1 && <span style={{ fontSize: '0.7rem', color: '#6b7280', marginLeft: '0.3rem' }}>({locationLabel(kw.location)})</span>}
+                    </span>
                     <span style={{ color: '#dc2626', fontWeight: '600', whiteSpace: 'nowrap', marginLeft: '0.5rem' }}>
                       {kw.change} → #{kw.rank}
                     </span>
@@ -214,6 +271,7 @@ export default function KeywordRankings() {
           <thead>
             <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
               <th style={{ textAlign: 'left', padding: '0.75rem' }}>Keyword</th>
+              <th style={{ textAlign: 'center', padding: '0.75rem' }}>Market</th>
               <th style={{ textAlign: 'center', padding: '0.75rem' }}>Rank</th>
               <th style={{ textAlign: 'center', padding: '0.75rem' }}>Change</th>
               <th style={{ textAlign: 'center', padding: '0.75rem' }}>Volume</th>
@@ -230,6 +288,18 @@ export default function KeywordRankings() {
                       {kw.tags.join(', ')}
                     </div>
                   )}
+                </td>
+                <td style={{ textAlign: 'center', padding: '0.75rem' }}>
+                  <span style={{
+                    fontSize: '0.75rem',
+                    fontWeight: '600',
+                    padding: '0.15rem 0.5rem',
+                    borderRadius: '4px',
+                    background: kw.location === 'google.co.nz' ? '#e0f2fe' : '#f0fdf4',
+                    color: kw.location === 'google.co.nz' ? '#0369a1' : '#166534'
+                  }}>
+                    {locationLabel(kw.location)}
+                  </span>
                 </td>
                 <td style={{ textAlign: 'center', padding: '0.75rem', fontWeight: '600', fontSize: '1.1rem' }}>
                   {kw.rank !== null ? `#${kw.rank}` : '—'}
