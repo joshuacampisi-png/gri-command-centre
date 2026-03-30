@@ -96,7 +96,7 @@ const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD
 if (DASHBOARD_PASSWORD && DASHBOARD_PASSWORD !== 'changeme') {
   app.use((req, res, next) => {
     // Allow webhooks, calendar API, and standalone calendar page through without auth
-    if (req.path.startsWith('/api/shopify/webhook') || req.path.startsWith('/api/square/webhook') || req.path.startsWith('/api/shopify/oauth') || req.path.startsWith('/api/calendar') || req.path.startsWith('/calendar') || req.path.startsWith('/calendar-videos')) {
+    if (req.path.startsWith('/api/shopify/webhook') || req.path.startsWith('/api/square/webhook') || req.path.startsWith('/api/shopify/oauth') || req.path.startsWith('/api/telegram-bot/webhook') || req.path.startsWith('/api/calendar') || req.path.startsWith('/calendar') || req.path.startsWith('/calendar-videos')) {
       return next()
     }
     const auth = req.headers.authorization
@@ -318,8 +318,9 @@ const server = app.listen(env.port, '0.0.0.0', () => {
   console.log(`   Company:   GRI only (Lionzen/GBU paused)`)
   console.log(`   Schedule:  SEO crawl @ 2am AEST | Morning brief @ 5am AEST\n`)
 
-  // Telegram polling bot — Claude Code owns this now (OpenClaw disabled)
-  startTelegramPollingBot()
+  // Telegram: using WEBHOOK mode (not polling — polling causes 409 conflicts)
+  // Webhook registered at /api/telegram-bot/webhook
+  // startTelegramPollingBot() — DISABLED, webhook is better
   startNotionPoller()
   // Flywheel: ENABLED with deduplication (checks Rejected status too)
   startFlywheel()
