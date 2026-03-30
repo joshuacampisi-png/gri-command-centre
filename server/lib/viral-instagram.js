@@ -35,11 +35,15 @@ try {
   }
 } catch { /* ignore */ }
 
-const CACHE_TTL = 6 * 60 * 60 * 1000 // 6 hours — keeps API usage minimal (~4 calls/day)
-// Single hashtag only — covers most content and saves 2 API calls per refresh
-const HASHTAGS = ['genderreveal']
+const CACHE_TTL = 6 * 60 * 60 * 1000 // 6 hours — keeps API usage minimal
 
-// Exclude own accounts
+// Search all key gender reveal hashtags for broader coverage
+const HASHTAGS = ['genderreveal', 'genderrevealideas', 'boyorgirl', 'genderreveals']
+
+// Posts MUST contain at least one of these hashtags (normalised, no #)
+const REQUIRED_HASHTAGS = new Set(['genderreveal', 'genderrevealideas', 'boyorgirl', 'genderreveals'])
+
+// Exclude own accounts — avoid wasting API on our own content
 const OWN_ACCOUNTS = new Set(['gender.reveal.ideass'])
 
 // ── API Providers (tried in order) ──────────────────────────────────────────
@@ -257,7 +261,9 @@ function parsePost(post, hashtag) {
     : null
 
   const ageMs = ts ? Date.now() - ts.getTime() : Infinity
-  if (ageMs > 7 * 24 * 60 * 60 * 1000) return null // max 7 days
+
+  // 2026 only — skip anything from previous years
+  if (!ts || ts.getFullYear() !== 2026) return null
 
   // Thumbnail
   const thumbnail = post.thumbnail_url
@@ -280,6 +286,13 @@ function parsePost(post, hashtag) {
   const hashtags = captionHashtags.length > 0
     ? captionHashtags.slice(0, 8)
     : (fullCaption.match(/#[\w\u00C0-\u024F]+/g) || []).slice(0, 8)
+
+  // Must contain at least one required hashtag
+  const allTags = hashtags.map(h => h.replace(/^#/, '').toLowerCase())
+  const captionLower = fullCaption.toLowerCase()
+  const hasRequired = allTags.some(t => REQUIRED_HASHTAGS.has(t))
+    || [...REQUIRED_HASHTAGS].some(req => captionLower.includes(`#${req}`))
+  if (!hasRequired) return null
 
   const engagementRate = views > 0 ? (likes + comments + saves + shares) / views : 0
   const virality = calculateViralityScore({ views, likes, comments, saves, shares, ageMs })
