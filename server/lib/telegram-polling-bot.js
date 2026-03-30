@@ -5,6 +5,7 @@ import { env } from './env.js'
 import { workflowCreateTask } from '../workflows/core.js'
 import { detectCompanyFromText, extractFirstUrl, extractUrls } from './telegram-intake.js'
 import { handleApproval } from './approval-queue.js'
+import { persistRemoteMedia } from './task-media.js'
 
 const TELEGRAM_API = 'https://api.telegram.org'
 const LOG_PATH = '/tmp/centralhubworkbot.log'
@@ -236,15 +237,22 @@ export async function startTelegramPollingBot() {
   if (!env.telegram.botToken || running) return
   running = true
   await logEvent('bot_starting', {})
-  try {
-    await telegramCall('deleteWebhook', { drop_pending_updates: false })
-    await logEvent('delete_webhook_ok', {})
-  } catch (error) {
-    const err = String(error?.message || error)
-    console.error('[telegram-polling-bot] deleteWebhook failed:', err)
-    await logEvent('delete_webhook_failed', { error: err })
+
+  // Clear any webhook (OpenClaw may have set one) and drop pending to avoid stale messages
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      await telegramCall('deleteWebhook', { drop_pending_updates: true })
+      await logEvent('delete_webhook_ok', {})
+      break
+    } catch (error) {
+      const err = String(error?.message || error)
+      console.error(`[telegram-polling-bot] deleteWebhook attempt ${attempt}/3 failed:`, err)
+      await logEvent('delete_webhook_failed', { error: err, attempt })
+      if (attempt < 3) await new Promise(r => setTimeout(r, 2000))
+    }
   }
-  console.log('[telegram-polling-bot] started')
+
+  console.log('[telegram-polling-bot] ✅ Started — Claude Code owns Telegram bot')
   await logEvent('bot_started', {})
   pollLoop()
 }

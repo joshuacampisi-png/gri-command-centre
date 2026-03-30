@@ -312,8 +312,8 @@ const server = app.listen(env.port, '0.0.0.0', () => {
   console.log(`   Company:   GRI only (Lionzen/GBU paused)`)
   console.log(`   Schedule:  SEO crawl @ 2am AEST | Morning brief @ 5am AEST\n`)
 
-  // DISABLED: Conflicts with OpenClaw Gateway Telegram polling (409 Conflict)
-  // startTelegramPollingBot() // Task intake bot (separate from Pablo)
+  // Telegram polling bot — Claude Code owns this now (OpenClaw disabled)
+  startTelegramPollingBot()
   startNotionPoller()
   // Flywheel: ENABLED with deduplication (checks Rejected status too)
   startFlywheel()
