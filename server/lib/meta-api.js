@@ -73,28 +73,32 @@ export async function fetchCampaigns() {
   return data.data || []
 }
 
-export async function fetchCampaignInsights(campaignId, datePreset = 'today') {
+export async function fetchCampaignInsights(campaignId, datePreset = 'last_7d') {
   const data = await metaGet(`/${campaignId}/insights`, {
     fields: 'campaign_name,spend,impressions,clicks,actions,action_values,frequency,cpm,ctr,reach',
-    date_preset: datePreset
+    date_preset: normalisePreset(datePreset)
   })
   return parseInsights(data.data?.[0])
 }
 
 // ── Ad-level data ────────────────────────────────────────────────────────────
 
-export async function fetchAdsForCampaign(campaignId) {
-  const data = await metaGet(`/${campaignId}/ads`, {
+export async function fetchAdsForCampaign(campaignId, activeOnly = false) {
+  const params = {
     fields: 'id,name,status,creative{thumbnail_url,effective_object_story_id},adset_id,created_time',
     limit: '100'
-  })
+  }
+  if (activeOnly) {
+    params.effective_status = '["ACTIVE"]'
+  }
+  const data = await metaGet(`/${campaignId}/ads`, params)
   return data.data || []
 }
 
 export async function fetchAdInsights(adId, datePreset = 'last_7d') {
   const data = await metaGet(`/${adId}/insights`, {
     fields: 'impressions,clicks,spend,actions,action_values,frequency,cpm,ctr,reach',
-    date_preset: datePreset
+    date_preset: normalisePreset(datePreset)
   })
   return parseInsights(data.data?.[0])
 }
@@ -144,22 +148,21 @@ export async function createAd(params) {
 
 export async function fetchFullPerformance(datePreset = 'last_7d') {
   const campaigns = await fetchCampaigns()
-  const results = []
 
-  for (const campaign of campaigns) {
-    const cInsights = await fetchCampaignInsights(campaign.id, datePreset).catch(() => null)
-    const ads = await fetchAdsForCampaign(campaign.id).catch(() => [])
+  // Fetch all campaigns in parallel
+  const campaignPromises = campaigns.map(async (campaign) => {
+    const [cInsights, ads] = await Promise.all([
+      fetchCampaignInsights(campaign.id, datePreset).catch(() => null),
+      fetchAdsForCampaign(campaign.id, true).catch(() => []) // active only
+    ])
 
-    const adResults = []
-    for (const ad of ads) {
+    // Fetch ad insights in parallel (skip daily insights for speed)
+    const adPromises = ads.map(async (ad) => {
       const insights = await fetchAdInsights(ad.id, datePreset).catch(() => null)
-      const dailyInsights = await fetchAdInsightsByDay(ad.id, 7).catch(() => [])
-
-      // Calculate days running
       const createdDate = ad.created_time ? new Date(ad.created_time) : null
       const daysRunning = createdDate ? Math.floor((Date.now() - createdDate.getTime()) / 86400000) : 0
 
-      adResults.push({
+      return {
         id: ad.id,
         name: ad.name,
         status: ad.status,
@@ -167,11 +170,13 @@ export async function fetchFullPerformance(datePreset = 'last_7d') {
         adsetId: ad.adset_id,
         daysRunning,
         insights,
-        dailyInsights
-      })
-    }
+        dailyInsights: []
+      }
+    })
 
-    results.push({
+    const adResults = await Promise.all(adPromises)
+
+    return {
       id: campaign.id,
       name: campaign.name,
       status: campaign.status,
@@ -179,10 +184,39 @@ export async function fetchFullPerformance(datePreset = 'last_7d') {
       objective: campaign.objective,
       insights: cInsights,
       ads: adResults
-    })
+    }
+  })
+
+  const results = await Promise.all(campaignPromises)
+
+  // Aggregate totals across all campaigns
+  let totalSpend = 0, totalImpressions = 0, totalClicks = 0, totalPurchases = 0, totalPurchaseValue = 0, totalReach = 0
+  for (const c of results) {
+    if (c.insights) {
+      totalSpend += c.insights.spend || 0
+      totalImpressions += c.insights.impressions || 0
+      totalClicks += c.insights.clicks || 0
+      totalPurchases += c.insights.purchases || 0
+      totalPurchaseValue += c.insights.purchaseValue || 0
+      totalReach += c.insights.reach || 0
+    }
   }
 
-  return results
+  return {
+    campaigns: results,
+    totals: {
+      spend: totalSpend,
+      impressions: totalImpressions,
+      clicks: totalClicks,
+      purchases: totalPurchases,
+      purchaseValue: totalPurchaseValue,
+      reach: totalReach,
+      roas: totalSpend > 0 ? totalPurchaseValue / totalSpend : 0,
+      cpa: totalPurchases > 0 ? totalSpend / totalPurchases : 0,
+      ctr: totalImpressions > 0 ? (totalClicks / totalImpressions * 100) : 0,
+      cpm: totalImpressions > 0 ? (totalSpend / totalImpressions * 1000) : 0
+    }
+  }
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -220,4 +254,23 @@ function parseInsights(raw) {
 
 function fmt(d) {
   return d.toISOString().slice(0, 10)
+}
+
+// Map short date presets to Meta API format
+function normalisePreset(p) {
+  const map = {
+    'today': 'today',
+    'yesterday': 'yesterday',
+    '7d': 'last_7d',
+    '14d': 'last_14d',
+    '28d': 'last_28d',
+    '30d': 'last_30d',
+    'last_7d': 'last_7d',
+    'last_14d': 'last_14d',
+    'last_28d': 'last_28d',
+    'last_30d': 'last_30d',
+    'this_month': 'this_month',
+    'last_month': 'last_month'
+  }
+  return map[p] || 'last_7d'
 }
