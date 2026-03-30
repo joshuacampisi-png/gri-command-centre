@@ -327,22 +327,18 @@ const server = app.listen(env.port, '0.0.0.0', () => {
   // Executor: ENABLED - auto-fix SEO tasks
   startExecutor()
   
-  // Keep monitoring systems:
-  startMorningBrief()
-  startSEOLearningCrons()
-  scheduleCompetitorIntelCron()
-  startKeywordScheduler()
-  startTrendsScheduler()
-  startAdsSnapshotCron()
+  // Background data jobs (NO Telegram messages)
   seedBaselineIfNeeded()
   startRevenueBaselineCron()
 
-  console.log('✅ Full autonomous mode: ACTIVE')
-  console.log('☀️  Morning brief: ACTIVE (5am AEST)')
-  console.log('🧠 SEO learning: ACTIVE (Weekly Mon 3am, Daily 2am, Summary Mon 9am)')
-  console.log('🔍 Competitor tracking: ACTIVE (Weekly Mon 4am)')
-  console.log('📊 Keyword tracking: ACTIVE (Daily 6am)')
-  console.log('📈 Google Trends: ACTIVE (Daily 3am)')
-  console.log('📊 Meta Ads report: ACTIVE (Daily 8am AEST)')
+  // DISABLED — all auto Telegram messages killed per Josh's request
+  // startMorningBrief()
+  // startSEOLearningCrons()
+  // scheduleCompetitorIntelCron()
+  // startKeywordScheduler()
+  // startTrendsScheduler()
+  // startAdsSnapshotCron()
+
+  console.log('✅ Server running — auto Telegram messages: DISABLED')
   console.log('🔒 Crash recovery: ACTIVE')
 })
