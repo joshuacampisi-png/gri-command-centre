@@ -64,6 +64,12 @@ Manual check needed: ${crashCount >= MAX_RESTARTS ? 'YES ⚠️' : 'No'}
 }
 
 process.on('uncaughtException', async (err) => {
+  const errMsg = String(err?.message || err)
+  // EPIPE = broken pipe from dropped connections (Telegram long-poll, etc.) — harmless, don't count as crash
+  if (err?.code === 'EPIPE' || err?.code === 'ECONNRESET' || err?.code === 'ETIMEDOUT') {
+    console.warn(`[NET] ${err.code} — transient network error, ignoring:`, errMsg.slice(0, 100))
+    return
+  }
   crashCount++
   console.error(`[CRASH] uncaughtException #${crashCount}:`, err)
   await sendCrashAlert('uncaughtException', err).catch(() => {})
