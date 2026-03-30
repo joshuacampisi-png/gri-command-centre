@@ -33,7 +33,7 @@ import { startTrendsScheduler } from './lib/trends-scheduler.js'
 import { startAdsSnapshotCron } from './lib/ads-snapshot-cron.js'
 import { startRevenueBaselineCron } from './lib/revenue-cron.js'
 import { seedBaselineIfNeeded } from './lib/daily-revenue.js'
-import { clearAll as clearAllHires } from './lib/hire-store.js'
+// clearAllHires removed — one-time clear done
 import { startKeywordScheduler } from './lib/keyword-tracker.js'
 import { getUsageSummary } from './lib/claude-guard.js'
 
@@ -287,8 +287,25 @@ if (existsSync(distPath)) {
   })
 }
 
+// ── GRACEFUL SHUTDOWN ──
+function gracefulShutdown(signal) {
+  console.log(`\n⚡ ${signal} received — shutting down gracefully...`)
+  if (server) {
+    server.close(() => {
+      console.log('✅ Server closed. Exiting.')
+      process.exit(0)
+    })
+    // Force exit after 5s if connections hang
+    setTimeout(() => { console.log('⏱ Forcing exit after 5s timeout'); process.exit(0) }, 5000)
+  } else {
+    process.exit(0)
+  }
+}
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
+process.on('SIGINT', () => gracefulShutdown('SIGINT'))
+
 // ── STARTUP ──
-app.listen(env.port, '0.0.0.0', () => {
+const server = app.listen(env.port, '0.0.0.0', () => {
   const aestNow = new Date().toLocaleString('en-AU', { timeZone: 'Australia/Brisbane' })
   console.log(`\n🚀 Pablo Command Centre API — ${aestNow} AEST`)
   console.log(`   Listening: http://127.0.0.1:${env.port}`)
@@ -312,8 +329,6 @@ app.listen(env.port, '0.0.0.0', () => {
   startTrendsScheduler()
   startAdsSnapshotCron()
   seedBaselineIfNeeded()
-  clearAllHires() // One-time clear of test TNT booking — remove this line after deploy
-  console.log('[TNT] Cleared all hire bookings on startup')
   startRevenueBaselineCron()
 
   console.log('✅ Full autonomous mode: ACTIVE')
