@@ -440,15 +440,25 @@ function MonthView({ entries, onClickEntry, onClickDay }) {
 
 // ── List View ─────────────────────────────────────────────────────────────────
 
-function ListView({ entries, onClickEntry, onBulkAction, onUpdateEntry }) {
+function ListView({ entries, onClickEntry, onBulkAction, onUpdateEntry, onReorder }) {
   const [selected, setSelected] = useState(new Set())
   const [brandFilter, setBrandFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [dragId, setDragId] = useState(null)
+  const [dragOverId, setDragOverId] = useState(null)
+  const [dragPos, setDragPos] = useState(null) // 'above' or 'below'
+
   const filtered = useMemo(() => {
     let list = [...entries]
     if (brandFilter) list = list.filter(e => e.brand === brandFilter)
     if (statusFilter) list = list.filter(e => e.status === statusFilter)
-    return list.sort((a, b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time))
+    // Sort by sortOrder (manual launch order), fallback to newest first
+    return list.sort((a, b) => {
+      const oa = typeof a.sortOrder === 'number' ? a.sortOrder : 999999
+      const ob = typeof b.sortOrder === 'number' ? b.sortOrder : 999999
+      if (oa !== ob) return oa - ob
+      return b.date.localeCompare(a.date) || b.time.localeCompare(a.time)
+    })
   }, [entries, brandFilter, statusFilter])
 
   const toggleAll = () => {
@@ -456,6 +466,47 @@ function ListView({ entries, onClickEntry, onBulkAction, onUpdateEntry }) {
     else setSelected(new Set(filtered.map(e => e.id)))
   }
   const toggle = id => setSelected(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
+
+  const handleDragStart = (e, id) => {
+    setDragId(id)
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', id)
+  }
+
+  const handleDragOver = (e, id) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    if (id === dragId) return
+    const rect = e.currentTarget.getBoundingClientRect()
+    const midY = rect.top + rect.height / 2
+    setDragOverId(id)
+    setDragPos(e.clientY < midY ? 'above' : 'below')
+  }
+
+  const handleDragEnd = () => {
+    setDragId(null)
+    setDragOverId(null)
+    setDragPos(null)
+  }
+
+  const handleDrop = (e) => {
+    e.preventDefault()
+    if (!dragId || !dragOverId || dragId === dragOverId) { handleDragEnd(); return }
+    const fromIdx = filtered.findIndex(x => x.id === dragId)
+    const toIdx = filtered.findIndex(x => x.id === dragOverId)
+    if (fromIdx === -1 || toIdx === -1) { handleDragEnd(); return }
+
+    const reordered = [...filtered]
+    const [moved] = reordered.splice(fromIdx, 1)
+    let insertIdx = reordered.findIndex(x => x.id === dragOverId)
+    if (dragPos === 'below') insertIdx += 1
+    reordered.splice(insertIdx, 0, moved)
+
+    // Assign new sortOrder values
+    const updates = reordered.map((item, i) => ({ ...item, sortOrder: i + 1 }))
+    onReorder(updates)
+    handleDragEnd()
+  }
 
   return (
     <div className="cc-list">
@@ -468,19 +519,37 @@ function ListView({ entries, onClickEntry, onBulkAction, onUpdateEntry }) {
           <option value="">All Statuses</option>
           {STATUSES.map(s => <option key={s}>{s}</option>)}
         </select>
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, color: '#7C8DB0', fontSize: 12 }}>
+          <span style={{ fontSize: 14 }}>↕</span> Drag rows to set launch order
+        </div>
       </div>
       <div className="cc-table-wrap">
         <table className="cc-table">
           <thead>
             <tr>
+              <th style={{ width: 32 }}></th>
+              <th style={{ width: 70, textAlign: 'center' }}>Launch Order</th>
               <th><input type="checkbox" checked={selected.size === filtered.length && filtered.length > 0} onChange={toggleAll} /></th>
-              <th>Date</th><th>Platform</th><th>Hook / Caption</th><th>Status</th><th>Preview</th><th style={{ minWidth: 180 }}>R6 Ad Notes</th><th></th>
+              <th>Date</th><th>Platform</th><th>Hook / Caption</th><th>Status</th><th>Preview</th><th style={{ minWidth: 180 }}>R6 Ad Notes</th>
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 && <tr><td colSpan={8} className="muted" style={{ textAlign: 'center', padding: 24 }}>No content yet. Click + New Entry to add your first piece.</td></tr>}
-            {filtered.map(e => (
-              <tr key={e.id} className={selected.has(e.id) ? 'cc-row-sel' : ''} onClick={() => onClickEntry(e)}>
+            {filtered.length === 0 && <tr><td colSpan={9} className="muted" style={{ textAlign: 'center', padding: 24 }}>No content yet. Click + New Entry to add your first piece.</td></tr>}
+            {filtered.map((e, idx) => (
+              <tr
+                key={e.id}
+                className={`${selected.has(e.id) ? 'cc-row-sel' : ''} ${dragId === e.id ? 'cc-row-dragging' : ''} ${dragOverId === e.id && dragPos === 'above' ? 'cc-drop-above' : ''} ${dragOverId === e.id && dragPos === 'below' ? 'cc-drop-below' : ''}`}
+                draggable
+                onDragStart={ev => handleDragStart(ev, e.id)}
+                onDragOver={ev => handleDragOver(ev, e.id)}
+                onDrop={handleDrop}
+                onDragEnd={handleDragEnd}
+                onClick={() => onClickEntry(e)}
+              >
+                <td className="cc-drag-handle" onClick={ev => ev.stopPropagation()} style={{ cursor: 'grab', textAlign: 'center', color: '#B0B8C9', fontSize: 16, userSelect: 'none' }}>⠿</td>
+                <td style={{ textAlign: 'center', fontWeight: 700 }}>
+                  <span className="cc-launch-order">{idx + 1}</span>
+                </td>
                 <td onClick={ev => ev.stopPropagation()}><input type="checkbox" checked={selected.has(e.id)} onChange={() => toggle(e.id)} /></td>
                 <td style={{ whiteSpace: 'nowrap' }} onClick={ev => ev.stopPropagation()}>
                   {(e.statusHistory && e.statusHistory.length > 0) ? (
@@ -514,7 +583,6 @@ function ListView({ entries, onClickEntry, onBulkAction, onUpdateEntry }) {
                     style={{ width: '100%', minHeight: 32, maxHeight: 80, border: '1px solid #E8ECF4', borderRadius: 6, padding: '6px 8px', fontSize: 12, resize: 'vertical', outline: 'none', fontFamily: 'inherit' }}
                   />
                 </td>
-                <td></td>
               </tr>
             ))}
           </tbody>
@@ -574,6 +642,18 @@ export default function ContentCalendarTab() {
     setEntries(prev => prev.map(e => e.id === updated.id ? updated : e))
   }
 
+  const handleReorder = async (reorderedList) => {
+    // Optimistically update UI
+    setEntries(prev => {
+      const reorderMap = new Map(reorderedList.map(item => [item.id, item.sortOrder]))
+      return prev.map(e => reorderMap.has(e.id) ? { ...e, sortOrder: reorderMap.get(e.id) } : e)
+    })
+    // Persist each updated entry
+    for (const item of reorderedList) {
+      await saveEntry(item)
+    }
+  }
+
   const bulkAction = async (type, ids, value) => {
     if (type === 'status') {
       await bulkStatusAPI(ids, value)
@@ -631,6 +711,7 @@ export default function ContentCalendarTab() {
         onClickEntry={openEdit}
         onBulkAction={bulkAction}
         onUpdateEntry={handleUpdateEntry}
+        onReorder={handleReorder}
       />
 
       {drawer && (

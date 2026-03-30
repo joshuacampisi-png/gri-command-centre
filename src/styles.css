@@ -1692,6 +1692,22 @@ button:hover { opacity: .88; }
 .cc-table tbody tr:hover { background: rgba(228,63,123,0.03); }
 .cc-table tbody tr:last-child td { border-bottom: none; }
 .cc-row-sel { background: rgba(228,63,123,0.06) !important; }
+
+/* Drag-and-drop reorder */
+.cc-row-dragging { opacity: 0.4; }
+.cc-drop-above td { box-shadow: inset 0 2px 0 0 #3AB4C0; }
+.cc-drop-below td { box-shadow: inset 0 -2px 0 0 #3AB4C0; }
+.cc-drag-handle { cursor: grab; }
+.cc-drag-handle:active { cursor: grabbing; }
+.cc-launch-order {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, #3AB4C0 0%, #2D9CA7 100%);
+  color: #fff; font-size: 13px; font-weight: 700;
+  box-shadow: 0 1px 3px rgba(58,180,192,0.3);
+}
+.cc-table tbody tr[draggable] { transition: opacity 0.15s ease; }
+
 .cc-hook-cell { max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cc-list-thumb { width: 48px; height: 32px; object-fit: cover; border-radius: 4px; }
 
