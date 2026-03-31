@@ -148,16 +148,26 @@ router.post('/entries/:id/publish-now', async (req, res) => {
 })
 
 // Upload media files (images or video)
-router.post('/upload', upload.array('media', 10), (req, res) => {
-  if (!req.files || req.files.length === 0) return res.status(400).json({ error: 'No valid media files' })
-  const files = req.files.map(f => ({
-    url: `/instagram-media/${f.filename}`,
-    filename: f.filename,
-    size: f.size,
-    type: f.mimetype.startsWith('image/') ? 'image' : 'video',
-    originalName: f.originalname,
-  }))
-  res.json({ ok: true, files })
+router.post('/upload', (req, res) => {
+  upload.array('media', 10)(req, res, (err) => {
+    if (err) {
+      console.error('[IG Upload] Multer error:', err.message)
+      return res.status(400).json({ error: `Upload error: ${err.message}` })
+    }
+    if (!req.files || req.files.length === 0) {
+      console.error('[IG Upload] No files received. Content-Type:', req.headers['content-type'])
+      return res.status(400).json({ error: 'No valid media files received. Supported: jpg, png, webp, mp4, mov' })
+    }
+    const files = req.files.map(f => ({
+      url: `/instagram-media/${f.filename}`,
+      filename: f.filename,
+      size: f.size,
+      type: f.mimetype.startsWith('image/') ? 'image' : 'video',
+      originalName: f.originalname,
+    }))
+    console.log(`[IG Upload] ${files.length} file(s) uploaded:`, files.map(f => `${f.originalName} (${f.type})`).join(', '))
+    res.json({ ok: true, files })
+  })
 })
 
 // Delete a media file

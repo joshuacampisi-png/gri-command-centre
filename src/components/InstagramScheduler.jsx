@@ -6,13 +6,13 @@ const POST_TYPES = ['image', 'carousel', 'reel']
 const POST_TYPE_LABELS = { image: 'Image', carousel: 'Carousel', reel: 'Reel' }
 const POST_TYPE_ICONS = { image: '🖼', carousel: '🎠', reel: '🎬' }
 const STATUS_COLORS = { DRAFT: '#9CA3AF', SCHEDULED: '#3B82F6', PUBLISHING: '#F59E0B', PUBLISHED: '#059669', FAILED: '#DC2626' }
-const ACCEPT_MEDIA = '.jpg,.jpeg,.png,.webp,.mp4,.mov'
+const ACCEPT_MEDIA = 'image/jpeg,image/png,image/webp,video/mp4,video/quicktime,.jpg,.jpeg,.png,.webp,.mp4,.mov'
 const API = '/api/instagram'
+const META_API = '/api/meta'
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8) }
 function fmtDate(d) { const y = d.getFullYear(); const m = String(d.getMonth() + 1).padStart(2, '0'); const day = String(d.getDate()).padStart(2, '0'); return `${y}-${m}-${day}` }
 function fmtDateTime(iso) { if (!iso) return ''; const d = new Date(iso); return d.toLocaleString('en-AU', { timeZone: 'Australia/Brisbane', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) }
-function fmtSize(b) { if (b < 1024) return b + ' B'; if (b < 1048576) return (b / 1024).toFixed(1) + ' KB'; return (b / 1048576).toFixed(1) + ' MB' }
 
 // ── API helpers ──────────────────────────────────────────────────────────────
 
@@ -40,7 +40,10 @@ async function uploadMediaAPI(files) {
   const form = new FormData()
   for (const file of files) form.append('media', file)
   const res = await fetch(`${API}/upload`, { method: 'POST', body: form })
-  if (!res.ok) throw new Error('Upload failed')
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(`Upload failed (${res.status}): ${text}`)
+  }
   return res.json()
 }
 
@@ -63,12 +66,93 @@ function getMonthDays(year, month) {
   return days
 }
 
+// ── Connect Panel ────────────────────────────────────────────────────────────
+
+function ConnectPanel({ onConnected }) {
+  const [token, setToken] = useState('')
+  const [igId, setIgId] = useState('')
+  const [connecting, setConnecting] = useState(false)
+  const [error, setError] = useState(null)
+
+  async function handleConnect() {
+    if (!token.trim() || !igId.trim()) { setError('Both fields are required.'); return }
+    setConnecting(true)
+    setError(null)
+    try {
+      const res = await fetch(`${META_API}/connect`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pageAccessToken: token.trim(), igAccountId: igId.trim() }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error || 'Connection failed'); setConnecting(false); return }
+      onConnected(data)
+    } catch (err) {
+      setError(err.message)
+    }
+    setConnecting(false)
+  }
+
+  return (
+    <div className="ig-connect-panel">
+      <div className="ig-connect-icon">📸</div>
+      <h3>Connect Instagram</h3>
+      <p className="muted">Paste your Meta Page Access Token and Instagram Business Account ID to start auto-posting.</p>
+
+      <div className="ig-connect-form">
+        <div className="ig-field">
+          <label>Meta Page Access Token</label>
+          <textarea
+            value={token}
+            onChange={e => setToken(e.target.value)}
+            placeholder="EAF4DTu..."
+            rows={3}
+            className="ig-token-input"
+          />
+          <span className="muted">Get this from Meta Graph API Explorer or your app dashboard</span>
+        </div>
+
+        <div className="ig-field">
+          <label>Instagram Business Account ID</label>
+          <input
+            value={igId}
+            onChange={e => setIgId(e.target.value)}
+            placeholder="17841448049372007"
+          />
+          <span className="muted">Found in Graph API: /me/accounts?fields=instagram_business_account</span>
+        </div>
+
+        {error && <div className="ig-error-box">{error}</div>}
+
+        <button className="btn btn-primary" onClick={handleConnect} disabled={connecting} style={{ width: '100%', justifyContent: 'center' }}>
+          {connecting ? 'Validating...' : 'Connect Instagram'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── Connected Account Bar ────────────────────────────────────────────────────
+
+function AccountBar({ account, onDisconnect }) {
+  return (
+    <div className="ig-account-bar">
+      <div className="ig-account-info">
+        <span className="ig-account-dot" />
+        <strong>@{account.igUsername || 'connected'}</strong>
+        {account.pageName && <span className="muted"> via {account.pageName}</span>}
+      </div>
+      <button className="btn btn-danger btn-sm" onClick={onDisconnect}>Disconnect</button>
+    </div>
+  )
+}
+
 // ── Main Component ───────────────────────────────────────────────────────────
 
 export default function InstagramScheduler() {
   const [posts, setPosts] = useState([])
-  const [view, setView] = useState('calendar') // 'calendar' | 'list'
-  const [drawer, setDrawer] = useState(null) // null | post object being edited
+  const [view, setView] = useState('calendar')
+  const [drawer, setDrawer] = useState(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -76,7 +160,9 @@ export default function InstagramScheduler() {
   const [captionVariants, setCaptionVariants] = useState(null)
   const [calMonth, setCalMonth] = useState(new Date().getMonth())
   const [calYear, setCalYear] = useState(new Date().getFullYear())
-  const [configured, setConfigured] = useState(true)
+  const [connection, setConnection] = useState(null) // null = loading, false = not connected, object = connected
+  const [dragOver, setDragOver] = useState(null) // date string of day being dragged over
+  const [autoPosting, setAutoPosting] = useState(null) // date string being auto-processed
   const fileRef = useRef(null)
 
   const reload = useCallback(async () => {
@@ -86,10 +172,13 @@ export default function InstagramScheduler() {
     setLoading(false)
   }, [])
 
+  // Load connection status + posts
   useEffect(() => {
     reload()
-    fetch(`${API}/status`).then(r => r.json()).then(d => setConfigured(d.configured)).catch(() => {})
-    const interval = setInterval(reload, 30000) // refresh every 30s
+    fetch(`${META_API}/status`).then(r => r.json()).then(d => {
+      setConnection(d.connected ? d : false)
+    }).catch(() => setConnection(false))
+    const interval = setInterval(reload, 30000)
     return () => clearInterval(interval)
   }, [reload])
 
@@ -126,6 +215,71 @@ export default function InstagramScheduler() {
     setCaptionVariants(null)
   }
 
+  // ── Drag & drop onto calendar day ──────────────────────────────────────────
+  // Drop video/image onto a day → upload → auto-generate caption → auto-schedule
+
+  function handleCalDragOver(e, day) {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'copy'
+    setDragOver(fmtDate(day))
+  }
+
+  function handleCalDragLeave() {
+    setDragOver(null)
+  }
+
+  async function handleCalDrop(e, day) {
+    e.preventDefault()
+    setDragOver(null)
+
+    const files = Array.from(e.dataTransfer.files).filter(f =>
+      f.type.startsWith('image/') || f.type.startsWith('video/')
+    )
+    if (files.length === 0) return
+
+    const dateKey = fmtDate(day)
+    setAutoPosting(dateKey)
+
+    try {
+      // 1. Upload the files
+      const uploadResult = await uploadMediaAPI(files)
+      if (!uploadResult.files?.length) throw new Error('Upload returned no files')
+
+      const mediaUrls = uploadResult.files.map(f => f.url)
+      const hasVideo = uploadResult.files.some(f => f.type === 'video')
+      const postType = mediaUrls.length > 1 ? 'carousel' : hasVideo ? 'reel' : 'image'
+
+      // 2. Auto-generate caption
+      let caption = ''
+      try {
+        const captionResult = await generateCaptionAPI({ postType })
+        if (captionResult.variants?.[0]) {
+          const v = captionResult.variants[0]
+          caption = `${v.hook}\n\n${v.body}\n\n${v.cta}\n\n${v.hashtags}`
+        }
+      } catch {
+        caption = '' // Non-fatal — post without caption rather than fail
+      }
+
+      // 3. Create + schedule the post for 10am AEST on that day
+      const scheduledAt = new Date(day)
+      scheduledAt.setHours(0, 0, 0, 0) // midnight UTC = 10am AEST
+      const post = {
+        id: uid(),
+        type: postType,
+        mediaUrls,
+        caption,
+        scheduledAt: scheduledAt.toISOString(),
+        status: 'SCHEDULED',
+      }
+      await savePost(post)
+      await reload()
+    } catch (err) {
+      alert('Auto-post failed: ' + err.message)
+    }
+    setAutoPosting(null)
+  }
+
   // ── Save post ──────────────────────────────────────────────────────────────
 
   async function handleSave(status) {
@@ -157,7 +311,6 @@ export default function InstagramScheduler() {
     if (!drawer || !confirm('Publish this post to Instagram right now?')) return
     setSaving(true)
     try {
-      // Save first
       await savePost(drawer)
       const result = await publishNowAPI(drawer.id)
       if (result.error) alert('Publish failed: ' + result.error)
@@ -169,7 +322,7 @@ export default function InstagramScheduler() {
     setSaving(false)
   }
 
-  // ── Media upload ───────────────────────────────────────────────────────────
+  // ── Media upload (drawer) ─────────────────────────────────────────────────
 
   async function handleUpload(e) {
     const files = e.target.files
@@ -226,6 +379,14 @@ export default function InstagramScheduler() {
     setCaptionVariants(null)
   }
 
+  // ── Disconnect ─────────────────────────────────────────────────────────────
+
+  async function handleDisconnect() {
+    if (!confirm('Disconnect Instagram? Scheduled posts will stop publishing.')) return
+    await fetch(`${META_API}/disconnect`, { method: 'POST' })
+    setConnection(false)
+  }
+
   // ── Calendar view ──────────────────────────────────────────────────────────
 
   const calDays = useMemo(() => getMonthDays(calYear, calMonth), [calYear, calMonth])
@@ -249,7 +410,27 @@ export default function InstagramScheduler() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
-  if (loading && posts.length === 0) return <div className="loading"><div className="spinner" /></div>
+  if (loading && posts.length === 0 && connection === null) return <div className="loading"><div className="spinner" /></div>
+
+  // Show connect panel if not connected
+  if (connection === false) {
+    return (
+      <div className="ig-scheduler">
+        <div className="page-header">
+          <div>
+            <h2 className="page-title">Instagram Scheduler</h2>
+            <p className="page-sub">Connect your Instagram account to start auto-posting</p>
+          </div>
+        </div>
+        <ConnectPanel onConnected={(data) => {
+          setConnection({ connected: true, igUsername: data.igUsername, pageName: data.pageName })
+          reload()
+        }} />
+      </div>
+    )
+  }
+
+  const isConnected = connection && connection.connected
 
   return (
     <div className="ig-scheduler">
@@ -257,7 +438,7 @@ export default function InstagramScheduler() {
       <div className="page-header">
         <div>
           <h2 className="page-title">Instagram Scheduler</h2>
-          <p className="page-sub">Schedule and auto-publish posts to @gender.reveal.ideass</p>
+          <p className="page-sub">Drag videos onto a day to auto-schedule with AI captions</p>
         </div>
         <div className="page-actions">
           <div className="ig-view-toggle">
@@ -268,12 +449,8 @@ export default function InstagramScheduler() {
         </div>
       </div>
 
-      {/* Config warning */}
-      {!configured && (
-        <div className="ig-warning">
-          Instagram API not configured. Set <code>INSTAGRAM_BUSINESS_ACCOUNT_ID</code> and <code>META_PAGE_ACCESS_TOKEN</code> in your .env file. Posts can still be drafted and scheduled.
-        </div>
-      )}
+      {/* Connected account bar */}
+      {isConnected && <AccountBar account={connection} onDisconnect={handleDisconnect} />}
 
       {/* Stats bar */}
       <div className="ig-stats">
@@ -282,6 +459,9 @@ export default function InstagramScheduler() {
         <div className="ig-stat"><span className="ig-stat-num">{stats.failed}</span><span className="ig-stat-label">Failed</span></div>
         <div className="ig-stat"><span className="ig-stat-num">{stats.thisWeek}</span><span className="ig-stat-label">This Week</span></div>
       </div>
+
+      {/* Drag hint */}
+      <div className="ig-drag-hint">Drag and drop video/image files onto any day to auto-schedule with AI captions</div>
 
       {/* Calendar View */}
       {view === 'calendar' && (
@@ -298,24 +478,32 @@ export default function InstagramScheduler() {
             {calDays.map((day, i) => {
               const key = fmtDate(day)
               const isCurrentMonth = day.getMonth() === calMonth
-              const isToday = fmtDate(day) === fmtDate(new Date())
+              const isToday = key === fmtDate(new Date())
+              const isDragTarget = dragOver === key
+              const isProcessing = autoPosting === key
               const dayPosts = postsByDate[key] || []
               return (
                 <div
                   key={i}
-                  className={`ig-cal-day ${!isCurrentMonth ? 'other-month' : ''} ${isToday ? 'today' : ''}`}
+                  className={`ig-cal-day ${!isCurrentMonth ? 'other-month' : ''} ${isToday ? 'today' : ''} ${isDragTarget ? 'drag-over' : ''} ${isProcessing ? 'processing' : ''}`}
                   onClick={() => newPost(day)}
+                  onDragOver={e => handleCalDragOver(e, day)}
+                  onDragLeave={handleCalDragLeave}
+                  onDrop={e => handleCalDrop(e, day)}
                 >
                   <span className="ig-cal-day-num">{day.getDate()}</span>
+                  {isProcessing && <div className="ig-cal-processing"><div className="spinner" /> Auto-posting...</div>}
                   <div className="ig-cal-day-posts">
                     {dayPosts.slice(0, 3).map(p => (
                       <div
                         key={p.id}
-                        className="ig-cal-dot"
-                        style={{ background: STATUS_COLORS[p.status] || '#9CA3AF' }}
-                        title={`${POST_TYPE_LABELS[p.type] || 'Post'} - ${p.status}`}
+                        className="ig-cal-post-chip"
+                        style={{ borderLeftColor: STATUS_COLORS[p.status] || '#9CA3AF' }}
                         onClick={e => { e.stopPropagation(); setDrawer(p); setCaptionVariants(null) }}
-                      />
+                      >
+                        <span className="ig-cal-post-icon">{POST_TYPE_ICONS[p.type]}</span>
+                        <span className="ig-cal-post-text">{p.caption ? p.caption.slice(0, 20) : p.status}</span>
+                      </div>
                     ))}
                     {dayPosts.length > 3 && <span className="ig-cal-more">+{dayPosts.length - 3}</span>}
                   </div>
@@ -329,7 +517,7 @@ export default function InstagramScheduler() {
       {/* List View */}
       {view === 'list' && (
         <div className="ig-list">
-          {posts.length === 0 && <div className="empty-state"><div className="empty-icon">📸</div><h3>No posts yet</h3><p>Create your first Instagram post to get started.</p></div>}
+          {posts.length === 0 && <div className="empty-state"><div className="empty-icon">📸</div><h3>No posts yet</h3><p>Drag a video onto the calendar or click + New Post.</p></div>}
           {posts.sort((a, b) => new Date(b.scheduledAt || b.createdAt) - new Date(a.scheduledAt || a.createdAt)).map(post => (
             <div key={post.id} className="ig-list-item" onClick={() => { setDrawer(post); setCaptionVariants(null) }}>
               <div className="ig-list-preview">
@@ -392,19 +580,17 @@ export default function InstagramScheduler() {
                       <button className="ig-media-remove" onClick={() => removeMedia(idx)}>&times;</button>
                     </div>
                   ))}
-                  <label className="ig-media-add" htmlFor="ig-file-input">
-                    {uploading ? <div className="spinner" /> : <><span>+</span><span className="muted">Add Media</span></>}
-                  </label>
                 </div>
-                <input
-                  ref={fileRef}
-                  id="ig-file-input"
-                  type="file"
-                  accept={ACCEPT_MEDIA}
-                  multiple={drawer.type === 'carousel'}
-                  onChange={handleUpload}
-                  style={{ display: 'none' }}
-                />
+                <div className="ig-upload-btn-wrap">
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/*,video/*,.mp4,.mov,.jpg,.jpeg,.png,.webp"
+                    multiple
+                    onChange={handleUpload}
+                    className="ig-upload-input"
+                  />
+                </div>
               </div>
 
               {/* Caption */}
@@ -463,7 +649,6 @@ export default function InstagramScheduler() {
                   type="datetime-local"
                   value={drawer.scheduledAt ? new Date(new Date(drawer.scheduledAt).getTime() + 10 * 60 * 60 * 1000).toISOString().slice(0, 16) : ''}
                   onChange={e => {
-                    // Convert AEST input back to UTC for storage
                     const local = new Date(e.target.value)
                     const utc = new Date(local.getTime() - 10 * 60 * 60 * 1000)
                     setDrawer(prev => ({ ...prev, scheduledAt: utc.toISOString() }))
@@ -500,7 +685,7 @@ export default function InstagramScheduler() {
                   <button className="btn btn-secondary" onClick={() => handleSave('DRAFT')} disabled={saving}>
                     Save Draft
                   </button>
-                  {configured && drawer.mediaUrls?.length > 0 && (
+                  {isConnected && drawer.mediaUrls?.length > 0 && (
                     <button className="btn btn-accent" onClick={handlePublishNow} disabled={saving}>
                       Publish Now
                     </button>
