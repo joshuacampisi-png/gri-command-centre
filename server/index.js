@@ -40,6 +40,7 @@ import { startKeywordScheduler } from './lib/keyword-tracker.js'
 import { getUsageSummary } from './lib/claude-guard.js'
 import instagramSchedulerRoutes from './routes/instagram-scheduler.js'
 import { startInstagramCron } from './lib/instagram-cron.js'
+import metaConnectRoutes, { loadSavedMetaTokens } from './routes/meta-connect.js'
 
 // ── PABLO CRASH RECOVERY — Rule 5 ──
 const JOSH_CHAT = '8040702286'
@@ -167,6 +168,7 @@ app.use('/api/ads', adsRoutes)
 app.use('/api/shopify/webhook', shopifyWebhookRoutes)
 app.use('/api/square/webhook', squareWebhookRoutes)
 app.use('/api/instagram', instagramSchedulerRoutes)
+app.use('/api/meta', metaConnectRoutes)
 
 // ── Admin: disk usage + cleanup ──────────────────────────────────────────────
 import { readdirSync, statSync, unlinkSync as _unlinkSync, readFileSync as _readFileSync } from 'fs'
@@ -403,6 +405,9 @@ const server = app.listen(env.port, '0.0.0.0', () => {
 
   // Meta Ads daily + weekly Telegram reports via Pablo
   startAdsReportCrons()
+
+  // Load saved Meta/Instagram tokens from data/meta-connect.json into process.env
+  loadSavedMetaTokens()
 
   // Instagram auto-scheduler (checks every minute for due posts)
   startInstagramCron()
