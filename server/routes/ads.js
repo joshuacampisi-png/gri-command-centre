@@ -18,6 +18,8 @@ import {
 } from '../lib/fatigue-engine.js'
 import { callClaude } from '../lib/claude-guard.js'
 import { sendAdsDailyReport } from '../lib/ads-telegram-report.js'
+import { sendAdsDaily } from '../lib/ads-daily-report.js'
+import { sendAdsWeekly } from '../lib/ads-weekly-report.js'
 import { dataFile } from '../lib/data-dir.js'
 
 const router = Router()
@@ -176,6 +178,28 @@ router.post('/pause/:adId', async (req, res) => {
 router.post('/report/send', async (_req, res) => {
   try {
     const result = await sendAdsDailyReport()
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── POST /api/ads/report/daily ────────────────────────────────────────────────
+
+router.post('/report/daily', async (_req, res) => {
+  try {
+    const result = await sendAdsDaily()
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── POST /api/ads/report/weekly ───────────────────────────────────────────────
+
+router.post('/report/weekly', async (_req, res) => {
+  try {
+    const result = await sendAdsWeekly()
     res.json(result)
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message })

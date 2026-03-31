@@ -32,6 +32,7 @@ import { startSEOLearningCrons } from './lib/seo-learning-cron.js'
 import { scheduleCompetitorIntelCron } from './lib/competitor-intel-cron.js'
 import { startTrendsScheduler } from './lib/trends-scheduler.js'
 import { startAdsSnapshotCron } from './lib/ads-snapshot-cron.js'
+import { startAdsReportCrons } from './lib/ads-report-cron.js'
 import { startRevenueBaselineCron } from './lib/revenue-cron.js'
 import { seedBaselineIfNeeded } from './lib/daily-revenue.js'
 // clearAllHires removed — one-time clear done
@@ -341,6 +342,9 @@ const server = app.listen(env.port, '0.0.0.0', () => {
   // startKeywordScheduler()
   // startTrendsScheduler()
   // startAdsSnapshotCron()
+
+  // Meta Ads daily + weekly Telegram reports via Pablo
+  startAdsReportCrons()
 
   console.log('✅ Server running — auto Telegram messages: DISABLED')
   console.log('🔒 Crash recovery: ACTIVE')
