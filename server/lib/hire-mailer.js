@@ -1,5 +1,9 @@
 import nodemailer from 'nodemailer';
+import dns from 'dns';
 import { getHireDates } from './date-helpers.js';
+
+// Force IPv4 — Railway's IPv6 can't reach Gmail SMTP
+dns.setDefaultResultOrder('ipv4first');
 
 let transporter = null;
 
