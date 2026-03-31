@@ -28,7 +28,7 @@ export const env = {
     }
   },
   telegram: {
-    botToken: process.env.TELEGRAM_BOT_TOKEN || '',
+    botToken: process.env.GRI_TASK_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN || '',
     webhookSecret: process.env.TELEGRAM_WEBHOOK_SECRET || '',
     webhookUrl: process.env.TELEGRAM_WEBHOOK_URL || '',
     joshChatId: process.env.TELEGRAM_JOSH_CHAT_ID || '8040702286',

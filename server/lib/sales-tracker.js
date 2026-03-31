@@ -99,19 +99,19 @@ export function getShippingProtection() {
   const date = todayKey()
   const today = prot.daily[date] || { count: 0, revenue: 0 }
 
-  // This week (Wed-Tue)
+  // This week (Mon-Sun)
   const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Australia/Brisbane' }))
   const day = now.getDay()
-  const daysSinceWed = (day - 3 + 7) % 7
-  const wed = new Date(now)
-  wed.setDate(now.getDate() - daysSinceWed)
-  wed.setHours(0, 0, 0, 0)
-  const wedKey = wed.toLocaleDateString('en-CA', { timeZone: 'Australia/Brisbane' })
-  const tueKey = new Date(wed.getTime() + 6 * 86400000).toLocaleDateString('en-CA', { timeZone: 'Australia/Brisbane' })
+  const daysSinceMon = (day === 0 ? 6 : day - 1)
+  const mon = new Date(now)
+  mon.setDate(now.getDate() - daysSinceMon)
+  mon.setHours(0, 0, 0, 0)
+  const monKey = mon.toLocaleDateString('en-CA', { timeZone: 'Australia/Brisbane' })
+  const sunKey = new Date(mon.getTime() + 6 * 86400000).toLocaleDateString('en-CA', { timeZone: 'Australia/Brisbane' })
 
   let weekCount = 0, weekRevenue = 0
   for (const [d, v] of Object.entries(prot.daily)) {
-    if (d >= wedKey && d <= tueKey) {
+    if (d >= monKey && d <= sunKey) {
       weekCount += v.count
       weekRevenue += v.revenue
     }

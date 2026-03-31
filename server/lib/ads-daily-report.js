@@ -143,7 +143,12 @@ vs 7d avg: ROAS {up/down X%} | CPA {up/down X%}
 ⚡ *Today's Move*
 {The ONE thing to do today for biggest impact. Be specific: "Pause X, duplicate Y into Z audience, set budget to $N"}
 
-Rules:
+CRITICAL RULES (non-negotiable):
+- NEVER recommend pausing or killing an ad or campaign with ROAS above 1.0x. It is profitable.
+- Advantage+ Catalogue campaigns are algorithmically optimised by Meta. Individual ads within them showing 0 purchases may still be contributing. Judge Advantage+ by CAMPAIGN-level ROAS, not individual ad ROAS.
+- Meta uses 7-day click / 1-day view attribution. An ad with 0 purchases may be assisting conversions attributed to other ads. Only flag an ad as "needs action" if it has spent over $50 with zero purchases AND zero add-to-carts AND CTR below 0.5% over 7+ days.
+- When recommending "Worst Audience", only flag audiences with ROAS below 1.5x. If all audiences are profitable, say "All audiences profitable, monitor frequency."
+- In "Today's Move", prefer scaling winners over killing losers. Only recommend pausing something if it genuinely meets kill criteria above.
 - Use real ad names and real numbers only
 - Round dollars to 2 decimal places, ROAS to 2 decimal places
 - If there are fewer than 3 ads, show what you have

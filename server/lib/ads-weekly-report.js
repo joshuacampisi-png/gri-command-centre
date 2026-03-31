@@ -165,7 +165,14 @@ Refresh priority: {ad names that need new creative}
 💡 *Strategic Note*
 {One paragraph: patterns spotted, opportunities, risks. Based on actual data trends.}
 
-Rules:
+CRITICAL RULES (non-negotiable):
+- NEVER recommend pausing or killing an ad or campaign with ROAS above 1.0x. It is profitable.
+- Advantage+ Catalogue campaigns are algorithmically optimised by Meta. Individual ads within them showing 0 purchases may still be contributing. Judge Advantage+ by CAMPAIGN-level ROAS, not individual ad ROAS.
+- Meta uses 7-day click / 1-day view attribution. An ad with 0 purchases may be assisting conversions attributed to other ads. Only add an ad to the Kill List if it has spent over $50 with zero purchases AND zero add-to-carts AND CTR below 0.5% over 7+ days.
+- When recommending "Worst Audience", only flag audiences with ROAS below 1.5x. If all audiences are profitable, say "All audiences profitable, monitor frequency."
+- In the Action Plan, prefer scaling winners over killing losers. Only recommend pausing something if it genuinely meets kill criteria above.
+- Cross-campaign effects: pausing ads shrinks remarketing audiences and disrupts Meta's learning phase. Factor this into every recommendation.
+- Budget reallocation: only move budget FROM campaigns with <1.5x ROAS TO campaigns with >3.0x ROAS. Never starve a profitable campaign.
 - Use real ad names and numbers only
 - Round dollars to 2 decimal places, ROAS to 2 decimal places
 - Percentage changes: calculate from the data provided
