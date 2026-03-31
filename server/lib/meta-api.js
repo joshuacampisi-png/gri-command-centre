@@ -50,6 +50,8 @@ export async function fetchCampaigns() {
   const accountId = metaAccountId()
   const ids = griCampaignIds()
 
+  console.log(`[Meta] fetchCampaigns called. Account: ${accountId}, Campaign IDs: ${ids.length > 0 ? ids.join(',') : 'NONE (will use account fallback)'}, Token starts: ${metaToken().slice(0, 15)}...`)
+
   if (ids.length > 0) {
     const results = []
     for (const cid of ids) {
@@ -62,6 +64,7 @@ export async function fetchCampaigns() {
         console.error(`[Meta] Campaign ${cid} fetch error:`, e.message)
       }
     }
+    console.log(`[Meta] fetchCampaigns returning ${results.length} campaigns`)
     return results
   }
 
