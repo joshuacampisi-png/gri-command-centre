@@ -16,8 +16,12 @@ router.use((_req, res, next) => {
 
 const DATA_FILE = dataFile('calendar-entries.json')
 const VIDEO_DIR = dataDir('calendar-videos')
-const BACKUP_DIR = dataDir('calendar-backups')
-const MAX_BACKUPS = 50
+const MAX_BACKUPS = 20
+
+function getBackupDir() {
+  try { return dataDir('calendar-backups') }
+  catch { return null }
+}
 
 function loadEntries() {
   if (!existsSync(DATA_FILE)) return []
@@ -27,14 +31,14 @@ function loadEntries() {
 
 function backupEntries() {
   if (!existsSync(DATA_FILE)) return
+  const dir = getBackupDir()
+  if (!dir) return
   try {
     const ts = new Date().toISOString().replace(/[:.]/g, '-')
-    const backupFile = `${BACKUP_DIR}/calendar-${ts}.json`
-    copyFileSync(DATA_FILE, backupFile)
-    // Prune old backups, keep last MAX_BACKUPS
-    const files = readdirSync(BACKUP_DIR).filter(f => f.startsWith('calendar-') && f.endsWith('.json')).sort()
+    copyFileSync(DATA_FILE, `${dir}/calendar-${ts}.json`)
+    const files = readdirSync(dir).filter(f => f.startsWith('calendar-') && f.endsWith('.json')).sort()
     while (files.length > MAX_BACKUPS) {
-      try { unlinkSync(`${BACKUP_DIR}/${files.shift()}`) } catch {}
+      try { unlinkSync(`${dir}/${files.shift()}`) } catch {}
     }
   } catch (e) {
     console.error('[Calendar] Backup failed:', e.message)
@@ -86,20 +90,24 @@ router.post('/entries/:id/restore', (req, res) => {
 
 // List available backups
 router.get('/backups', (_req, res) => {
+  const dir = getBackupDir()
+  if (!dir) return res.json({ ok: true, backups: [] })
   try {
-    const files = readdirSync(BACKUP_DIR).filter(f => f.endsWith('.json')).sort().reverse()
-    res.json({ ok: true, backups: files.map(f => ({ file: f, date: f.replace('calendar-', '').replace('.json', '').replace(/-/g, (m, i) => i < 16 ? '-' : '.').slice(0, 19) })) })
+    const files = readdirSync(dir).filter(f => f.endsWith('.json')).sort().reverse()
+    res.json({ ok: true, backups: files.map(f => ({ file: f })) })
   } catch { res.json({ ok: true, backups: [] }) }
 })
 
 // Restore from a specific backup
 router.post('/backups/:file/restore', (req, res) => {
+  const dir = getBackupDir()
+  if (!dir) return res.status(404).json({ error: 'No backup directory' })
   const file = req.params.file.replace(/[^a-zA-Z0-9._-]/g, '')
-  const backupPath = `${BACKUP_DIR}/${file}`
+  const backupPath = `${dir}/${file}`
   if (!existsSync(backupPath)) return res.status(404).json({ error: 'Backup not found' })
   try {
     const backupData = JSON.parse(readFileSync(backupPath, 'utf8'))
-    backupEntries() // backup current state before restoring
+    backupEntries()
     writeFileSync(DATA_FILE, JSON.stringify(backupData, null, 2))
     res.json({ ok: true, restored: backupData.length })
   } catch (e) {
