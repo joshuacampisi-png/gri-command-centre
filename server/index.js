@@ -18,6 +18,7 @@ import returnsRoutes from './routes/returns.js'
 import contractRoutes from './routes/contract.js'
 import blogWriterRoutes from './routes/blog-writer.js'
 import adsRoutes from './routes/ads.js'
+import adsStrategistRoutes from './routes/ads-strategist.js'
 import shopifyWebhookRoutes from './routes/shopify-webhook.js'
 import squareWebhookRoutes from './routes/square-webhook.js'
 import { env } from './lib/env.js'
@@ -26,7 +27,7 @@ import { startNotionPoller, triggerPoll } from './lib/notion-poller.js'
 import { startFlywheel, stopFlywheel, getFlywheelStatus } from './lib/flywheel.js'
 import { startExecutor, stopExecutor, getExecutorStatus, executeTaskById } from './lib/executor.js'
 import { handleApproval, getPendingApprovals } from './lib/approval-queue.js'
-import { startMorningBrief, sendMorningBrief } from './lib/morning-brief.js'
+import { startMorningWakeUp, sendMorningWakeUp } from './lib/morning-wake-up.js'
 import { startSEOLearningCrons } from './lib/seo-learning-cron.js'
 import { scheduleCompetitorIntelCron } from './lib/competitor-intel-cron.js'
 import { startTrendsScheduler } from './lib/trends-scheduler.js'
@@ -155,6 +156,7 @@ app.use('/api/hires', hiresRoutes)
 app.use('/api/returns', returnsRoutes)
 app.use('/api/contract', contractRoutes)
 app.use('/api/blog-writer', blogWriterRoutes)
+app.use('/api/ads/strategist', adsStrategistRoutes)
 app.use('/api/ads', adsRoutes)
 app.use('/api/shopify/webhook', shopifyWebhookRoutes)
 app.use('/api/square/webhook', squareWebhookRoutes)
@@ -333,7 +335,7 @@ const server = app.listen(env.port, '0.0.0.0', () => {
   startRevenueBaselineCron()
 
   // DISABLED — all auto Telegram messages killed per Josh's request
-  // startMorningBrief()
+  startMorningWakeUp()
   // startSEOLearningCrons()
   // scheduleCompetitorIntelCron()
   // startKeywordScheduler()

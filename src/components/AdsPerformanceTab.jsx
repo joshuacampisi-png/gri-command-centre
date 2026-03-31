@@ -449,6 +449,360 @@ function PerformanceCharts({ campaigns }) {
   )
 }
 
+// ── Health Score Gauge (CSS circle) ──────────────────────────────────────────
+
+function HealthGauge({ score }) {
+  const radius = 54
+  const circumference = 2 * Math.PI * radius
+  const offset = circumference - (score / 100) * circumference
+  const colour = score >= 75 ? '#3fb950' : score >= 50 ? '#d29922' : '#f85149'
+
+  return (
+    <div className="ads-strategist-gauge">
+      <svg viewBox="0 0 120 120" className="ads-strategist-gauge-svg">
+        <circle cx="60" cy="60" r={radius} fill="none" stroke="#E8ECF4" strokeWidth="8" />
+        <circle
+          cx="60" cy="60" r={radius} fill="none"
+          stroke={colour} strokeWidth="8" strokeLinecap="round"
+          strokeDasharray={circumference} strokeDashoffset={offset}
+          style={{ transform: 'rotate(-90deg)', transformOrigin: '50% 50%', transition: 'stroke-dashoffset 0.8s ease' }}
+        />
+      </svg>
+      <div className="ads-strategist-gauge-label">
+        <span className="ads-strategist-gauge-number" style={{ color: colour }}>{score}</span>
+        <span className="ads-strategist-gauge-text">/ 100</span>
+      </div>
+    </div>
+  )
+}
+
+// ── Urgency Badge ───────────────────────────────────────────────────────────
+
+function UrgencyBadge({ urgency }) {
+  const map = {
+    TODAY: { bg: '#f8514918', color: '#f85149', border: '#f8514944' },
+    THIS_WEEK: { bg: '#d2992218', color: '#d29922', border: '#d2992244' },
+    NEXT_WEEK: { bg: '#3B82F618', color: '#3B82F6', border: '#3B82F644' }
+  }
+  const s = map[urgency] || map.NEXT_WEEK
+  return (
+    <span className="ads-strategist-urgency" style={{ background: s.bg, color: s.color, borderColor: s.border }}>
+      {urgency?.replace('_', ' ')}
+    </span>
+  )
+}
+
+// ── Severity Badge ──────────────────────────────────────────────────────────
+
+function SeverityBadge({ severity }) {
+  const map = {
+    HIGH: { bg: '#f8514918', color: '#f85149' },
+    MEDIUM: { bg: '#d2992218', color: '#d29922' },
+    LOW: { bg: '#3B82F618', color: '#3B82F6' }
+  }
+  const s = map[severity] || map.LOW
+  return (
+    <span className="ads-strategist-severity" style={{ background: s.bg, color: s.color }}>
+      {severity}
+    </span>
+  )
+}
+
+// ── Health Check Panel ──────────────────────────────────────────────────────
+
+function HealthCheckPanel({ data, onClose }) {
+  const [expandedProblem, setExpandedProblem] = useState(null)
+
+  if (!data) return null
+
+  const statusColour = {
+    HEALTHY: '#3fb950',
+    NEEDS_ATTENTION: '#d29922',
+    CRITICAL: '#f85149'
+  }
+
+  return (
+    <div className="ads-strategist-overlay" onClick={onClose}>
+      <div className="ads-strategist-panel" onClick={e => e.stopPropagation()}>
+        <div className="ads-strategist-panel-header">
+          <h2>Account Health Check</h2>
+          <button className="ads-strategist-close" onClick={onClose}>x</button>
+        </div>
+
+        <div className="ads-strategist-panel-body">
+          {/* Score + Status */}
+          <div className="ads-strategist-hero">
+            <HealthGauge score={data.healthScore || 0} />
+            <div className="ads-strategist-hero-info">
+              <span
+                className="ads-strategist-status-badge"
+                style={{ background: (statusColour[data.overallHealth] || '#7C8DB0') + '18', color: statusColour[data.overallHealth] || '#7C8DB0' }}
+              >
+                {data.overallHealth?.replace('_', ' ')}
+              </span>
+              <p className="ads-strategist-summary">{data.summary}</p>
+              {data.generatedAt && (
+                <span className="ads-strategist-timestamp">Generated {new Date(data.generatedAt).toLocaleString('en-AU')}</span>
+              )}
+            </div>
+          </div>
+
+          {/* Top Wins */}
+          {data.topWins?.length > 0 && (
+            <div className="ads-strategist-section">
+              <h3 className="ads-strategist-section-title ads-strategist-wins-title">What's Working</h3>
+              <div className="ads-strategist-cards">
+                {data.topWins.map((w, i) => (
+                  <div key={i} className="ads-strategist-card ads-strategist-card-win">
+                    <div className="ads-strategist-card-top">
+                      <strong>{w.ad}</strong>
+                      <span className="ads-strategist-metric-badge">{w.metric}</span>
+                    </div>
+                    <p className="ads-strategist-card-campaign">{w.campaign}</p>
+                    <p className="ads-strategist-card-text">{w.why}</p>
+                    <p className="ads-strategist-card-action">{w.action}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Problems */}
+          {data.problems?.length > 0 && (
+            <div className="ads-strategist-section">
+              <h3 className="ads-strategist-section-title ads-strategist-problems-title">Problems and Fixes</h3>
+              <div className="ads-strategist-cards">
+                {data.problems.map((p, i) => (
+                  <div
+                    key={i}
+                    className={`ads-strategist-card ads-strategist-card-problem ${p.severity === 'HIGH' ? 'ads-strategist-card-high' : ''}`}
+                  >
+                    <div className="ads-strategist-card-top">
+                      <strong>{p.ad}</strong>
+                      <SeverityBadge severity={p.severity} />
+                    </div>
+                    <p className="ads-strategist-card-campaign">{p.campaign}</p>
+                    <p className="ads-strategist-card-text">{p.issue}</p>
+                    <button
+                      className="ads-strategist-expand-btn"
+                      onClick={() => setExpandedProblem(expandedProblem === i ? null : i)}
+                    >
+                      {expandedProblem === i ? 'Hide steps' : 'Show fix steps'}
+                    </button>
+                    {expandedProblem === i && p.fix && (
+                      <div className="ads-strategist-fix-steps">
+                        {Object.entries(p.fix).map(([key, val]) => (
+                          <div key={key} className="ads-strategist-step">
+                            <span className="ads-strategist-step-num">{key.replace('step', '')}</span>
+                            <span>{val}</span>
+                          </div>
+                        ))}
+                        {p.expectedImpact && (
+                          <p className="ads-strategist-impact">Expected impact: {p.expectedImpact}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Next Moves */}
+          {data.nextMoves?.length > 0 && (
+            <div className="ads-strategist-section">
+              <h3 className="ads-strategist-section-title">Next Moves</h3>
+              <div className="ads-strategist-moves">
+                {data.nextMoves.sort((a, b) => a.priority - b.priority).map((m, i) => (
+                  <div key={i} className="ads-strategist-move">
+                    <div className="ads-strategist-move-header">
+                      <span className="ads-strategist-move-num">{m.priority}</span>
+                      <strong>{m.action}</strong>
+                      <UrgencyBadge urgency={m.urgency} />
+                    </div>
+                    <p className="ads-strategist-move-why">{m.why}</p>
+                    <div className="ads-strategist-move-howto">
+                      <strong>How to do this:</strong>
+                      <p>{m.howTo}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Budget Advice */}
+          {data.budgetAdvice && (
+            <div className="ads-strategist-section">
+              <h3 className="ads-strategist-section-title">Budget Advice</h3>
+              <div className="ads-strategist-budget">
+                <div className="ads-strategist-budget-summary">
+                  <div className="ads-strategist-budget-item">
+                    <span className="ads-strategist-budget-label">Current Daily</span>
+                    <span className="ads-strategist-budget-value">${data.budgetAdvice.currentDaily}</span>
+                  </div>
+                  <div className="ads-strategist-budget-arrow">&#8594;</div>
+                  <div className="ads-strategist-budget-item">
+                    <span className="ads-strategist-budget-label">Recommended</span>
+                    <span className="ads-strategist-budget-value ads-strategist-budget-rec">${data.budgetAdvice.recommendedDaily}</span>
+                  </div>
+                </div>
+                <p className="ads-strategist-budget-reasoning">{data.budgetAdvice.reasoning}</p>
+                {data.budgetAdvice.reallocation?.length > 0 && (
+                  <div className="ads-strategist-reallocation">
+                    <strong>Reallocation breakdown:</strong>
+                    {data.budgetAdvice.reallocation.map((r, i) => (
+                      <div key={i} className="ads-strategist-realloc-row">
+                        <span className="ads-strategist-realloc-name">{r.campaign}</span>
+                        <span className="ads-strategist-realloc-change">
+                          ${r.current} &#8594; ${r.recommended}
+                        </span>
+                        <span className="ads-strategist-realloc-reason">{r.reason}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Creative Freshness */}
+          {data.creativeFreshness && (
+            <div className="ads-strategist-section">
+              <h3 className="ads-strategist-section-title">Creative Freshness</h3>
+              <div className="ads-strategist-freshness">
+                <span className={`ads-strategist-freshness-badge ads-strategist-freshness-${data.creativeFreshness.status?.toLowerCase()?.replace('_', '-')}`}>
+                  {data.creativeFreshness.status?.replace('_', ' ')}
+                </span>
+                {data.creativeFreshness.staleAds?.length > 0 && (
+                  <div className="ads-strategist-stale-list">
+                    <strong>Stale ads:</strong> {data.creativeFreshness.staleAds.join(', ')}
+                  </div>
+                )}
+                <p className="ads-strategist-refresh-brief">{data.creativeFreshness.refreshBrief}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Weekly Forecast */}
+          {data.weeklyForecast && (
+            <div className="ads-strategist-section">
+              <h3 className="ads-strategist-section-title">Weekly Forecast</h3>
+              <div className="ads-strategist-forecast">
+                <p>{data.weeklyForecast}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Daily Briefing Card ─────────────────────────────────────────────────────
+
+function DailyBriefingCard({ briefing, loading, onRefresh }) {
+  const [collapsed, setCollapsed] = useState(false)
+
+  if (loading) {
+    return (
+      <div className="ads-strategist-briefing">
+        <div className="ads-strategist-briefing-header">
+          <h3>Daily Briefing</h3>
+        </div>
+        <div className="ads-strategist-briefing-loading">Loading your morning briefing...</div>
+      </div>
+    )
+  }
+
+  if (!briefing) return null
+
+  return (
+    <div className="ads-strategist-briefing">
+      <div className="ads-strategist-briefing-header">
+        <h3>Daily Briefing</h3>
+        <div className="ads-strategist-briefing-actions">
+          <button className="ads-btn-sm" onClick={onRefresh} title="Refresh briefing">Refresh</button>
+          <button className="ads-btn-sm" onClick={() => setCollapsed(!collapsed)}>
+            {collapsed ? 'Expand' : 'Collapse'}
+          </button>
+        </div>
+      </div>
+
+      {!collapsed && (
+        <div className="ads-strategist-briefing-body">
+          <p className="ads-strategist-greeting">{briefing.greeting}</p>
+
+          {/* Yesterday vs Previous */}
+          {briefing.yesterdayVsPrevious && (
+            <div className="ads-strategist-comparison">
+              <div className="ads-strategist-comp-item">
+                <span className="ads-strategist-comp-label">Spend</span>
+                <span className="ads-strategist-comp-value">{briefing.yesterdayVsPrevious.spend}</span>
+              </div>
+              <div className="ads-strategist-comp-item">
+                <span className="ads-strategist-comp-label">ROAS</span>
+                <span className="ads-strategist-comp-value">{briefing.yesterdayVsPrevious.roas}</span>
+              </div>
+              <div className="ads-strategist-comp-item">
+                <span className="ads-strategist-comp-label">Purchases</span>
+                <span className="ads-strategist-comp-value">{briefing.yesterdayVsPrevious.purchases}</span>
+              </div>
+            </div>
+          )}
+
+          <p className="ads-strategist-headline">{briefing.headline}</p>
+
+          <div className="ads-strategist-briefing-grid">
+            {/* Attention Needed */}
+            {briefing.attentionNeeded?.length > 0 && (
+              <div className="ads-strategist-briefing-col">
+                <h4 className="ads-strategist-briefing-col-title ads-strategist-attention">Needs Attention</h4>
+                <ul className="ads-strategist-briefing-list">
+                  {briefing.attentionNeeded.map((item, i) => (
+                    <li key={i}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Working Well */}
+            {briefing.workingWell?.length > 0 && (
+              <div className="ads-strategist-briefing-col">
+                <h4 className="ads-strategist-briefing-col-title ads-strategist-working">Working Well</h4>
+                <ul className="ads-strategist-briefing-list">
+                  {briefing.workingWell.map((item, i) => (
+                    <li key={i}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+
+          {/* Today's Plan */}
+          {briefing.todaysPlan?.length > 0 && (
+            <div className="ads-strategist-todays-plan">
+              <h4>Today's Plan</h4>
+              <ol className="ads-strategist-plan-list">
+                {briefing.todaysPlan.map((item, i) => (
+                  <li key={i}>{item}</li>
+                ))}
+              </ol>
+            </div>
+          )}
+
+          {/* Market Pulse */}
+          {briefing.marketPulse && (
+            <div className="ads-strategist-market-pulse">
+              <strong>Market Pulse:</strong> {briefing.marketPulse}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Main Component ───────────────────────────────────────────────────────────
 
 export default function AdsPerformanceTab() {
@@ -459,6 +813,52 @@ export default function AdsPerformanceTab() {
   const [expandedCampaign, setExpandedCampaign] = useState(null)
   const [sendingReport, setSendingReport] = useState(false)
   const [lastSynced, setLastSynced] = useState(null)
+
+  // Strategist state
+  const [healthCheck, setHealthCheck] = useState(null)
+  const [healthCheckLoading, setHealthCheckLoading] = useState(false)
+  const [healthCheckOpen, setHealthCheckOpen] = useState(false)
+  const [briefing, setBriefing] = useState(null)
+  const [briefingLoading, setBriefingLoading] = useState(false)
+
+  // Load daily briefing on mount (cached for the day)
+  const fetchBriefing = useCallback(async () => {
+    const cacheKey = 'ads-briefing-' + new Date().toISOString().slice(0, 10)
+    const cached = sessionStorage.getItem(cacheKey)
+    if (cached) {
+      setBriefing(JSON.parse(cached))
+      return
+    }
+    setBriefingLoading(true)
+    try {
+      const res = await fetch('/api/ads/strategist/daily-briefing')
+      const json = await res.json()
+      if (json.ok) {
+        setBriefing(json)
+        sessionStorage.setItem(cacheKey, JSON.stringify(json))
+      }
+    } catch (err) {
+      console.error('Briefing fetch error:', err)
+    }
+    setBriefingLoading(false)
+  }, [])
+
+  const fetchHealthCheck = useCallback(async () => {
+    setHealthCheckLoading(true)
+    try {
+      const res = await fetch('/api/ads/strategist/health-check')
+      const json = await res.json()
+      if (json.ok) {
+        setHealthCheck(json)
+        setHealthCheckOpen(true)
+      }
+    } catch (err) {
+      console.error('Health check error:', err)
+    }
+    setHealthCheckLoading(false)
+  }, [])
+
+  useEffect(() => { fetchBriefing() }, [fetchBriefing])
 
   const fetchData = useCallback(async (range) => {
     setLoading(true)
@@ -527,8 +927,32 @@ export default function AdsPerformanceTab() {
           <button className="btn-sec" onClick={handleSendReport} disabled={sendingReport}>
             {sendingReport ? 'Sending...' : '📨 Send Report'}
           </button>
+          <button
+            className="ads-strategist-health-btn"
+            onClick={fetchHealthCheck}
+            disabled={healthCheckLoading}
+          >
+            <span className="ads-strategist-pulse-icon">&#9829;</span>
+            {healthCheckLoading ? 'Analysing...' : 'Account Health Check'}
+          </button>
         </div>
       </div>
+
+      {/* Daily Briefing */}
+      <DailyBriefingCard
+        briefing={briefing}
+        loading={briefingLoading}
+        onRefresh={() => {
+          const cacheKey = 'ads-briefing-' + new Date().toISOString().slice(0, 10)
+          sessionStorage.removeItem(cacheKey)
+          fetchBriefing()
+        }}
+      />
+
+      {/* Health Check Panel */}
+      {healthCheckOpen && (
+        <HealthCheckPanel data={healthCheck} onClose={() => setHealthCheckOpen(false)} />
+      )}
 
       {/* Date Range */}
       <div className="ads-date-pills">
