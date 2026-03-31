@@ -1,26 +1,23 @@
-import nodemailer from 'nodemailer';
-import dns from 'dns';
+import { Resend } from 'resend';
 import { getHireDates } from './date-helpers.js';
 
-// Force IPv4 globally — Railway's IPv6 can't reach Gmail SMTP
-dns.setDefaultResultOrder('ipv4first');
+let resendClient = null;
 
-let transporter = null;
-
-function getTransporter() {
-  if (!transporter) {
-    transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD,
-      },
-      connectionTimeout: 15000,
-      greetingTimeout: 10000,
-      socketTimeout: 15000,
-    });
+function getClient() {
+  if (!resendClient) {
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error('RESEND_API_KEY environment variable is not set');
+    }
+    resendClient = new Resend(process.env.RESEND_API_KEY);
   }
-  return transporter;
+  return resendClient;
+}
+
+function getFromAddress() {
+  const name = process.env.GMAIL_FROM_NAME || 'Gender Reveal Ideas';
+  // Use verified domain sender, or fall back to Resend test sender
+  const email = process.env.RESEND_FROM_EMAIL || process.env.GMAIL_USER || 'onboarding@resend.dev';
+  return `${name} <${email}>`;
 }
 
 function firstName(hire) {
@@ -156,7 +153,7 @@ const TEMPLATES = {
 };
 
 /**
- * Send an email to a hire customer.
+ * Send an email to a hire customer via Resend HTTP API.
  * @param {string} type - confirmation | bond_link | refund | withheld | contract
  * @param {object} hire - the hire record
  * @param {*} [extraData] - payment URL for bond_link, signing URL for contract
@@ -168,14 +165,19 @@ export async function sendHireEmail(type, hire, extraData) {
 
   const { subject, text } = builder(hire, extraData);
 
-  const info = await getTransporter().sendMail({
-    from: `"${process.env.GMAIL_FROM_NAME || 'Gender Reveal Ideas'}" <${process.env.GMAIL_USER}>`,
+  const { data, error } = await getClient().emails.send({
+    from: getFromAddress(),
     to: hire.customerEmail,
     subject,
     text,
   });
 
-  console.log(`[hire-mailer] Sent ${type} email to ${hire.customerEmail} — messageId: ${info.messageId}`);
+  if (error) {
+    console.error(`[hire-mailer] Resend error for ${type} to ${hire.customerEmail}:`, error);
+    throw new Error(error.message || 'Resend email failed');
+  }
 
-  return { messageId: info.messageId };
+  console.log(`[hire-mailer] Sent ${type} email to ${hire.customerEmail} — messageId: ${data.id}`);
+
+  return { messageId: data.id };
 }
