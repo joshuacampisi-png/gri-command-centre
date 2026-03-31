@@ -9,7 +9,8 @@ import { existsSync, mkdirSync } from 'fs'
 const ROOT = process.env.RAILWAY_VOLUME_MOUNT_PATH || join(process.cwd(), 'data')
 
 // Ensure the root data dir exists
-if (!existsSync(ROOT)) mkdirSync(ROOT, { recursive: true })
+try { if (!existsSync(ROOT)) mkdirSync(ROOT, { recursive: true }) }
+catch (e) { console.error('[DataDir] Cannot create root:', e.message) }
 
 /**
  * Get the resolved data directory path.
@@ -18,7 +19,8 @@ if (!existsSync(ROOT)) mkdirSync(ROOT, { recursive: true })
  */
 export function dataDir(...subpath) {
   const dir = join(ROOT, ...subpath)
-  if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
+  try { if (!existsSync(dir)) mkdirSync(dir, { recursive: true }) }
+  catch (e) { console.error(`[DataDir] Cannot create ${dir}:`, e.message) }
   return dir
 }
 
@@ -31,7 +33,8 @@ export function dataDir(...subpath) {
 export function dataFile(filename) {
   const full = join(ROOT, filename)
   const dir = join(full, '..')
-  if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
+  try { if (!existsSync(dir)) mkdirSync(dir, { recursive: true }) }
+  catch (e) { console.error(`[DataDir] Cannot create ${dir}:`, e.message) }
   return full
 }
 
