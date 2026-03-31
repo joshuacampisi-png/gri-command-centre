@@ -38,6 +38,8 @@ import { seedBaselineIfNeeded } from './lib/daily-revenue.js'
 // clearAllHires removed — one-time clear done
 import { startKeywordScheduler } from './lib/keyword-tracker.js'
 import { getUsageSummary } from './lib/claude-guard.js'
+import instagramSchedulerRoutes from './routes/instagram-scheduler.js'
+import { startInstagramCron } from './lib/instagram-cron.js'
 
 // ── PABLO CRASH RECOVERY — Rule 5 ──
 const JOSH_CHAT = '8040702286'
@@ -131,6 +133,9 @@ app.use('/calendar-videos', express.static(calendarVideoDir))
 // Also serve from public dir as fallback for old uploads
 app.use('/calendar-videos', express.static(join(process.cwd(), 'public/calendar-videos')))
 app.use('/api/calendar', calendarRoutes)
+// Serve Instagram media uploads
+const instagramMediaDir = _calVidDir('instagram-media')
+app.use('/instagram-media', express.static(instagramMediaDir))
 
 // Serve built frontend from /dist — same origin, no CORS issues
 import { join, dirname } from 'path'
@@ -161,6 +166,59 @@ app.use('/api/ads/strategist', adsStrategistRoutes)
 app.use('/api/ads', adsRoutes)
 app.use('/api/shopify/webhook', shopifyWebhookRoutes)
 app.use('/api/square/webhook', squareWebhookRoutes)
+app.use('/api/instagram', instagramSchedulerRoutes)
+
+// ── Admin: disk usage + cleanup ──────────────────────────────────────────────
+import { readdirSync, statSync, unlinkSync as _unlinkSync, readFileSync as _readFileSync } from 'fs'
+import { DATA_ROOT } from './lib/data-dir.js'
+
+function getDirSize(dir, depth = 0) {
+  const results = []
+  try {
+    for (const name of readdirSync(dir)) {
+      const full = join(dir, name)
+      try {
+        const st = statSync(full)
+        if (st.isDirectory()) {
+          const children = depth < 2 ? getDirSize(full, depth + 1) : []
+          const totalSize = children.reduce((s, c) => s + c.size, 0)
+          results.push({ name, type: 'dir', size: totalSize, files: children.length, children: depth < 1 ? children : undefined })
+        } else {
+          results.push({ name, type: 'file', size: st.size, modified: st.mtime.toISOString() })
+        }
+      } catch {}
+    }
+  } catch {}
+  return results.sort((a, b) => b.size - a.size)
+}
+
+app.get('/api/admin/disk', (_req, res) => {
+  const items = getDirSize(DATA_ROOT)
+  const totalBytes = items.reduce((s, i) => s + i.size, 0)
+  res.json({ ok: true, root: DATA_ROOT, totalMB: (totalBytes / 1048576).toFixed(2), items })
+})
+
+app.delete('/api/admin/disk/file', (req, res) => {
+  const { path: relPath } = req.query
+  if (!relPath || relPath.includes('..')) return res.status(400).json({ error: 'Invalid path' })
+  const full = join(DATA_ROOT, relPath)
+  try { _unlinkSync(full); res.json({ ok: true, deleted: relPath }) }
+  catch (e) { res.status(500).json({ error: e.message }) }
+})
+
+app.delete('/api/admin/disk/dir', (req, res) => {
+  const { path: relPath } = req.query
+  if (!relPath || relPath.includes('..')) return res.status(400).json({ error: 'Invalid path' })
+  const full = join(DATA_ROOT, relPath)
+  try {
+    const files = readdirSync(full)
+    let deleted = 0
+    for (const f of files) {
+      try { _unlinkSync(join(full, f)); deleted++ } catch {}
+    }
+    res.json({ ok: true, dir: relPath, filesDeleted: deleted })
+  } catch (e) { res.status(500).json({ error: e.message }) }
+})
 
 // Env debug — shows which vars are SET (no values exposed)
 app.get('/api/env-debug', (_req, res) => {
@@ -345,6 +403,9 @@ const server = app.listen(env.port, '0.0.0.0', () => {
 
   // Meta Ads daily + weekly Telegram reports via Pablo
   startAdsReportCrons()
+
+  // Instagram auto-scheduler (checks every minute for due posts)
+  startInstagramCron()
 
   console.log('✅ Server running — auto Telegram messages: DISABLED')
   console.log('🔒 Crash recovery: ACTIVE')
