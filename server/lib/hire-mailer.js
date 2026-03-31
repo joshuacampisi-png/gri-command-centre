@@ -6,11 +6,32 @@ let resendClient = null;
 function getClient() {
   if (!resendClient) {
     if (!process.env.RESEND_API_KEY) {
-      throw new Error('RESEND_API_KEY environment variable is not set');
+      return null;
     }
     resendClient = new Resend(process.env.RESEND_API_KEY);
   }
   return resendClient;
+}
+
+/**
+ * Fallback: send email content to Josh via Telegram when Resend is not configured.
+ */
+async function telegramFallback(type, hire, subject, text) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_JOSH_CHAT_ID;
+  if (!token || !chatId) return;
+
+  const msg = `📧 EMAIL QUEUED (Resend not configured)\n\nType: ${type}\nTo: ${hire.customerEmail}\nSubject: ${subject}\n\n${text.substring(0, 500)}${text.length > 500 ? '...' : ''}`;
+
+  try {
+    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text: msg }),
+    });
+  } catch (e) {
+    console.error('[hire-mailer] Telegram fallback failed:', e.message);
+  }
 }
 
 function getFromAddress() {
@@ -165,7 +186,16 @@ export async function sendHireEmail(type, hire, extraData) {
 
   const { subject, text } = builder(hire, extraData);
 
-  const { data, error } = await getClient().emails.send({
+  const client = getClient();
+
+  // Fallback: if Resend isn't configured, notify Josh via Telegram
+  if (!client) {
+    console.warn(`[hire-mailer] RESEND_API_KEY not set — using Telegram fallback for ${type} email to ${hire.customerEmail}`);
+    await telegramFallback(type, hire, subject, text);
+    return { messageId: `telegram-fallback-${Date.now()}` };
+  }
+
+  const { data, error } = await client.emails.send({
     from: getFromAddress(),
     to: hire.customerEmail,
     subject,
