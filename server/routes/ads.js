@@ -56,7 +56,8 @@ router.get('/performance', async (req, res) => {
     }
     const preset = datePresetMap[dateRange] || 'last_7d'
 
-    const campaigns = await fetchFullPerformance(preset)
+    const perfData = await fetchFullPerformance(preset)
+    const campaigns = perfData.campaigns || perfData
 
     // Enrich with fatigue scores
     for (const campaign of campaigns) {
@@ -73,11 +74,11 @@ router.get('/performance', async (req, res) => {
     }
 
     // Aggregate KPI totals
-    const todayCampaigns = await fetchFullPerformance('today').catch(() => campaigns)
-    const yesterdayCampaigns = await fetchFullPerformance('yesterday').catch(() => null)
+    const todayData = await fetchFullPerformance('today').catch(() => ({ campaigns }))
+    const yesterdayData = await fetchFullPerformance('yesterday').catch(() => null)
 
-    const todayKPI = aggregateKPI(todayCampaigns)
-    const yesterdayKPI = yesterdayCampaigns ? aggregateKPI(yesterdayCampaigns) : null
+    const todayKPI = aggregateKPI(todayData.campaigns || todayData)
+    const yesterdayKPI = yesterdayData ? aggregateKPI(yesterdayData.campaigns || yesterdayData) : null
 
     res.json({
       ok: true,
@@ -202,7 +203,8 @@ router.post('/snapshot/save', async (_req, res) => {
   try {
     if (!isMetaConfigured()) return res.status(400).json({ ok: false, error: 'Meta not configured' })
 
-    const campaigns = await fetchFullPerformance('today')
+    const snapData = await fetchFullPerformance('today')
+    const campaigns = snapData.campaigns || snapData
     const today = new Date().toISOString().slice(0, 10)
     const snapshots = loadJSON(SNAPSHOT_FILE)
 
