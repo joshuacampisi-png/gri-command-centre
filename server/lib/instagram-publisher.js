@@ -8,12 +8,16 @@
 
 const BASE = 'https://graph.facebook.com/v20.0'
 
+// Hardcoded GRI credentials — @gender.reveal.ideass via Gender Reveal Ideas page
+const HARDCODED_PAGE_TOKEN = 'EAANF5wouQWYBRPaZBwnaG2NwORy7eZAggDxSiVuGYCx4ZAaaxnsSUm2KzQAeCvMmgmCgv0qfOFo03K6wkupFq5b1OZBDa9M3gUq3pMjD9P371lxtcxvPDHDZBqyZBPwUpu6ZADqq70EQpFrdbi1xkmxNRd0eFJmW5ZAhzZC7brYjsiiOvJzEo4ilxi24ohXEcC9lKNIsYtQB3BsKNq82U3W8K'
+const HARDCODED_IG_ID = '17841448049372007'
+
 function igToken() {
-  return process.env.META_PAGE_ACCESS_TOKEN || process.env.META_ACCESS_TOKEN || ''
+  return process.env.META_PAGE_ACCESS_TOKEN || HARDCODED_PAGE_TOKEN
 }
 
 function igAccountId() {
-  return process.env.INSTAGRAM_BUSINESS_ACCOUNT_ID || ''
+  return process.env.INSTAGRAM_BUSINESS_ACCOUNT_ID || HARDCODED_IG_ID
 }
 
 export function isInstagramConfigured() {

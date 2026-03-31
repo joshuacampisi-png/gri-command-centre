@@ -8,7 +8,6 @@ const POST_TYPE_ICONS = { image: '🖼', carousel: '🎠', reel: '🎬' }
 const STATUS_COLORS = { DRAFT: '#9CA3AF', SCHEDULED: '#3B82F6', PUBLISHING: '#F59E0B', PUBLISHED: '#059669', FAILED: '#DC2626' }
 const ACCEPT_MEDIA = 'image/jpeg,image/png,image/webp,video/mp4,video/quicktime,.jpg,.jpeg,.png,.webp,.mp4,.mov'
 const API = '/api/instagram'
-const META_API = '/api/meta'
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8) }
 function fmtDate(d) { const y = d.getFullYear(); const m = String(d.getMonth() + 1).padStart(2, '0'); const day = String(d.getDate()).padStart(2, '0'); return `${y}-${m}-${day}` }
@@ -66,87 +65,6 @@ function getMonthDays(year, month) {
   return days
 }
 
-// ── Connect Panel ────────────────────────────────────────────────────────────
-
-function ConnectPanel({ onConnected }) {
-  const [token, setToken] = useState('')
-  const [igId, setIgId] = useState('')
-  const [connecting, setConnecting] = useState(false)
-  const [error, setError] = useState(null)
-
-  async function handleConnect() {
-    if (!token.trim() || !igId.trim()) { setError('Both fields are required.'); return }
-    setConnecting(true)
-    setError(null)
-    try {
-      const res = await fetch(`${META_API}/connect`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pageAccessToken: token.trim(), igAccountId: igId.trim() }),
-      })
-      const data = await res.json()
-      if (!res.ok) { setError(data.error || 'Connection failed'); setConnecting(false); return }
-      onConnected(data)
-    } catch (err) {
-      setError(err.message)
-    }
-    setConnecting(false)
-  }
-
-  return (
-    <div className="ig-connect-panel">
-      <div className="ig-connect-icon">📸</div>
-      <h3>Connect Instagram</h3>
-      <p className="muted">Paste your Meta Page Access Token and Instagram Business Account ID to start auto-posting.</p>
-
-      <div className="ig-connect-form">
-        <div className="ig-field">
-          <label>Meta Page Access Token</label>
-          <textarea
-            value={token}
-            onChange={e => setToken(e.target.value)}
-            placeholder="EAF4DTu..."
-            rows={3}
-            className="ig-token-input"
-          />
-          <span className="muted">Get this from Meta Graph API Explorer or your app dashboard</span>
-        </div>
-
-        <div className="ig-field">
-          <label>Instagram Business Account ID</label>
-          <input
-            value={igId}
-            onChange={e => setIgId(e.target.value)}
-            placeholder="17841448049372007"
-          />
-          <span className="muted">Found in Graph API: /me/accounts?fields=instagram_business_account</span>
-        </div>
-
-        {error && <div className="ig-error-box">{error}</div>}
-
-        <button className="btn btn-primary" onClick={handleConnect} disabled={connecting} style={{ width: '100%', justifyContent: 'center' }}>
-          {connecting ? 'Validating...' : 'Connect Instagram'}
-        </button>
-      </div>
-    </div>
-  )
-}
-
-// ── Connected Account Bar ────────────────────────────────────────────────────
-
-function AccountBar({ account, onDisconnect }) {
-  return (
-    <div className="ig-account-bar">
-      <div className="ig-account-info">
-        <span className="ig-account-dot" />
-        <strong>@{account.igUsername || 'connected'}</strong>
-        {account.pageName && <span className="muted"> via {account.pageName}</span>}
-      </div>
-      <button className="btn btn-danger btn-sm" onClick={onDisconnect}>Disconnect</button>
-    </div>
-  )
-}
-
 // ── Main Component ───────────────────────────────────────────────────────────
 
 export default function InstagramScheduler() {
@@ -160,7 +78,6 @@ export default function InstagramScheduler() {
   const [captionVariants, setCaptionVariants] = useState(null)
   const [calMonth, setCalMonth] = useState(new Date().getMonth())
   const [calYear, setCalYear] = useState(new Date().getFullYear())
-  const [connection, setConnection] = useState(null) // null = loading, false = not connected, object = connected
   const [dragOver, setDragOver] = useState(null) // date string of day being dragged over
   const [autoPosting, setAutoPosting] = useState(null) // date string being auto-processed
   const fileRef = useRef(null)
@@ -172,12 +89,9 @@ export default function InstagramScheduler() {
     setLoading(false)
   }, [])
 
-  // Load connection status + posts
+  // Load posts
   useEffect(() => {
     reload()
-    fetch(`${META_API}/status`).then(r => r.json()).then(d => {
-      setConnection(d.connected ? d : false)
-    }).catch(() => setConnection(false))
     const interval = setInterval(reload, 30000)
     return () => clearInterval(interval)
   }, [reload])
@@ -379,14 +293,6 @@ export default function InstagramScheduler() {
     setCaptionVariants(null)
   }
 
-  // ── Disconnect ─────────────────────────────────────────────────────────────
-
-  async function handleDisconnect() {
-    if (!confirm('Disconnect Instagram? Scheduled posts will stop publishing.')) return
-    await fetch(`${META_API}/disconnect`, { method: 'POST' })
-    setConnection(false)
-  }
-
   // ── Calendar view ──────────────────────────────────────────────────────────
 
   const calDays = useMemo(() => getMonthDays(calYear, calMonth), [calYear, calMonth])
@@ -410,27 +316,7 @@ export default function InstagramScheduler() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
-  if (loading && posts.length === 0 && connection === null) return <div className="loading"><div className="spinner" /></div>
-
-  // Show connect panel if not connected
-  if (connection === false) {
-    return (
-      <div className="ig-scheduler">
-        <div className="page-header">
-          <div>
-            <h2 className="page-title">Instagram Scheduler</h2>
-            <p className="page-sub">Connect your Instagram account to start auto-posting</p>
-          </div>
-        </div>
-        <ConnectPanel onConnected={(data) => {
-          setConnection({ connected: true, igUsername: data.igUsername, pageName: data.pageName })
-          reload()
-        }} />
-      </div>
-    )
-  }
-
-  const isConnected = connection && connection.connected
+  if (loading && posts.length === 0) return <div className="loading"><div className="spinner" /></div>
 
   return (
     <div className="ig-scheduler">
@@ -449,8 +335,14 @@ export default function InstagramScheduler() {
         </div>
       </div>
 
-      {/* Connected account bar */}
-      {isConnected && <AccountBar account={connection} onDisconnect={handleDisconnect} />}
+      {/* Account bar */}
+      <div className="ig-account-bar">
+        <div className="ig-account-info">
+          <span className="ig-account-dot" />
+          <strong>@gender.reveal.ideass</strong>
+          <span className="muted"> via Gender Reveal Ideas</span>
+        </div>
+      </div>
 
       {/* Stats bar */}
       <div className="ig-stats">
@@ -685,7 +577,7 @@ export default function InstagramScheduler() {
                   <button className="btn btn-secondary" onClick={() => handleSave('DRAFT')} disabled={saving}>
                     Save Draft
                   </button>
-                  {isConnected && drawer.mediaUrls?.length > 0 && (
+                  {drawer.mediaUrls?.length > 0 && (
                     <button className="btn btn-accent" onClick={handlePublishNow} disabled={saving}>
                       Publish Now
                     </button>
