@@ -8,6 +8,7 @@ import { fetchFullPerformance, isMetaConfigured } from '../lib/meta-api.js'
 import { calculateFatigueScore, prepareFatigueMetrics } from '../lib/fatigue-engine.js'
 import { callClaude } from '../lib/claude-guard.js'
 import { dataFile } from '../lib/data-dir.js'
+import { fetchShopifyOrders, formatShopifySalesForPrompt } from '../lib/shopify-sales.js'
 
 const router = Router()
 const HEALTH_LOG_FILE = dataFile('ads-health-log.json')
@@ -138,10 +139,14 @@ router.get('/health-check', async (_req, res) => {
       return res.json({ ok: false, error: 'Meta API not configured' })
     }
 
-    const perfData = await fetchFullPerformance('last_7d')
+    const [perfData, shopify7d] = await Promise.all([
+      fetchFullPerformance('last_7d'),
+      fetchShopifyOrders('last_7d')
+    ])
     enrichWithFatigue(perfData)
 
     const metricsSummary = buildMetricsSummary(perfData)
+    const shopifyContext = formatShopifySalesForPrompt(shopify7d)
     const totalDailyBudget = perfData.campaigns
       .filter(c => c.status === 'ACTIVE' && c.dailyBudget)
       .reduce((sum, c) => sum + c.dailyBudget, 0)
@@ -155,6 +160,12 @@ Here are Josh's REAL Meta Ads metrics right now:
 ${metricsSummary}
 
 Current estimated total daily budget across active campaigns: $${totalDailyBudget.toFixed(2)}
+
+IMPORTANT: Below is REAL Shopify order data (all channels, not just Meta). This shows the true business performance including Google Ads, organic search, direct, email, and other channels. Meta-attributed purchases are a SUBSET of total orders. Use both data sets for accurate analysis.
+
+${shopifyContext}
+
+Blended ROAS (total Shopify revenue / Meta ad spend) = ${shopify7d && perfData.totals.spend > 0 ? (shopify7d.totalRevenue / perfData.totals.spend).toFixed(2) + 'x' : 'N/A'}
 
 CRITICAL ATTRIBUTION AND STRUCTURAL RULES:
 These rules are non-negotiable. Every recommendation must pass these checks before being included.
@@ -285,10 +296,12 @@ router.get('/daily-briefing', async (_req, res) => {
       return res.json({ ok: false, error: 'Meta API not configured' })
     }
 
-    // Fetch yesterday and day-before data
-    const [yesterdayData, prevData] = await Promise.all([
+    // Fetch yesterday Meta data + real Shopify orders in parallel
+    const [yesterdayData, prevData, shopifyYesterday, shopify7d] = await Promise.all([
       fetchFullPerformance('yesterday'),
-      fetchFullPerformance('last_7d')
+      fetchFullPerformance('last_7d'),
+      fetchShopifyOrders('yesterday'),
+      fetchShopifyOrders('last_7d')
     ])
 
     enrichWithFatigue(yesterdayData)
@@ -297,14 +310,23 @@ router.get('/daily-briefing', async (_req, res) => {
     const yTotals = yesterdayData.totals
     const pTotals = prevData.totals
 
-    // Build a concise summary for Claude
-    const briefingContext = `YESTERDAY'S PERFORMANCE:
-Spend: $${yTotals.spend.toFixed(2)} | Revenue: $${yTotals.purchaseValue.toFixed(2)} | Purchases: ${yTotals.purchases}
+    // Build a concise summary for Claude with BOTH Meta + Shopify data
+    const shopifySection = formatShopifySalesForPrompt(shopifyYesterday)
+    const shopify7dSection = shopify7d ? formatShopifySalesForPrompt(shopify7d) : ''
+
+    const briefingContext = `IMPORTANT: There are TWO data sources below. Meta Ads shows only Meta-attributed purchases (7-day click / 1-day view). Shopify shows ALL actual orders from ALL channels (Meta, Google Ads, organic, direct, email, etc.). The Shopify numbers are the REAL total. Use both to give accurate analysis.
+
+=== META ADS DATA (yesterday) ===
+Spend: $${yTotals.spend.toFixed(2)} | Meta-Attributed Revenue: $${yTotals.purchaseValue.toFixed(2)} | Meta-Attributed Purchases: ${yTotals.purchases}
 ROAS: ${yTotals.roas.toFixed(2)}x | CPA: $${yTotals.cpa.toFixed(2)} | CTR: ${yTotals.ctr.toFixed(2)}%
 
-7-DAY AVERAGES (for comparison):
+=== META ADS 7-DAY AVERAGES ===
 Avg Daily Spend: $${(pTotals.spend / 7).toFixed(2)} | Avg Daily Revenue: $${(pTotals.purchaseValue / 7).toFixed(2)}
 Avg Daily Purchases: ${(pTotals.purchases / 7).toFixed(1)} | Avg ROAS: ${pTotals.roas.toFixed(2)}x
+
+${shopifySection}
+
+${shopify7dSection ? `=== SHOPIFY 7-DAY COMPARISON ===\nTotal 7d Orders: ${shopify7d.totalOrders} | Total 7d Revenue: $${shopify7d.totalRevenue.toFixed(2)}\nAvg Daily Orders: ${(shopify7d.totalOrders / 7).toFixed(1)} | Avg Daily Revenue: $${(shopify7d.totalRevenue / 7).toFixed(2)}\n` : ''}
 
 ACTIVE ADS YESTERDAY:
 ${yesterdayData.campaigns.map(c => {
@@ -321,28 +343,38 @@ ${yesterdayData.campaigns.map(c => {
 
 ${briefingContext}
 
+CRITICAL: You have BOTH Meta Ads data AND real Shopify order data. When reporting total orders and revenue, use the SHOPIFY numbers (they are the real total). Meta numbers only show Meta-attributed purchases. The difference between Shopify total and Meta-attributed = orders from Google Ads, organic, direct, email, and other channels. Always call this out so Josh sees the full picture.
+
 IMPORTANT RULES:
 - Use Australian English (colour, optimise, etc.)
 - Do NOT use em dashes
 - Be conversational and encouraging but honest
 - Keep it scannable, Josh reads this first thing in the morning
 - Reference specific ad names and numbers
+- When saying "X purchases yesterday", use the SHOPIFY total, then break down by source
 - Gender reveal products: impulse/event purchases, good ROAS is 3x+, good CPA is under $25 AUD
+- Calculate blended ROAS as: total Shopify revenue / total Meta ad spend (gives the real return on ad investment including halo effect)
 
 Respond with ONLY valid JSON (no markdown, no code fences):
 
 {
   "greeting": "<warm morning greeting with Josh's name>",
+  "totalOrders": <actual Shopify order count>,
+  "totalRevenue": <actual Shopify revenue>,
+  "metaAttributed": <Meta-attributed purchases>,
+  "blendedROAS": <total Shopify revenue / Meta spend>,
+  "sourceBreakdown": "<e.g. Meta: 7, Google: 5, Organic: 4, Direct: 3>",
   "yesterdayVsPrevious": {
     "spend": "<change like +$12 or -$5>",
     "roas": "<change like +0.3 or -0.5>",
-    "purchases": "<change like +2 or -1>"
+    "purchases": "<change like +2 or -1 based on Shopify totals>"
   },
-  "headline": "<one sentence summary of yesterday>",
+  "headline": "<one sentence summary using REAL Shopify order count>",
   "attentionNeeded": ["<things that need action today>"],
   "workingWell": ["<things that are performing well>"],
   "todaysPlan": ["<ordered list of what Josh should do today>"],
-  "marketPulse": "<brief note on trends or patterns>"
+  "topProducts": ["<top selling products from Shopify data>"],
+  "marketPulse": "<brief note on trends, channel mix, or patterns>"
 }`
 
     const response = await callClaude({

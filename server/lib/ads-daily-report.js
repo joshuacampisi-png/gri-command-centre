@@ -6,6 +6,7 @@
 import { fetchFullPerformance } from './meta-api.js'
 import { calculateFatigueScore, prepareFatigueMetrics } from './fatigue-engine.js'
 import { callClaude } from './claude-guard.js'
+import { fetchShopifyOrders } from './shopify-sales.js'
 
 const PABLO_TOKEN = process.env.TELEGRAM_BOT_TOKEN || ''
 const JOSH_CHAT = process.env.TELEGRAM_JOSH_CHAT_ID || '8040702286'
@@ -29,10 +30,11 @@ async function sendTelegram(text) {
 
 export async function sendAdsDaily() {
   try {
-    // Pull yesterday + last 7 days for context
-    const [yesterdayData, weekData] = await Promise.all([
+    // Pull yesterday + last 7 days for context, plus real Shopify orders
+    const [yesterdayData, weekData, shopifyYesterday] = await Promise.all([
       fetchFullPerformance('yesterday'),
-      fetchFullPerformance('last_7d')
+      fetchFullPerformance('last_7d'),
+      fetchShopifyOrders('yesterday')
     ])
 
     // Compute fatigue scores for all active ads
@@ -74,9 +76,24 @@ export async function sendAdsDaily() {
     })
 
     // Build raw data payload for Claude
+    const shopifyBreakdown = shopifyYesterday ? {
+      totalOrders: shopifyYesterday.totalOrders,
+      totalRevenue: shopifyYesterday.totalRevenue,
+      aov: shopifyYesterday.aov,
+      sourceBreakdown: shopifyYesterday.sourceBreakdown,
+      channelBreakdown: shopifyYesterday.channelBreakdown,
+      topProducts: shopifyYesterday.topProducts,
+      topLocations: shopifyYesterday.topLocations
+    } : null
+
     const rawData = {
       date: aestDate,
-      yesterday: yesterdayData.totals,
+      _NOTE: 'Meta data shows Meta-attributed purchases only. Shopify data shows ALL real orders from ALL channels. Use Shopify totals for actual order count and revenue.',
+      shopify: shopifyBreakdown,
+      blendedROAS: shopifyYesterday && yesterdayData.totals.spend > 0
+        ? (shopifyYesterday.totalRevenue / yesterdayData.totals.spend).toFixed(2) + 'x'
+        : 'N/A',
+      metaAds: yesterdayData.totals,
       last7d: weekData.totals,
       last7dAvg: {
         spend: (weekData.totals.spend / 7),
@@ -112,20 +129,27 @@ export async function sendAdsDaily() {
 
     const claudePrompt = `You are Josh's personal media buyer for Gender Reveal Ideas (Australian DTC e-commerce). No fluff. Every line is actionable or a key metric. Australian English, no em dashes.
 
-Here is ALL the raw Meta Ads data. Use ONLY real numbers from this data. Do not invent or estimate anything.
+Here is ALL the raw data including REAL Shopify orders (all channels) and Meta Ads data. Use ONLY real numbers. Do not invent or estimate anything.
+
+IMPORTANT: The "shopify" section shows ACTUAL total orders from ALL channels (Meta, Google, organic, direct, email). The "metaAds" section shows only Meta-attributed purchases. Always use Shopify totals for the real order count and revenue. The difference = orders from other channels (Google Ads, organic, etc).
 
 ${JSON.stringify(rawData, null, 2)}
 
-Produce a Telegram report using this EXACT structure (Telegram Markdown). Keep the ENTIRE message under 2000 characters:
+Produce a Telegram report using this EXACT structure (Telegram Markdown). Keep the ENTIRE message under 2500 characters:
 
-📊 *META ADS DAILY* — ${aestDate}
+📊 *GRI DAILY REPORT* — ${aestDate}
 
-💰 *Yesterday*
-Spend: $X | Revenue: $X
-ROAS: Xx | CPA: $X | Purchases: N
+🛒 *Yesterday's Sales* (Shopify actual)
+Orders: N | Revenue: $X | AOV: $X
+Source split: Meta X, Google X, Organic X, Direct X, Other X
+
+💰 *Meta Ads Performance*
+Spend: $X | Meta Revenue: $X | Meta ROAS: Xx
+Blended ROAS: Xx (total revenue / ad spend)
+CPA: $X | Purchases (Meta): N
 vs 7d avg: ROAS {up/down X%} | CPA {up/down X%}
 
-🏆 *Top 3 Performers* (by ROAS)
+🏆 *Top 3 Ads* (by ROAS)
 1. {ad name} — {ROAS}x, $X revenue, CPA $X
 2. {ad name} — {ROAS}x, $X revenue, CPA $X
 3. {ad name} — {ROAS}x, $X revenue, CPA $X
@@ -140,8 +164,11 @@ vs 7d avg: ROAS {up/down X%} | CPA {up/down X%}
 📉 *Worst Audience*
 {adset name}: {ROAS}x, CPA $X — {what to do}
 
+🔥 *Top Products*
+{top 3 products from Shopify data with quantities}
+
 ⚡ *Today's Move*
-{The ONE thing to do today for biggest impact. Be specific: "Pause X, duplicate Y into Z audience, set budget to $N"}
+{The ONE thing to do today for biggest impact. Be specific.}
 
 CRITICAL RULES (non-negotiable):
 - NEVER recommend pausing or killing an ad or campaign with ROAS above 1.0x. It is profitable.

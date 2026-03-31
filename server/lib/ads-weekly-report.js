@@ -5,6 +5,7 @@
 import { fetchFullPerformance } from './meta-api.js'
 import { calculateFatigueScore, prepareFatigueMetrics } from './fatigue-engine.js'
 import { callClaude } from './claude-guard.js'
+import { fetchShopifyOrders } from './shopify-sales.js'
 
 const PABLO_TOKEN = process.env.TELEGRAM_BOT_TOKEN || ''
 const JOSH_CHAT = process.env.TELEGRAM_JOSH_CHAT_ID || '8040702286'
@@ -28,9 +29,13 @@ async function sendTelegram(text) {
 
 export async function sendAdsWeekly() {
   try {
-    // Pull last 14 days to split into this week vs last week
-    const fourteenDayData = await fetchFullPerformance('last_14d')
-    const sevenDayData = await fetchFullPerformance('last_7d')
+    // Pull last 14 days to split into this week vs last week, plus real Shopify orders
+    const [fourteenDayData, sevenDayData, shopify7d, shopify14d] = await Promise.all([
+      fetchFullPerformance('last_14d'),
+      fetchFullPerformance('last_7d'),
+      fetchShopifyOrders('last_7d'),
+      fetchShopifyOrders('last_14d')
+    ])
 
     // Compute fatigue on all active ads from 7d data
     const allAds = []
@@ -91,10 +96,30 @@ export async function sendAdsWeekly() {
       year: 'numeric'
     })
 
+    // Shopify week-over-week
+    const shopifyThisWeek = shopify7d ? {
+      totalOrders: shopify7d.totalOrders,
+      totalRevenue: shopify7d.totalRevenue,
+      aov: shopify7d.aov,
+      sourceBreakdown: shopify7d.sourceBreakdown,
+      channelBreakdown: shopify7d.channelBreakdown,
+      topProducts: shopify7d.topProducts,
+      topLocations: shopify7d.topLocations
+    } : null
+
+    const shopifyLastWeek = (shopify14d && shopify7d) ? {
+      totalOrders: shopify14d.totalOrders - shopify7d.totalOrders,
+      totalRevenue: shopify14d.totalRevenue - shopify7d.totalRevenue
+    } : null
+
     const rawData = {
       weekOf: aestDate,
-      thisWeek,
-      lastWeek,
+      _NOTE: 'Meta data = Meta-attributed only. Shopify = ALL real orders from ALL channels. Use Shopify for actual business performance.',
+      shopifyThisWeek,
+      shopifyLastWeek,
+      blendedROAS: shopify7d && thisWeek.spend > 0 ? (shopify7d.totalRevenue / thisWeek.spend).toFixed(2) + 'x' : 'N/A',
+      metaThisWeek: thisWeek,
+      metaLastWeek: lastWeek,
       fatigueBreakdown: { healthy, watching, fatiguing, dead, total: allAds.length },
       ads: allAds.map(a => ({
         name: a.name,
@@ -122,25 +147,31 @@ export async function sendAdsWeekly() {
       }))
     }
 
-    const claudePrompt = `You are Josh's personal media buyer doing the weekly Meta Ads strategic review for Gender Reveal Ideas (Australian DTC e-commerce). No fluff. Data-driven. Australian English, no em dashes.
+    const claudePrompt = `You are Josh's personal media buyer doing the weekly strategic review for Gender Reveal Ideas (Australian DTC e-commerce). No fluff. Data-driven. Australian English, no em dashes.
 
-Here is ALL the raw data. Use ONLY real numbers. Do not invent or estimate. If last week data is zero or negative (not enough data), say so honestly.
+Here is ALL the raw data including REAL Shopify orders (all channels) and Meta Ads data. Use ONLY real numbers. Do not invent or estimate.
+
+IMPORTANT: "shopifyThisWeek" shows ACTUAL total orders from ALL channels (Meta, Google, organic, direct, email). "metaThisWeek" shows only Meta-attributed purchases. Always use Shopify totals for real business performance. The difference = orders from other channels.
 
 ${JSON.stringify(rawData, null, 2)}
 
 Produce a Telegram report using this EXACT structure (Telegram Markdown). Keep under 3000 characters:
 
-📊 *WEEKLY META ADS REVIEW* — Week of ${aestDate}
+📊 *GRI WEEKLY REVIEW* — Week of ${aestDate}
 
-💰 *This Week vs Last Week*
+🛒 *Total Business (Shopify)*
+Orders: N (vs N last week)
+Revenue: $X (vs $X last week)
+Top channels: Meta X, Google X, Organic X, Direct X
+
+💰 *Meta Ads Performance*
 Spend: $X vs $X (X%)
-Revenue: $X vs $X (X%)
-ROAS: Xx vs Xx
+Meta Revenue: $X vs $X (X%)
+Meta ROAS: Xx vs Xx | Blended ROAS: Xx
 CPA: $X vs $X
-Purchases: N vs N
 
 🏆 *Top 5 Ads This Week*
-1. {name} — {ROAS}x, {purchases} sales, ${'{'}revenue}
+1. {name} — {ROAS}x, {purchases} sales, $X revenue
 2. ...
 (Show fewer if fewer exist)
 
@@ -153,6 +184,9 @@ Best: {adset} — {targeting summary} — {ROAS}x
 Worst: {adset} — {targeting summary} — {ROAS}x
 Recommendation: {specific action}
 
+🔥 *Top Products* (from Shopify)
+{top 3 products with quantities and revenue}
+
 🔄 *Creative Health*
 {N} healthy, {N} watching, {N} fatiguing, {N} dead
 Refresh priority: {ad names that need new creative}
@@ -163,7 +197,7 @@ Refresh priority: {ad names that need new creative}
 3. {Third action}
 
 💡 *Strategic Note*
-{One paragraph: patterns spotted, opportunities, risks. Based on actual data trends.}
+{One paragraph: patterns spotted, channel mix insights, opportunities, risks. Based on actual data trends.}
 
 CRITICAL RULES (non-negotiable):
 - NEVER recommend pausing or killing an ad or campaign with ROAS above 1.0x. It is profitable.
