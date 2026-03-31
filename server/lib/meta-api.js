@@ -81,6 +81,44 @@ export async function fetchCampaignInsights(campaignId, datePreset = 'last_7d') 
   return parseInsights(data.data?.[0])
 }
 
+// ── Adset-level data (audiences + targeting) ────────────────────────────────
+
+export async function fetchAdsetsForCampaign(campaignId, activeOnly = false) {
+  const params = {
+    fields: 'id,name,status,daily_budget,lifetime_budget,optimization_goal,billing_event,targeting,promoted_object',
+    limit: '100'
+  }
+  if (activeOnly) {
+    params.effective_status = '["ACTIVE"]'
+  }
+  const data = await metaGet(`/${campaignId}/adsets`, params)
+  return data.data || []
+}
+
+export async function fetchAdsetInsights(adsetId, datePreset = 'last_7d') {
+  const data = await metaGet(`/${adsetId}/insights`, {
+    fields: 'impressions,clicks,spend,actions,action_values,frequency,cpm,ctr,reach',
+    date_preset: normalisePreset(datePreset)
+  })
+  return parseInsights(data.data?.[0])
+}
+
+function parseTargeting(targeting) {
+  if (!targeting) return null
+  return {
+    ageMin: targeting.age_min || null,
+    ageMax: targeting.age_max || null,
+    genders: targeting.genders || [],
+    geoLocations: targeting.geo_locations || null,
+    interests: (targeting.flexible_spec || []).flatMap(s => (s.interests || []).map(i => i.name)),
+    customAudiences: (targeting.custom_audiences || []).map(a => ({ id: a.id, name: a.name })),
+    excludedCustomAudiences: (targeting.excluded_custom_audiences || []).map(a => ({ id: a.id, name: a.name })),
+    lookalikes: (targeting.custom_audiences || []).filter(a => a.subtype === 'LOOKALIKE').map(a => a.name),
+    placements: targeting.publisher_platforms || [],
+    devicePlatforms: targeting.device_platforms || []
+  }
+}
+
 // ── Ad-level data ────────────────────────────────────────────────────────────
 
 export async function fetchAdsForCampaign(campaignId, activeOnly = false) {
@@ -151,12 +189,32 @@ export async function fetchFullPerformance(datePreset = 'last_7d') {
 
   // Fetch all campaigns in parallel
   const campaignPromises = campaigns.map(async (campaign) => {
-    const [cInsights, ads] = await Promise.all([
+    const [cInsights, ads, adsets] = await Promise.all([
       fetchCampaignInsights(campaign.id, datePreset).catch(() => null),
-      fetchAdsForCampaign(campaign.id, true).catch(() => []) // active only
+      fetchAdsForCampaign(campaign.id, true).catch(() => []),
+      fetchAdsetsForCampaign(campaign.id, true).catch(() => [])
     ])
 
-    // Fetch ad insights in parallel (skip daily insights for speed)
+    // Fetch adset insights in parallel
+    const adsetMap = new Map()
+    const adsetPromises = adsets.map(async (adset) => {
+      const insights = await fetchAdsetInsights(adset.id, datePreset).catch(() => null)
+      const parsed = {
+        id: adset.id,
+        name: adset.name,
+        status: adset.status,
+        dailyBudget: adset.daily_budget ? Number(adset.daily_budget) / 100 : null,
+        lifetimeBudget: adset.lifetime_budget ? Number(adset.lifetime_budget) / 100 : null,
+        optimizationGoal: adset.optimization_goal || null,
+        targeting: parseTargeting(adset.targeting),
+        insights
+      }
+      adsetMap.set(adset.id, parsed)
+      return parsed
+    })
+    const adsetResults = await Promise.all(adsetPromises)
+
+    // Fetch ad insights in parallel
     const adPromises = ads.map(async (ad) => {
       const insights = await fetchAdInsights(ad.id, datePreset).catch(() => null)
       const createdDate = ad.created_time ? new Date(ad.created_time) : null
@@ -168,6 +226,8 @@ export async function fetchFullPerformance(datePreset = 'last_7d') {
         status: ad.status,
         thumbnailUrl: ad.creative?.thumbnail_url || null,
         adsetId: ad.adset_id,
+        adsetName: adsetMap.get(ad.adset_id)?.name || null,
+        targeting: adsetMap.get(ad.adset_id)?.targeting || null,
         daysRunning,
         insights,
         dailyInsights: []
@@ -183,6 +243,7 @@ export async function fetchFullPerformance(datePreset = 'last_7d') {
       dailyBudget: campaign.daily_budget ? Number(campaign.daily_budget) / 100 : null,
       objective: campaign.objective,
       insights: cInsights,
+      adsets: adsetResults,
       ads: adResults
     }
   })

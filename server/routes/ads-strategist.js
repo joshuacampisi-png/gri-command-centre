@@ -51,16 +51,52 @@ function buildMetricsSummary(perfData) {
       lines.push(`Frequency: ${ci.frequency.toFixed(1)} | CPM: $${ci.cpm.toFixed(2)}`)
     }
 
+    // Adset/audience data
+    for (const adset of campaign.adsets || []) {
+      lines.push(`  ADSET: ${adset.name}`)
+      lines.push(`    Status: ${adset.status}`)
+      if (adset.dailyBudget) lines.push(`    Daily Budget: $${adset.dailyBudget.toFixed(2)}`)
+      if (adset.lifetimeBudget) lines.push(`    Lifetime Budget: $${adset.lifetimeBudget.toFixed(2)}`)
+      if (adset.optimizationGoal) lines.push(`    Optimisation Goal: ${adset.optimizationGoal}`)
+      if (adset.targeting) {
+        const t = adset.targeting
+        if (t.ageMin || t.ageMax) lines.push(`    Age: ${t.ageMin || '?'}-${t.ageMax || '?'}`)
+        if (t.genders?.length) lines.push(`    Gender: ${t.genders.map(g => g === 1 ? 'Male' : g === 2 ? 'Female' : 'All').join(', ')}`)
+        if (t.geoLocations?.countries?.length) lines.push(`    Countries: ${t.geoLocations.countries.join(', ')}`)
+        if (t.geoLocations?.cities?.length) lines.push(`    Cities: ${t.geoLocations.cities.map(c => c.name).join(', ')}`)
+        if (t.geoLocations?.regions?.length) lines.push(`    Regions: ${t.geoLocations.regions.map(r => r.name).join(', ')}`)
+        if (t.interests?.length) lines.push(`    Interests: ${t.interests.join(', ')}`)
+        if (t.customAudiences?.length) lines.push(`    Custom Audiences: ${t.customAudiences.map(a => a.name).join(', ')}`)
+        if (t.excludedCustomAudiences?.length) lines.push(`    Excluded Audiences: ${t.excludedCustomAudiences.map(a => a.name).join(', ')}`)
+        if (t.lookalikes?.length) lines.push(`    Lookalikes: ${t.lookalikes.join(', ')}`)
+        if (t.placements?.length) lines.push(`    Placements: ${t.placements.join(', ')}`)
+        if (t.devicePlatforms?.length) lines.push(`    Devices: ${t.devicePlatforms.join(', ')}`)
+      }
+      if (adset.insights) {
+        const asi = adset.insights
+        lines.push(`    Spend: $${asi.spend.toFixed(2)} | ROAS: ${asi.roas.toFixed(2)}x | CPA: $${asi.cpa.toFixed(2)}`)
+        lines.push(`    Purchases: ${asi.purchases} | Revenue: $${asi.purchaseValue.toFixed(2)}`)
+        lines.push(`    Frequency: ${asi.frequency.toFixed(1)} | CTR: ${asi.ctr.toFixed(2)}%`)
+      }
+    }
+
     for (const ad of campaign.ads || []) {
       const ai = ad.insights
       const fatigue = ad.fatigue || {}
       lines.push(`  AD: ${ad.name}`)
       lines.push(`    Status: ${ad.status} | Days Running: ${ad.daysRunning}`)
+      if (ad.adsetName) lines.push(`    Adset: ${ad.adsetName}`)
+      if (ad.targeting) {
+        const t = ad.targeting
+        if (t.interests?.length) lines.push(`    Audience Interests: ${t.interests.join(', ')}`)
+        if (t.customAudiences?.length) lines.push(`    Custom Audiences: ${t.customAudiences.map(a => a.name).join(', ')}`)
+        if (t.ageMin) lines.push(`    Age Target: ${t.ageMin}-${t.ageMax}`)
+      }
       if (ai) {
         lines.push(`    Spend: $${ai.spend.toFixed(2)} | ROAS: ${ai.roas.toFixed(2)}x | CPA: $${ai.cpa.toFixed(2)}`)
         lines.push(`    Clicks: ${ai.clicks} | Impressions: ${ai.impressions} | CTR: ${ai.ctr.toFixed(2)}%`)
         lines.push(`    Purchases: ${ai.purchases} | Revenue: $${ai.purchaseValue.toFixed(2)}`)
-        lines.push(`    Frequency: ${ai.frequency.toFixed(1)} | CPM: $${ai.cpm.toFixed(2)}`)
+        lines.push(`    Frequency: ${ai.frequency.toFixed(1)} | CPM: $${ai.cpm.toFixed(2)} | Reach: ${ai.reach}`)
       }
       lines.push(`    Fatigue Score: ${fatigue.score ?? 'N/A'} | Status: ${fatigue.status ?? 'N/A'}`)
       if (fatigue.signals?.length) {
