@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'fs'
+import { readFileSync, writeFileSync, existsSync, unlinkSync, readdirSync, copyFileSync } from 'fs'
 import multer from 'multer'
 import { dataFile, dataDir } from '../lib/data-dir.js'
 
@@ -16,6 +16,8 @@ router.use((_req, res, next) => {
 
 const DATA_FILE = dataFile('calendar-entries.json')
 const VIDEO_DIR = dataDir('calendar-videos')
+const BACKUP_DIR = dataDir('calendar-backups')
+const MAX_BACKUPS = 50
 
 function loadEntries() {
   if (!existsSync(DATA_FILE)) return []
@@ -23,7 +25,24 @@ function loadEntries() {
   catch { return [] }
 }
 
+function backupEntries() {
+  if (!existsSync(DATA_FILE)) return
+  try {
+    const ts = new Date().toISOString().replace(/[:.]/g, '-')
+    const backupFile = `${BACKUP_DIR}/calendar-${ts}.json`
+    copyFileSync(DATA_FILE, backupFile)
+    // Prune old backups, keep last MAX_BACKUPS
+    const files = readdirSync(BACKUP_DIR).filter(f => f.startsWith('calendar-') && f.endsWith('.json')).sort()
+    while (files.length > MAX_BACKUPS) {
+      try { unlinkSync(`${BACKUP_DIR}/${files.shift()}`) } catch {}
+    }
+  } catch (e) {
+    console.error('[Calendar] Backup failed:', e.message)
+  }
+}
+
 function saveEntries(entries) {
+  backupEntries()
   writeFileSync(DATA_FILE, JSON.stringify(entries, null, 2))
 }
 
@@ -42,9 +61,50 @@ const upload = multer({
   limits: { fileSize: 500 * 1024 * 1024 }
 })
 
-// Get all entries
+// Get all active entries (excludes archived)
 router.get('/entries', (_req, res) => {
-  res.json(loadEntries())
+  const entries = loadEntries().filter(e => !e._archived)
+  res.json(entries)
+})
+
+// Get archived entries
+router.get('/entries/archived', (_req, res) => {
+  const entries = loadEntries().filter(e => e._archived)
+  res.json(entries)
+})
+
+// Restore an archived entry
+router.post('/entries/:id/restore', (req, res) => {
+  const entries = loadEntries()
+  const entry = entries.find(e => e.id === req.params.id)
+  if (!entry) return res.status(404).json({ error: 'Entry not found' })
+  delete entry._archived
+  delete entry._archivedAt
+  saveEntries(entries)
+  res.json({ ok: true, entry })
+})
+
+// List available backups
+router.get('/backups', (_req, res) => {
+  try {
+    const files = readdirSync(BACKUP_DIR).filter(f => f.endsWith('.json')).sort().reverse()
+    res.json({ ok: true, backups: files.map(f => ({ file: f, date: f.replace('calendar-', '').replace('.json', '').replace(/-/g, (m, i) => i < 16 ? '-' : '.').slice(0, 19) })) })
+  } catch { res.json({ ok: true, backups: [] }) }
+})
+
+// Restore from a specific backup
+router.post('/backups/:file/restore', (req, res) => {
+  const file = req.params.file.replace(/[^a-zA-Z0-9._-]/g, '')
+  const backupPath = `${BACKUP_DIR}/${file}`
+  if (!existsSync(backupPath)) return res.status(404).json({ error: 'Backup not found' })
+  try {
+    const backupData = JSON.parse(readFileSync(backupPath, 'utf8'))
+    backupEntries() // backup current state before restoring
+    writeFileSync(DATA_FILE, JSON.stringify(backupData, null, 2))
+    res.json({ ok: true, restored: backupData.length })
+  } catch (e) {
+    res.status(500).json({ error: e.message })
+  }
 })
 
 // Create or update an entry
@@ -59,15 +119,14 @@ router.post('/entries', (req, res) => {
   res.json({ ok: true, entry })
 })
 
-// Delete an entry
+// Soft-delete an entry (marks as archived, never truly deleted)
 router.delete('/entries/:id', (req, res) => {
   const entries = loadEntries()
   const entry = entries.find(e => e.id === req.params.id)
-  if (entry?.videoUrl) {
-    const filename = entry.videoUrl.split('/').pop()
-    try { unlinkSync(join(VIDEO_DIR, filename)) } catch {}
-  }
-  saveEntries(entries.filter(e => e.id !== req.params.id))
+  if (!entry) return res.json({ ok: true })
+  entry._archived = true
+  entry._archivedAt = new Date().toISOString()
+  saveEntries(entries)
   res.json({ ok: true })
 })
 
@@ -81,16 +140,19 @@ router.post('/entries/bulk-status', (req, res) => {
   res.json({ ok: true })
 })
 
-// Bulk delete
+// Bulk soft-delete (archive, never truly deleted)
 router.post('/entries/bulk-delete', (req, res) => {
   const { ids } = req.body
   if (!ids) return res.status(400).json({ error: 'Missing ids' })
   const entries = loadEntries()
-  entries.filter(e => ids.includes(e.id) && e.videoUrl).forEach(e => {
-    const filename = e.videoUrl.split('/').pop()
-    try { unlinkSync(join(VIDEO_DIR, filename)) } catch {}
+  const now = new Date().toISOString()
+  entries.forEach(e => {
+    if (ids.includes(e.id)) {
+      e._archived = true
+      e._archivedAt = now
+    }
   })
-  saveEntries(entries.filter(e => !ids.includes(e.id)))
+  saveEntries(entries)
   res.json({ ok: true })
 })
 
@@ -115,12 +177,25 @@ router.get('/export', (_req, res) => {
   res.json(entries)
 })
 
-// Import entries from JSON
+// Import entries from JSON (merges, never overwrites)
 router.post('/import', (req, res) => {
-  const entries = req.body
-  if (!Array.isArray(entries)) return res.status(400).json({ error: 'Expected array' })
-  saveEntries(entries)
-  res.json({ ok: true, count: entries.length })
+  const incoming = req.body
+  if (!Array.isArray(incoming)) return res.status(400).json({ error: 'Expected array' })
+  const existing = loadEntries()
+  const existingIds = new Set(existing.map(e => e.id))
+  let added = 0
+  for (const entry of incoming) {
+    if (!entry.id) continue
+    if (existingIds.has(entry.id)) {
+      const idx = existing.findIndex(e => e.id === entry.id)
+      existing[idx] = entry
+    } else {
+      existing.push(entry)
+      added++
+    }
+  }
+  saveEntries(existing)
+  res.json({ ok: true, total: existing.length, added })
 })
 
 export default router
