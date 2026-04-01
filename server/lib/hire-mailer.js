@@ -187,9 +187,12 @@ export async function sendHireEmail(type, hire, extraData) {
   const { subject, text } = builder(hire, extraData);
 
   try {
+    const fromAddr = getFromAddress();
+    const bcc = process.env.RESEND_FROM_EMAIL || 'hello@genderrevealideas.com.au';
     const { data, error } = await getClient().emails.send({
-      from: getFromAddress(),
+      from: fromAddr,
       to: hire.customerEmail,
+      bcc,
       subject,
       text,
     });
