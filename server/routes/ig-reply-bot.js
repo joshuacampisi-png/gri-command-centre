@@ -130,4 +130,16 @@ router.get('/stats', (_req, res) => {
   res.json({ ok: true, ...stats, rateLimit })
 })
 
+// Manual poll trigger (for debugging)
+router.post('/poll-now', async (_req, res) => {
+  try {
+    const { pollForNewComments } = await import('../lib/ig-reply-bot/comment-poller.js')
+    console.log('[IG-Reply-Bot] Manual poll triggered')
+    await pollForNewComments()
+    res.json({ ok: true, message: 'Poll completed' })
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message })
+  }
+})
+
 export default router

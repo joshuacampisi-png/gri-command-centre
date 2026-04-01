@@ -17,9 +17,13 @@ const seenComments = new Set()
 
 export async function pollForNewComments() {
   const config = loadConfig()
-  if (!config.enabled) return
+  if (!config.enabled) {
+    console.log('[IG-Reply-Bot] Poll: bot disabled, skipping')
+    return
+  }
 
   const accountId = igAccountId()
+  console.log(`[IG-Reply-Bot] Poll: checking posts for account ${accountId}`)
 
   try {
     // Get last 5 posts
@@ -28,6 +32,7 @@ export async function pollForNewComments() {
       limit: '5'
     })
     const posts = mediaResult.data || []
+    console.log(`[IG-Reply-Bot] Poll: found ${posts.length} posts`)
 
     for (const post of posts) {
       try {
@@ -38,16 +43,23 @@ export async function pollForNewComments() {
         })
         const comments = commentsResult.data || []
 
+        let newCount = 0
         for (const comment of comments) {
           // Skip if we've already seen or replied to this comment
           if (seenComments.has(comment.id) || isReplied(comment.id)) continue
           seenComments.add(comment.id)
+          newCount++
 
           // Skip own comments
-          if (comment.from?.id === accountId) continue
+          if (comment.from?.id === accountId) {
+            console.log(`[IG-Reply-Bot] Poll: skipping own comment ${comment.id}`)
+            continue
+          }
 
+          console.log(`[IG-Reply-Bot] Poll: processing comment by @${comment.username}: "${comment.text?.slice(0, 50)}"`)
           await _processPolledComment(comment, post)
         }
+        if (newCount > 0) console.log(`[IG-Reply-Bot] Poll: ${newCount} new comments on post ${post.id}`)
       } catch (e) {
         // One post failing shouldn't kill the whole poll
         console.warn(`[IG-Reply-Bot] Poll: Failed to check comments on ${post.id}:`, e.message)
