@@ -230,13 +230,13 @@ export default function IGReplyBotTab() {
         <div className="ov-card">
           <h3 style={{ margin: '0 0 12px', fontSize: 15 }}>Setup Info</h3>
           <div style={{ fontSize: 13, color: '#aaa', lineHeight: 1.8 }}>
-            <div><strong>Webhook URL:</strong> <code style={{ background: '#1a1a2e', padding: '2px 8px', borderRadius: 4 }}>{'{your-domain}'}/api/ig-reply-bot/webhook</code></div>
-            <div><strong>Subscription:</strong> Instagram &rarr; comments</div>
+            <div><strong>Webhook:</strong> <code style={{ background: '#1a1a2e', padding: '2px 8px', borderRadius: 4, fontSize: 11 }}>command-centre.up.railway.app/api/ig-reply-bot/webhook</code></div>
+            <div><strong>Subscriptions:</strong> Comments + DMs</div>
             <div><strong>Last reply:</strong> {fmtTime(s.lastReplyAt)}</div>
             <div><strong>Tone refresh:</strong> Sundays 3am AEST (auto)</div>
           </div>
-          <div style={{ marginTop: 16, padding: 12, background: '#1a1a2e', borderRadius: 8, fontSize: 12, color: '#f59e0b' }}>
-            Requires: Meta App with instagram_manage_comments permission, Page Access Token, and webhook subscription to Instagram comments.
+          <div style={{ marginTop: 16, padding: 12, background: '#0a2e0a', borderRadius: 8, fontSize: 12, color: '#22c55e' }}>
+            Connected to Meta App (GRI Social Publisher). Webhook active for Instagram comments and DMs.
           </div>
         </div>
       </div>
