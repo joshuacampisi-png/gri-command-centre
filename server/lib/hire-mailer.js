@@ -15,7 +15,8 @@ function getClient() {
 
 function getFromAddress() {
   const name = process.env.GMAIL_FROM_NAME || 'Gender Reveal Ideas';
-  const email = process.env.RESEND_FROM_EMAIL || process.env.GMAIL_USER || 'onboarding@resend.dev';
+  // Use RESEND_FROM_EMAIL if domain is verified in Resend, otherwise use Resend's test sender
+  const email = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
   return `${name} <${email}>`;
 }
 
