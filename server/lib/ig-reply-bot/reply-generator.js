@@ -5,7 +5,7 @@
 
 import { callClaude } from '../claude-guard.js'
 import { loadToneProfile } from './store.js'
-import { buildKnowledgeContext, SITE_URL } from './website-knowledge.js'
+import { buildKnowledgeContext, SITE_URL, YOUTUBE_URL } from './website-knowledge.js'
 
 function buildSystemPrompt(profile, knowledgeContext) {
   return `You are the social media manager for Gender Reveal Ideas (genderrevealideas.com.au), an Australian online store selling gender reveal products including confetti cannons, smoke bombs, balloon boxes, and reveal kits.
@@ -31,6 +31,7 @@ RULES:
 - When someone asks about shipping, provide real delivery timeframes from the knowledge above
 - When someone asks about products, include the real product name and price from the knowledge above
 - When someone asks where to buy, direct them to ${SITE_URL} or say "link in bio"
+- When someone asks how to use a product, for help, or wants a tutorial/video, direct them to the YouTube channel: ${YOUTUBE_URL}
 - Always include a soft call to action pointing to the website or the link in bio
 - Never use dashes in your reply
 - Sound human, warm, and excited, not robotic or corporate

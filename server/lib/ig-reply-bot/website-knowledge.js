@@ -6,6 +6,7 @@
  */
 
 export const SITE_URL = 'https://genderrevealideas.com.au'
+export const YOUTUBE_URL = 'https://www.youtube.com/@GenderRevealIdeasAustralia'
 
 export const COLLECTIONS = {
   bundles: { name: 'Bundles', url: `${SITE_URL}/collections/gender-reveal-bundles`, count: 38 },
@@ -109,6 +110,11 @@ export function buildKnowledgeContext(commentText) {
   // Secret colour
   if (lower.match(/secret|surprise|friend.*order|someone.*order/)) {
     parts.push(`SECRET REVEAL: ${FAQ_ANSWERS.colourSecret}`)
+  }
+
+  // How to use / help / tutorial / video requests
+  if (lower.match(/how to|how do|tutorial|video|help|instructions|guide|demo|watch|show me|explain/)) {
+    parts.push(`YOUTUBE: For tutorials and how to videos, check out our YouTube channel: ${YOUTUBE_URL}`)
   }
 
   // Default — always include website
