@@ -6,23 +6,28 @@ const POST_TYPES = ['image', 'carousel', 'reel']
 const POST_TYPE_LABELS = { image: 'Image', carousel: 'Carousel', reel: 'Reel' }
 const POST_TYPE_ICONS = { image: '🖼', carousel: '🎠', reel: '🎬' }
 const STATUS_COLORS = { DRAFT: '#9CA3AF', SCHEDULED: '#3B82F6', PUBLISHING: '#F59E0B', PUBLISHED: '#059669', FAILED: '#DC2626' }
-const ACCEPT_MEDIA = 'image/jpeg,image/png,image/webp,video/mp4,video/quicktime,.jpg,.jpeg,.png,.webp,.mp4,.mov'
 const API = '/api/instagram'
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8) }
 function fmtDate(d) { const y = d.getFullYear(); const m = String(d.getMonth() + 1).padStart(2, '0'); const day = String(d.getDate()).padStart(2, '0'); return `${y}-${m}-${day}` }
-function fmtDateTime(iso) { if (!iso) return ''; const d = new Date(iso); return d.toLocaleString('en-AU', { timeZone: 'Australia/Brisbane', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) }
+function fmtDateTime(iso) { if (!iso) return ''; try { const d = new Date(iso); return d.toLocaleString('en-AU', { timeZone: 'Australia/Brisbane', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) } catch { return '' } }
+function isVideo(url) { return /\.(mp4|mov)$/i.test(url || '') }
+function fmtSize(bytes) { if (bytes < 1024) return bytes + ' B'; if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB'; return (bytes / 1048576).toFixed(1) + ' MB' }
 
 // ── API helpers ──────────────────────────────────────────────────────────────
 
 async function fetchPosts() {
-  const res = await fetch(`${API}/entries`)
-  return res.ok ? res.json() : []
+  try {
+    const res = await fetch(`${API}/entries`)
+    if (!res.ok) return []
+    const data = await res.json()
+    return Array.isArray(data) ? data : []
+  } catch { return [] }
 }
 
 async function savePost(post) {
   const res = await fetch(`${API}/entries`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(post) })
-  if (!res.ok) throw new Error(`Save failed: ${res.status}`)
+  if (!res.ok) { const t = await res.text().catch(() => ''); throw new Error(t || `Save failed (${res.status})`) }
   return res.json()
 }
 
@@ -35,15 +40,34 @@ async function publishNowAPI(id) {
   return res.json()
 }
 
-async function uploadMediaAPI(files) {
+async function uploadMediaAPI(files, onProgress) {
   const form = new FormData()
   for (const file of files) form.append('media', file)
-  const res = await fetch(`${API}/upload`, { method: 'POST', body: form })
-  if (!res.ok) {
-    const text = await res.text().catch(() => '')
-    throw new Error(`Upload failed (${res.status}): ${text}`)
-  }
-  return res.json()
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open('POST', `${API}/upload`)
+
+    if (onProgress) {
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100))
+      }
+    }
+
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try { resolve(JSON.parse(xhr.responseText)) }
+        catch { reject(new Error('Invalid response from server')) }
+      } else {
+        reject(new Error(`Upload failed (${xhr.status}): ${xhr.responseText?.slice(0, 200) || ''}`))
+      }
+    }
+
+    xhr.onerror = () => reject(new Error('Upload failed — network error'))
+    xhr.ontimeout = () => reject(new Error('Upload timed out'))
+    xhr.timeout = 300000 // 5 min timeout for large videos
+    xhr.send(form)
+  })
 }
 
 async function generateCaptionAPI(params) {
@@ -65,6 +89,28 @@ function getMonthDays(year, month) {
   return days
 }
 
+// ── Toast Component ─────────────────────────────────────────────────────────
+
+function Toast({ message, type, onClose }) {
+  useEffect(() => {
+    const t = setTimeout(onClose, 4000)
+    return () => clearTimeout(t)
+  }, [onClose])
+
+  return (
+    <div style={{
+      position: 'fixed', top: 16, right: 16, zIndex: 9999, maxWidth: 400,
+      padding: '12px 18px', borderRadius: 10, fontSize: 13, fontWeight: 600,
+      background: type === 'error' ? '#FEE2E2' : type === 'warning' ? '#FEF3C7' : '#ECFDF5',
+      color: type === 'error' ? '#991B1B' : type === 'warning' ? '#92400E' : '#065F46',
+      border: `1px solid ${type === 'error' ? '#FECACA' : type === 'warning' ? '#FCD34D' : '#A7F3D0'}`,
+      boxShadow: '0 4px 16px rgba(0,0,0,0.15)', animation: 'igSlideIn .2s ease-out',
+    }}>
+      {message}
+    </div>
+  )
+}
+
 // ── Main Component ───────────────────────────────────────────────────────────
 
 export default function InstagramScheduler() {
@@ -72,24 +118,35 @@ export default function InstagramScheduler() {
   const [view, setView] = useState('calendar')
   const [drawer, setDrawer] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
   const [generating, setGenerating] = useState(false)
   const [captionVariants, setCaptionVariants] = useState(null)
   const [calMonth, setCalMonth] = useState(new Date().getMonth())
   const [calYear, setCalYear] = useState(new Date().getFullYear())
-  const [dragOver, setDragOver] = useState(null) // date string of day being dragged over
-  const [autoPosting, setAutoPosting] = useState(null) // date string being auto-processed
+  const [dragOver, setDragOver] = useState(null)
+  const [autoPosting, setAutoPosting] = useState(null)
+  const [toast, setToast] = useState(null)
   const fileRef = useRef(null)
 
-  const reload = useCallback(async () => {
-    setLoading(true)
-    const data = await fetchPosts()
-    setPosts(Array.isArray(data) ? data : [])
-    setLoading(false)
+  const showToast = useCallback((message, type = 'success') => {
+    setToast({ message, type, key: Date.now() })
   }, [])
 
-  // Load posts
+  const reload = useCallback(async () => {
+    try {
+      const data = await fetchPosts()
+      setPosts(data)
+      setError(null)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
     reload()
     const interval = setInterval(reload, 30000)
@@ -130,7 +187,6 @@ export default function InstagramScheduler() {
   }
 
   // ── Drag & drop onto calendar day ──────────────────────────────────────────
-  // Drop video/image onto a day → upload → auto-generate caption → auto-schedule
 
   function handleCalDragOver(e, day) {
     e.preventDefault()
@@ -155,15 +211,13 @@ export default function InstagramScheduler() {
     setAutoPosting(dateKey)
 
     try {
-      // 1. Upload the files
-      const uploadResult = await uploadMediaAPI(files)
+      const uploadResult = await uploadMediaAPI(files, (pct) => setUploadProgress(pct))
       if (!uploadResult.files?.length) throw new Error('Upload returned no files')
 
       const mediaUrls = uploadResult.files.map(f => f.url)
       const hasVideo = uploadResult.files.some(f => f.type === 'video')
       const postType = mediaUrls.length > 1 ? 'carousel' : hasVideo ? 'reel' : 'image'
 
-      // 2. Auto-generate caption
       let caption = ''
       try {
         const captionResult = await generateCaptionAPI({ postType })
@@ -171,13 +225,10 @@ export default function InstagramScheduler() {
           const v = captionResult.variants[0]
           caption = `${v.hook}\n\n${v.body}\n\n${v.cta}\n\n${v.hashtags}`
         }
-      } catch {
-        caption = '' // Non-fatal — post without caption rather than fail
-      }
+      } catch { /* Non-fatal */ }
 
-      // 3. Create + schedule the post for 10am AEST on that day
       const scheduledAt = new Date(day)
-      scheduledAt.setHours(0, 0, 0, 0) // midnight UTC = 10am AEST
+      scheduledAt.setHours(0, 0, 0, 0)
       const post = {
         id: uid(),
         type: postType,
@@ -188,10 +239,12 @@ export default function InstagramScheduler() {
       }
       await savePost(post)
       await reload()
+      showToast(`Post scheduled for ${fmtDate(day)}`)
     } catch (err) {
-      alert('Auto-post failed: ' + err.message)
+      showToast('Auto-post failed: ' + err.message, 'error')
     }
     setAutoPosting(null)
+    setUploadProgress(0)
   }
 
   // ── Save post ──────────────────────────────────────────────────────────────
@@ -204,8 +257,9 @@ export default function InstagramScheduler() {
       await savePost(post)
       await reload()
       setDrawer(null)
+      showToast(status === 'SCHEDULED' ? 'Post scheduled' : 'Draft saved')
     } catch (err) {
-      alert('Save failed: ' + err.message)
+      showToast('Save failed: ' + err.message, 'error')
     }
     setSaving(false)
   }
@@ -214,9 +268,14 @@ export default function InstagramScheduler() {
 
   async function handleDelete() {
     if (!drawer || !confirm('Delete this post?')) return
-    await deletePostAPI(drawer.id)
-    await reload()
-    setDrawer(null)
+    try {
+      await deletePostAPI(drawer.id)
+      await reload()
+      setDrawer(null)
+      showToast('Post deleted')
+    } catch (err) {
+      showToast('Delete failed: ' + err.message, 'error')
+    }
   }
 
   // ── Publish now ────────────────────────────────────────────────────────────
@@ -227,11 +286,15 @@ export default function InstagramScheduler() {
     try {
       await savePost(drawer)
       const result = await publishNowAPI(drawer.id)
-      if (result.error) alert('Publish failed: ' + result.error)
+      if (result.error) {
+        showToast('Publish failed: ' + result.error, 'error')
+      } else {
+        showToast('Published to Instagram!')
+      }
       await reload()
       setDrawer(null)
     } catch (err) {
-      alert('Publish failed: ' + err.message)
+      showToast('Publish failed: ' + err.message, 'error')
     }
     setSaving(false)
   }
@@ -241,30 +304,52 @@ export default function InstagramScheduler() {
   async function handleUpload(e) {
     const files = e.target.files
     if (!files || files.length === 0) return
+
+    // Validate file sizes
+    for (const f of files) {
+      if (f.size > 500 * 1024 * 1024) {
+        showToast(`File "${f.name}" is too large (max 500MB)`, 'error')
+        if (fileRef.current) fileRef.current.value = ''
+        return
+      }
+    }
+
     setUploading(true)
+    setUploadProgress(0)
     try {
-      const result = await uploadMediaAPI(files)
+      const result = await uploadMediaAPI(files, (pct) => setUploadProgress(pct))
       if (result.files) {
-        setDrawer(prev => ({
-          ...prev,
-          mediaUrls: [...(prev.mediaUrls || []), ...result.files.map(f => f.url)],
-          type: result.files.length > 1 || (prev.mediaUrls || []).length + result.files.length > 1
-            ? 'carousel'
-            : result.files[0].type === 'video' ? 'reel' : prev.type
-        }))
+        setDrawer(prev => {
+          if (!prev) return prev
+          const newUrls = [...(prev.mediaUrls || []), ...result.files.map(f => f.url)]
+          const hasMultiple = newUrls.length > 1
+          const hasVid = result.files.some(f => f.type === 'video') || newUrls.some(u => isVideo(u))
+          return {
+            ...prev,
+            mediaUrls: newUrls,
+            type: hasMultiple ? 'carousel' : hasVid ? 'reel' : prev.type,
+          }
+        })
+        showToast(`${result.files.length} file${result.files.length > 1 ? 's' : ''} uploaded`)
       }
     } catch (err) {
-      alert('Upload failed: ' + err.message)
+      showToast('Upload failed: ' + err.message, 'error')
     }
     setUploading(false)
+    setUploadProgress(0)
     if (fileRef.current) fileRef.current.value = ''
   }
 
   function removeMedia(idx) {
     setDrawer(prev => {
+      if (!prev) return prev
       const urls = [...(prev.mediaUrls || [])]
       urls.splice(idx, 1)
-      return { ...prev, mediaUrls: urls, type: urls.length > 1 ? 'carousel' : urls.length === 1 && /\.(mp4|mov)$/i.test(urls[0]) ? 'reel' : 'image' }
+      return {
+        ...prev,
+        mediaUrls: urls,
+        type: urls.length > 1 ? 'carousel' : urls.length === 1 && isVideo(urls[0]) ? 'reel' : 'image',
+      }
     })
   }
 
@@ -282,15 +367,16 @@ export default function InstagramScheduler() {
       })
       if (result.variants) setCaptionVariants(result.variants)
     } catch (err) {
-      alert('Caption generation failed: ' + err.message)
+      showToast('Caption generation failed: ' + err.message, 'error')
     }
     setGenerating(false)
   }
 
   function selectVariant(variant) {
     const caption = `${variant.hook}\n\n${variant.body}\n\n${variant.cta}\n\n${variant.hashtags}`
-    setDrawer(prev => ({ ...prev, caption }))
+    setDrawer(prev => prev ? { ...prev, caption } : prev)
     setCaptionVariants(null)
+    showToast('Caption applied')
   }
 
   // ── Calendar view ──────────────────────────────────────────────────────────
@@ -299,10 +385,16 @@ export default function InstagramScheduler() {
   const postsByDate = useMemo(() => {
     const map = {}
     for (const p of posts) {
-      const d = p.scheduledAt ? fmtDate(new Date(p.scheduledAt)) : null
-      if (d) { if (!map[d]) map[d] = []; map[d].push(p) }
+      try {
+        const d = p.scheduledAt ? fmtDate(new Date(p.scheduledAt)) : null
+        if (d) { if (!map[d]) map[d] = []; map[d].push(p) }
+      } catch { /* skip bad date */ }
     }
     return map
+  }, [posts])
+
+  const sortedPosts = useMemo(() => {
+    return [...posts].sort((a, b) => new Date(b.scheduledAt || b.createdAt || 0) - new Date(a.scheduledAt || a.createdAt || 0))
   }, [posts])
 
   function prevMonth() {
@@ -316,10 +408,30 @@ export default function InstagramScheduler() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
-  if (loading && posts.length === 0) return <div className="loading"><div className="spinner" /></div>
+  if (loading && posts.length === 0) {
+    return (
+      <div className="ig-scheduler">
+        <div className="loading"><div className="spinner" /> Loading Instagram scheduler...</div>
+      </div>
+    )
+  }
+
+  if (error && posts.length === 0) {
+    return (
+      <div className="ig-scheduler">
+        <div className="ig-error-box">
+          <strong>Failed to load:</strong> {error}
+          <button className="btn btn-secondary" onClick={reload} style={{ marginLeft: 12 }}>Retry</button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="ig-scheduler">
+      {/* Toast */}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} key={toast.key} />}
+
       {/* Header */}
       <div className="page-header">
         <div>
@@ -384,7 +496,12 @@ export default function InstagramScheduler() {
                   onDrop={e => handleCalDrop(e, day)}
                 >
                   <span className="ig-cal-day-num">{day.getDate()}</span>
-                  {isProcessing && <div className="ig-cal-processing"><div className="spinner" /> Auto-posting...</div>}
+                  {isProcessing && (
+                    <div className="ig-cal-processing">
+                      <div className="spinner" />
+                      {uploadProgress > 0 && uploadProgress < 100 ? `Uploading ${uploadProgress}%...` : 'Processing...'}
+                    </div>
+                  )}
                   <div className="ig-cal-day-posts">
                     {dayPosts.slice(0, 3).map(p => (
                       <div
@@ -410,13 +527,13 @@ export default function InstagramScheduler() {
       {view === 'list' && (
         <div className="ig-list">
           {posts.length === 0 && <div className="empty-state"><div className="empty-icon">📸</div><h3>No posts yet</h3><p>Drag a video onto the calendar or click + New Post.</p></div>}
-          {posts.sort((a, b) => new Date(b.scheduledAt || b.createdAt) - new Date(a.scheduledAt || a.createdAt)).map(post => (
+          {sortedPosts.map(post => (
             <div key={post.id} className="ig-list-item" onClick={() => { setDrawer(post); setCaptionVariants(null) }}>
               <div className="ig-list-preview">
                 {post.mediaUrls?.[0] ? (
-                  /\.(mp4|mov)$/i.test(post.mediaUrls[0])
-                    ? <video src={post.mediaUrls[0]} className="ig-list-thumb" />
-                    : <img src={post.mediaUrls[0]} className="ig-list-thumb" alt="" />
+                  isVideo(post.mediaUrls[0])
+                    ? <div className="ig-list-thumb" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1E293B', color: '#fff', fontSize: 20 }}>🎬</div>
+                    : <img src={post.mediaUrls[0]} className="ig-list-thumb" alt="" loading="lazy" onError={e => { e.target.style.display = 'none' }} />
                 ) : <div className="ig-list-thumb ig-list-thumb-empty">{POST_TYPE_ICONS[post.type]}</div>}
               </div>
               <div className="ig-list-info">
@@ -436,11 +553,11 @@ export default function InstagramScheduler() {
 
       {/* Drawer / Edit Panel */}
       {drawer && (
-        <div className="ig-drawer-overlay" onClick={() => setDrawer(null)}>
+        <div className="ig-drawer-overlay" onClick={() => { if (!saving && !uploading) setDrawer(null) }}>
           <div className="ig-drawer" onClick={e => e.stopPropagation()}>
             <div className="ig-drawer-header">
               <h3>{drawer.status === 'PUBLISHED' ? 'Published Post' : drawer.igPostId ? 'Edit Post' : 'New Post'}</h3>
-              <button className="ig-drawer-close" onClick={() => setDrawer(null)}>&times;</button>
+              <button className="ig-drawer-close" onClick={() => { if (!saving && !uploading) setDrawer(null) }}>&times;</button>
             </div>
 
             <div className="ig-drawer-body">
@@ -452,7 +569,7 @@ export default function InstagramScheduler() {
                     <button
                       key={t}
                       className={drawer.type === t ? 'active' : ''}
-                      onClick={() => setDrawer(prev => ({ ...prev, type: t }))}
+                      onClick={() => setDrawer(prev => prev ? { ...prev, type: t } : prev)}
                     >
                       {POST_TYPE_ICONS[t]} {POST_TYPE_LABELS[t]}
                     </button>
@@ -466,22 +583,52 @@ export default function InstagramScheduler() {
                 <div className="ig-media-grid">
                   {(drawer.mediaUrls || []).map((url, idx) => (
                     <div key={idx} className="ig-media-item">
-                      {/\.(mp4|mov)$/i.test(url)
-                        ? <video src={url} className="ig-media-preview" controls />
-                        : <img src={url} className="ig-media-preview" alt="" />}
+                      {isVideo(url)
+                        ? (
+                          <div className="ig-media-preview" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1E293B', color: '#fff', fontSize: 28 }}>
+                            🎬
+                            <span style={{ position: 'absolute', bottom: 4, left: 4, fontSize: 9, background: 'rgba(0,0,0,0.7)', color: '#fff', padding: '1px 5px', borderRadius: 3 }}>VIDEO</span>
+                          </div>
+                        )
+                        : <img src={url} className="ig-media-preview" alt="" loading="lazy" onError={e => { e.target.style.opacity = '0.3' }} />
+                      }
                       <button className="ig-media-remove" onClick={() => removeMedia(idx)}>&times;</button>
                     </div>
                   ))}
                 </div>
+
+                {/* Upload area */}
                 <div className="ig-upload-btn-wrap">
-                  <input
-                    ref={fileRef}
-                    type="file"
-                    accept="image/*,video/*,.mp4,.mov,.jpg,.jpeg,.png,.webp"
-                    multiple
-                    onChange={handleUpload}
-                    className="ig-upload-input"
-                  />
+                  {uploading ? (
+                    <div style={{
+                      padding: 16, border: '2px solid #E43F7B', borderRadius: 10,
+                      background: '#FFF0F5', textAlign: 'center',
+                    }}>
+                      <div className="spinner" style={{ margin: '0 auto 8px' }} />
+                      <div style={{ fontSize: 13, fontWeight: 600, color: '#E43F7B' }}>
+                        Uploading... {uploadProgress > 0 ? `${uploadProgress}%` : ''}
+                      </div>
+                      {uploadProgress > 0 && (
+                        <div style={{
+                          height: 4, background: '#FCE7F3', borderRadius: 2, marginTop: 8, overflow: 'hidden',
+                        }}>
+                          <div style={{
+                            height: '100%', width: `${uploadProgress}%`, background: '#E43F7B',
+                            borderRadius: 2, transition: 'width 0.3s ease',
+                          }} />
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <input
+                      ref={fileRef}
+                      type="file"
+                      accept=".jpg,.jpeg,.png,.webp,.mp4,.mov"
+                      multiple
+                      onChange={handleUpload}
+                      className="ig-upload-input"
+                    />
+                  )}
                 </div>
               </div>
 
@@ -491,7 +638,7 @@ export default function InstagramScheduler() {
                 <textarea
                   className="ig-caption-input"
                   value={drawer.caption || ''}
-                  onChange={e => setDrawer(prev => ({ ...prev, caption: e.target.value }))}
+                  onChange={e => setDrawer(prev => prev ? { ...prev, caption: e.target.value } : prev)}
                   placeholder="Write your caption or use AI to generate one..."
                   rows={6}
                 />
@@ -508,16 +655,21 @@ export default function InstagramScheduler() {
                   <input
                     placeholder="Product context (e.g. Mega Blaster, Smoke Bombs)"
                     value={drawer.productContext || ''}
-                    onChange={e => setDrawer(prev => ({ ...prev, productContext: e.target.value }))}
+                    onChange={e => setDrawer(prev => prev ? { ...prev, productContext: e.target.value } : prev)}
                   />
                   <input
                     placeholder="What does the media show? (optional)"
                     value={drawer.mediaDescription || ''}
-                    onChange={e => setDrawer(prev => ({ ...prev, mediaDescription: e.target.value }))}
+                    onChange={e => setDrawer(prev => prev ? { ...prev, mediaDescription: e.target.value } : prev)}
                   />
                 </div>
-                <button className="btn btn-secondary" onClick={handleGenerateCaption} disabled={generating}>
-                  {generating ? 'Generating...' : 'Generate 3 Captions'}
+                <button className="btn btn-secondary" onClick={handleGenerateCaption} disabled={generating} style={{ marginTop: 8 }}>
+                  {generating ? (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} />
+                      Generating...
+                    </span>
+                  ) : 'Generate 3 Captions'}
                 </button>
 
                 {captionVariants && (
@@ -539,11 +691,17 @@ export default function InstagramScheduler() {
                 <label>Schedule</label>
                 <input
                   type="datetime-local"
-                  value={drawer.scheduledAt ? new Date(new Date(drawer.scheduledAt).getTime() + 10 * 60 * 60 * 1000).toISOString().slice(0, 16) : ''}
+                  value={drawer.scheduledAt ? (() => {
+                    try {
+                      return new Date(new Date(drawer.scheduledAt).getTime() + 10 * 60 * 60 * 1000).toISOString().slice(0, 16)
+                    } catch { return '' }
+                  })() : ''}
                   onChange={e => {
-                    const local = new Date(e.target.value)
-                    const utc = new Date(local.getTime() - 10 * 60 * 60 * 1000)
-                    setDrawer(prev => ({ ...prev, scheduledAt: utc.toISOString() }))
+                    try {
+                      const local = new Date(e.target.value)
+                      const utc = new Date(local.getTime() - 10 * 60 * 60 * 1000)
+                      setDrawer(prev => prev ? { ...prev, scheduledAt: utc.toISOString() } : prev)
+                    } catch { /* ignore bad date */ }
                   }}
                 />
                 <span className="muted">Time is in AEST (Gold Coast)</span>
@@ -571,20 +729,20 @@ export default function InstagramScheduler() {
             <div className="ig-drawer-actions">
               {drawer.status !== 'PUBLISHED' && (
                 <>
-                  <button className="btn btn-primary" onClick={() => handleSave('SCHEDULED')} disabled={saving || !(drawer.mediaUrls?.length)}>
+                  <button className="btn btn-primary" onClick={() => handleSave('SCHEDULED')} disabled={saving || uploading || !(drawer.mediaUrls?.length)}>
                     {saving ? 'Saving...' : 'Schedule'}
                   </button>
-                  <button className="btn btn-secondary" onClick={() => handleSave('DRAFT')} disabled={saving}>
+                  <button className="btn btn-secondary" onClick={() => handleSave('DRAFT')} disabled={saving || uploading}>
                     Save Draft
                   </button>
                   {drawer.mediaUrls?.length > 0 && (
-                    <button className="btn btn-accent" onClick={handlePublishNow} disabled={saving}>
+                    <button className="btn btn-accent" onClick={handlePublishNow} disabled={saving || uploading}>
                       Publish Now
                     </button>
                   )}
                 </>
               )}
-              <button className="btn btn-danger" onClick={handleDelete}>Delete</button>
+              <button className="btn btn-danger" onClick={handleDelete} disabled={saving || uploading}>Delete</button>
             </div>
           </div>
         </div>
