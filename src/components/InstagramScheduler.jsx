@@ -486,7 +486,10 @@ export default function InstagramScheduler() {
             {calDays.map((day, i) => {
               const key = fmtDate(day)
               const isCurrentMonth = day.getMonth() === calMonth
-              const isToday = key === fmtDate(new Date())
+              // Use AEST date for "today" highlight (UTC+10)
+              const nowAEST = new Date(Date.now() + 10 * 60 * 60 * 1000)
+              const todayAEST = `${nowAEST.getUTCFullYear()}-${String(nowAEST.getUTCMonth() + 1).padStart(2, '0')}-${String(nowAEST.getUTCDate()).padStart(2, '0')}`
+              const isToday = key === todayAEST
               const isDragTarget = dragOver === key
               const isProcessing = autoPosting === key
               const dayPosts = postsByDate[key] || []
