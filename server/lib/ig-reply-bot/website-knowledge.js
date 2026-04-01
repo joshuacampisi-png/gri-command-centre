@@ -2,36 +2,53 @@
  * ig-reply-bot/website-knowledge.js
  * Static knowledge base from genderrevealideas.com.au.
  * Used by the reply generator to include real product links and shipping info.
- * Refreshed manually when products/policies change.
+ *
+ * IMPORTANT: All info here MUST match the live website exactly.
+ * If unsure about something, DO NOT include it — the reply generator
+ * is instructed to direct to the website when info is missing.
  */
 
 export const SITE_URL = 'https://genderrevealideas.com.au'
 export const YOUTUBE_URL = 'https://www.youtube.com/@GenderRevealIdeasAustralia'
 
 export const COLLECTIONS = {
-  bundles: { name: 'Bundles', url: `${SITE_URL}/collections/gender-reveal-bundles`, count: 38 },
-  extinguishers: { name: 'Extinguishers', url: `${SITE_URL}/collections/gender-reveal-extinguishers-australia`, count: 9 },
-  smokeBombs: { name: 'Smoke Bombs', url: `${SITE_URL}/collections/gender-reveal-smoke-bombs-australia`, count: 13 },
-  cannons: { name: 'Cannons', url: `${SITE_URL}/collections/gender-reveal-cannons`, count: 33 },
-  sports: { name: 'Sports Balls', url: `${SITE_URL}/collections/gender-reveal-sports-balls`, count: 13 },
-  balloons: { name: 'Balloons & Decor', url: `${SITE_URL}/collections/gender-reveal-balloons`, count: 43 },
+  bundles: { name: 'Bundles', url: `${SITE_URL}/collections/gender-reveal-bundles` },
+  extinguishers: { name: 'Extinguishers', url: `${SITE_URL}/collections/gender-reveal-extinguishers-australia` },
+  smokeBombs: { name: 'Smoke Bombs', url: `${SITE_URL}/collections/gender-reveal-smoke-bombs-australia` },
+  cannons: { name: 'Cannons', url: `${SITE_URL}/collections/gender-reveal-cannons` },
+  sports: { name: 'Sports Balls', url: `${SITE_URL}/collections/gender-reveal-sports-balls` },
+  balloons: { name: 'Balloons & Decor', url: `${SITE_URL}/collections/gender-reveal-balloons` },
 }
 
 export const POPULAR_PRODUCTS = [
-  { name: 'Gender Reveal Smoke Bombs', price: '$29.99', url: `${SITE_URL}/collections/gender-reveal-smoke-bombs-australia` },
-  { name: 'Mini Blaster Powder Extinguisher', price: '$49.99', url: `${SITE_URL}/collections/gender-reveal-extinguishers-australia` },
-  { name: 'MEGA Powder Blaster', price: '$149.99', url: `${SITE_URL}/collections/gender-reveal-extinguishers-australia` },
-  { name: 'Confetti & Powder Cannon XL', price: '$34.95', url: `${SITE_URL}/collections/gender-reveal-cannons` },
-  { name: 'Gender Reveal Golf Balls', price: '$24.99', url: `${SITE_URL}/collections/gender-reveal-sports-balls` },
-  { name: 'Gender Reveal Cricket Ball', price: '$29.99', url: `${SITE_URL}/collections/gender-reveal-sports-balls` },
-  { name: 'Gender Reveal Soccer Ball', price: '$34.99', url: `${SITE_URL}/collections/gender-reveal-sports-balls` },
-  { name: 'Gender Reveal Basketball', price: '$29.99', url: `${SITE_URL}/collections/gender-reveal-sports-balls` },
-  { name: 'Burn Away Cake Topper Kit', price: '$29.99', url: `${SITE_URL}/collections/gender-reveal-balloons` },
-  { name: 'Blaster & Smoke Reveal Kit', price: '$99.99', url: `${SITE_URL}/collections/gender-reveal-bundles` },
+  { name: 'Gender Reveal Smoke Bombs', price: '$29.99', collection: 'smokeBombs' },
+  { name: 'Mini Blaster Powder Extinguisher', price: '$49.99', collection: 'extinguishers' },
+  { name: 'MEGA Powder Blaster', price: '$149.99', collection: 'extinguishers' },
+  { name: 'Confetti & Powder Cannon XL 50cm', price: '$34.95', collection: 'cannons' },
+  { name: 'Gender Reveal Golf Balls', price: '$24.99', collection: 'sports' },
+  { name: 'Gender Reveal Cricket Ball', price: '$29.99', collection: 'sports' },
+  { name: 'Gender Reveal Soccer Ball', price: '$34.99', collection: 'sports' },
+  { name: 'Gender Reveal Basketball', price: '$29.99', collection: 'sports' },
+  { name: 'Gender Reveal AFL Ball', price: '$45.00', collection: 'sports' },
+  { name: 'Gender Reveal Rugby Ball', price: '$45.00', collection: 'sports' },
+  { name: 'Gender Reveal Baseball', price: '$39.99', collection: 'sports' },
+  { name: 'Burn Away Cake Topper Kit', price: '$29.99', collection: 'balloons' },
+  { name: 'Blaster & Smoke Reveal Kit', price: '$99.99', collection: 'bundles' },
+  { name: 'Custom Inflatable Baby Costume Gender Reveal', price: '$149.99', collection: 'balloons' },
+  { name: 'Gender Reveal Scratchies 24 Pack', price: '$14.99', collection: 'balloons' },
+  { name: 'Full Gender Reveal Backdrop Kit', price: '$39.99', collection: 'balloons' },
+  { name: 'Gender Reveal Photo Booth Props 60pcs', price: '$29.99', collection: 'balloons' },
+  { name: 'Gender Reveal Dog Bandana', price: '$12.99', collection: 'balloons' },
+  { name: 'Gender Reveal Poke Ball 2 Pack', price: '$19.99', collection: 'sports' },
+  { name: 'Quad Gender Reveal MEGA Powder Blaster', price: '$399.99', collection: 'extinguishers' },
+  { name: 'Gender Geddon Bundle (Largest Bundle)', price: '$849.99', collection: 'bundles' },
+  { name: 'Smoke Bomb 4x Bundle Pack', price: '$89.99', collection: 'smokeBombs' },
+  { name: 'Gender Reveal Boy & Girl Party Glasses 20pcs', price: '$39.99', collection: 'balloons' },
+  { name: 'Gender Reveal Party Voting Sheet', price: '$19.99', collection: 'balloons' },
 ]
 
 export const SHIPPING_INFO = {
-  freeShipping: 'Free shipping on all orders over $15',
+  freeShipping: 'Free express shipping on orders over $150',
   courier: 'StarTrack Super Express Post',
   processing: 'Orders ship within 1 to 8 hours (excluding weekends)',
   delivery: {
@@ -39,7 +56,7 @@ export const SHIPPING_INFO = {
     'VIC Remote': '1 to 5 business days',
     'SA, WA, NT': '3 to 6 business days',
   },
-  pickup: 'Same day pick up available at checkout',
+  pickup: 'Same day pick up available at checkout (Gold Coast)',
   tracking: 'Tracking number emailed with every order',
   recommendation: 'Order at least 12 days before your reveal for peace of mind',
   policyUrl: `${SITE_URL}/policies/shipping-policy`,
@@ -55,46 +72,54 @@ export const FAQ_ANSWERS = {
 
 /**
  * Build a knowledge context string for the reply generator.
- * Keeps it concise so it fits in the Claude prompt without blowing budget.
  */
 export function buildKnowledgeContext(commentText) {
   const lower = commentText.toLowerCase()
   const parts = []
 
+  // ALWAYS include the golden rule
+  parts.push(`GOLDEN RULE: If you are not 100% sure we stock a specific product, NEVER say we don't have it. Instead say "Check out our full range at the link in bio babe!" or "We've got heaps on the website gorgeous, have a look!"`)
+
   // Shipping questions
-  if (lower.match(/ship|deliver|how long|when.*arrive|postage|post|express|pickup|pick up/)) {
-    parts.push(`SHIPPING: ${SHIPPING_INFO.freeShipping}. ${SHIPPING_INFO.courier}. ${SHIPPING_INFO.processing}. QLD/NSW/VIC Metro: ${SHIPPING_INFO.delivery['QLD, NSW, VIC Metro']}. SA/WA/NT: ${SHIPPING_INFO.delivery['SA, WA, NT']}. ${SHIPPING_INFO.pickup}. ${SHIPPING_INFO.tracking}.`)
+  if (lower.match(/ship|deliver|how long|when.*arrive|postage|post|express|pickup|pick up|free shipping|shipping cost/)) {
+    parts.push(`SHIPPING: ${SHIPPING_INFO.freeShipping}. Shipped via ${SHIPPING_INFO.courier}. ${SHIPPING_INFO.processing}. QLD/NSW/VIC Metro: ${SHIPPING_INFO.delivery['QLD, NSW, VIC Metro']}. SA/WA/NT: ${SHIPPING_INFO.delivery['SA, WA, NT']}. ${SHIPPING_INFO.pickup}. ${SHIPPING_INFO.tracking}.`)
   }
 
   // Price questions
   if (lower.match(/price|cost|how much|cheap|expensive|afford/)) {
-    const priceList = POPULAR_PRODUCTS.slice(0, 5).map(p => `${p.name}: ${p.price}`).join(', ')
+    const priceList = POPULAR_PRODUCTS.slice(0, 6).map(p => `${p.name}: ${p.price}`).join(', ')
     parts.push(`PRICES: ${priceList}. Full range at ${SITE_URL}`)
   }
 
   // Product type questions
   if (lower.match(/smoke|bomb/)) {
-    parts.push(`SMOKE BOMBS: From $29.99. Government approved, non toxic, only legal smoke bombs in Australia. ${COLLECTIONS.smokeBombs.url}`)
+    parts.push(`SMOKE BOMBS: From $29.99. 4x Bundle $89.99. Government approved, non toxic, only legal smoke bombs in Australia. ${COLLECTIONS.smokeBombs.url}`)
   }
   if (lower.match(/cannon|confetti|powder/)) {
     parts.push(`CANNONS: Confetti & Powder from $34.95. XL 50cm size. ${COLLECTIONS.cannons.url}`)
   }
   if (lower.match(/extinguisher|blaster/)) {
-    parts.push(`EXTINGUISHERS: Mini Blaster $49.99, MEGA Blaster $149.99. ${COLLECTIONS.extinguishers.url}`)
+    parts.push(`EXTINGUISHERS: Mini Blaster $49.99, MEGA Blaster $149.99, Quad MEGA $399.99. ${COLLECTIONS.extinguishers.url}`)
   }
-  if (lower.match(/ball|golf|cricket|soccer|footy|afl|rugby|baseball|basketball/)) {
-    parts.push(`SPORTS BALLS: Golf $24.99, Cricket $29.99, Soccer $34.99, Basketball $29.99, AFL $45, Rugby $45. ${COLLECTIONS.sports.url}`)
+  if (lower.match(/ball|golf|cricket|soccer|footy|afl|rugby|baseball|basketball|poke/)) {
+    parts.push(`SPORTS BALLS: Golf $24.99, Cricket $29.99, Soccer $34.99, Basketball $29.99, AFL $45, Rugby $45, Baseball $39.99, Poke Ball 2pk $19.99. ${COLLECTIONS.sports.url}`)
   }
-  if (lower.match(/balloon|decor|cake|topper|backdrop/)) {
-    parts.push(`BALLOONS & DECOR: Burn Away Cake Topper $29.99, Backdrop Kit $39.99, Party Props from $14.99. ${COLLECTIONS.balloons.url}`)
+  if (lower.match(/balloon|decor|cake|topper|backdrop|prop|glasses|voting|scratchie/)) {
+    parts.push(`BALLOONS & DECOR: Cake Topper $29.99, Backdrop Kit $39.99, Photo Props $29.99, Scratchies $14.99, Party Glasses $39.99. ${COLLECTIONS.balloons.url}`)
   }
-  if (lower.match(/bundle|kit|pack/)) {
-    parts.push(`BUNDLES: Save up to 50% with kits from $64.95. ${COLLECTIONS.bundles.url}`)
+  if (lower.match(/inflatable|costume|suit|baby suit|baby costume/)) {
+    parts.push(`INFLATABLE COSTUME: Custom Inflatable Baby Costume $149.99. ${COLLECTIONS.balloons.url}`)
+  }
+  if (lower.match(/bundle|kit|pack|combo/)) {
+    parts.push(`BUNDLES: Blaster & Smoke Kit $99.99, Gender Geddon (largest) $849.99. Save up to 50%. ${COLLECTIONS.bundles.url}`)
+  }
+  if (lower.match(/dog|bandana|pet/)) {
+    parts.push(`PET REVEAL: Gender Reveal Dog Bandana $12.99. ${COLLECTIONS.balloons.url}`)
   }
 
   // Where to buy
   if (lower.match(/where|buy|order|website|link|shop|store/)) {
-    parts.push(`SHOP: ${SITE_URL} or link in bio. Free shipping on all orders!`)
+    parts.push(`SHOP: ${SITE_URL} or link in bio. Free express shipping on orders over $150!`)
   }
 
   // Staining concern
@@ -117,10 +142,8 @@ export function buildKnowledgeContext(commentText) {
     parts.push(`YOUTUBE: For tutorials and how to videos, check out our YouTube channel: ${YOUTUBE_URL}`)
   }
 
-  // Default — always include website
-  if (parts.length === 0) {
-    parts.push(`WEBSITE: ${SITE_URL} — Australia's #1 Gender Reveal Store. Free shipping on all orders. Over 70,000+ Aussie customers.`)
-  }
+  // Default — always include website link
+  parts.push(`WEBSITE: ${SITE_URL} — Australia's #1 Gender Reveal Store. 70,000+ Aussie customers.`)
 
   return parts.join('\n')
 }
