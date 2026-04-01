@@ -1,7 +1,7 @@
 /**
  * ig-reply-bot/webhook-handler.js
- * Orchestrates the full comment-reply pipeline.
- * Processes comments sequentially via promise chain to prevent JSON write conflicts.
+ * Orchestrates the full comment-reply AND DM-reply pipeline.
+ * Processes events sequentially via promise chain to prevent JSON write conflicts.
  */
 
 import { igAccountId, igGet } from '../instagram-publisher.js'
@@ -10,6 +10,7 @@ import { canReply, recordReply } from './rate-limiter.js'
 import { classifyIntent } from './intent-classifier.js'
 import { generateReply } from './reply-generator.js'
 import { postReply } from './comment-replier.js'
+import { sendDMReply } from './dm-replier.js'
 
 // Sequential promise chain
 let queue = Promise.resolve()
@@ -42,16 +43,26 @@ async function _processWebhook(body) {
 
   const entries = body.entry || []
   for (const entry of entries) {
+    // Handle comment webhooks (via changes array)
     const changes = entry.changes || []
     for (const change of changes) {
-      if (change.field !== 'comments') continue
-      const value = change.value
-      if (!value) continue
+      if (change.field === 'comments') {
+        const value = change.value
+        if (value) await _processComment(value)
+      }
+    }
 
-      await _processComment(value)
+    // Handle DM webhooks (via messaging array)
+    const messaging = entry.messaging || []
+    for (const event of messaging) {
+      if (event.message && event.sender) {
+        await _processMessage(event)
+      }
     }
   }
 }
+
+// ── Comment Processing ──────────────────────────────────────────────────────
 
 async function _processComment(value) {
   const commentId = value.id
@@ -60,7 +71,7 @@ async function _processComment(value) {
   const username = value.from?.username || 'unknown'
   const mediaId = value.media?.id
 
-  const logBase = { commentId, commentText: text, username, postId: mediaId }
+  const logBase = { commentId, commentText: text, username, postId: mediaId, type: 'comment' }
 
   try {
     // 1. Skip own comments
@@ -114,5 +125,68 @@ async function _processComment(value) {
   } catch (e) {
     appendLog({ ...logBase, intent: 'error', reason: e.message, replied: false })
     console.error(`[IG-Reply-Bot] ERROR processing ${commentId}:`, e.message)
+  }
+}
+
+// ── DM Processing ───────────────────────────────────────────────────────────
+
+async function _processMessage(event) {
+  const senderId = event.sender?.id
+  const messageId = event.message?.mid || event.message?.id
+  const text = event.message?.text || ''
+  const isEcho = event.message?.is_echo // Skip messages sent BY us
+
+  const logBase = { commentId: messageId, commentText: text, username: senderId, postId: 'dm', type: 'dm' }
+
+  try {
+    // Skip echo (our own messages)
+    if (isEcho) return
+
+    // Skip if no text (stickers, images, etc)
+    if (!text || text.trim().length < 3) return
+
+    // Dedup
+    if (isReplied(messageId)) return
+
+    // Bot enabled?
+    const config = loadConfig()
+    if (!config.enabled) {
+      appendLog({ ...logBase, intent: 'skip', reason: 'Bot disabled', replied: false })
+      return
+    }
+
+    // Rate limit (use 'dm' as the postId bucket)
+    const rateCheck = canReply('dm-global')
+    if (!rateCheck.allowed) {
+      appendLog({ ...logBase, intent: 'skip', reason: rateCheck.reason, replied: false })
+      console.log(`[IG-Reply-Bot] DM RATE LIMITED | ${messageId} | ${senderId} | ${rateCheck.reason}`)
+      return
+    }
+
+    // For DMs, always reply if it looks like a product/shipping/buying question
+    // Use the same intent classifier
+    const { intent, reason } = await classifyIntent(text, '')
+
+    if (intent === 'skip') {
+      appendLog({ ...logBase, intent: 'skip', reason, replied: false })
+      console.log(`[IG-Reply-Bot] DM SKIPPED | ${messageId} | ${senderId} | ${reason}`)
+      return
+    }
+
+    // Generate reply (DMs can be longer than comments)
+    const { replyText } = await generateReply(text, 'customer', '')
+
+    // Send DM reply
+    const { messageId: replyMsgId } = await sendDMReply(senderId, replyText)
+
+    // Record
+    markReplied(messageId, { replyId: replyMsgId, postId: 'dm', replyText })
+    recordReply('dm-global')
+    appendLog({ ...logBase, intent: 'buying', reason, replied: true, replyText, replyId: replyMsgId })
+
+    console.log(`[IG-Reply-Bot] DM REPLIED | ${messageId} | ${senderId} | "${replyText.slice(0, 60)}..."`)
+  } catch (e) {
+    appendLog({ ...logBase, intent: 'error', reason: e.message, replied: false })
+    console.error(`[IG-Reply-Bot] DM ERROR ${messageId}:`, e.message)
   }
 }
