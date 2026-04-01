@@ -48,22 +48,28 @@ export const POPULAR_PRODUCTS = [
 ]
 
 export const SHIPPING_INFO = {
-  freeShipping: 'Free express shipping on orders over $150',
-  courier: 'StarTrack Super Express Post',
-  processing: 'Orders ship within 1 to 8 hours (excluding weekends)',
+  freeShipping: 'Free shipping Australia wide on orders over $150. Standard shipping $9.99 for smaller orders',
+  expressShipping: 'Super Express available: QLD/NSW $25, Rest of AU $35 (1 to 2 business days)',
+  courier: 'StarTrack Super Express Post (99% on time accuracy)',
+  processing: 'Orders ship within 1 to 8 hours (excluding weekends and public holidays)',
   delivery: {
-    'QLD, NSW, VIC Metro': '1 to 2 business days',
+    'QLD': '1 to 2 business days express, 2 to 7 standard',
+    'NSW': '1 to 2 business days express, 2 to 7 standard',
+    'VIC Metro': '1 to 3 business days express, 2 to 9 standard',
     'VIC Remote': '1 to 5 business days',
     'SA, WA, NT': '3 to 6 business days',
   },
   pickup: 'Same day pick up available at checkout (Gold Coast)',
   tracking: 'Tracking number emailed with every order',
-  recommendation: 'Order at least 12 days before your reveal for peace of mind',
+  protection: 'Full protection on all express orders. Lost or damaged parcels get a full refund or replacement guaranteed',
+  recommendation: 'Order at least 12 days before your reveal to be safe',
+  internationalNZ: 'NZ shipping $24.99, free over $168.73',
+  internationalUS: 'US/Canada shipping $35 (6 to 14 days)',
   policyUrl: `${SITE_URL}/policies/shipping-policy`,
 }
 
 export const FAQ_ANSWERS = {
-  smokeBombsStain: 'Minimal risk outdoors. Any residue is typically washable. Best used in open, well ventilated areas.',
+  smokeBombsStain: 'Our products do not stain! The powder is easily washed out. All our products are custom made and fully Australian standard.',
   smokeBombsLegal: 'Yes! Our smoke bombs are government approved and registered with Resources Safety & Health QLD. Only legal smoke bombs in Australia. Made with non toxic, natural ingredients.',
   environment: 'Non toxic, eco conscious ingredients. Safe for outdoor use.',
   colourSecret: 'Use our "To Be Announced" option so a friend can specify the colour secretly using the order number.',
@@ -82,7 +88,7 @@ export function buildKnowledgeContext(commentText) {
 
   // Shipping questions
   if (lower.match(/ship|deliver|how long|when.*arrive|postage|post|express|pickup|pick up|free shipping|shipping cost/)) {
-    parts.push(`SHIPPING: ${SHIPPING_INFO.freeShipping}. Shipped via ${SHIPPING_INFO.courier}. ${SHIPPING_INFO.processing}. QLD/NSW/VIC Metro: ${SHIPPING_INFO.delivery['QLD, NSW, VIC Metro']}. SA/WA/NT: ${SHIPPING_INFO.delivery['SA, WA, NT']}. ${SHIPPING_INFO.pickup}. ${SHIPPING_INFO.tracking}.`)
+    parts.push(`SHIPPING: ${SHIPPING_INFO.freeShipping}. ${SHIPPING_INFO.expressShipping}. Shipped via ${SHIPPING_INFO.courier}. ${SHIPPING_INFO.processing}. QLD/NSW: ${SHIPPING_INFO.delivery['QLD']}. VIC Metro: ${SHIPPING_INFO.delivery['VIC Metro']}. SA/WA/NT: ${SHIPPING_INFO.delivery['SA, WA, NT']}. ${SHIPPING_INFO.pickup}. ${SHIPPING_INFO.tracking}. ${SHIPPING_INFO.protection}.`)
   }
 
   // Price questions
@@ -119,7 +125,7 @@ export function buildKnowledgeContext(commentText) {
 
   // Where to buy
   if (lower.match(/where|buy|order|website|link|shop|store/)) {
-    parts.push(`SHOP: ${SITE_URL} or link in bio. Free express shipping on orders over $150!`)
+    parts.push(`SHOP: ${SITE_URL} or link in bio. Free shipping on orders over $150!`)
   }
 
   // Staining concern
