@@ -12,11 +12,11 @@ const BASE = 'https://graph.facebook.com/v20.0'
 const HARDCODED_PAGE_TOKEN = 'EAANF5wouQWYBRPaZBwnaG2NwORy7eZAggDxSiVuGYCx4ZAaaxnsSUm2KzQAeCvMmgmCgv0qfOFo03K6wkupFq5b1OZBDa9M3gUq3pMjD9P371lxtcxvPDHDZBqyZBPwUpu6ZADqq70EQpFrdbi1xkmxNRd0eFJmW5ZAhzZC7brYjsiiOvJzEo4ilxi24ohXEcC9lKNIsYtQB3BsKNq82U3W8K'
 const HARDCODED_IG_ID = '17841448049372007'
 
-function igToken() {
+export function igToken() {
   return process.env.META_PAGE_ACCESS_TOKEN || HARDCODED_PAGE_TOKEN
 }
 
-function igAccountId() {
+export function igAccountId() {
   return process.env.INSTAGRAM_BUSINESS_ACCOUNT_ID || HARDCODED_IG_ID
 }
 
@@ -26,7 +26,7 @@ export function isInstagramConfigured() {
 
 // ── Low-level Graph API helpers ─────────────────────────────────────────────
 
-async function igGet(path, params = {}) {
+export async function igGet(path, params = {}) {
   const url = new URL(`${BASE}${path}`)
   url.searchParams.set('access_token', igToken())
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v)
@@ -36,7 +36,7 @@ async function igGet(path, params = {}) {
   return data
 }
 
-async function igPost(path, body = {}) {
+export async function igPost(path, body = {}) {
   const url = `${BASE}${path}`
   const form = new URLSearchParams({ access_token: igToken(), ...body })
   const res = await fetch(url, { method: 'POST', body: form })

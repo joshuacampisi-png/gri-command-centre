@@ -41,6 +41,8 @@ import { getUsageSummary } from './lib/claude-guard.js'
 import instagramSchedulerRoutes from './routes/instagram-scheduler.js'
 import { startInstagramCron } from './lib/instagram-cron.js'
 import metaConnectRoutes, { loadSavedMetaTokens } from './routes/meta-connect.js'
+import igReplyBotRoutes from './routes/ig-reply-bot.js'
+import { startIGReplyBotCron } from './lib/ig-reply-bot/cron.js'
 
 // ── PABLO CRASH RECOVERY — Rule 5 ──
 const JOSH_CHAT = '8040702286'
@@ -101,7 +103,7 @@ const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD
 if (DASHBOARD_PASSWORD && DASHBOARD_PASSWORD !== 'changeme') {
   app.use((req, res, next) => {
     // Allow webhooks, calendar API, and standalone calendar page through without auth
-    if (req.path.startsWith('/api/shopify/webhook') || req.path.startsWith('/api/square/webhook') || req.path.startsWith('/api/shopify/oauth') || req.path.startsWith('/api/telegram-bot/webhook') || req.path.startsWith('/api/calendar') || req.path.startsWith('/calendar') || req.path.startsWith('/calendar-videos') || req.path.startsWith('/api/contract')) {
+    if (req.path.startsWith('/api/shopify/webhook') || req.path.startsWith('/api/square/webhook') || req.path.startsWith('/api/shopify/oauth') || req.path.startsWith('/api/telegram-bot/webhook') || req.path.startsWith('/api/ig-reply-bot/webhook') || req.path.startsWith('/api/calendar') || req.path.startsWith('/calendar') || req.path.startsWith('/calendar-videos') || req.path.startsWith('/api/contract')) {
       return next()
     }
     const auth = req.headers.authorization
@@ -122,6 +124,10 @@ if (DASHBOARD_PASSWORD && DASHBOARD_PASSWORD !== 'changeme') {
 }
 // Capture raw body for Shopify webhook HMAC verification
 app.use('/api/shopify/webhook', express.json({
+  verify: (req, _res, buf) => { req.rawBody = buf.toString('utf8'); }
+}))
+// Capture raw body for IG Reply Bot webhook HMAC verification
+app.use('/api/ig-reply-bot/webhook', express.json({
   verify: (req, _res, buf) => { req.rawBody = buf.toString('utf8'); }
 }))
 app.use(express.json({ limit: '10mb' }))
@@ -169,6 +175,7 @@ app.use('/api/shopify/webhook', shopifyWebhookRoutes)
 app.use('/api/square/webhook', squareWebhookRoutes)
 app.use('/api/instagram', instagramSchedulerRoutes)
 app.use('/api/meta', metaConnectRoutes)
+app.use('/api/ig-reply-bot', igReplyBotRoutes)
 
 // ── Admin: disk usage + cleanup ──────────────────────────────────────────────
 import { readdirSync, statSync, unlinkSync as _unlinkSync, readFileSync as _readFileSync } from 'fs'
@@ -411,6 +418,9 @@ const server = app.listen(env.port, '0.0.0.0', () => {
 
   // Instagram auto-scheduler (checks every minute for due posts)
   startInstagramCron()
+
+  // Instagram Auto Reply Bot (tone refresh cron + startup check)
+  startIGReplyBotCron()
 
   console.log('✅ Server running — auto Telegram messages: DISABLED')
   console.log('🔒 Crash recovery: ACTIVE')
