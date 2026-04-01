@@ -171,14 +171,17 @@ export default function InstagramScheduler() {
   // ── New post ───────────────────────────────────────────────────────────────
 
   function newPost(date) {
-    const scheduledAt = date ? new Date(date) : new Date()
-    scheduledAt.setHours(10, 0, 0, 0)
+    // Default to 10am AEST on the selected day
+    const day = date ? new Date(date) : new Date()
+    const y = day.getFullYear(); const m = String(day.getMonth() + 1).padStart(2, '0'); const d = String(day.getDate()).padStart(2, '0')
+    // 10am AEST = 00:00 UTC (AEST is UTC+10)
+    const scheduledAtUTC = new Date(`${y}-${m}-${d}T00:00:00.000Z`)
     setDrawer({
       id: uid(),
       type: 'image',
       mediaUrls: [],
       caption: '',
-      scheduledAt: scheduledAt.toISOString(),
+      scheduledAt: scheduledAtUTC.toISOString(),
       status: 'DRAFT',
       productContext: '',
       mediaDescription: '',
@@ -227,14 +230,15 @@ export default function InstagramScheduler() {
         }
       } catch { /* Non-fatal */ }
 
-      const scheduledAt = new Date(day)
-      scheduledAt.setHours(0, 0, 0, 0)
+      // 10am AEST on the dropped day = 00:00 UTC
+      const dy = day.getFullYear(); const dm = String(day.getMonth() + 1).padStart(2, '0'); const dd = String(day.getDate()).padStart(2, '0')
+      const scheduledAtUTC = new Date(`${dy}-${dm}-${dd}T00:00:00.000Z`)
       const post = {
         id: uid(),
         type: postType,
         mediaUrls,
         caption,
-        scheduledAt: scheduledAt.toISOString(),
+        scheduledAt: scheduledAtUTC.toISOString(),
         status: 'SCHEDULED',
       }
       await savePost(post)
@@ -688,23 +692,35 @@ export default function InstagramScheduler() {
 
               {/* Schedule */}
               <div className="ig-field">
-                <label>Schedule</label>
+                <label>Schedule (AEST)</label>
                 <input
                   type="datetime-local"
                   value={drawer.scheduledAt ? (() => {
                     try {
-                      return new Date(new Date(drawer.scheduledAt).getTime() + 10 * 60 * 60 * 1000).toISOString().slice(0, 16)
+                      // Display: convert UTC ISO to AEST display string (UTC+10)
+                      const utcMs = new Date(drawer.scheduledAt).getTime()
+                      const aestMs = utcMs + 10 * 60 * 60 * 1000
+                      const aest = new Date(aestMs)
+                      const y = aest.getUTCFullYear()
+                      const mo = String(aest.getUTCMonth() + 1).padStart(2, '0')
+                      const d = String(aest.getUTCDate()).padStart(2, '0')
+                      const h = String(aest.getUTCHours()).padStart(2, '0')
+                      const mi = String(aest.getUTCMinutes()).padStart(2, '0')
+                      return `${y}-${mo}-${d}T${h}:${mi}`
                     } catch { return '' }
                   })() : ''}
                   onChange={e => {
                     try {
-                      const local = new Date(e.target.value)
-                      const utc = new Date(local.getTime() - 10 * 60 * 60 * 1000)
-                      setDrawer(prev => prev ? { ...prev, scheduledAt: utc.toISOString() } : prev)
+                      // Input is raw AEST time string like "2026-04-02T10:00"
+                      // Parse as AEST by treating it as UTC then subtracting 10 hours
+                      const raw = e.target.value // "YYYY-MM-DDTHH:MM"
+                      const asUtc = new Date(raw + ':00.000Z') // Parse as UTC
+                      const realUtc = new Date(asUtc.getTime() - 10 * 60 * 60 * 1000) // Subtract AEST offset
+                      setDrawer(prev => prev ? { ...prev, scheduledAt: realUtc.toISOString() } : prev)
                     } catch { /* ignore bad date */ }
                   }}
                 />
-                <span className="muted">Time is in AEST (Gold Coast)</span>
+                <span className="muted">Gold Coast time (AEST UTC+10)</span>
               </div>
 
               {/* Error display */}
