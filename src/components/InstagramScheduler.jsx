@@ -9,7 +9,11 @@ const STATUS_COLORS = { DRAFT: '#9CA3AF', SCHEDULED: '#3B82F6', PUBLISHING: '#F5
 const API = '/api/instagram'
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8) }
-function fmtDate(d) { const y = d.getFullYear(); const m = String(d.getMonth() + 1).padStart(2, '0'); const day = String(d.getDate()).padStart(2, '0'); return `${y}-${m}-${day}` }
+// All dates in AEST (UTC+10) — never use browser local time
+function nowAEST() { return new Date(Date.now() + 10 * 60 * 60 * 1000) }
+function fmtDate(d) { const a = new Date(d.getTime() + 10 * 60 * 60 * 1000); return `${a.getUTCFullYear()}-${String(a.getUTCMonth() + 1).padStart(2, '0')}-${String(a.getUTCDate()).padStart(2, '0')}` }
+function aestYear() { return nowAEST().getUTCFullYear() }
+function aestMonth() { return nowAEST().getUTCMonth() }
 function fmtDateTime(iso) { if (!iso) return ''; try { const d = new Date(iso); return d.toLocaleString('en-AU', { timeZone: 'Australia/Brisbane', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) } catch { return '' } }
 function isVideo(url) { return /\.(mp4|mov)$/i.test(url || '') }
 function fmtSize(bytes) { if (bytes < 1024) return bytes + ' B'; if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB'; return (bytes / 1048576).toFixed(1) + ' MB' }
@@ -124,8 +128,8 @@ export default function InstagramScheduler() {
   const [uploadProgress, setUploadProgress] = useState(0)
   const [generating, setGenerating] = useState(false)
   const [captionVariants, setCaptionVariants] = useState(null)
-  const [calMonth, setCalMonth] = useState(new Date().getMonth())
-  const [calYear, setCalYear] = useState(new Date().getFullYear())
+  const [calMonth, setCalMonth] = useState(aestMonth())
+  const [calYear, setCalYear] = useState(aestYear())
   const [dragOver, setDragOver] = useState(null)
   const [autoPosting, setAutoPosting] = useState(null)
   const [toast, setToast] = useState(null)
@@ -172,10 +176,10 @@ export default function InstagramScheduler() {
 
   function newPost(date) {
     // Default to 10am AEST on the selected day
-    const day = date ? new Date(date) : new Date()
-    const y = day.getFullYear(); const m = String(day.getMonth() + 1).padStart(2, '0'); const d = String(day.getDate()).padStart(2, '0')
+    // The calendar day key is in AEST format from fmtDate, so use it directly
+    const dayKey = date ? fmtDate(date) : fmtDate(new Date())
     // 10am AEST = 00:00 UTC (AEST is UTC+10)
-    const scheduledAtUTC = new Date(`${y}-${m}-${d}T00:00:00.000Z`)
+    const scheduledAtUTC = new Date(`${dayKey}T00:00:00.000Z`)
     setDrawer({
       id: uid(),
       type: 'image',
@@ -231,8 +235,8 @@ export default function InstagramScheduler() {
       } catch { /* Non-fatal */ }
 
       // 10am AEST on the dropped day = 00:00 UTC
-      const dy = day.getFullYear(); const dm = String(day.getMonth() + 1).padStart(2, '0'); const dd = String(day.getDate()).padStart(2, '0')
-      const scheduledAtUTC = new Date(`${dy}-${dm}-${dd}T00:00:00.000Z`)
+      const dayKey = fmtDate(day)
+      const scheduledAtUTC = new Date(`${dayKey}T00:00:00.000Z`)
       const post = {
         id: uid(),
         type: postType,
@@ -486,10 +490,8 @@ export default function InstagramScheduler() {
             {calDays.map((day, i) => {
               const key = fmtDate(day)
               const isCurrentMonth = day.getMonth() === calMonth
-              // Use AEST date for "today" highlight (UTC+10)
-              const nowAEST = new Date(Date.now() + 10 * 60 * 60 * 1000)
-              const todayAEST = `${nowAEST.getUTCFullYear()}-${String(nowAEST.getUTCMonth() + 1).padStart(2, '0')}-${String(nowAEST.getUTCDate()).padStart(2, '0')}`
-              const isToday = key === todayAEST
+              const todayKey = `${nowAEST().getUTCFullYear()}-${String(nowAEST().getUTCMonth() + 1).padStart(2, '0')}-${String(nowAEST().getUTCDate()).padStart(2, '0')}`
+              const isToday = key === todayKey
               const isDragTarget = dragOver === key
               const isProcessing = autoPosting === key
               const dayPosts = postsByDate[key] || []
