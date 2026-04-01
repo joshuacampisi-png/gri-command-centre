@@ -20,10 +20,10 @@ router.get('/health', (_req, res) => {
       ok: Boolean(process.env.SQUARE_ACCESS_TOKEN && process.env.SQUARE_LOCATION_ID),
     },
     email: {
-      provider: 'gmail-smtp',
-      user: process.env.GMAIL_USER || 'NOT SET',
-      hasPassword: Boolean(process.env.GMAIL_APP_PASSWORD),
-      ok: Boolean(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD),
+      provider: 'resend',
+      fromEmail: process.env.RESEND_FROM_EMAIL || process.env.GMAIL_USER || 'NOT SET',
+      hasApiKey: Boolean(process.env.RESEND_API_KEY),
+      ok: Boolean(process.env.RESEND_API_KEY),
     },
     telegram: {
       hasToken: Boolean(process.env.TELEGRAM_BOT_TOKEN),
