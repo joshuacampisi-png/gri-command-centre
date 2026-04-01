@@ -1,8 +1,7 @@
 /**
  * ig-reply-bot/comment-poller.js
  * Polls recent Instagram posts for new comments and processes them.
- * This is a fallback for when webhooks aren't delivering (Development mode).
- * Runs every 2 minutes via cron.
+ * Runs every 2 minutes via cron. Only checks comments from the last 24 hours.
  */
 
 import { igGet, igAccountId } from '../instagram-publisher.js'
@@ -12,16 +11,16 @@ import { classifyIntent } from './intent-classifier.js'
 import { generateReply } from './reply-generator.js'
 import { postReply } from './comment-replier.js'
 
+const ONE_DAY_MS = 24 * 60 * 60 * 1000
+
 export async function pollForNewComments() {
   const config = loadConfig()
-  if (!config.enabled) {
-    return
-  }
+  if (!config.enabled) return
 
   const accountId = igAccountId()
+  const cutoff = new Date(Date.now() - ONE_DAY_MS)
 
   try {
-    // Get last 5 posts
     const mediaResult = await igGet(`/${accountId}/media`, {
       fields: 'id,caption,timestamp',
       limit: '5'
@@ -30,76 +29,73 @@ export async function pollForNewComments() {
 
     for (const post of posts) {
       try {
-        // Get comments on this post
         const commentsResult = await igGet(`/${post.id}/comments`, {
           fields: 'id,text,username,from,timestamp',
           limit: '25'
         })
-        const comments = commentsResult.data || []
 
-        for (const comment of comments) {
-          // Only skip if we've ALREADY REPLIED (persistent check)
+        for (const comment of (commentsResult.data || [])) {
+          // Already processed (replied OR skipped) — skip silently
           if (isReplied(comment.id)) continue
 
-          // Skip own comments (the business account)
-          if (comment.from?.id === accountId) continue
+          // Skip comments older than 24 hours
+          if (comment.timestamp && new Date(comment.timestamp) < cutoff) {
+            markReplied(comment.id, { replyId: 'old', postId: post.id, replyText: '' })
+            continue
+          }
 
-          console.log(`[IG-Reply-Bot] Poll: processing @${comment.username}: "${comment.text?.slice(0, 50)}"`)
-          await _processPolledComment(comment, post)
+          // Skip own comments (business account)
+          if (comment.from?.id === accountId) {
+            markReplied(comment.id, { replyId: 'own', postId: post.id, replyText: '' })
+            continue
+          }
+
+          await _processComment(comment, post)
         }
-        if (newCount > 0) console.log(`[IG-Reply-Bot] Poll: ${newCount} new comments on post ${post.id}`)
       } catch (e) {
-        // One post failing shouldn't kill the whole poll
-        console.warn(`[IG-Reply-Bot] Poll: Failed to check comments on ${post.id}:`, e.message)
+        console.warn(`[IG-Reply-Bot] Poll error on post ${post.id}:`, e.message)
       }
     }
   } catch (e) {
-    console.error('[IG-Reply-Bot] Poll: Failed to fetch media:', e.message)
+    console.error('[IG-Reply-Bot] Poll failed:', e.message)
   }
-
 }
 
-async function _processPolledComment(comment, post) {
-  const commentId = comment.id
-  const text = comment.text || ''
-  const username = comment.username || comment.from?.username || 'unknown'
-  const mediaId = post.id
-  const postCaption = post.caption || ''
-
+async function _processComment(comment, post) {
+  const { id: commentId, text = '', username = 'unknown' } = comment
+  const { id: mediaId, caption: postCaption = '' } = post
   const logBase = { commentId, commentText: text, username, postId: mediaId, type: 'comment-poll' }
 
   try {
-    // Rate limit
+    // Rate limit check
     const rateCheck = canReply(mediaId)
     if (!rateCheck.allowed) {
+      markReplied(commentId, { replyId: 'rate-limited', postId: mediaId, replyText: '' })
       appendLog({ ...logBase, intent: 'skip', reason: rateCheck.reason, replied: false })
       return
     }
 
-    // Classify intent
+    // Classify intent (includes prefilters for short/emoji comments)
     const { intent, reason, prefiltered } = await classifyIntent(text, postCaption)
 
     if (intent === 'skip') {
-      // Mark as "replied" so we don't re-classify on next poll cycle
       markReplied(commentId, { replyId: 'skipped', postId: mediaId, replyText: '' })
       appendLog({ ...logBase, intent: 'skip', reason, prefiltered: prefiltered || false, replied: false })
       return
     }
 
-    // Generate reply
+    // Generate and post reply
     const { replyText } = await generateReply(text, username, postCaption)
-
-    // Post reply
     const { replyId } = await postReply(commentId, replyText)
 
-    // Record
     markReplied(commentId, { replyId, postId: mediaId, replyText })
     recordReply(mediaId)
     appendLog({ ...logBase, intent: 'buying', reason, replied: true, replyText, replyId })
-
-    console.log(`[IG-Reply-Bot] POLL REPLIED | ${commentId} | @${username} | "${replyText.slice(0, 60)}..."`)
+    console.log(`[IG-Reply-Bot] REPLIED @${username}: "${replyText.slice(0, 60)}"`)
   } catch (e) {
+    // Mark as processed even on error so we don't retry endlessly
+    markReplied(commentId, { replyId: 'error', postId: mediaId, replyText: '' })
     appendLog({ ...logBase, intent: 'error', reason: e.message, replied: false })
-    console.error(`[IG-Reply-Bot] POLL ERROR ${commentId}:`, e.message)
+    console.error(`[IG-Reply-Bot] ERROR on ${commentId}:`, e.message)
   }
 }
