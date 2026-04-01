@@ -1,27 +1,51 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
+import dns from 'dns';
 import { getHireDates } from './date-helpers.js';
 
-let resendClient = null;
+// Force IPv4 to avoid IPv6 ENETUNREACH on some hosts
+dns.setDefaultResultOrder('ipv4first');
 
-function getClient() {
-  if (!resendClient) {
-    if (!process.env.RESEND_API_KEY) {
-      return null;
-    }
-    resendClient = new Resend(process.env.RESEND_API_KEY);
+let transporter = null;
+
+function getTransporter() {
+  if (!transporter) {
+    // Try explicit SMTP config with multiple fallback approaches
+    transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD,
+      },
+      connectionTimeout: 30000,
+      greetingTimeout: 20000,
+      socketTimeout: 30000,
+      // Force IPv4
+      family: 4,
+      tls: {
+        rejectUnauthorized: false,
+      },
+    });
   }
-  return resendClient;
+  return transporter;
+}
+
+function getFromAddress() {
+  const name = process.env.GMAIL_FROM_NAME || 'Gender Reveal Ideas';
+  const email = process.env.GMAIL_USER || 'hello@genderrevealideas.com.au';
+  return `"${name}" <${email}>`;
 }
 
 /**
- * Fallback: send email content to Josh via Telegram when Resend is not configured.
+ * Fallback: send email content to Josh via Telegram when SMTP fails.
  */
-async function telegramFallback(type, hire, subject, text) {
+async function telegramFallback(type, hire, subject, text, error) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_JOSH_CHAT_ID;
   if (!token || !chatId) return;
 
-  const msg = `📧 EMAIL QUEUED (Resend not configured)\n\nType: ${type}\nTo: ${hire.customerEmail}\nSubject: ${subject}\n\n${text.substring(0, 500)}${text.length > 500 ? '...' : ''}`;
+  const msg = `⚠️ EMAIL FAILED — sent via Telegram instead\n\nType: ${type}\nTo: ${hire.customerEmail}\nSubject: ${subject}\nError: ${error}\n\n${text.substring(0, 500)}${text.length > 500 ? '...' : ''}`;
 
   try {
     await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
@@ -32,13 +56,6 @@ async function telegramFallback(type, hire, subject, text) {
   } catch (e) {
     console.error('[hire-mailer] Telegram fallback failed:', e.message);
   }
-}
-
-function getFromAddress() {
-  const name = process.env.GMAIL_FROM_NAME || 'Gender Reveal Ideas';
-  // Use verified domain sender, or fall back to Resend test sender
-  const email = process.env.RESEND_FROM_EMAIL || process.env.GMAIL_USER || 'onboarding@resend.dev';
-  return `${name} <${email}>`;
 }
 
 function firstName(hire) {
@@ -174,7 +191,8 @@ const TEMPLATES = {
 };
 
 /**
- * Send an email to a hire customer via Resend HTTP API.
+ * Send an email to a hire customer via Gmail SMTP.
+ * Falls back to Telegram notification if SMTP fails.
  * @param {string} type - confirmation | bond_link | refund | withheld | contract
  * @param {object} hire - the hire record
  * @param {*} [extraData] - payment URL for bond_link, signing URL for contract
@@ -186,28 +204,24 @@ export async function sendHireEmail(type, hire, extraData) {
 
   const { subject, text } = builder(hire, extraData);
 
-  const client = getClient();
+  try {
+    const info = await getTransporter().sendMail({
+      from: getFromAddress(),
+      to: hire.customerEmail,
+      subject,
+      text,
+    });
 
-  // Fallback: if Resend isn't configured, notify Josh via Telegram
-  if (!client) {
-    console.warn(`[hire-mailer] RESEND_API_KEY not set — using Telegram fallback for ${type} email to ${hire.customerEmail}`);
-    await telegramFallback(type, hire, subject, text);
+    console.log(`[hire-mailer] Sent ${type} email to ${hire.customerEmail} — messageId: ${info.messageId}`);
+    return { messageId: info.messageId };
+  } catch (smtpErr) {
+    console.error(`[hire-mailer] SMTP failed for ${type} to ${hire.customerEmail}:`, smtpErr.message);
+
+    // Reset transporter so next attempt creates a fresh connection
+    transporter = null;
+
+    // Telegram fallback — notify Josh with the email content
+    await telegramFallback(type, hire, subject, text, smtpErr.message);
     return { messageId: `telegram-fallback-${Date.now()}` };
   }
-
-  const { data, error } = await client.emails.send({
-    from: getFromAddress(),
-    to: hire.customerEmail,
-    subject,
-    text,
-  });
-
-  if (error) {
-    console.error(`[hire-mailer] Resend error for ${type} to ${hire.customerEmail}:`, error);
-    throw new Error(error.message || 'Resend email failed');
-  }
-
-  console.log(`[hire-mailer] Sent ${type} email to ${hire.customerEmail} — messageId: ${data.id}`);
-
-  return { messageId: data.id };
 }
