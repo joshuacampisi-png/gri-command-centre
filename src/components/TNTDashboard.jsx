@@ -474,26 +474,27 @@ export default function TNTDashboard() {
         <div style={{ background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: 8, overflow: "hidden" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
             <colgroup>
-              <col style={{ width: "18%" }} />
+              <col style={{ width: "17%" }} />
               <col style={{ width: "10%" }} />
-              <col style={{ width: "15%" }} />
-              <col style={{ width: "11%" }} />
-              <col style={{ width: "9%" }} />
-              <col style={{ width: "9%" }} />
-              <col style={{ width: "28%" }} />
+              <col style={{ width: "14%" }} />
+              <col style={{ width: "10%" }} />
+              <col style={{ width: "8%" }} />
+              <col style={{ width: "8%" }} />
+              <col style={{ width: "8%" }} />
+              <col style={{ width: "25%" }} />
             </colgroup>
             <thead>
               <tr>
-                {["Customer", "Order", "Event", "Status", "Bond", "Contract", "Actions"].map(h => (
+                {["Customer", "Order", "Event", "Status", "Bond", "Contract", "Email", "Actions"].map(h => (
                   <th key={h} style={{ padding: "10px 12px", textAlign: "left", fontSize: 10, fontWeight: 600, color: "var(--color-text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={7} style={{ padding: "28px 12px", textAlign: "center", color: "var(--color-text-secondary)", fontSize: 13 }}>Loading...</td></tr>
+                <tr><td colSpan={8} style={{ padding: "28px 12px", textAlign: "center", color: "var(--color-text-secondary)", fontSize: 13 }}>Loading...</td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={7} style={{ padding: "28px 12px", textAlign: "center", color: "var(--color-text-secondary)", fontSize: 13 }}>No hires</td></tr>
+                <tr><td colSpan={8} style={{ padding: "28px 12px", textAlign: "center", color: "var(--color-text-secondary)", fontSize: 13 }}>No hires</td></tr>
               ) : filtered.map(hire => {
                 const sCfg = STATUS_CONFIG[hire.status] || STATUS_CONFIG.confirmed;
                 const bCfg = BOND_CONFIG[hire.bondStatus] || BOND_CONFIG.pending;
@@ -517,6 +518,12 @@ export default function TNTDashboard() {
                     </td>
                     <td style={{ padding: "10px 12px" }}>{pill(sCfg)}</td>
                     <td style={{ padding: "10px 12px" }}>{pill(bCfg)}</td>
+                    <td style={{ padding: "10px 12px" }} onClick={e => e.stopPropagation()}>
+                      {pill(hire.emailSent
+                        ? { label: "Sent", color: "#3B6D11", bg: "#EAF3DE" }
+                        : { label: "Not Sent", color: "#A32D2D", bg: "#FCEBEB" }
+                      )}
+                    </td>
                     <td style={{ padding: "10px 12px" }} onClick={e => e.stopPropagation()}>
                       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                         {pill(cCfg)}
