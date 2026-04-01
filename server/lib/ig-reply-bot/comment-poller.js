@@ -12,18 +12,13 @@ import { classifyIntent } from './intent-classifier.js'
 import { generateReply } from './reply-generator.js'
 import { postReply } from './comment-replier.js'
 
-// Track which comments we've already seen (in memory, resets on restart)
-const seenComments = new Set()
-
 export async function pollForNewComments() {
   const config = loadConfig()
   if (!config.enabled) {
-    console.log('[IG-Reply-Bot] Poll: bot disabled, skipping')
     return
   }
 
   const accountId = igAccountId()
-  console.log(`[IG-Reply-Bot] Poll: checking posts for account ${accountId}`)
 
   try {
     // Get last 5 posts
@@ -32,7 +27,6 @@ export async function pollForNewComments() {
       limit: '5'
     })
     const posts = mediaResult.data || []
-    console.log(`[IG-Reply-Bot] Poll: found ${posts.length} posts`)
 
     for (const post of posts) {
       try {
@@ -43,20 +37,14 @@ export async function pollForNewComments() {
         })
         const comments = commentsResult.data || []
 
-        let newCount = 0
         for (const comment of comments) {
-          // Skip if we've already seen or replied to this comment
-          if (seenComments.has(comment.id) || isReplied(comment.id)) continue
-          seenComments.add(comment.id)
-          newCount++
+          // Only skip if we've ALREADY REPLIED (persistent check)
+          if (isReplied(comment.id)) continue
 
-          // Skip own comments
-          if (comment.from?.id === accountId) {
-            console.log(`[IG-Reply-Bot] Poll: skipping own comment ${comment.id}`)
-            continue
-          }
+          // Skip own comments (the business account)
+          if (comment.from?.id === accountId) continue
 
-          console.log(`[IG-Reply-Bot] Poll: processing comment by @${comment.username}: "${comment.text?.slice(0, 50)}"`)
+          console.log(`[IG-Reply-Bot] Poll: processing @${comment.username}: "${comment.text?.slice(0, 50)}"`)
           await _processPolledComment(comment, post)
         }
         if (newCount > 0) console.log(`[IG-Reply-Bot] Poll: ${newCount} new comments on post ${post.id}`)
@@ -69,12 +57,6 @@ export async function pollForNewComments() {
     console.error('[IG-Reply-Bot] Poll: Failed to fetch media:', e.message)
   }
 
-  // Keep seenComments from growing forever (cap at 5000)
-  if (seenComments.size > 5000) {
-    const arr = [...seenComments]
-    seenComments.clear()
-    arr.slice(-2000).forEach(id => seenComments.add(id))
-  }
 }
 
 async function _processPolledComment(comment, post) {
@@ -98,8 +80,9 @@ async function _processPolledComment(comment, post) {
     const { intent, reason, prefiltered } = await classifyIntent(text, postCaption)
 
     if (intent === 'skip') {
+      // Mark as "replied" so we don't re-classify on next poll cycle
+      markReplied(commentId, { replyId: 'skipped', postId: mediaId, replyText: '' })
       appendLog({ ...logBase, intent: 'skip', reason, prefiltered: prefiltered || false, replied: false })
-      console.log(`[IG-Reply-Bot] POLL SKIPPED | ${commentId} | @${username} | ${reason}`)
       return
     }
 
