@@ -184,11 +184,11 @@ router.get('/performance', async (req, res) => {
         ad.fatigue = calculateFatigueScore(metrics)
       }
 
-      // Campaign-level health score = average of ad fatigue scores
-      const activeAds = (campaign.ads || []).filter(a => a.status === 'ACTIVE')
-      campaign.healthScore = activeAds.length > 0
-        ? Math.round(activeAds.reduce((s, a) => s + a.fatigue.score, 0) / activeAds.length)
-        : 100
+      // Campaign-level health score based on CPP, volume, frequency (not ad fatigue)
+      const health = calculateCampaignHealth(campaign)
+      campaign.healthScore = health.score
+      campaign.healthStatus = health.status
+      campaign.healthReasons = health.reasons
     }
 
     // Aggregate KPI for the selected date range
@@ -551,16 +551,17 @@ router.get('/truth-metrics', async (req, res) => {
     }
 
     const dateRange = req.query.dateRange || '7d'
-    const daysMap = { 'today': 1, '7d': 7, '14d': 14, '30d': 30, 'last_7d': 7, 'last_14d': 14, 'last_30d': 30 }
-    const days = daysMap[dateRange] || 7
+    const daysMap = { 'today': 0, '7d': 7, '14d': 14, '30d': 30, 'last_7d': 7, 'last_14d': 14, 'last_30d': 30 }
+    const days = daysMap[dateRange] ?? 7
 
     // Calculate date range for Shopify query (AEST dates)
+    // Use +10 for AEST (close enough — off by 1hr during AEDT)
     const toDate = new Date()
-    toDate.setHours(toDate.getHours() + 10) // Approximate AEST
-    const fromDate = new Date(toDate)
-    fromDate.setDate(fromDate.getDate() - days)
-    const fromStr = fromDate.toISOString().slice(0, 10)
+    toDate.setHours(toDate.getHours() + 10)
     const toStr = toDate.toISOString().slice(0, 10)
+    const fromDate = new Date(toDate)
+    if (days > 0) fromDate.setDate(fromDate.getDate() - days)
+    const fromStr = days === 0 ? toStr : fromDate.toISOString().slice(0, 10)
 
     // Map to Meta preset
     const presetMap = { 'today': 'today', '7d': 'last_7d', '14d': 'last_14d', '30d': 'last_30d', 'last_7d': 'last_7d', 'last_14d': 'last_14d', 'last_30d': 'last_30d' }
