@@ -15,8 +15,9 @@ const HARDCODED_CAMPAIGN_IDS = [
   '120216057846380711',  // GRI - AUS Wide [Broad Targeting]
 ]
 
-function metaToken() {
-  return process.env.META_ACCESS_TOKEN || HARDCODED_META_TOKEN
+export function metaToken() {
+  // Hardcoded token takes priority — env var is a fallback only
+  return HARDCODED_META_TOKEN || process.env.META_ACCESS_TOKEN
 }
 
 function metaAccountId() {

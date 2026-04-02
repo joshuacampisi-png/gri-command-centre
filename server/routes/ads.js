@@ -5,6 +5,7 @@ import { Router } from 'express'
 import { readFileSync, writeFileSync, existsSync } from 'fs'
 import {
   isMetaConfigured,
+  metaToken,
   fetchFullPerformance,
   fetchAccountInsights,
   fetchCampaigns,
@@ -86,8 +87,8 @@ async function fetchPrevPeriodInsights(preset) {
   const since = start.toISOString().slice(0, 10)
   const until = end.toISOString().slice(0, 10)
 
-  const token = process.env.META_ACCESS_TOKEN
-  const accountId = process.env.META_AD_ACCOUNT_ID
+  const token = metaToken()
+  const accountId = process.env.META_AD_ACCOUNT_ID || 'act_1519116685663528'
   const url = `https://graph.facebook.com/v20.0/${accountId}/insights?fields=spend,impressions,clicks,actions,action_values&time_range={"since":"${since}","until":"${until}"}&access_token=${token}`
   const resp = await fetch(url)
   const prevData = await resp.json()
@@ -143,8 +144,8 @@ router.get('/performance', async (req, res) => {
     }
 
     // Quick token validation — catch expired/invalid tokens early
-    const token = process.env.META_ACCESS_TOKEN
-    const accountId = process.env.META_AD_ACCOUNT_ID
+    const token = metaToken()
+    const accountId = process.env.META_AD_ACCOUNT_ID || 'act_1519116685663528'
     try {
       const check = await fetch(`https://graph.facebook.com/v20.0/${accountId}?fields=name,account_status&access_token=${token}`)
       const checkData = await check.json()
@@ -245,8 +246,8 @@ router.get('/daily-breakdown', async (req, res) => {
     const cached = getCached(cacheKey)
     if (cached) return res.json(cached)
 
-    const token = process.env.META_ACCESS_TOKEN
-    const accountId = process.env.META_AD_ACCOUNT_ID
+    const token = metaToken()
+    const accountId = process.env.META_AD_ACCOUNT_ID || 'act_1519116685663528'
     const url = `https://graph.facebook.com/v20.0/${accountId}/insights?fields=spend,impressions,clicks,actions,action_values,cpm,ctr,frequency&time_increment=1&date_preset=last_${days}d&access_token=${token}`
     const resp = await fetch(url)
     const data = await resp.json()
@@ -286,12 +287,13 @@ router.get('/daily-breakdown', async (req, res) => {
 // ── GET /api/ads/debug — diagnose Meta API connectivity ─────────────────────
 
 router.get('/debug', async (_req, res) => {
+  const token = metaToken()
   const result = {
     configured: isMetaConfigured(),
-    tokenSet: Boolean(process.env.META_ACCESS_TOKEN),
-    tokenPreview: process.env.META_ACCESS_TOKEN ? `${process.env.META_ACCESS_TOKEN.slice(0, 12)}...${process.env.META_ACCESS_TOKEN.slice(-6)}` : 'NOT SET',
-    accountId: process.env.META_AD_ACCOUNT_ID || 'NOT SET',
-    campaignIds: process.env.META_GRI_CAMPAIGN_IDS || 'NOT SET (will fetch all)',
+    tokenSet: Boolean(token),
+    tokenPreview: token ? `${token.slice(0, 12)}...${token.slice(-6)}` : 'NOT SET',
+    accountId: process.env.META_AD_ACCOUNT_ID || 'act_1519116685663528',
+    campaignIds: process.env.META_GRI_CAMPAIGN_IDS || 'hardcoded defaults',
   }
 
   if (!result.configured) {
@@ -300,8 +302,7 @@ router.get('/debug', async (_req, res) => {
 
   // Test 1: Can we reach Meta API at all?
   try {
-    const token = process.env.META_ACCESS_TOKEN
-    const accountId = process.env.META_AD_ACCOUNT_ID
+    const accountId = result.accountId
     const tokenCheck = await fetch(`https://graph.facebook.com/v20.0/${accountId}?fields=name,account_status,currency,timezone_name&access_token=${token}`)
     const tokenData = await tokenCheck.json()
     if (tokenData.error) {
