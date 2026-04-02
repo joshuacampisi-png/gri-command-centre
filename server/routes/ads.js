@@ -227,6 +227,63 @@ router.get('/daily-breakdown', async (req, res) => {
   }
 })
 
+// ── GET /api/ads/debug — diagnose Meta API connectivity ─────────────────────
+
+router.get('/debug', async (_req, res) => {
+  const result = {
+    configured: isMetaConfigured(),
+    tokenSet: Boolean(process.env.META_ACCESS_TOKEN),
+    tokenPreview: process.env.META_ACCESS_TOKEN ? `${process.env.META_ACCESS_TOKEN.slice(0, 12)}...${process.env.META_ACCESS_TOKEN.slice(-6)}` : 'NOT SET',
+    accountId: process.env.META_AD_ACCOUNT_ID || 'NOT SET',
+    campaignIds: process.env.META_GRI_CAMPAIGN_IDS || 'NOT SET (will fetch all)',
+  }
+
+  if (!result.configured) {
+    return res.json({ ok: false, ...result, error: 'Meta API not configured' })
+  }
+
+  // Test 1: Can we reach Meta API at all?
+  try {
+    const token = process.env.META_ACCESS_TOKEN
+    const accountId = process.env.META_AD_ACCOUNT_ID
+    const tokenCheck = await fetch(`https://graph.facebook.com/v20.0/${accountId}?fields=name,account_status,currency,timezone_name&access_token=${token}`)
+    const tokenData = await tokenCheck.json()
+    if (tokenData.error) {
+      result.tokenValid = false
+      result.tokenError = tokenData.error.message
+      result.tokenErrorCode = tokenData.error.code
+      result.tokenErrorSubcode = tokenData.error.error_subcode
+      return res.json({ ok: false, ...result, error: 'Meta token invalid or expired' })
+    }
+    result.tokenValid = true
+    result.account = tokenData
+  } catch (e) {
+    result.tokenValid = false
+    result.tokenError = e.message
+    return res.json({ ok: false, ...result, error: 'Failed to reach Meta API' })
+  }
+
+  // Test 2: Can we fetch campaigns?
+  try {
+    const campaigns = await fetchCampaigns()
+    result.campaignCount = campaigns.length
+    result.campaigns = campaigns.map(c => ({ id: c.id, name: c.name, status: c.status }))
+  } catch (e) {
+    result.campaignError = e.message
+  }
+
+  // Test 3: Can we fetch account insights?
+  try {
+    const insights = await fetchAccountInsights('last_7d')
+    result.last7dInsights = insights
+  } catch (e) {
+    result.insightsError = e.message
+  }
+
+  result.ok = true
+  res.json(result)
+})
+
 // ── GET /api/ads/campaigns ───────────────────────────────────────────────────
 
 router.get('/campaigns', async (_req, res) => {
