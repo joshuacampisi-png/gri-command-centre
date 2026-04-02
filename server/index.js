@@ -105,7 +105,7 @@ const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD
 if (DASHBOARD_PASSWORD && DASHBOARD_PASSWORD !== 'changeme') {
   app.use((req, res, next) => {
     // Allow webhooks, calendar API, and standalone calendar page through without auth
-    if (req.path.startsWith('/api/shopify/webhook') || req.path.startsWith('/api/square/webhook') || req.path.startsWith('/api/shopify/oauth') || req.path.startsWith('/api/telegram-bot/webhook') || req.path.startsWith('/api/ig-reply-bot/') || req.path.startsWith('/api/calendar') || req.path.startsWith('/calendar') || req.path.startsWith('/calendar-videos') || req.path.startsWith('/instagram-media') || req.path.startsWith('/api/contract') || req.path === '/api/instagram/disk-usage' || req.path === '/api/instagram/cleanup-media') {
+    if (req.path.startsWith('/api/shopify/webhook') || req.path.startsWith('/api/square/webhook') || req.path.startsWith('/api/shopify/oauth') || req.path.startsWith('/api/telegram-bot/webhook') || req.path.startsWith('/api/ig-reply-bot/') || req.path.startsWith('/api/calendar') || req.path.startsWith('/calendar') || req.path.startsWith('/calendar-videos') || req.path.startsWith('/instagram-media') || req.path.startsWith('/api/contract') || req.path === '/api/instagram/disk-usage' || req.path === '/api/instagram/cleanup-media' || req.path === '/api/ads/debug') {
       return next()
     }
     const auth = req.headers.authorization
