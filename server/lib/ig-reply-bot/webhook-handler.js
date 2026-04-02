@@ -52,13 +52,13 @@ async function _processWebhook(body) {
       }
     }
 
-    // Handle DM webhooks (via messaging array)
-    const messaging = entry.messaging || []
-    for (const event of messaging) {
-      if (event.message && event.sender) {
-        await _processMessage(event)
-      }
-    }
+    // DM replies disabled — comments only
+    // const messaging = entry.messaging || []
+    // for (const event of messaging) {
+    //   if (event.message && event.sender) {
+    //     await _processMessage(event)
+    //   }
+    // }
   }
 }
 
