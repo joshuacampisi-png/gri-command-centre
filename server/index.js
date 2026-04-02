@@ -44,6 +44,7 @@ import { startCalendarPublisher } from './lib/calendar-publisher.js'
 import metaConnectRoutes, { loadSavedMetaTokens } from './routes/meta-connect.js'
 import igReplyBotRoutes from './routes/ig-reply-bot.js'
 import { startIGReplyBotCron } from './lib/ig-reply-bot/cron.js'
+import { startTNTPaymentPoller } from './lib/tnt-payment-poller.js'
 
 // ── PABLO CRASH RECOVERY — Rule 5 ──
 const JOSH_CHAT = '8040702286'
@@ -423,6 +424,9 @@ const server = app.listen(env.port, '0.0.0.0', () => {
 
   // Instagram Auto Reply Bot (tone refresh cron + startup check)
   startIGReplyBotCron()
+
+  // TNT Hire: poll Square every 5 min for pending bond payments
+  startTNTPaymentPoller()
 
   console.log('✅ Server running — auto Telegram messages: DISABLED')
   console.log('🔒 Crash recovery: ACTIVE')

@@ -49,6 +49,23 @@ router.get('/health', (_req, res) => {
   res.json({ ok: allOk, checks, timestamp: new Date().toISOString() });
 });
 
+// GET /api/hires/contracts — signed contracts register (MUST be before /:id)
+router.get('/contracts', (_req, res) => {
+  const hires = getAll();
+  const signed = hires
+    .filter(h => h.contractStatus === 'signed' && h.contractSignedAt)
+    .map(h => ({
+      id: h.id,
+      orderNumber: h.orderNumber,
+      customerName: h.customerName,
+      customerEmail: h.customerEmail,
+      contractSignedAt: h.contractSignedAt,
+      pdfUrl: `/api/contract/${h.id}/pdf`,
+    }))
+    .sort((a, b) => new Date(b.contractSignedAt) - new Date(a.contractSignedAt));
+  res.json({ ok: true, contracts: signed });
+});
+
 // GET /api/hires — list all hires
 router.get('/', (req, res) => {
   res.json({ hires: getAll() });
@@ -88,7 +105,7 @@ router.post('/', async (req, res) => {
     // Send confirmation email
     try {
       await sendHireEmail('confirmation', hire);
-      update(hire.id, { emailSent: true });
+      update(hire.id, { emailSent: true, confirmationSentAt: new Date().toISOString() });
       hire.emailSent = true;
     } catch (emailErr) {
       console.error('[hires] Confirmation email failed:', emailErr.message);
@@ -100,6 +117,7 @@ router.post('/', async (req, res) => {
       update(hire.id, {
         bondPaymentUrl: link.url,
         bondPaymentLinkId: link.paymentLinkId,
+        bondOrderId: link.orderId || null,
       });
       hire.bondPaymentUrl = link.url;
       hire.bondPaymentLinkId = link.paymentLinkId;
@@ -142,6 +160,7 @@ router.post('/:id/mark-bond-paid', async (req, res) => {
     status: 'bond_paid',
     bondStatus: 'paid',
     bondPaymentId: paymentId,
+    bondPaidAt: new Date().toISOString(),
   });
 
   // Telegram notification — bond paid
@@ -168,6 +187,7 @@ async function sendContractInternal(hire) {
 
   update(hire.id, {
     contractStatus: 'sent',
+    contractSentAt: new Date().toISOString(),
     status: hire.status === 'bond_paid' ? 'contract_sent' : hire.status,
   });
 
@@ -203,6 +223,8 @@ router.post('/:id/process-return', async (req, res) => {
     const updates = {
       status: decision === 'refund' ? 'returned' : 'withheld',
       bondOutcome: decision === 'refund' ? 'refunded' : 'withheld',
+      returnedAt: new Date().toISOString(),
+      bondOutcomeAt: new Date().toISOString(),
     };
 
     // Attempt Square refund if refunding and we have a real payment ID
@@ -256,6 +278,14 @@ router.post('/:id/send-bond-link', async (req, res) => {
     console.error('[hires] Send bond link error:', err);
     res.status(500).json({ error: err.message });
   }
+});
+
+// POST /api/hires/:id/mark-picked-up — mark kit as picked up
+router.post('/:id/mark-picked-up', (req, res) => {
+  const hire = getById(req.params.id);
+  if (!hire) return res.status(404).json({ ok: false, error: 'Hire not found' });
+  const updated = update(req.params.id, { pickedUpAt: new Date().toISOString(), status: 'active' });
+  res.json({ ok: true, hire: updated });
 });
 
 export default router;

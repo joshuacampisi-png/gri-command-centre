@@ -20,6 +20,7 @@ async function sendContractAfterBond(hire) {
 
   update(hire.id, {
     contractStatus: 'sent',
+    contractSentAt: new Date().toISOString(),
     status: 'contract_sent',
   });
 
@@ -63,27 +64,41 @@ router.post('/', async (req, res) => {
       }
 
       // Find the matching hire by:
-      // 1. bondPaymentLinkId or bondPaymentId
+      // 1. Match by payment.order_id against hire.bondOrderId
       // 2. Order number in the payment note
+      // 3. Fallback: match any pending hire with correct bond amount
       const hires = getAll();
       let matchedHire = null;
 
-      // Try matching by payment note (contains order number)
-      for (const h of hires) {
-        if (h.bondStatus === 'paid') continue; // Already processed
+      // Strategy 1: Match by Square order_id against stored bondOrderId
+      if (orderId) {
+        matchedHire = hires.find(h =>
+          h.bondStatus !== 'paid' && h.bondOrderId && h.bondOrderId === orderId
+        );
+        if (matchedHire) console.log(`[square-webhook] Matched by bondOrderId: ${orderId}`);
+      }
 
-        // Match by order number in note
-        if (h.orderNumber && note.includes(h.orderNumber)) {
-          matchedHire = h;
-          break;
+      // Strategy 2: Match by order number in payment note
+      if (!matchedHire) {
+        for (const h of hires) {
+          if (h.bondStatus === 'paid') continue;
+          if (h.orderNumber && note.includes(h.orderNumber)) {
+            matchedHire = h;
+            console.log(`[square-webhook] Matched by note containing: ${h.orderNumber}`);
+            break;
+          }
         }
       }
 
-      // Fallback — match any pending hire with bond amount $200
-      if (!matchedHire && amountCents === 20000) {
-        matchedHire = hires.find(h =>
-          h.bondStatus === 'pending' && h.bondPaymentUrl
-        );
+      // Strategy 3: Fallback — match any pending hire with correct bond amount
+      // $200 (20000c) for 1 kit, $400 (40000c) for 2 kits
+      if (!matchedHire) {
+        matchedHire = hires.find(h => {
+          if (h.bondStatus !== 'pending' || !h.bondPaymentUrl) return false;
+          const expectedCents = (h.kitQty || 1) >= 2 ? 40000 : 20000;
+          return amountCents === expectedCents;
+        });
+        if (matchedHire) console.log(`[square-webhook] Matched by fallback amount: ${amountCents}c`);
       }
 
       if (!matchedHire) {
@@ -97,6 +112,7 @@ router.post('/', async (req, res) => {
       update(matchedHire.id, {
         bondStatus: 'paid',
         bondPaymentId: paymentId,
+        bondPaidAt: new Date().toISOString(),
         status: matchedHire.status === 'confirmed' ? 'bond_paid' : matchedHire.status,
       });
 

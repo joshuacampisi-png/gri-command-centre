@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 
 const API = "/api/hires";
 
@@ -52,6 +52,85 @@ const pill = (cfg) => (
     background: cfg.bg, color: cfg.color, letterSpacing: "0.02em",
   }}>{cfg.label}</span>
 );
+
+/* ── Flow progress bar ── */
+function FlowProgress({ hire }) {
+  const steps = [
+    { key: 'booked', label: 'Booked', done: true, at: hire.createdAt },
+    { key: 'email', label: 'Email', done: hire.emailSent, at: hire.confirmationSentAt },
+    { key: 'bond', label: 'Bond Paid', done: hire.bondStatus === 'paid', at: hire.bondPaidAt },
+    { key: 'contract_sent', label: 'Contract Sent', done: ['sent','signed'].includes(hire.contractStatus), at: hire.contractSentAt },
+    { key: 'signed', label: 'Signed', done: hire.contractStatus === 'signed', at: hire.contractSignedAt },
+    { key: 'picked_up', label: 'Picked Up', done: !!hire.pickedUpAt, at: hire.pickedUpAt },
+    { key: 'returned', label: 'Returned', done: ['returned','withheld'].includes(hire.status), at: hire.returnedAt },
+    { key: 'bond_outcome', label: hire.bondOutcome === 'withheld' ? 'Withheld' : 'Refunded', done: !!hire.bondOutcome, at: hire.bondOutcomeAt },
+  ];
+
+  return (
+    <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap' }}>
+      {steps.map((step, i) => (
+        <React.Fragment key={step.key}>
+          {i > 0 && <span style={{ color: '#333', fontSize: 10 }}>{'\u2192'}</span>}
+          <div style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+            opacity: step.done ? 1 : 0.35
+          }}>
+            <span style={{ fontSize: 11, fontWeight: step.done ? 600 : 400, color: step.done ? '#22c55e' : '#666' }}>
+              {step.done ? '\u2713' : '\u25CB'} {step.label}
+            </span>
+            {step.done && step.at && (
+              <span style={{ fontSize: 9, color: '#888' }}>
+                {new Date(step.at).toLocaleString('en-AU', { timeZone: 'Australia/Brisbane', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+              </span>
+            )}
+          </div>
+        </React.Fragment>
+      ))}
+    </div>
+  );
+}
+
+/* ── Signed Contracts register ── */
+function SignedContracts() {
+  const [contracts, setContracts] = useState([]);
+  useEffect(() => {
+    fetch('/api/hires/contracts').then(r => r.json()).then(d => setContracts(d.contracts || [])).catch(() => {});
+  }, []);
+
+  if (contracts.length === 0) return null;
+
+  return (
+    <div style={{ background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: 8, marginTop: 24, overflow: "hidden" }}>
+      <div style={{ padding: "14px 18px", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+        <span style={{ fontWeight: 600, fontSize: 14 }}>Signed Contracts</span>
+      </div>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+        <thead>
+          <tr style={{ borderBottom: '0.5px solid var(--color-border-tertiary)', textAlign: 'left' }}>
+            <th style={{ padding: '8px 12px', color: 'var(--color-text-secondary)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Customer</th>
+            <th style={{ padding: '8px 12px', color: 'var(--color-text-secondary)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Order</th>
+            <th style={{ padding: '8px 12px', color: 'var(--color-text-secondary)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Signed</th>
+            <th style={{ padding: '8px 12px', color: 'var(--color-text-secondary)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Contract</th>
+          </tr>
+        </thead>
+        <tbody>
+          {contracts.map(c => (
+            <tr key={c.id} style={{ borderBottom: '0.5px solid var(--color-border-tertiary)' }}>
+              <td style={{ padding: '8px 12px' }}>{c.customerName}</td>
+              <td style={{ padding: '8px 12px', fontFamily: 'var(--font-mono)', fontSize: 12 }}>{c.orderNumber}</td>
+              <td style={{ padding: '8px 12px', color: 'var(--color-text-secondary)', fontSize: 12 }}>
+                {new Date(c.contractSignedAt).toLocaleString('en-AU', { timeZone: 'Australia/Brisbane', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+              </td>
+              <td style={{ padding: '8px 12px' }}>
+                <a href={c.pdfUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#6366f1', textDecoration: 'none', fontSize: 12, fontWeight: 500 }}>Download PDF</a>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
 
 /* ── Shared button styles ── */
 const btnBase = {
@@ -167,22 +246,14 @@ function DetailPanel({ hire, onClose, onAction }) {
   const cCfg = CONTRACT_CONFIG[hire.contractStatus] || CONTRACT_CONFIG.not_sent;
   const dates = hire.eventDate ? getHireDates(hire.eventDate) : null;
 
+  /* Legacy steps removed — replaced by FlowProgress component */
+
   const row = (label, val) => (
     <div style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", fontSize: 13, borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
       <span style={{ color: "var(--color-text-secondary)", flexShrink: 0 }}>{label}</span>
       <span style={{ fontWeight: 500, textAlign: "right", maxWidth: "58%", wordBreak: "break-all" }}>{val}</span>
     </div>
   );
-
-  const steps = [
-    { done: true, label: "Lodged", when: new Date(hire.createdAt).toLocaleDateString("en-AU") },
-    { done: hire.emailSent, label: "Confirmation email sent" },
-    { done: hire.bondStatus !== "pending", label: "Bond collected" },
-    { done: hire.contractStatus === "sent" || hire.contractStatus === "signed", label: "Contract sent" },
-    { done: hire.contractStatus === "signed", label: "Contract signed", when: hire.contractSignedAt ? new Date(hire.contractSignedAt).toLocaleDateString("en-AU") : null },
-    { done: hire.status === "returned" || hire.status === "withheld", label: "Returned" },
-    { done: hire.bondOutcome !== null, label: hire.bondOutcome === "withheld" ? "Bond withheld" : "Bond refunded" },
-  ];
 
   return (
     <>
@@ -232,21 +303,9 @@ function DetailPanel({ hire, onClose, onAction }) {
           {hire.bondPaymentId && row("Square ID", hire.bondPaymentId)}
           {hire.bondPaymentUrl && row("Pay link", <a href={hire.bondPaymentUrl} target="_blank" rel="noopener noreferrer" style={{ color: "#185FA5", textDecoration: "underline" }}>Open</a>)}
 
-          {/* Progress */}
-          <div style={{ margin: "20px 0 12px", fontSize: 11, fontWeight: 600, color: "var(--color-text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Progress</div>
-          {steps.map((s, i) => (
-            <div key={i} style={{ display: "flex", gap: 10, marginBottom: 8, alignItems: "center" }}>
-              <div style={{
-                width: 18, height: 18, borderRadius: "50%", flexShrink: 0,
-                background: s.done ? "#EAF3DE" : "var(--color-background-secondary)",
-                border: s.done ? "1.5px solid #3B6D11" : "1px solid var(--color-border-tertiary)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 10, color: s.done ? "#3B6D11" : "transparent", fontWeight: 700,
-              }}>{s.done ? "✓" : ""}</div>
-              <span style={{ fontSize: 12, color: s.done ? "var(--color-text-primary)" : "var(--color-text-secondary)", fontWeight: s.done ? 500 : 400, flex: 1 }}>{s.label}</span>
-              {s.when && <span style={{ fontSize: 10, color: "var(--color-text-secondary)" }}>{s.when}</span>}
-            </div>
-          ))}
+          {/* Flow Progress */}
+          <div style={{ margin: "20px 0 12px", fontSize: 11, fontWeight: 600, color: "var(--color-text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Flow Progress</div>
+          <FlowProgress hire={hire} />
 
           {/* Actions */}
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 20 }}>
@@ -266,6 +325,9 @@ function DetailPanel({ hire, onClose, onAction }) {
             )}
             {hire.bondPaymentUrl && hire.bondStatus === "pending" && (
               <button onClick={() => onAction("resend_bond_link", hire)} style={{ ...btnBase, width: "100%" }}>Resend bond payment link</button>
+            )}
+            {hire.contractStatus === "signed" && !hire.pickedUpAt && (
+              <button onClick={() => onAction("mark_picked_up", hire)} style={{ ...btnPrimary, width: "100%" }}>Mark Picked Up</button>
             )}
             {hire.contractStatus === "signed" && (
               <a href={`/api/contract/${hire.id}/pdf`} target="_blank" rel="noopener noreferrer" style={{
@@ -341,6 +403,9 @@ export default function TNTDashboard() {
       } else if (action === "resend_bond_link") {
         await api(`/${hire.id}/send-bond-link`, { method: "POST" });
         showToast("Bond payment link resent to " + hire.customerEmail);
+      } else if (action === "mark_picked_up") {
+        await api(`/${hire.id}/mark-picked-up`, { method: "POST" });
+        showToast("Marked as picked up");
       }
       await loadHires();
     } catch (err) { showToast(err.message, "error"); }
@@ -371,7 +436,7 @@ export default function TNTDashboard() {
 
   const filtered = hires.filter(h => {
     if (filter === "all") return true;
-    if (filter === "active") return ["confirmed", "bond_paid", "contract_sent", "contract_signed"].includes(h.status);
+    if (filter === "active") return ["confirmed", "bond_paid", "contract_sent", "contract_signed", "active"].includes(h.status);
     if (filter === "returned") return h.status === "returned" || h.status === "withheld";
     return h.status === filter;
   });
@@ -379,7 +444,7 @@ export default function TNTDashboard() {
   const c = {
     all: hires.length,
     confirmed: hires.filter(h => h.status === "confirmed").length,
-    active: hires.filter(h => ["bond_paid", "contract_sent", "contract_signed"].includes(h.status)).length,
+    active: hires.filter(h => ["bond_paid", "contract_sent", "contract_signed", "active"].includes(h.status)).length,
     returned: hires.filter(h => h.status === "returned" || h.status === "withheld").length,
   };
 
@@ -387,6 +452,7 @@ export default function TNTDashboard() {
     if (!h.emailSent) return { key: "send_confirm", label: "Send email", style: btnBase };
     if (h.status === "confirmed") return { key: "mark_bond_paid", label: "Mark bond paid", style: btnPrimary };
     if ((h.status === "bond_paid" || h.status === "contract_sent") && h.contractStatus !== "signed") return { key: "send_contract", label: "Send contract", style: btnPrimary };
+    if (h.contractStatus === "signed" && !h.pickedUpAt) return { key: "mark_picked_up", label: "Mark picked up", style: btnPrimary };
     if (h.bondStatus === "paid" && h.status !== "returned" && h.status !== "withheld") return { key: "mark_returned", label: "Process return", style: btnDanger };
     return null;
   };
@@ -502,7 +568,8 @@ export default function TNTDashboard() {
                 const dates = hire.eventDate ? getHireDates(hire.eventDate) : null;
                 const next = nextAction(hire);
                 return (
-                  <tr key={hire.id} style={{ borderBottom: "0.5px solid var(--color-border-tertiary)", cursor: "pointer" }} onClick={() => setDetailHire(hire)}>
+                  <React.Fragment key={hire.id}>
+                  <tr style={{ borderBottom: "none", cursor: "pointer" }} onClick={() => setDetailHire(hire)}>
                     <td style={{ padding: "10px 12px" }}>
                       <div style={{ fontSize: 13, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{hire.customerName}</div>
                       <div style={{ fontSize: 11, color: "var(--color-text-secondary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{hire.customerPhone || hire.customerEmail}</div>
@@ -541,11 +608,20 @@ export default function TNTDashboard() {
                       </div>
                     </td>
                   </tr>
+                  <tr style={{ borderBottom: "0.5px solid var(--color-border-tertiary)" }} onClick={() => setDetailHire(hire)}>
+                    <td colSpan={8} style={{ padding: "0 12px 8px" }}>
+                      <FlowProgress hire={hire} />
+                    </td>
+                  </tr>
+                  </React.Fragment>
                 );
               })}
             </tbody>
           </table>
         </div>
+
+        {/* Signed Contracts Register */}
+        <SignedContracts />
       </div>
 
       {detailHire && <DetailPanel hire={hires.find(h => h.id === detailHire.id) || detailHire} onClose={() => setDetailHire(null)} onAction={act} />}
