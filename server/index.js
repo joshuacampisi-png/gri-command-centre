@@ -40,6 +40,7 @@ import { startKeywordScheduler } from './lib/keyword-tracker.js'
 import { getUsageSummary } from './lib/claude-guard.js'
 import instagramSchedulerRoutes from './routes/instagram-scheduler.js'
 import { startInstagramCron } from './lib/instagram-cron.js'
+import { startCalendarPublisher } from './lib/calendar-publisher.js'
 import metaConnectRoutes, { loadSavedMetaTokens } from './routes/meta-connect.js'
 import igReplyBotRoutes from './routes/ig-reply-bot.js'
 import { startIGReplyBotCron } from './lib/ig-reply-bot/cron.js'
@@ -103,7 +104,7 @@ const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD
 if (DASHBOARD_PASSWORD && DASHBOARD_PASSWORD !== 'changeme') {
   app.use((req, res, next) => {
     // Allow webhooks, calendar API, and standalone calendar page through without auth
-    if (req.path.startsWith('/api/shopify/webhook') || req.path.startsWith('/api/square/webhook') || req.path.startsWith('/api/shopify/oauth') || req.path.startsWith('/api/telegram-bot/webhook') || req.path.startsWith('/api/ig-reply-bot/') || req.path.startsWith('/api/calendar') || req.path.startsWith('/calendar') || req.path.startsWith('/calendar-videos') || req.path.startsWith('/api/contract')) {
+    if (req.path.startsWith('/api/shopify/webhook') || req.path.startsWith('/api/square/webhook') || req.path.startsWith('/api/shopify/oauth') || req.path.startsWith('/api/telegram-bot/webhook') || req.path.startsWith('/api/ig-reply-bot/') || req.path.startsWith('/api/calendar') || req.path.startsWith('/calendar') || req.path.startsWith('/calendar-videos') || req.path.startsWith('/instagram-media') || req.path.startsWith('/api/contract')) {
       return next()
     }
     const auth = req.headers.authorization
@@ -418,6 +419,7 @@ const server = app.listen(env.port, '0.0.0.0', () => {
 
   // Instagram auto-scheduler (checks every minute for due posts)
   startInstagramCron()
+  startCalendarPublisher()
 
   // Instagram Auto Reply Bot (tone refresh cron + startup check)
   startIGReplyBotCron()
