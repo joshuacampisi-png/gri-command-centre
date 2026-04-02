@@ -153,6 +153,11 @@ router.post('/entries/:id/publish-now', async (req, res) => {
     post.igPostId = result.igPostId
     post.igPermalink = result.permalink
     post.error = null
+
+    // Free disk space — media is now on Instagram, no need to keep local copy
+    cleanupPostMedia(post)
+    post._mediaCleanedAt = new Date().toISOString()
+
     savePosts(posts)
 
     res.json({ ok: true, post })

@@ -4,9 +4,12 @@
  * Retries failed posts up to 3 times with 5-minute backoff.
  */
 import cron from 'node-cron'
-import { readFileSync, writeFileSync, existsSync } from 'fs'
-import { dataFile } from './data-dir.js'
+import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'fs'
+import { join } from 'path'
+import { dataFile, dataDir } from './data-dir.js'
 import { isInstagramConfigured, publishImage, publishCarousel, publishReel } from './instagram-publisher.js'
+
+const MEDIA_DIR = dataDir('instagram-media')
 
 const DATA_FILE = dataFile('instagram-posts.json')
 
@@ -22,6 +25,19 @@ function savePosts(posts) {
 
 function getAppUrl() {
   return process.env.APP_URL || process.env.RAILWAY_PUBLIC_URL || `http://localhost:${process.env.PORT || 8787}`
+}
+
+// Delete local media files after successful publish to free disk space
+function cleanupPostMedia(post) {
+  if (!post?.mediaUrls?.length) return
+  for (const url of post.mediaUrls) {
+    const match = url.match(/\/instagram-media\/(.+)$/)
+    if (match) {
+      const filePath = join(MEDIA_DIR, match[1])
+      try { if (existsSync(filePath)) { unlinkSync(filePath); console.log(`[IG Cron] Freed: ${match[1]}`) } }
+      catch (e) { console.error(`[IG Cron] Cleanup failed ${filePath}:`, e.message) }
+    }
+  }
 }
 
 async function publishPost(post) {
@@ -70,6 +86,11 @@ async function checkAndPublish() {
       post.igPostId = result.igPostId
       post.igPermalink = result.permalink
       post.error = null
+
+      // Free disk space — video/image now lives on Instagram
+      cleanupPostMedia(post)
+      post._mediaCleanedAt = now.toISOString()
+
       console.log(`[IG Cron] Published post ${post.id} -> ${result.igPostId}`)
     } catch (err) {
       post.attempts = (post.attempts || 0) + 1
