@@ -121,6 +121,10 @@ function OverviewPage({ data, company }) {
   const [sales, setSales] = useState(null)
   const [shippingWeekOffset, setShippingWeekOffset] = useState(0)
   const [shippingData, setShippingData] = useState(null)
+  const [shippingCosts, setShippingCosts] = useState({})
+  const [shippingCostInput, setShippingCostInput] = useState('')
+  const [shippingCostSaving, setShippingCostSaving] = useState(false)
+  const [showShippingGraph, setShowShippingGraph] = useState(false)
 
   const [trendingQueries, setTrendingQueries] = useState(null)
   const [viralReels, setViralReels] = useState(null)
@@ -201,6 +205,20 @@ function OverviewPage({ data, company }) {
     return () => clearInterval(interval)
   }, [])
 
+  // Fetch all shipping costs once on mount
+  useEffect(() => {
+    fetch('/api/shopify/shipping-costs').then(r => r.json()).then(d => {
+      if (d.ok) setShippingCosts(d.costs || {})
+    }).catch(() => {})
+  }, [])
+
+  // When week offset or costs change, update the input field
+  useEffect(() => {
+    const { from } = getWedTueWeek(shippingWeekOffset)
+    const saved = shippingCosts[from]
+    setShippingCostInput(saved ? String(saved.cost) : '')
+  }, [shippingWeekOffset, shippingCosts, getWedTueWeek])
+
   // Shipping revenue: Wed-Tue weekly fetch + auto-refresh every 30s
   useEffect(() => {
     const fetchShipping = () => {
@@ -213,6 +231,24 @@ function OverviewPage({ data, company }) {
     const interval = setInterval(fetchShipping, 30000)
     return () => clearInterval(interval)
   }, [shippingWeekOffset, getWedTueWeek])
+
+  const saveShippingCost = async () => {
+    const { from } = getWedTueWeek(shippingWeekOffset)
+    const cost = parseFloat(shippingCostInput) || 0
+    setShippingCostSaving(true)
+    try {
+      const res = await fetch('/api/shopify/shipping-costs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ weekStart: from, cost })
+      })
+      const d = await res.json()
+      if (d.ok) setShippingCosts(d.costs)
+    } catch (e) {
+      console.error('Save shipping cost error:', e)
+    }
+    setShippingCostSaving(false)
+  }
 
   // Build the week buttons: current week + last 3 weeks
   const shippingWeeks = [0, -1, -2, -3].map(offset => {
@@ -327,6 +363,62 @@ function OverviewPage({ data, company }) {
             </div>
             <div className="kv-row"><span>Orders</span><strong>{shippingData.orders}</strong></div>
             <div className="kv-row"><span>Total sales</span><strong>${shippingData.revenue.toFixed(2)}</strong></div>
+
+            {/* Actual shipping cost paid */}
+            <div style={{ borderTop: '1px solid #E8ECF4', marginTop: 12, paddingTop: 12 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: '#E43F7B', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>Actual Shipping Paid</div>
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                <span style={{ fontSize: 16, fontWeight: 700, color: '#555' }}>$</span>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  value={shippingCostInput}
+                  onChange={e => setShippingCostInput(e.target.value)}
+                  style={{
+                    flex: 1, padding: '7px 10px', fontSize: 14, borderRadius: 8,
+                    border: '1px solid #e5e7eb', outline: 'none', fontWeight: 600,
+                  }}
+                />
+                <button onClick={saveShippingCost} disabled={shippingCostSaving}
+                  style={{
+                    padding: '7px 14px', fontSize: 12, fontWeight: 600, borderRadius: 8,
+                    border: 'none', background: '#3AB4C0', color: '#fff', cursor: 'pointer',
+                    opacity: shippingCostSaving ? 0.6 : 1,
+                  }}>
+                  {shippingCostSaving ? 'Saving...' : 'Save'}
+                </button>
+              </div>
+              {(() => {
+                const { from } = getWedTueWeek(shippingWeekOffset)
+                const saved = shippingCosts[from]
+                if (saved) {
+                  const profit = shippingData.shipping - saved.cost
+                  return (
+                    <div style={{ marginTop: 8 }}>
+                      <div className="kv-row">
+                        <span>Profit / Loss</span>
+                        <strong style={{ color: profit >= 0 ? '#10B981' : '#E43F7B' }}>
+                          {profit >= 0 ? '+' : '-'}${Math.abs(profit).toFixed(2)}
+                        </strong>
+                      </div>
+                    </div>
+                  )
+                }
+                return null
+              })()}
+            </div>
+
+            {/* Graph button */}
+            <button onClick={() => setShowShippingGraph(true)}
+              style={{
+                marginTop: 12, width: '100%', padding: '9px 0', fontSize: 12, fontWeight: 600,
+                borderRadius: 8, border: '1px solid #3AB4C0', background: '#F0FDFA',
+                color: '#0F766E', cursor: 'pointer',
+              }}>
+              View All Weeks Graph
+            </button>
           </> : <p className="muted">Loading...</p>}
         </div>
 
@@ -585,6 +677,115 @@ function OverviewPage({ data, company }) {
           </div>
         </div>
       )}
+
+      {/* ── Shipping Costs Graph Modal ── */}
+      {showShippingGraph && (() => {
+        // Build data for the last 12 weeks
+        const weeks = []
+        for (let i = 0; i >= -11; i--) {
+          const { from, to, wedDate, tueDate } = getWedTueWeek(i)
+          const saved = shippingCosts[from]
+          weeks.push({
+            from, to,
+            label: formatWeekLabel(wedDate, tueDate),
+            cost: saved ? saved.cost : null,
+          })
+        }
+        weeks.reverse() // oldest first
+
+        const maxCost = Math.max(...weeks.map(w => w.cost || 0), 1)
+        const barWidth = 48
+        const chartWidth = weeks.length * (barWidth + 8) + 40
+        const chartHeight = 220
+
+        return (
+          <div style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0,0,0,0.5)', zIndex: 9999,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }} onClick={() => setShowShippingGraph(false)}>
+            <div style={{
+              background: '#fff', borderRadius: 16, padding: 28, maxWidth: 800,
+              width: '95%', maxHeight: '90vh', overflowY: 'auto',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+            }} onClick={e => e.stopPropagation()}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                <h3 style={{ margin: 0, fontSize: 18 }}>Shipping Costs — All Weeks</h3>
+                <button onClick={() => setShowShippingGraph(false)}
+                  style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#999' }}>
+                  ✕
+                </button>
+              </div>
+
+              {/* Bar chart */}
+              <div style={{ overflowX: 'auto', paddingBottom: 8 }}>
+                <svg width={chartWidth} height={chartHeight + 60} style={{ display: 'block' }}>
+                  {/* Y-axis labels */}
+                  {[0, 0.25, 0.5, 0.75, 1].map(frac => {
+                    const y = chartHeight - frac * chartHeight + 10
+                    const val = Math.round(frac * maxCost)
+                    return (
+                      <g key={frac}>
+                        <line x1={35} y1={y} x2={chartWidth} y2={y} stroke="#f0f0f0" strokeWidth={1} />
+                        <text x={30} y={y + 4} textAnchor="end" fontSize={10} fill="#999">${val}</text>
+                      </g>
+                    )
+                  })}
+                  {/* Bars */}
+                  {weeks.map((w, i) => {
+                    const x = 40 + i * (barWidth + 8)
+                    const barH = w.cost !== null ? (w.cost / maxCost) * chartHeight : 0
+                    const y = chartHeight - barH + 10
+                    return (
+                      <g key={w.from}>
+                        {w.cost !== null ? (
+                          <>
+                            <rect x={x} y={y} width={barWidth} height={barH} rx={4}
+                              fill="#E43F7B" opacity={0.85} />
+                            <text x={x + barWidth / 2} y={y - 5} textAnchor="middle"
+                              fontSize={11} fontWeight={600} fill="#E43F7B">
+                              ${w.cost.toFixed(0)}
+                            </text>
+                          </>
+                        ) : (
+                          <text x={x + barWidth / 2} y={chartHeight + 5} textAnchor="middle"
+                            fontSize={10} fill="#ccc">—</text>
+                        )}
+                        <text x={x + barWidth / 2} y={chartHeight + 30} textAnchor="middle"
+                          fontSize={9} fill="#777" transform={`rotate(-25, ${x + barWidth / 2}, ${chartHeight + 30})`}>
+                          {w.label}
+                        </text>
+                      </g>
+                    )
+                  })}
+                </svg>
+              </div>
+
+              {/* Table summary */}
+              <div style={{ marginTop: 16, maxHeight: 200, overflowY: 'auto' }}>
+                <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #E8ECF4' }}>
+                      <th style={{ textAlign: 'left', padding: '6px 8px', fontWeight: 600 }}>Week</th>
+                      <th style={{ textAlign: 'right', padding: '6px 8px', fontWeight: 600 }}>Shipping Paid</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...weeks].reverse().map(w => (
+                      <tr key={w.from} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                        <td style={{ padding: '6px 8px' }}>{w.label}</td>
+                        <td style={{ padding: '6px 8px', textAlign: 'right', fontWeight: 600, color: w.cost !== null ? '#E43F7B' : '#ccc' }}>
+                          {w.cost !== null ? `$${w.cost.toFixed(2)}` : 'Not entered'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }

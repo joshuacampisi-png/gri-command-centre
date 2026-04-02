@@ -1,4 +1,6 @@
 import { Router } from 'express'
+import { readFileSync, writeFileSync, existsSync } from 'fs'
+import { dataFile } from '../lib/data-dir.js'
 import { getNotionSnapshot } from '../connectors/notion.js'
 import { getSlackSnapshot, postChannelVerificationSuite, postInitialCommandCentreMessage, postRoleMessage, postSlackMessage } from '../connectors/slack.js'
 import { getOpenClawSnapshot } from '../connectors/openclaw.js'
@@ -292,6 +294,40 @@ router.get('/viral/instagram/download/:shortcode', async (req, res) => {
   } catch (e) {
     if (!res.headersSent) res.status(500).json({ ok: false, error: e.message })
   }
+})
+
+// ── Shipping Cost Tracking (actual $ paid per Wed-Tue week) ──
+const SHIPPING_COSTS_FILE = dataFile('shipping-costs.json')
+
+function loadShippingCosts() {
+  try {
+    if (existsSync(SHIPPING_COSTS_FILE)) {
+      return JSON.parse(readFileSync(SHIPPING_COSTS_FILE, 'utf8'))
+    }
+  } catch (e) {
+    console.error('[shipping-costs] Load error:', e.message)
+  }
+  return {}
+}
+
+function saveShippingCosts(data) {
+  writeFileSync(SHIPPING_COSTS_FILE, JSON.stringify(data, null, 2))
+}
+
+router.get('/shopify/shipping-costs', (_req, res) => {
+  const costs = loadShippingCosts()
+  res.json({ ok: true, costs })
+})
+
+router.post('/shopify/shipping-costs', (req, res) => {
+  const { weekStart, cost } = req.body
+  if (!weekStart || cost === undefined) {
+    return res.status(400).json({ ok: false, error: 'weekStart and cost required' })
+  }
+  const costs = loadShippingCosts()
+  costs[weekStart] = { cost: parseFloat(cost) || 0, updatedAt: new Date().toISOString() }
+  saveShippingCosts(costs)
+  res.json({ ok: true, costs })
 })
 
 router.post('/slack/report', async (req, res) => res.json(await postSlackMessage(req.body)))
