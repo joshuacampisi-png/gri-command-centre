@@ -3,8 +3,12 @@
  * Meta Graph API Content Publishing wrapper for Instagram Business account.
  *
  * Supports: single image, carousel (up to 10 images), and Reels (video).
- * Uses the two-step flow: create media container → publish container.
+ * Reels use resumable upload (sends bytes directly to Meta — no public URL needed).
  */
+
+import { existsSync, readFileSync, statSync } from 'fs'
+import { join } from 'path'
+import { dataDir as _mediaDataDir } from './data-dir.js'
 
 const BASE = 'https://graph.facebook.com/v20.0'
 
@@ -131,28 +135,91 @@ export async function publishCarousel(mediaUrls, caption) {
 
 export async function publishReel(videoUrl, caption, coverUrl) {
   const accountId = igAccountId()
-  console.log(`[IG Publisher] Creating Reel container: ${videoUrl.slice(0, 80)}...`)
+  console.log(`[IG Publisher] Creating Reel: ${videoUrl.slice(0, 80)}...`)
 
-  // Step 1: Create video container
-  const params = {
-    video_url: videoUrl,
-    caption,
-    media_type: 'REELS',
+  // Try resumable upload first (reads file from disk — works on Railway)
+  // Falls back to URL-based upload if file not on disk
+  const localPath = resolveLocalPath(videoUrl)
+  if (localPath) {
+    return _publishReelResumable(accountId, localPath, caption, coverUrl)
   }
+
+  // Fallback: URL-based (requires Meta to fetch from public URL)
+  console.log(`[IG Publisher] Using URL-based upload (no local file found)`)
+  const params = { video_url: videoUrl, caption, media_type: 'REELS' }
   if (coverUrl) params.cover_url = coverUrl
-
   const container = await igPost(`/${accountId}/media`, params)
-
-  // Step 2: Wait for video processing
   await waitForMediaReady(container.id)
-
-  // Step 3: Publish
-  const result = await igPost(`/${accountId}/media_publish`, {
-    creation_id: container.id,
-  })
-
+  const result = await igPost(`/${accountId}/media_publish`, { creation_id: container.id })
   console.log(`[IG Publisher] Reel published: ${result.id}`)
   return { igPostId: result.id, permalink: await getPermalink(result.id) }
+}
+
+// Resumable upload — sends video bytes directly to Meta (no public URL needed)
+async function _publishReelResumable(accountId, filePath, caption, coverUrl) {
+  const fileSize = statSync(filePath).size
+  console.log(`[IG Publisher] Resumable upload: ${filePath} (${(fileSize / 1048576).toFixed(1)}MB)`)
+
+  // Step 1: Init resumable upload
+  const initForm = new URLSearchParams({
+    access_token: igToken(),
+    media_type: 'REELS',
+    upload_type: 'resumable',
+  })
+  if (caption) initForm.set('caption', caption)
+
+  const initRes = await fetch(`${BASE}/${accountId}/media`, { method: 'POST', body: initForm })
+  const initData = await initRes.json()
+  if (initData.error) throw new Error(`Resumable init failed: ${initData.error.message}`)
+
+  const containerId = initData.id
+  const uploadUri = initData.uri
+  console.log(`[IG Publisher] Upload URI: ${uploadUri}, container: ${containerId}`)
+
+  // Step 2: Upload video bytes
+  const videoData = readFileSync(filePath)
+  const uploadRes = await fetch(uploadUri, {
+    method: 'POST',
+    headers: {
+      'Authorization': `OAuth ${igToken()}`,
+      'offset': '0',
+      'file_size': String(fileSize),
+      'Content-Type': 'application/octet-stream',
+    },
+    body: videoData,
+  })
+  const uploadResult = await uploadRes.json()
+  if (!uploadResult.success) throw new Error(`Video upload failed: ${JSON.stringify(uploadResult)}`)
+  console.log(`[IG Publisher] Upload complete`)
+
+  // Step 3: Wait for processing
+  await waitForMediaReady(containerId)
+
+  // Step 4: Publish
+  const result = await igPost(`/${accountId}/media_publish`, { creation_id: containerId })
+  console.log(`[IG Publisher] Reel published: ${result.id}`)
+  return { igPostId: result.id, permalink: await getPermalink(result.id) }
+}
+
+// Resolve a media URL to a local file path (for resumable uploads)
+function resolveLocalPath(url) {
+  try {
+    // URL like /instagram-media/abc.mp4 or https://domain/instagram-media/abc.mp4
+    const match = url.match(/\/instagram-media\/(.+)$/)
+    if (!match) return null
+    const filename = match[1]
+    // Try data dir first (Railway volume)
+    const volPath = join(_mediaDataDir('instagram-media'), filename)
+    if (existsSync(volPath)) return volPath
+    // Try public dir
+    const pubPath = join(process.cwd(), 'public', 'instagram-media', filename)
+    if (existsSync(pubPath)) return pubPath
+    console.log(`[IG Publisher] Local file not found: tried ${volPath} and ${pubPath}`)
+    return null
+  } catch (e) {
+    console.warn(`[IG Publisher] resolveLocalPath error:`, e.message)
+    return null
+  }
 }
 
 // ── Get permalink for a published post ──────────────────────────────────────
