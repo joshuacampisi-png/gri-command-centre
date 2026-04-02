@@ -108,11 +108,36 @@ async function checkAndPublish() {
   if (changed) savePosts(posts)
 }
 
+// One-time startup: clean up media from posts that were already published
+// This frees disk from old published posts that were never cleaned
+function startupCleanup() {
+  try {
+    const posts = loadPosts()
+    let cleaned = 0
+    for (const post of posts) {
+      if (post.status === 'PUBLISHED' && !post._mediaCleanedAt && post.mediaUrls?.length) {
+        cleanupPostMedia(post)
+        post._mediaCleanedAt = new Date().toISOString()
+        cleaned++
+      }
+    }
+    if (cleaned > 0) {
+      savePosts(posts)
+      console.log(`[IG Cron] Startup cleanup: freed media from ${cleaned} published post(s)`)
+    }
+  } catch (e) {
+    console.error('[IG Cron] Startup cleanup error:', e.message)
+  }
+}
+
 export function startInstagramCron() {
   if (!isInstagramConfigured()) {
     console.log('[IG Cron] Instagram not configured — scheduler disabled')
     return
   }
+
+  // Clean up old published media on startup
+  startupCleanup()
 
   cron.schedule('* * * * *', async () => {
     try {
