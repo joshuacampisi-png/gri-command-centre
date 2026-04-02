@@ -10,8 +10,24 @@ import {
   fetchCampaigns,
   fetchAdInsights,
   fetchAdInsightsByDay,
-  pauseAd as metaPauseAd
+  pauseAd as metaPauseAd,
+  updateCampaignStatus,
+  updateCampaignBudget,
+  updateAdSetStatus,
+  updateAdSetBudget,
+  updateAdStatus
 } from '../lib/meta-api.js'
+import { getShopifyOrdersRange } from '../connectors/shopify.js'
+import {
+  GRI_ADS,
+  calculateMER,
+  calculateTrueCAC,
+  calculateAMER,
+  calculateNPOAS,
+  calculateCampaignHealth,
+  generateAlerts,
+  calculateScalePath
+} from '../lib/ads-metrics.js'
 import {
   calculateFatigueScore,
   prepareFatigueMetrics,
@@ -522,5 +538,354 @@ function aggregateKPI(campaigns) {
     cpm: impressions > 0 ? (spend / impressions) * 1000 : 0
   }
 }
+
+// ── GET /api/ads/truth-metrics ───────────────────────────────────────────────
+// Fetches BOTH Shopify revenue AND Meta spend for same period, calculates
+// MER, True CAC, AMER, NPOAS — the numbers that actually matter.
+
+router.get('/truth-metrics', async (req, res) => {
+  try {
+    if (!isMetaConfigured()) {
+      return res.json({ ok: false, error: 'Meta API not configured' })
+    }
+
+    const dateRange = req.query.dateRange || '7d'
+    const daysMap = { 'today': 1, '7d': 7, '14d': 14, '30d': 30, 'last_7d': 7, 'last_14d': 14, 'last_30d': 30 }
+    const days = daysMap[dateRange] || 7
+
+    // Calculate date range for Shopify query (AEST dates)
+    const toDate = new Date()
+    toDate.setHours(toDate.getHours() + 10) // Approximate AEST
+    const fromDate = new Date(toDate)
+    fromDate.setDate(fromDate.getDate() - days)
+    const fromStr = fromDate.toISOString().slice(0, 10)
+    const toStr = toDate.toISOString().slice(0, 10)
+
+    // Map to Meta preset
+    const presetMap = { 'today': 'today', '7d': 'last_7d', '14d': 'last_14d', '30d': 'last_30d', 'last_7d': 'last_7d', 'last_14d': 'last_14d', 'last_30d': 'last_30d' }
+    const preset = presetMap[dateRange] || 'last_7d'
+
+    // Fetch Meta + Shopify in parallel
+    const [metaInsights, shopifyData] = await Promise.all([
+      fetchAccountInsights(preset),
+      getShopifyOrdersRange(fromStr, toStr)
+    ])
+
+    const totalSpend = metaInsights?.spend || 0
+    const shopifyRevenue = shopifyData?.ok ? shopifyData.revenue : 0
+    const shopifyOrders = shopifyData?.ok ? shopifyData.orders : 0
+    const shopifyAov = shopifyOrders > 0 ? shopifyRevenue / shopifyOrders : 0
+
+    const mer = calculateMER(shopifyRevenue, totalSpend)
+    const trueCac = calculateTrueCAC(totalSpend, shopifyOrders)
+    const amer = calculateAMER(shopifyRevenue, totalSpend, GRI_ADS.grossMarginPct)
+    const npoas = calculateNPOAS(shopifyRevenue, totalSpend, GRI_ADS.grossMarginPct)
+
+    res.json({
+      ok: true,
+      truth: {
+        mer,
+        trueCac,
+        amer,
+        npoas,
+        totalSpend,
+        shopifyRevenue,
+        shopifyOrders,
+        shopifyAov,
+        breakevenRoas: GRI_ADS.breakevenROAS,
+        dateRange,
+        days,
+        from: fromStr,
+        to: toStr
+      }
+    })
+  } catch (err) {
+    console.error('[Ads] Truth metrics error:', err.message)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── GET /api/ads/scale-path ─────────────────────────────────────────────────
+// Returns scale path calculations based on last 30 days of data.
+
+router.get('/scale-path', async (req, res) => {
+  try {
+    if (!isMetaConfigured()) {
+      return res.json({ ok: false, error: 'Meta API not configured' })
+    }
+
+    // Get last 30 days of Meta + Shopify data
+    const toDate = new Date()
+    toDate.setHours(toDate.getHours() + 10)
+    const fromDate = new Date(toDate)
+    fromDate.setDate(fromDate.getDate() - 30)
+    const fromStr = fromDate.toISOString().slice(0, 10)
+    const toStr = toDate.toISOString().slice(0, 10)
+
+    const [metaInsights, shopifyData] = await Promise.all([
+      fetchAccountInsights('last_30d'),
+      getShopifyOrdersRange(fromStr, toStr)
+    ])
+
+    const monthlySpend = metaInsights?.spend || 0
+    const monthlyRev = shopifyData?.ok ? shopifyData.revenue : 0
+    const mer = calculateMER(monthlyRev, monthlySpend)
+
+    const scalePath = calculateScalePath(monthlyRev, monthlySpend, mer)
+
+    res.json({
+      ok: true,
+      current: {
+        monthlyRev,
+        monthlySpend,
+        mer,
+        dailySpend: monthlySpend / 30
+      },
+      targets: scalePath.targets
+    })
+  } catch (err) {
+    console.error('[Ads] Scale path error:', err.message)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── POST /api/ads/budget ────────────────────────────────────────────────────
+// Update daily budget for a campaign or ad set.
+
+router.post('/budget', async (req, res) => {
+  try {
+    if (!isMetaConfigured()) {
+      return res.json({ ok: false, error: 'Meta API not configured' })
+    }
+
+    const { entityId, entityType, dailyBudget } = req.body
+    if (!entityId || !entityType || dailyBudget == null) {
+      return res.status(400).json({ ok: false, error: 'Missing entityId, entityType, or dailyBudget' })
+    }
+    if (!['campaign', 'adset'].includes(entityType)) {
+      return res.status(400).json({ ok: false, error: 'entityType must be "campaign" or "adset"' })
+    }
+    if (typeof dailyBudget !== 'number' || dailyBudget < 0) {
+      return res.status(400).json({ ok: false, error: 'dailyBudget must be a positive number' })
+    }
+
+    if (entityType === 'campaign') {
+      await updateCampaignBudget(entityId, dailyBudget)
+    } else {
+      await updateAdSetBudget(entityId, dailyBudget)
+    }
+
+    res.json({ ok: true, newBudget: dailyBudget })
+  } catch (err) {
+    console.error('[Ads] Budget update error:', err.message)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── POST /api/ads/status ────────────────────────────────────────────────────
+// Toggle status for a campaign, ad set, or ad.
+
+router.post('/status', async (req, res) => {
+  try {
+    if (!isMetaConfigured()) {
+      return res.json({ ok: false, error: 'Meta API not configured' })
+    }
+
+    const { entityId, entityType, status } = req.body
+    if (!entityId || !entityType || !status) {
+      return res.status(400).json({ ok: false, error: 'Missing entityId, entityType, or status' })
+    }
+    if (!['campaign', 'adset', 'ad'].includes(entityType)) {
+      return res.status(400).json({ ok: false, error: 'entityType must be "campaign", "adset", or "ad"' })
+    }
+    if (!['ACTIVE', 'PAUSED'].includes(status)) {
+      return res.status(400).json({ ok: false, error: 'status must be "ACTIVE" or "PAUSED"' })
+    }
+
+    if (entityType === 'campaign') {
+      await updateCampaignStatus(entityId, status)
+    } else if (entityType === 'adset') {
+      await updateAdSetStatus(entityId, status)
+    } else {
+      await updateAdStatus(entityId, status)
+    }
+
+    res.json({ ok: true })
+  } catch (err) {
+    console.error('[Ads] Status toggle error:', err.message)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── POST /api/ads/recommendation ────────────────────────────────────────────
+// Get AI-powered campaign recommendation from Claude.
+
+router.post('/recommendation', async (req, res) => {
+  try {
+    const { campaignData, shopifyData, dateRange } = req.body
+    if (!campaignData) {
+      return res.status(400).json({ ok: false, error: 'Missing campaignData' })
+    }
+
+    const shopifyRev = shopifyData?.revenue || 0
+    const shopifyOrders = shopifyData?.orders || 0
+    const shopifyAov = shopifyOrders > 0 ? (shopifyRev / shopifyOrders).toFixed(2) : GRI_ADS.aov
+
+    const prompt = `You are the world's most successful DTC e-commerce operator. Think like a billionaire — ruthless about data, zero tolerance for wasted spend.
+
+BRAND: Gender Reveal Ideas (genderrevealideas.com.au)
+BUSINESS MODEL: One-time purchase, AOV $${shopifyAov} AUD, 30% gross margin
+Breakeven CPP: $31.50 | Target CPP: <$26 | Breakeven ROAS: 3.33x | Target MER: 4x+
+
+CAMPAIGN DATA:
+${JSON.stringify(campaignData, null, 2)}
+
+SHOPIFY DATA: Revenue $${shopifyRev.toFixed(2)}, Orders ${shopifyOrders}, AOV $${shopifyAov}
+DATE RANGE: ${dateRange || '7d'}
+
+Give verdict, reasoning, and specific action. No hedging. Reference specific numbers.
+If CPP > $38 on > $300 spend, recommend pausing immediately.
+If frequency > 4, flag creative fatigue.
+
+Respond in JSON only:
+{ "verdict": "SCALE|HOLD|CUT|EMERGENCY", "urgency": "LOW|MEDIUM|HIGH|CRITICAL", "headline": "one-line summary", "reasoning": "detailed analysis referencing numbers", "specificAction": "exactly what to do right now", "budgetSuggestion": "specific dollar amount or percentage change", "estimatedImpact": "what this action should achieve" }`
+
+    const response = await callClaude({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [{ role: 'user', content: prompt }]
+    }, 'ads-campaign-recommendation')
+
+    const text = response.content[0].text.trim()
+    let parsed
+    try {
+      const jsonMatch = text.match(/\{[\s\S]*\}/)
+      parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(text)
+    } catch {
+      parsed = {
+        verdict: 'UNKNOWN',
+        urgency: 'MEDIUM',
+        headline: 'Could not parse recommendation',
+        reasoning: text,
+        specificAction: 'Review manually',
+        budgetSuggestion: 'No change',
+        estimatedImpact: 'Unknown'
+      }
+    }
+
+    res.json({ ok: true, ...parsed })
+  } catch (err) {
+    console.error('[Ads] Recommendation error:', err.message)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── POST /api/ads/account-recommendation ────────────────────────────────────
+// Full account-level strategic analysis from Claude.
+
+router.post('/account-recommendation', async (req, res) => {
+  try {
+    if (!isMetaConfigured()) {
+      return res.json({ ok: false, error: 'Meta API not configured' })
+    }
+
+    // Gather last 7 days of data from both sources
+    const toDate = new Date()
+    toDate.setHours(toDate.getHours() + 10)
+    const fromDate = new Date(toDate)
+    fromDate.setDate(fromDate.getDate() - 7)
+    const fromStr = fromDate.toISOString().slice(0, 10)
+    const toStr = toDate.toISOString().slice(0, 10)
+
+    const [perfData, shopifyData] = await Promise.all([
+      fetchFullPerformance('last_7d'),
+      getShopifyOrdersRange(fromStr, toStr)
+    ])
+
+    const campaigns = perfData.campaigns || perfData
+    const totals = perfData.totals || {}
+
+    // Enrich with health scores
+    const campaignSummaries = campaigns.map(c => {
+      const health = calculateCampaignHealth(c)
+      return {
+        name: c.name,
+        status: c.status,
+        spend: c.insights?.spend || 0,
+        purchases: c.insights?.purchases || 0,
+        roas: c.insights?.roas || 0,
+        frequency: c.insights?.frequency || 0,
+        cpp: (c.insights?.purchases || 0) > 0 ? (c.insights?.spend || 0) / c.insights.purchases : 0,
+        healthScore: health.score,
+        healthStatus: health.status,
+        healthReasons: health.reasons
+      }
+    })
+
+    const alerts = generateAlerts(campaigns)
+    const shopifyRev = shopifyData?.ok ? shopifyData.revenue : 0
+    const shopifyOrders = shopifyData?.ok ? shopifyData.orders : 0
+    const mer = calculateMER(shopifyRev, totals.spend || 0)
+    const trueCac = calculateTrueCAC(totals.spend || 0, shopifyOrders)
+
+    const prompt = `You are the world's most successful DTC e-commerce operator. Think like a billionaire — ruthless about data, zero tolerance for wasted spend.
+
+BRAND: Gender Reveal Ideas (genderrevealideas.com.au)
+BUSINESS MODEL: One-time purchase, AOV $105 AUD, 30% gross margin
+Breakeven CPP: $31.50 | Target CPP: <$26 | Breakeven ROAS: 3.33x | Target MER: 4x+
+
+LAST 7 DAYS ACCOUNT SUMMARY:
+- Meta Spend: $${(totals.spend || 0).toFixed(2)}
+- Meta Attributed Purchases: ${totals.purchases || 0}
+- Meta ROAS: ${(totals.roas || 0).toFixed(2)}x
+- Shopify Revenue: $${shopifyRev.toFixed(2)}
+- Shopify Orders: ${shopifyOrders}
+- MER (Shopify Rev / Meta Spend): ${mer.toFixed(2)}x
+- True CAC (Meta Spend / Shopify Orders): $${trueCac.toFixed(2)}
+
+CAMPAIGN BREAKDOWN:
+${JSON.stringify(campaignSummaries, null, 2)}
+
+ACTIVE ALERTS:
+${JSON.stringify(alerts, null, 2)}
+
+Provide a full account-level strategic analysis. Be specific. Reference exact numbers. No waffle.
+
+Respond in JSON only:
+{
+  "situation": "2-3 sentence assessment of current state",
+  "immediateActions": ["action 1 with specific numbers", "action 2"],
+  "thisWeek": ["strategic priority 1", "strategic priority 2"],
+  "scalePath": "what needs to happen to reach $1M/year based on current data",
+  "generatedAt": "${new Date().toISOString()}"
+}`
+
+    const response = await callClaude({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1500,
+      messages: [{ role: 'user', content: prompt }]
+    }, 'ads-account-recommendation')
+
+    const text = response.content[0].text.trim()
+    let parsed
+    try {
+      const jsonMatch = text.match(/\{[\s\S]*\}/)
+      parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(text)
+    } catch {
+      parsed = {
+        situation: text,
+        immediateActions: ['Review manually — could not parse AI response'],
+        thisWeek: [],
+        scalePath: 'Unable to calculate',
+        generatedAt: new Date().toISOString()
+      }
+    }
+
+    res.json({ ok: true, ...parsed })
+  } catch (err) {
+    console.error('[Ads] Account recommendation error:', err.message)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
 
 export default router

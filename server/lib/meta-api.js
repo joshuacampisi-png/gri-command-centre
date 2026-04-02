@@ -186,6 +186,31 @@ export async function pauseAd(adId) {
   return metaPost(`/${adId}`, { status: 'PAUSED' })
 }
 
+// Toggle campaign status (ACTIVE / PAUSED)
+export async function updateCampaignStatus(campaignId, status) {
+  return metaPost(`/${campaignId}`, { status })
+}
+
+// Update campaign daily budget (amount in dollars, converted to cents for Meta API)
+export async function updateCampaignBudget(campaignId, dailyBudget) {
+  return metaPost(`/${campaignId}`, { daily_budget: Math.round(dailyBudget * 100) })
+}
+
+// Toggle ad set status (ACTIVE / PAUSED)
+export async function updateAdSetStatus(adSetId, status) {
+  return metaPost(`/${adSetId}`, { status })
+}
+
+// Update ad set daily budget (amount in dollars, converted to cents for Meta API)
+export async function updateAdSetBudget(adSetId, dailyBudget) {
+  return metaPost(`/${adSetId}`, { daily_budget: Math.round(dailyBudget * 100) })
+}
+
+// Toggle ad status (ACTIVE / PAUSED)
+export async function updateAdStatus(adId, status) {
+  return metaPost(`/${adId}`, { status })
+}
+
 export async function uploadAdImage(imageUrl) {
   const accountId = metaAccountId()
   return metaPost(`/${accountId}/adimages`, { url: imageUrl })

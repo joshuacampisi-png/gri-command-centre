@@ -1,176 +1,803 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { LineChart, Line, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ComposedChart, Bar } from 'recharts'
+import {
+  Line, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, Legend, ComposedChart, Area
+} from 'recharts'
 
-// ── Constants ────────────────────────────────────────────────────────────────
+// ── Business Constants ──────────────────────────────────────────────────────
 
-const API = '/api/ads'
-const DATE_RANGES = [
-  { key: 'today', label: 'Today' },
-  { key: '7d', label: 'Last 7 Days' },
-  { key: '14d', label: 'Last 14 Days' },
-  { key: '30d', label: 'Last 30 Days' },
-]
-
-const FATIGUE_COLORS = {
-  HEALTHY: '#3fb950',
-  WATCH: '#d29922',
-  FATIGUING: '#e3651d',
-  DEAD: '#f85149',
+const GRI = {
+  aov: 105,
+  grossMargin: 0.30,
+  grossProfit: 31.50,
+  breakevenCPP: 31.50,
+  targetCPP: 26.00,
+  breakevenROAS: 3.33,
+  targetMER: 4.0,
+  scaleMER: 6.0,
 }
 
-const KPI_THRESHOLDS = {
-  roas: { green: 3.0, amber: 2.0 },
-  cpa: { green: 25, amber: 45 },
-  ctr: { green: 2, amber: 1 },
-  cpm: { green: 12, amber: 20 },
+const API = '/api/ads'
+
+const DATE_RANGES = [
+  { key: 'today', label: 'Today' },
+  { key: '7d', label: '7 Days' },
+  { key: '14d', label: '14 Days' },
+  { key: '30d', label: '30 Days' },
+]
+
+const COLOURS = {
+  bg: '#0D1117',
+  card: '#161B22',
+  border: '#30363D',
+  text: '#E6EDF3',
+  muted: '#7D8590',
+  pink: '#E43F7B',
+  green: '#3FB950',
+  yellow: '#D29922',
+  red: '#F85149',
+  blue: '#58A6FF',
+}
+
+const HEALTH_MAP = {
+  SCALE: { label: 'Scale', bg: '#3FB95020', color: '#3FB950', border: '#3FB95044' },
+  HEALTHY: { label: 'Healthy', bg: '#58A6FF20', color: '#58A6FF', border: '#58A6FF44' },
+  MONITOR: { label: 'Monitor', bg: '#D2992220', color: '#D29922', border: '#D2992244' },
+  CULL: { label: 'Cull', bg: '#E3651D20', color: '#E3651D', border: '#E3651D44' },
+  EMERGENCY: { label: 'Emergency', bg: '#F8514920', color: '#F85149', border: '#F8514944' },
+}
+
+const FATIGUE_MAP = {
+  FRESH: { color: '#3FB950', label: 'Fresh' },
+  HEALTHY: { color: '#3FB950', label: 'Healthy' },
+  WATCH: { color: '#D29922', label: 'Watch' },
+  FATIGUING: { color: '#E3651D', label: 'Fatiguing' },
+  DEAD: { color: '#F85149', label: 'Dead' },
 }
 
 const OBJECTIVE_LABELS = {
-  OUTCOME_SALES: 'Sales',
-  OUTCOME_TRAFFIC: 'Traffic',
-  OUTCOME_ENGAGEMENT: 'Engagement',
-  OUTCOME_LEADS: 'Leads',
-  OUTCOME_APP_PROMOTION: 'App',
-  OUTCOME_AWARENESS: 'Awareness',
-  CONVERSIONS: 'Conversions',
-  LINK_CLICKS: 'Traffic',
-  POST_ENGAGEMENT: 'Engagement',
-  REACH: 'Reach',
-  BRAND_AWARENESS: 'Awareness',
+  OUTCOME_SALES: 'Sales', OUTCOME_TRAFFIC: 'Traffic', OUTCOME_ENGAGEMENT: 'Engagement',
+  OUTCOME_LEADS: 'Leads', OUTCOME_APP_PROMOTION: 'App', OUTCOME_AWARENESS: 'Awareness',
+  CONVERSIONS: 'Conversions', LINK_CLICKS: 'Traffic', POST_ENGAGEMENT: 'Engagement',
+  REACH: 'Reach', BRAND_AWARENESS: 'Awareness',
 }
 
-function kpiColor(metric, value) {
-  const t = KPI_THRESHOLDS[metric]
-  if (!t) return '#7C8DB0'
-  if (metric === 'cpa' || metric === 'cpm') {
-    if (value <= t.green) return '#3fb950'
-    if (value <= t.amber) return '#d29922'
-    return '#f85149'
-  }
-  if (value >= t.green) return '#3fb950'
-  if (value >= t.amber) return '#d29922'
-  return '#f85149'
+// ── Utility Functions ───────────────────────────────────────────────────────
+
+function fmtCurrency(n) {
+  if (n == null || isNaN(n)) return '$0.00'
+  return '$' + Number(n).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
-function deltaArrow(today, yesterday, invert = false) {
-  if (yesterday == null || yesterday === 0) return null
-  const diff = today - yesterday
-  const pct = ((diff / Math.abs(yesterday)) * 100).toFixed(1)
+function fmtCompact(n) {
+  if (n == null || isNaN(n)) return '--'
+  if (Math.abs(n) >= 1000000) return (n / 1000000).toFixed(1) + 'M'
+  if (Math.abs(n) >= 1000) return (n / 1000).toFixed(1) + 'K'
+  return Number(n).toFixed(2)
+}
+
+function fmtInt(n) {
+  if (n == null || isNaN(n)) return '--'
+  return Math.round(n).toLocaleString('en-AU')
+}
+
+function cppColour(cpp) {
+  if (cpp == null || isNaN(cpp)) return COLOURS.muted
+  if (cpp < GRI.targetCPP) return COLOURS.green
+  if (cpp <= GRI.breakevenCPP) return COLOURS.yellow
+  return COLOURS.red
+}
+
+function merColour(mer) {
+  if (mer == null || isNaN(mer)) return COLOURS.muted
+  if (mer >= GRI.targetMER) return COLOURS.green
+  if (mer >= GRI.breakevenROAS) return COLOURS.yellow
+  return COLOURS.red
+}
+
+function cacColour(cac) {
+  if (cac == null || isNaN(cac)) return COLOURS.muted
+  if (cac < GRI.targetCPP) return COLOURS.green
+  if (cac <= GRI.breakevenCPP) return COLOURS.yellow
+  return COLOURS.red
+}
+
+function amerColour(amer) {
+  if (amer == null || isNaN(amer)) return COLOURS.muted
+  if (amer > 50) return COLOURS.green
+  if (amer >= 0) return COLOURS.yellow
+  return COLOURS.red
+}
+
+function deltaInfo(current, previous, invert = false) {
+  if (previous == null || previous === 0 || current == null) return null
+  const diff = current - previous
+  const pct = ((diff / Math.abs(previous)) * 100).toFixed(1)
   const isGood = invert ? diff < 0 : diff > 0
   return { pct: `${diff > 0 ? '+' : ''}${pct}%`, isGood }
 }
 
-function fmtNum(n, decimals = 2) {
-  if (n == null || isNaN(n)) return '—'
-  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M'
-  if (n >= 1000) return (n / 1000).toFixed(1) + 'K'
-  return Number(n).toFixed(decimals)
+function getHealthBadge(score) {
+  if (score == null) return HEALTH_MAP.MONITOR
+  if (score >= 80) return HEALTH_MAP.SCALE
+  if (score >= 60) return HEALTH_MAP.HEALTHY
+  if (score >= 40) return HEALTH_MAP.MONITOR
+  if (score >= 20) return HEALTH_MAP.CULL
+  return HEALTH_MAP.EMERGENCY
 }
 
-// ── KPI Card ─────────────────────────────────────────────────────────────────
+function shortDate(dateStr) {
+  if (!dateStr) return ''
+  const d = new Date(dateStr)
+  return `${d.getDate()}/${d.getMonth() + 1}`
+}
 
-function KpiCard({ label, value, prefix, suffix, metric, delta }) {
-  const color = kpiColor(metric, value)
+// ── Loading Skeleton ────────────────────────────────────────────────────────
+
+function Skeleton({ width, height = 20 }) {
   return (
-    <div className="ads-kpi-card">
-      <div className="ads-kpi-label">{label}</div>
-      <div className="ads-kpi-value" style={{ color }}>
-        {prefix}{fmtNum(value)}{suffix}
+    <div className="ads-dark-skeleton" style={{ width: width || '100%', height }} />
+  )
+}
+
+function SectionSkeleton({ rows = 3 }) {
+  return (
+    <div className="ads-dark-card" style={{ padding: 24 }}>
+      <Skeleton width="30%" height={16} />
+      <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {Array.from({ length: rows }).map((_, i) => (
+          <Skeleton key={i} height={14} width={`${80 - i * 10}%`} />
+        ))}
       </div>
-      {delta && (
-        <div className={`ads-kpi-delta ${delta.isGood ? 'ads-delta-good' : 'ads-delta-bad'}`}>
-          {delta.isGood ? '▲' : '▼'} {delta.pct} vs prev
-        </div>
-      )}
     </div>
   )
 }
 
-// ── Fatigue Badge ────────────────────────────────────────────────────────────
+// ── Confirm Modal ───────────────────────────────────────────────────────────
 
-function FatigueBadge({ status, score }) {
-  const color = FATIGUE_COLORS[status] || '#7C8DB0'
+function ConfirmModal({ title, message, onConfirm, onCancel, confirmLabel = 'Confirm', danger = false }) {
   return (
-    <span className="ads-fatigue-badge" style={{ background: color + '18', color, borderColor: color + '44' }}>
-      {status} ({score})
-    </span>
+    <div className="ads-dark-overlay" onClick={onCancel}>
+      <div className="ads-dark-modal" onClick={e => e.stopPropagation()}>
+        <h3 className="ads-dark-modal-title">{title}</h3>
+        <p className="ads-dark-modal-message">{message}</p>
+        <div className="ads-dark-modal-actions">
+          <button className="ads-dark-btn ads-dark-btn-ghost" onClick={onCancel}>Cancel</button>
+          <button
+            className={`ads-dark-btn ${danger ? 'ads-dark-btn-danger' : 'ads-dark-btn-primary'}`}
+            onClick={onConfirm}
+          >
+            {confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }
 
-// ── Campaign Table ───────────────────────────────────────────────────────────
+// ── Budget Editor ───────────────────────────────────────────────────────────
 
-function CampaignRow({ campaign, onExpand, expanded, onPause }) {
-  const ins = campaign.insights
+function BudgetEditor({ currentBudget, entityId, entityType, onSave, onCancel }) {
+  const [value, setValue] = useState(currentBudget?.toFixed(2) || '')
+  const [saving, setSaving] = useState(false)
+
+  const handleSave = async () => {
+    const num = parseFloat(value)
+    if (isNaN(num) || num < 0) return
+    setSaving(true)
+    try {
+      const res = await fetch(`${API}/budget`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ entityId, entityType, dailyBudget: num })
+      })
+      const data = await res.json()
+      if (data.ok !== false) onSave(num)
+    } catch (err) {
+      console.error('Budget update failed:', err)
+    }
+    setSaving(false)
+  }
+
+  return (
+    <div className="ads-dark-budget-editor" onClick={e => e.stopPropagation()}>
+      <span style={{ color: COLOURS.muted, fontSize: 11 }}>$</span>
+      <input
+        type="number"
+        className="ads-dark-budget-input"
+        value={value}
+        onChange={e => setValue(e.target.value)}
+        min="0"
+        step="1"
+        autoFocus
+        onKeyDown={e => {
+          if (e.key === 'Enter') handleSave()
+          if (e.key === 'Escape') onCancel()
+        }}
+      />
+      <button className="ads-dark-btn-micro ads-dark-btn-primary" onClick={handleSave} disabled={saving}>
+        {saving ? '...' : 'Apply'}
+      </button>
+      <button className="ads-dark-btn-micro ads-dark-btn-ghost" onClick={onCancel}>X</button>
+    </div>
+  )
+}
+
+// ── Metric Definitions Modal ────────────────────────────────────────────────
+
+function MetricDefinitions({ onClose }) {
+  const definitions = [
+    { term: 'MER (Marketing Efficiency Ratio)', desc: 'Total Shopify revenue divided by total ad spend across all channels. Unlike Meta ROAS, MER captures the true blended return including organic uplift from ads. Target: 4.0x+ for GRI.' },
+    { term: 'True CAC (Customer Acquisition Cost)', desc: 'Total ad spend divided by total Shopify orders. This is the real cost to acquire each customer, not the inflated Meta-reported figure. Target: under $26.00.' },
+    { term: 'AMER (Advertising Margin Efficiency Ratio)', desc: 'Percentage of ad spend recovered as gross profit: ((Orders x Gross Profit) - Ad Spend) / Ad Spend x 100. Above 0% means ads are profitable. Target: 50%+.' },
+    { term: 'CPP (Cost Per Purchase)', desc: 'Ad spend divided by number of purchases for a specific campaign or ad. Breakeven is $31.50 (matches gross profit per order). Target: under $26.00.' },
+    { term: 'True Contribution', desc: 'Net profit contribution of a campaign: (Purchases x $31.50 gross profit) minus total spend. Positive means the campaign is profitable.' },
+    { term: 'Learning Limited', desc: 'Meta ad set status meaning the ad set is not getting enough conversions (typically < 50/week) to optimise effectively. Needs higher budget or broader targeting.' },
+    { term: 'Frequency', desc: 'Average number of times each person has seen your ad. Above 2.5 often signals creative fatigue - audience has seen it too many times.' },
+    { term: 'Meta ROAS', desc: 'Return on ad spend as reported by Meta. Often inflated due to attribution modelling. Shown greyed out as a reference only - use MER for real decisions.' },
+  ]
+
+  return (
+    <div className="ads-dark-overlay" onClick={onClose}>
+      <div className="ads-dark-modal ads-dark-modal-wide" onClick={e => e.stopPropagation()}>
+        <div className="ads-dark-modal-header">
+          <h3 className="ads-dark-modal-title">Metric Definitions</h3>
+          <button className="ads-dark-btn-icon" onClick={onClose}>X</button>
+        </div>
+        <div className="ads-dark-definitions">
+          {definitions.map((d, i) => (
+            <div key={i} className="ads-dark-definition">
+              <dt>{d.term}</dt>
+              <dd>{d.desc}</dd>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Command Bar ─────────────────────────────────────────────────────────────
+
+function CommandBar({ dateRange, onDateChange, lastSynced, onRefresh, refreshing, onHealthCheck, healthCheckLoading, onShowDefinitions }) {
+  return (
+    <div className="ads-dark-command-bar">
+      <div className="ads-dark-command-left">
+        <h1 className="ads-dark-title">Ads Command Centre</h1>
+        <button className="ads-dark-btn-icon ads-dark-help-btn" onClick={onShowDefinitions} title="Metric definitions">
+          ?
+        </button>
+      </div>
+      <div className="ads-dark-command-centre">
+        <div className="ads-dark-date-pills">
+          {DATE_RANGES.map(r => (
+            <button
+              key={r.key}
+              className={`ads-dark-pill ${dateRange === r.key ? 'ads-dark-pill-active' : ''}`}
+              onClick={() => onDateChange(r.key)}
+            >
+              {r.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="ads-dark-command-right">
+        {lastSynced && (
+          <span className="ads-dark-synced">
+            Synced {new Date(lastSynced).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' })}
+          </span>
+        )}
+        <button className="ads-dark-btn ads-dark-btn-ghost" onClick={onRefresh} disabled={refreshing}>
+          {refreshing ? 'Syncing...' : 'Refresh'}
+        </button>
+        <button
+          className="ads-dark-btn ads-dark-btn-accent"
+          onClick={onHealthCheck}
+          disabled={healthCheckLoading}
+        >
+          {healthCheckLoading ? 'Analysing...' : 'Health Check'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── Alert Bar ───────────────────────────────────────────────────────────────
+
+function AlertBar({ alerts, onDismiss, onAction }) {
+  if (!alerts || alerts.length === 0) return null
+
+  const severityStyles = {
+    CRITICAL: { bg: '#F8514918', border: '#F8514944', color: '#F85149', icon: '!!' },
+    HIGH: { bg: '#D2992218', border: '#D2992244', color: '#D29922', icon: '!' },
+    OPPORTUNITY: { bg: '#3FB95018', border: '#3FB95044', color: '#3FB950', icon: '+' },
+  }
+
+  return (
+    <div className="ads-dark-alerts">
+      {alerts.map((alert, i) => {
+        const style = severityStyles[alert.severity] || severityStyles.HIGH
+        return (
+          <div key={i} className="ads-dark-alert" style={{ background: style.bg, borderColor: style.border }}>
+            <span className="ads-dark-alert-icon" style={{ color: style.color }}>{style.icon}</span>
+            <span className="ads-dark-alert-message">{alert.message}</span>
+            {alert.action && (
+              <button className="ads-dark-btn-micro" style={{ color: style.color }} onClick={() => onAction && onAction(alert)}>
+                {alert.actionLabel || 'Fix'}
+              </button>
+            )}
+            <button className="ads-dark-alert-dismiss" onClick={() => onDismiss(i)}>x</button>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// ── Truth Metrics (5 KPI cards) ─────────────────────────────────────────────
+
+function TruthMetrics({ truth, loading }) {
+  if (loading) {
+    return (
+      <div className="ads-dark-truth-grid">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="ads-dark-truth-card">
+            <Skeleton width="60%" height={12} />
+            <Skeleton width="40%" height={32} />
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  if (!truth) return null
+
+  const mer = truth.mer
+  const trueCac = truth.trueCac
+  const amer = truth.amer
+  const totalSpend = truth.totalSpend
+  const revenue = truth.shopifyRevenue
+  const orders = truth.shopifyOrders
+  const days = truth.days || 7
+  const dailyAvgSpend = totalSpend && days ? totalSpend / days : 0
+
+  return (
+    <div className="ads-dark-truth-grid">
+      {/* MER */}
+      <div className="ads-dark-truth-card">
+        <div className="ads-dark-truth-label">MER</div>
+        <div className="ads-dark-truth-value" style={{ color: merColour(mer) }}>
+          {mer != null ? mer.toFixed(2) + 'x' : '--'}
+        </div>
+        <div className="ads-dark-truth-sub">
+          {mer >= GRI.targetMER ? 'Above target' : mer >= GRI.breakevenROAS ? 'Above breakeven' : 'Below breakeven'}
+        </div>
+        <div className="ads-dark-truth-target">Target: {GRI.targetMER}x</div>
+      </div>
+
+      {/* True CAC */}
+      <div className="ads-dark-truth-card">
+        <div className="ads-dark-truth-label">True CAC</div>
+        <div className="ads-dark-truth-value" style={{ color: cacColour(trueCac) }}>
+          {trueCac != null ? fmtCurrency(trueCac) : '--'}
+        </div>
+        <div className="ads-dark-truth-sub">
+          {trueCac < GRI.targetCPP ? 'Below target' : trueCac <= GRI.breakevenCPP ? 'Approaching limit' : 'Above breakeven'}
+        </div>
+        <div className="ads-dark-truth-target">Target: &lt;{fmtCurrency(GRI.targetCPP)}</div>
+      </div>
+
+      {/* AMER */}
+      <div className="ads-dark-truth-card">
+        <div className="ads-dark-truth-label">AMER%</div>
+        <div className="ads-dark-truth-value" style={{ color: amerColour(amer) }}>
+          {amer != null ? amer.toFixed(1) + '%' : '--'}
+        </div>
+        <div className="ads-dark-truth-sub">
+          {amer > 50 ? 'Strong margin' : amer >= 0 ? 'Marginal' : 'Losing money'}
+        </div>
+        <div className="ads-dark-truth-target">Target: &gt;50%</div>
+      </div>
+
+      {/* Total Ad Spend */}
+      <div className="ads-dark-truth-card">
+        <div className="ads-dark-truth-label">Total Ad Spend</div>
+        <div className="ads-dark-truth-value" style={{ color: COLOURS.text }}>
+          {fmtCurrency(totalSpend)}
+        </div>
+        <div className="ads-dark-truth-sub">
+          {fmtCurrency(dailyAvgSpend)}/day avg
+        </div>
+      </div>
+
+      {/* Shopify Revenue */}
+      <div className="ads-dark-truth-card">
+        <div className="ads-dark-truth-label">Shopify Revenue</div>
+        <div className="ads-dark-truth-value" style={{ color: COLOURS.green }}>
+          {fmtCurrency(revenue)}
+        </div>
+        <div className="ads-dark-truth-sub">
+          {orders != null ? fmtInt(orders) + ' orders' : '--'}
+        </div>
+        {truth.shopifyAov && (
+          <div className="ads-dark-truth-target">AOV: {fmtCurrency(truth.shopifyAov)}</div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ── Spend vs Revenue Chart ──────────────────────────────────────────────────
+
+function SpendChart({ breakdown, loading }) {
+  if (loading) return <SectionSkeleton rows={1} />
+  if (!breakdown || breakdown.length === 0) return null
+
+  const chartData = breakdown.map(d => ({
+    date: shortDate(d.date),
+    spend: d.spend || 0,
+    revenue: d.revenue || 0,
+    breakevenRev: d.spend ? d.spend / GRI.grossMargin : 0,
+  }))
+
+  const CustomTooltip = ({ active, payload }) => {
+    if (!active || !payload?.length) return null
+    const d = payload[0]?.payload
+    return (
+      <div className="ads-dark-chart-tooltip">
+        <div className="ads-dark-tooltip-date">{d.date}</div>
+        <div style={{ color: COLOURS.pink }}>Spend: {fmtCurrency(d.spend)}</div>
+        <div style={{ color: COLOURS.green }}>Revenue: {fmtCurrency(d.revenue)}</div>
+        <div style={{ color: COLOURS.muted }}>ROAS: {d.spend > 0 ? (d.revenue / d.spend).toFixed(2) + 'x' : '--'}</div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="ads-dark-card ads-dark-chart-section">
+      <h3 className="ads-dark-section-title">Spend vs Revenue</h3>
+      <ResponsiveContainer width="100%" height={320}>
+        <ComposedChart data={chartData} margin={{ top: 10, right: 30, left: 10, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke={COLOURS.border} />
+          <XAxis dataKey="date" tick={{ fill: COLOURS.muted, fontSize: 11 }} stroke={COLOURS.border} />
+          <YAxis
+            yAxisId="spend"
+            tick={{ fill: COLOURS.muted, fontSize: 11 }}
+            stroke={COLOURS.border}
+            tickFormatter={v => '$' + fmtCompact(v)}
+          />
+          <YAxis
+            yAxisId="revenue"
+            orientation="right"
+            tick={{ fill: COLOURS.muted, fontSize: 11 }}
+            stroke={COLOURS.border}
+            tickFormatter={v => '$' + fmtCompact(v)}
+          />
+          <Tooltip content={<CustomTooltip />} />
+          <Legend
+            wrapperStyle={{ color: COLOURS.muted, fontSize: 12 }}
+          />
+          <Area
+            yAxisId="revenue"
+            type="monotone"
+            dataKey="revenue"
+            fill={COLOURS.green + '15'}
+            stroke={COLOURS.green}
+            strokeWidth={2}
+            name="Revenue"
+            dot={{ r: 3, fill: COLOURS.green }}
+          />
+          <Line
+            yAxisId="spend"
+            type="monotone"
+            dataKey="spend"
+            stroke={COLOURS.pink}
+            strokeWidth={2}
+            name="Spend"
+            dot={{ r: 3, fill: COLOURS.pink }}
+          />
+          <Line
+            yAxisId="revenue"
+            type="monotone"
+            dataKey="breakevenRev"
+            stroke={COLOURS.yellow}
+            strokeWidth={1}
+            strokeDasharray="6 4"
+            name="Breakeven Line"
+            dot={false}
+          />
+        </ComposedChart>
+      </ResponsiveContainer>
+    </div>
+  )
+}
+
+// ── Creative Card (Ad) ──────────────────────────────────────────────────────
+
+function CreativeCard({ ad, onPause, pausing }) {
+  const ins = ad.insights || {}
+  const cpp = ins.purchases > 0 ? ins.spend / ins.purchases : null
+  const fatigue = FATIGUE_MAP[ad.fatigue?.status] || FATIGUE_MAP.HEALTHY
+
+  return (
+    <div className="ads-dark-creative-card">
+      <div className="ads-dark-creative-thumb">
+        {ad.thumbnailUrl ? (
+          <img src={ad.thumbnailUrl} alt="" />
+        ) : (
+          <div className="ads-dark-creative-placeholder">No Preview</div>
+        )}
+      </div>
+      <div className="ads-dark-creative-info">
+        <div className="ads-dark-creative-name">{ad.name}</div>
+        <div className="ads-dark-creative-stats">
+          <span>Spend: {fmtCurrency(ins.spend)}</span>
+          <span>Purchases: {ins.purchases || 0}</span>
+          <span style={{ color: cppColour(cpp) }}>CPP: {cpp != null ? fmtCurrency(cpp) : '--'}</span>
+          <span>CTR: {ins.ctr != null ? ins.ctr.toFixed(2) + '%' : '--'}</span>
+          <span>Freq: {ins.frequency != null ? ins.frequency.toFixed(1) : '--'}</span>
+        </div>
+        <div className="ads-dark-creative-footer">
+          <span className="ads-dark-fatigue-badge" style={{ color: fatigue.color, borderColor: fatigue.color + '66' }}>
+            {fatigue.label} {ad.fatigue?.score != null ? `(${ad.fatigue.score})` : ''}
+          </span>
+          {ad.daysRunning != null && (
+            <span className="ads-dark-creative-days">{ad.daysRunning}d running</span>
+          )}
+          {ad.status === 'ACTIVE' && (
+            <button
+              className="ads-dark-btn-micro ads-dark-btn-danger"
+              onClick={() => onPause(ad.id)}
+              disabled={pausing}
+            >
+              {pausing ? '...' : 'Pause'}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Ad Set Row ──────────────────────────────────────────────────────────────
+
+function AdSetRow({ adset, onBudgetSave }) {
+  const [editingBudget, setEditingBudget] = useState(false)
+  const ins = adset.insights || {}
+  const cpp = ins.purchases > 0 ? ins.spend / ins.purchases : null
+
+  const isLearningLimited = adset.status === 'LEARNING_LIMITED' || adset.deliveryStatus === 'LEARNING_LIMITED'
+  const isLearning = adset.status === 'LEARNING' || adset.deliveryStatus === 'LEARNING'
+
+  // Estimate budget needed to exit learning limited (~50 conversions/week at current CPP)
+  const budgetToExitLearning = cpp ? (50 * cpp / 7) : null
+
+  return (
+    <tr className="ads-dark-adset-row">
+      <td className="ads-dark-adset-name">
+        {adset.name}
+      </td>
+      <td>
+        {isLearningLimited ? (
+          <span className="ads-dark-learning-badge ads-dark-learning-limited">
+            Learning Limited
+            {budgetToExitLearning && (
+              <span className="ads-dark-learning-hint">
+                Need {fmtCurrency(budgetToExitLearning)}/day to exit
+              </span>
+            )}
+          </span>
+        ) : isLearning ? (
+          <span className="ads-dark-learning-badge ads-dark-learning-active">Learning</span>
+        ) : (
+          <span className="ads-dark-learning-badge ads-dark-learning-ok">Active</span>
+        )}
+      </td>
+      <td>{fmtCurrency(ins.spend)}</td>
+      <td>{ins.purchases || 0}</td>
+      <td style={{ color: cppColour(cpp) }}>{cpp != null ? fmtCurrency(cpp) : '--'}</td>
+      <td>{ins.frequency != null ? ins.frequency.toFixed(1) : '--'}</td>
+      <td onClick={e => e.stopPropagation()}>
+        {editingBudget ? (
+          <BudgetEditor
+            currentBudget={adset.dailyBudget || ins.dailyBudget || 0}
+            entityId={adset.id}
+            entityType="adset"
+            onSave={(v) => { setEditingBudget(false); onBudgetSave && onBudgetSave(adset.id, v) }}
+            onCancel={() => setEditingBudget(false)}
+          />
+        ) : (
+          <span className="ads-dark-budget-display" onClick={() => setEditingBudget(true)}>
+            {fmtCurrency(adset.dailyBudget || ins.dailyBudget)} <span className="ads-dark-edit-icon">edit</span>
+          </span>
+        )}
+      </td>
+    </tr>
+  )
+}
+
+// ── Campaign Row ────────────────────────────────────────────────────────────
+
+function CampaignRow({ campaign, expanded, onExpand, onStatusChange, onBudgetSave, onRequestVerdict, verdicts, refreshData }) {
+  const [editingBudget, setEditingBudget] = useState(false)
+  const [confirmAction, setConfirmAction] = useState(null)
+  const [pausingAdId, setPausingAdId] = useState(null)
+
+  const ins = campaign.insights || {}
+  const cpp = ins.purchases > 0 ? ins.spend / ins.purchases : null
+  const trueContribution = ins.purchases ? (ins.purchases * GRI.grossProfit) - ins.spend : null
+  const healthBadge = getHealthBadge(campaign.healthScore)
+  const verdict = verdicts?.[campaign.id]
+
+  const handleStatusToggle = () => {
+    const newStatus = campaign.status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE'
+    setConfirmAction({
+      title: `${newStatus === 'PAUSED' ? 'Pause' : 'Activate'} Campaign`,
+      message: `This goes live immediately. "${campaign.name}" will be ${newStatus === 'PAUSED' ? 'paused' : 'activated'}.`,
+      onConfirm: async () => {
+        await fetch(`${API}/status`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ entityId: campaign.id, entityType: 'campaign', status: newStatus })
+        })
+        setConfirmAction(null)
+        refreshData && refreshData()
+      }
+    })
+  }
+
+  const handlePauseAd = async (adId) => {
+    setPausingAdId(adId)
+    try {
+      await fetch(`${API}/pause/${adId}`, { method: 'POST' })
+      refreshData && refreshData()
+    } catch (err) {
+      console.error('Failed to pause ad:', err)
+    }
+    setPausingAdId(null)
+  }
+
   return (
     <>
-      <tr className={`ads-campaign-row ${expanded ? 'ads-row-expanded' : ''}`} onClick={() => onExpand(campaign.id)}>
-        <td className="ads-name-cell">
-          <span className="ads-expand-icon">{expanded ? '▼' : '▶'}</span>
-          {campaign.name}
+      {confirmAction && (
+        <ConfirmModal
+          title={confirmAction.title}
+          message={confirmAction.message}
+          onConfirm={confirmAction.onConfirm}
+          onCancel={() => setConfirmAction(null)}
+          confirmLabel="Yes, do it"
+          danger={true}
+        />
+      )}
+      <tr className={`ads-dark-campaign-row ${expanded ? 'ads-dark-row-expanded' : ''}`} onClick={() => onExpand(campaign.id)}>
+        {/* Status Toggle */}
+        <td onClick={e => e.stopPropagation()}>
+          <button
+            className={`ads-dark-status-toggle ${campaign.status === 'ACTIVE' ? 'ads-dark-toggle-on' : 'ads-dark-toggle-off'}`}
+            onClick={handleStatusToggle}
+            title={campaign.status === 'ACTIVE' ? 'Pause campaign' : 'Activate campaign'}
+          />
+        </td>
+
+        {/* Name */}
+        <td className="ads-dark-campaign-name">
+          <span className="ads-dark-expand-arrow">{expanded ? '\u25BC' : '\u25B6'}</span>
+          <span>{campaign.name}</span>
           {campaign.objective && (
-            <span style={{ marginLeft: 8, fontSize: 10, padding: '2px 6px', borderRadius: 4, background: '#3B82F618', color: '#3B82F6', fontWeight: 500 }}>
+            <span className="ads-dark-objective-tag">
               {OBJECTIVE_LABELS[campaign.objective] || campaign.objective}
             </span>
           )}
         </td>
+
+        {/* Health Badge */}
         <td>
-          <span className={`ads-status-badge ads-status-${campaign.status?.toLowerCase()}`}>
-            {campaign.status}
+          <span className="ads-dark-health-badge" style={{ background: healthBadge.bg, color: healthBadge.color, borderColor: healthBadge.border }}>
+            {healthBadge.label}
           </span>
         </td>
-        <td>
-          ${campaign.dailyBudget ? fmtNum(campaign.dailyBudget) : '—'}
-          {(() => {
-            const budget = campaign.dailyBudget || 0
-            if (!budget || !ins?.spend) return null
-            const hourOfDay = new Date().getHours()
-            const expectedSpend = budget * (hourOfDay / 24)
-            const actualSpend = ins.spend
-            const pacing = expectedSpend > 0 ? (actualSpend / expectedSpend) * 100 : 0
-            const label = pacing > 110 ? 'Over' : pacing < 70 ? 'Under' : 'On Track'
-            const color = pacing > 110 ? '#f59e0b' : pacing < 70 ? '#ef4444' : '#22c55e'
-            return <span style={{ display: 'block', fontSize: 10, color, marginTop: 2 }}>{label}</span>
-          })()}
+
+        {/* Spend */}
+        <td>{fmtCurrency(ins.spend)}</td>
+
+        {/* Purchases */}
+        <td>{ins.purchases || 0}</td>
+
+        {/* CPP */}
+        <td style={{ color: cppColour(cpp), fontWeight: 700 }}>
+          {cpp != null ? fmtCurrency(cpp) : '--'}
         </td>
-        <td>${fmtNum(ins?.spend)}</td>
-        <td style={{ color: kpiColor('roas', ins?.roas) }}>{fmtNum(ins?.roas)}</td>
-        <td style={{ color: kpiColor('cpa', ins?.cpa) }}>${fmtNum(ins?.cpa)}</td>
-        <td style={{ color: kpiColor('ctr', ins?.ctr) }}>{fmtNum(ins?.ctr)}%</td>
-        <td style={{ color: kpiColor('cpm', ins?.cpm) }}>${fmtNum(ins?.cpm)}</td>
-        <td>{fmtNum(ins?.frequency, 1)}</td>
-        <td>
-          <span className="ads-health-score" style={{ color: campaign.healthScore >= 70 ? '#3fb950' : campaign.healthScore >= 40 ? '#d29922' : '#f85149' }}>
-            {campaign.healthScore ?? '—'}
-          </span>
+
+        {/* Meta ROAS (greyed) */}
+        <td style={{ color: COLOURS.muted, fontStyle: 'italic' }}>
+          {ins.roas != null ? ins.roas.toFixed(2) + 'x' : '--'}
+          <div style={{ fontSize: 9, opacity: 0.6 }}>Meta claims</div>
         </td>
+
+        {/* True Contribution */}
+        <td style={{ color: trueContribution != null ? (trueContribution >= 0 ? COLOURS.green : COLOURS.red) : COLOURS.muted, fontWeight: 600 }}>
+          {trueContribution != null ? (trueContribution >= 0 ? '+' : '') + fmtCurrency(trueContribution) : '--'}
+        </td>
+
+        {/* Budget */}
         <td onClick={e => e.stopPropagation()}>
-          {campaign.status === 'ACTIVE' && (
-            <button className="ads-btn-sm ads-btn-pause" onClick={() => onPause(campaign.id)} title="Pause Campaign">⏸</button>
+          {editingBudget ? (
+            <BudgetEditor
+              currentBudget={campaign.dailyBudget || 0}
+              entityId={campaign.id}
+              entityType="campaign"
+              onSave={(v) => { setEditingBudget(false); onBudgetSave && onBudgetSave(campaign.id, v) }}
+              onCancel={() => setEditingBudget(false)}
+            />
+          ) : (
+            <span className="ads-dark-budget-display" onClick={() => setEditingBudget(true)}>
+              {fmtCurrency(campaign.dailyBudget)} <span className="ads-dark-edit-icon">edit</span>
+            </span>
+          )}
+        </td>
+
+        {/* AI Verdict */}
+        <td onClick={e => e.stopPropagation()}>
+          {verdict ? (
+            <span className={`ads-dark-verdict-chip ads-dark-verdict-${verdict.urgency?.toLowerCase()}`}>
+              {verdict.verdict || verdict.headline}
+            </span>
+          ) : (
+            <button className="ads-dark-btn-micro ads-dark-btn-ai" onClick={() => onRequestVerdict(campaign)}>
+              AI
+            </button>
           )}
         </td>
       </tr>
+
+      {/* Expanded: Ad Sets + Creatives */}
       {expanded && (
-        <tr className="ads-ad-expand-row">
-          <td colSpan={11} style={{ padding: 0 }}>
-            <AdTable ads={campaign.ads || []} campaignName={campaign.name} />
+        <tr className="ads-dark-expand-row">
+          <td colSpan={10} style={{ padding: 0 }}>
+            {/* Ad Sets */}
             {campaign.adsets?.length > 0 && (
-              <div style={{ marginTop: 16, padding: '0 12px 12px' }}>
-                <h4 style={{ fontSize: 13, color: '#888', marginBottom: 8 }}>Audiences</h4>
-                {campaign.adsets.map(adset => (
-                  <div key={adset.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 12px', borderBottom: '1px solid #1a1a1a', fontSize: 12 }}>
-                    <span style={{ color: '#ccc' }}>{adset.name}</span>
-                    <div style={{ display: 'flex', gap: 16, color: '#888' }}>
-                      {adset.insights && (
-                        <>
-                          <span>Spend: ${adset.insights.spend?.toFixed(2)}</span>
-                          <span>ROAS: {adset.insights.roas?.toFixed(1)}x</span>
-                          <span>CPA: ${adset.insights.cpa?.toFixed(2)}</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                ))}
+              <div className="ads-dark-adsets-section">
+                <h4 className="ads-dark-subsection-title">Ad Sets</h4>
+                <table className="ads-dark-adsets-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Status</th>
+                      <th>Spend</th>
+                      <th>Purchases</th>
+                      <th>CPP</th>
+                      <th>Frequency</th>
+                      <th>Budget</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {campaign.adsets.map(adset => (
+                      <AdSetRow key={adset.id} adset={adset} onBudgetSave={onBudgetSave} />
+                    ))}
+                  </tbody>
+                </table>
               </div>
+            )}
+
+            {/* Creatives */}
+            {campaign.ads?.length > 0 && (
+              <div className="ads-dark-creatives-section">
+                <h4 className="ads-dark-subsection-title">Creatives</h4>
+                <div className="ads-dark-creatives-grid">
+                  {campaign.ads.map(ad => (
+                    <CreativeCard
+                      key={ad.id}
+                      ad={ad}
+                      onPause={handlePauseAd}
+                      pausing={pausingAdId === ad.id}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {(!campaign.ads?.length && !campaign.adsets?.length) && (
+              <div className="ads-dark-empty-expand">No ad sets or creatives found for this campaign.</div>
             )}
           </td>
         </tr>
@@ -179,990 +806,693 @@ function CampaignRow({ campaign, onExpand, expanded, onPause }) {
   )
 }
 
-// ── Ad Table (inline expand) ─────────────────────────────────────────────────
+// ── Campaign Table ──────────────────────────────────────────────────────────
 
-function AdTable({ ads, campaignName }) {
-  const [recAdId, setRecAdId] = useState(null)
-  const [recommendation, setRecommendation] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [pausingId, setPausingId] = useState(null)
+function CampaignTable({ campaigns, loading, verdicts, onRequestVerdict, refreshData }) {
+  const [expandedId, setExpandedId] = useState(null)
+  const [budgetConfirm, setBudgetConfirm] = useState(null)
 
-  const fetchRecommendation = async (ad) => {
-    if (recAdId === ad.id && recommendation) {
-      setRecAdId(null)
-      return
-    }
-    setRecAdId(ad.id)
-    setLoading(true)
-    try {
-      const res = await fetch(`${API}/refresh-recommendation`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          adName: ad.name,
-          campaignName,
-          metrics: {
-            frequency: ad.insights?.frequency,
-            ctr: ad.insights?.ctr,
-            roas: ad.insights?.roas,
-            cpa: ad.insights?.cpa,
-            daysRunning: ad.daysRunning,
-            fatigueScore: ad.fatigue?.score
-          }
-        })
-      })
-      const data = await res.json()
-      setRecommendation(data.recommendation)
-    } catch {
-      setRecommendation({ diagnosis: 'Failed to load recommendation' })
-    }
-    setLoading(false)
+  const handleExpand = (id) => {
+    setExpandedId(expandedId === id ? null : id)
   }
 
-  const handlePause = async (adId) => {
-    setPausingId(adId)
-    try {
-      await fetch(`${API}/pause/${adId}`, { method: 'POST' })
-    } catch {}
-    setPausingId(null)
+  const handleBudgetSave = (entityId, newBudget) => {
+    refreshData && refreshData()
   }
 
-  if (!ads.length) return <div className="ads-empty">No ads in this campaign</div>
+  if (loading) return <SectionSkeleton rows={5} />
 
-  return (
-    <div className="ads-ad-table-wrap">
-      <table className="ads-table ads-ad-table">
-        <thead>
-          <tr>
-            <th>Ad Name</th>
-            <th>Thumb</th>
-            <th>Impr</th>
-            <th>Clicks</th>
-            <th>CTR</th>
-            <th>ROAS</th>
-            <th>CPA</th>
-            <th>Freq</th>
-            <th>Days</th>
-            <th>Health</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {ads.map(ad => (
-            <>
-              <tr key={ad.id} className="ads-ad-row">
-                <td className="ads-name-cell">{ad.name}</td>
-                <td>
-                  {ad.thumbnailUrl
-                    ? <img src={ad.thumbnailUrl} alt="" className="ads-thumb" />
-                    : <span className="muted">—</span>
-                  }
-                </td>
-                <td>{fmtNum(ad.insights?.impressions, 0)}</td>
-                <td>{fmtNum(ad.insights?.clicks, 0)}</td>
-                <td style={{ color: kpiColor('ctr', ad.insights?.ctr) }}>{fmtNum(ad.insights?.ctr)}%</td>
-                <td style={{ color: kpiColor('roas', ad.insights?.roas) }}>{fmtNum(ad.insights?.roas)}</td>
-                <td style={{ color: kpiColor('cpa', ad.insights?.cpa) }}>${fmtNum(ad.insights?.cpa)}</td>
-                <td>{fmtNum(ad.insights?.frequency, 1)}</td>
-                <td>{ad.daysRunning}d</td>
-                <td><FatigueBadge status={ad.fatigue?.status} score={ad.fatigue?.score} /></td>
-                <td>
-                  <div className="ads-actions">
-                    {ad.status === 'ACTIVE' && (
-                      <button
-                        className="ads-btn-sm ads-btn-pause"
-                        onClick={() => handlePause(ad.id)}
-                        disabled={pausingId === ad.id}
-                        title="Pause Ad"
-                      >
-                        {pausingId === ad.id ? '...' : '⏸'}
-                      </button>
-                    )}
-                    {(ad.fatigue?.score ?? 100) < 50 && (
-                      <button
-                        className="ads-btn-sm ads-btn-ai"
-                        onClick={() => fetchRecommendation(ad)}
-                        title="AI Refresh Brief"
-                      >
-                        🤖
-                      </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-              {recAdId === ad.id && (
-                <tr key={`rec-${ad.id}`} className="ads-rec-row">
-                  <td colSpan={11}>
-                    <RecommendationPanel rec={recommendation} loading={loading} />
-                  </td>
-                </tr>
-              )}
-            </>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
-}
-
-// ── AI Recommendation Panel ──────────────────────────────────────────────────
-
-function RecommendationPanel({ rec, loading }) {
-  if (loading) return <div className="ads-rec-panel"><div className="ads-loading">Generating AI brief...</div></div>
-  if (!rec) return null
-
-  const copyBrief = () => {
-    const text = `CREATIVE BRIEF\n\nDiagnosis: ${rec.diagnosis}\nHook: ${rec.creativeBrief?.hook}\nVisual: ${rec.creativeBrief?.visual}\nCopy Angle: ${rec.creativeBrief?.copyAngle}\nFormat: ${rec.creativeBrief?.format}\nBiggest Lever: ${rec.biggestLever}\nTest Budget: ${rec.testBudget}`
-    navigator.clipboard.writeText(text).catch(() => {})
-  }
-
-  return (
-    <div className="ads-rec-panel">
-      <div className="ads-rec-header">
-        <span>🤖 AI Refresh Recommendation</span>
-        <button className="ads-btn-sm" onClick={copyBrief}>📋 Copy Brief</button>
-      </div>
-      <div className="ads-rec-grid">
-        <div className="ads-rec-item">
-          <strong>Diagnosis</strong>
-          <p>{rec.diagnosis}</p>
-        </div>
-        {rec.creativeBrief && (
-          <div className="ads-rec-item">
-            <strong>Creative Brief</strong>
-            <p><b>Hook:</b> {rec.creativeBrief.hook}</p>
-            <p><b>Visual:</b> {rec.creativeBrief.visual}</p>
-            <p><b>Copy:</b> {rec.creativeBrief.copyAngle}</p>
-            <p><b>Format:</b> {rec.creativeBrief.format}</p>
-          </div>
-        )}
-        <div className="ads-rec-item">
-          <strong>Biggest Lever</strong>
-          <p>{rec.biggestLever}</p>
-        </div>
-        <div className="ads-rec-item">
-          <strong>Test Budget</strong>
-          <p>{rec.testBudget}</p>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ── Performance Charts ───────────────────────────────────────────────────────
-
-function PerformanceCharts({ campaigns }) {
-  // 1. ROAS trend by campaign (from daily insights)
-  const roasData = useMemo(() => {
-    const dayMap = {}
-    for (const c of campaigns) {
-      for (const ad of c.ads || []) {
-        for (const d of ad.dailyInsights || []) {
-          if (!d?.date) continue
-          if (!dayMap[d.date]) dayMap[d.date] = {}
-          if (!dayMap[d.date][c.name]) dayMap[d.date][c.name] = { spend: 0, purchaseValue: 0 }
-          dayMap[d.date][c.name].spend += d.spend || 0
-          dayMap[d.date][c.name].purchaseValue += d.purchaseValue || 0
-        }
-      }
-    }
-    return Object.entries(dayMap)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([date, camps]) => {
-        const row = { date: date.slice(5) }
-        for (const [name, vals] of Object.entries(camps)) {
-          row[name] = vals.spend > 0 ? Number((vals.purchaseValue / vals.spend).toFixed(2)) : 0
-        }
-        return row
-      })
-  }, [campaigns])
-
-  const campaignNames = [...new Set(campaigns.map(c => c.name))]
-  const chartColors = ['#E43F7B', '#3B82F6', '#3fb950', '#d29922', '#a855f7']
-
-  // 2. Spend vs ROAS scatter
-  const scatterData = useMemo(() => {
-    const points = []
-    for (const c of campaigns) {
-      for (const ad of c.ads || []) {
-        if (!ad.insights) continue
-        points.push({
-          x: ad.insights.spend,
-          y: ad.insights.roas,
-          name: ad.name,
-          status: ad.fatigue?.status || 'HEALTHY',
-          fill: FATIGUE_COLORS[ad.fatigue?.status] || '#3fb950'
-        })
-      }
-    }
-    return points
-  }, [campaigns])
-
-  // 3. Frequency vs CTR
-  const freqCtrData = useMemo(() => {
-    const points = []
-    for (const c of campaigns) {
-      for (const ad of c.ads || []) {
-        if (!ad.insights || !ad.insights.frequency) continue
-        points.push({
-          frequency: Number(ad.insights.frequency.toFixed(1)),
-          ctr: Number(ad.insights.ctr.toFixed(2)),
-          name: ad.name
-        })
-      }
-    }
-    return points.sort((a, b) => a.frequency - b.frequency)
-  }, [campaigns])
-
-  if (!campaigns.length) return null
-
-  return (
-    <div className="ads-charts">
-      <h3 className="ads-section-title">Performance Charts</h3>
-      <div className="ads-charts-grid">
-        {/* ROAS Trend */}
-        <div className="ads-chart-card">
-          <h4>7-Day ROAS Trend</h4>
-          {roasData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={260}>
-              <LineChart data={roasData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E8ECF4" />
-                <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip />
-                <Legend />
-                {campaignNames.map((name, i) => (
-                  <Line key={name} type="monotone" dataKey={name} stroke={chartColors[i % chartColors.length]} strokeWidth={2} dot={{ r: 3 }} />
-                ))}
-              </LineChart>
-            </ResponsiveContainer>
-          ) : <div className="ads-empty">No trend data available</div>}
-        </div>
-
-        {/* Spend vs ROAS */}
-        <div className="ads-chart-card">
-          <h4>Spend vs ROAS</h4>
-          {scatterData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={260}>
-              <ScatterChart>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E8ECF4" />
-                <XAxis dataKey="x" name="Spend" tick={{ fontSize: 11 }} label={{ value: 'Spend ($)', position: 'bottom', fontSize: 11 }} />
-                <YAxis dataKey="y" name="ROAS" tick={{ fontSize: 11 }} label={{ value: 'ROAS', angle: -90, position: 'insideLeft', fontSize: 11 }} />
-                <Tooltip content={({ payload }) => {
-                  if (!payload?.length) return null
-                  const d = payload[0].payload
-                  return (
-                    <div className="ads-chart-tooltip">
-                      <strong>{d.name}</strong>
-                      <div>Spend: ${d.x?.toFixed(2)}</div>
-                      <div>ROAS: {d.y?.toFixed(2)}</div>
-                      <div style={{ color: FATIGUE_COLORS[d.status] }}>{d.status}</div>
-                    </div>
-                  )
-                }} />
-                <Scatter data={scatterData} fill="#E43F7B">
-                  {scatterData.map((entry, i) => (
-                    <circle key={i} cx={0} cy={0} r={5} fill={entry.fill} />
-                  ))}
-                </Scatter>
-              </ScatterChart>
-            </ResponsiveContainer>
-          ) : <div className="ads-empty">No data available</div>}
-        </div>
-
-        {/* Frequency vs CTR */}
-        <div className="ads-chart-card">
-          <h4>Frequency vs CTR (Fatigue Curve)</h4>
-          {freqCtrData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={260}>
-              <ScatterChart>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E8ECF4" />
-                <XAxis dataKey="frequency" name="Frequency" tick={{ fontSize: 11 }} label={{ value: 'Frequency', position: 'bottom', fontSize: 11 }} />
-                <YAxis dataKey="ctr" name="CTR %" tick={{ fontSize: 11 }} label={{ value: 'CTR %', angle: -90, position: 'insideLeft', fontSize: 11 }} />
-                <Tooltip content={({ payload }) => {
-                  if (!payload?.length) return null
-                  const d = payload[0].payload
-                  return (
-                    <div className="ads-chart-tooltip">
-                      <strong>{d.name}</strong>
-                      <div>Frequency: {d.frequency}</div>
-                      <div>CTR: {d.ctr}%</div>
-                    </div>
-                  )
-                }} />
-                <Scatter data={freqCtrData} fill="#3B82F6" />
-              </ScatterChart>
-            </ResponsiveContainer>
-          ) : <div className="ads-empty">No data available</div>}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ── Health Score Gauge (CSS circle) ──────────────────────────────────────────
-
-function HealthGauge({ score }) {
-  const radius = 54
-  const circumference = 2 * Math.PI * radius
-  const offset = circumference - (score / 100) * circumference
-  const colour = score >= 75 ? '#3fb950' : score >= 50 ? '#d29922' : '#f85149'
-
-  return (
-    <div className="ads-strategist-gauge">
-      <svg viewBox="0 0 120 120" className="ads-strategist-gauge-svg">
-        <circle cx="60" cy="60" r={radius} fill="none" stroke="#E8ECF4" strokeWidth="8" />
-        <circle
-          cx="60" cy="60" r={radius} fill="none"
-          stroke={colour} strokeWidth="8" strokeLinecap="round"
-          strokeDasharray={circumference} strokeDashoffset={offset}
-          style={{ transform: 'rotate(-90deg)', transformOrigin: '50% 50%', transition: 'stroke-dashoffset 0.8s ease' }}
-        />
-      </svg>
-      <div className="ads-strategist-gauge-label">
-        <span className="ads-strategist-gauge-number" style={{ color: colour }}>{score}</span>
-        <span className="ads-strategist-gauge-text">/ 100</span>
-      </div>
-    </div>
-  )
-}
-
-// ── Urgency Badge ───────────────────────────────────────────────────────────
-
-function UrgencyBadge({ urgency }) {
-  const map = {
-    TODAY: { bg: '#f8514918', color: '#f85149', border: '#f8514944' },
-    THIS_WEEK: { bg: '#d2992218', color: '#d29922', border: '#d2992244' },
-    NEXT_WEEK: { bg: '#3B82F618', color: '#3B82F6', border: '#3B82F644' }
-  }
-  const s = map[urgency] || map.NEXT_WEEK
-  return (
-    <span className="ads-strategist-urgency" style={{ background: s.bg, color: s.color, borderColor: s.border }}>
-      {urgency?.replace('_', ' ')}
-    </span>
-  )
-}
-
-// ── Severity Badge ──────────────────────────────────────────────────────────
-
-function SeverityBadge({ severity }) {
-  const map = {
-    HIGH: { bg: '#f8514918', color: '#f85149' },
-    MEDIUM: { bg: '#d2992218', color: '#d29922' },
-    LOW: { bg: '#3B82F618', color: '#3B82F6' }
-  }
-  const s = map[severity] || map.LOW
-  return (
-    <span className="ads-strategist-severity" style={{ background: s.bg, color: s.color }}>
-      {severity}
-    </span>
-  )
-}
-
-// ── Health Check Panel ──────────────────────────────────────────────────────
-
-function HealthCheckPanel({ data, onClose }) {
-  const [expandedProblem, setExpandedProblem] = useState(null)
-
-  if (!data) return null
-
-  const statusColour = {
-    HEALTHY: '#3fb950',
-    NEEDS_ATTENTION: '#d29922',
-    CRITICAL: '#f85149'
-  }
-
-  return (
-    <div className="ads-strategist-overlay" onClick={onClose}>
-      <div className="ads-strategist-panel" onClick={e => e.stopPropagation()}>
-        <div className="ads-strategist-panel-header">
-          <h2>Account Health Check</h2>
-          <button className="ads-strategist-close" onClick={onClose}>x</button>
-        </div>
-
-        <div className="ads-strategist-panel-body">
-          {/* Score + Status */}
-          <div className="ads-strategist-hero">
-            <HealthGauge score={data.healthScore || 0} />
-            <div className="ads-strategist-hero-info">
-              <span
-                className="ads-strategist-status-badge"
-                style={{ background: (statusColour[data.overallHealth] || '#7C8DB0') + '18', color: statusColour[data.overallHealth] || '#7C8DB0' }}
-              >
-                {data.overallHealth?.replace('_', ' ')}
-              </span>
-              <p className="ads-strategist-summary">{data.summary}</p>
-              {data.generatedAt && (
-                <span className="ads-strategist-timestamp">Generated {new Date(data.generatedAt).toLocaleString('en-AU')}</span>
-              )}
-            </div>
-          </div>
-
-          {/* Top Wins */}
-          {data.topWins?.length > 0 && (
-            <div className="ads-strategist-section">
-              <h3 className="ads-strategist-section-title ads-strategist-wins-title">What's Working</h3>
-              <div className="ads-strategist-cards">
-                {data.topWins.map((w, i) => (
-                  <div key={i} className="ads-strategist-card ads-strategist-card-win">
-                    <div className="ads-strategist-card-top">
-                      <strong>{w.ad}</strong>
-                      <span className="ads-strategist-metric-badge">{w.metric}</span>
-                    </div>
-                    <p className="ads-strategist-card-campaign">{w.campaign}</p>
-                    <p className="ads-strategist-card-text">{w.why}</p>
-                    <p className="ads-strategist-card-action">{w.action}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Problems */}
-          {data.problems?.length > 0 && (
-            <div className="ads-strategist-section">
-              <h3 className="ads-strategist-section-title ads-strategist-problems-title">Problems and Fixes</h3>
-              <div className="ads-strategist-cards">
-                {data.problems.map((p, i) => (
-                  <div
-                    key={i}
-                    className={`ads-strategist-card ads-strategist-card-problem ${p.severity === 'HIGH' ? 'ads-strategist-card-high' : ''}`}
-                  >
-                    <div className="ads-strategist-card-top">
-                      <strong>{p.ad}</strong>
-                      <SeverityBadge severity={p.severity} />
-                    </div>
-                    <p className="ads-strategist-card-campaign">{p.campaign}</p>
-                    <p className="ads-strategist-card-text">{p.issue}</p>
-                    <button
-                      className="ads-strategist-expand-btn"
-                      onClick={() => setExpandedProblem(expandedProblem === i ? null : i)}
-                    >
-                      {expandedProblem === i ? 'Hide steps' : 'Show fix steps'}
-                    </button>
-                    {expandedProblem === i && p.fix && (
-                      <div className="ads-strategist-fix-steps">
-                        {Object.entries(p.fix).map(([key, val]) => (
-                          <div key={key} className="ads-strategist-step">
-                            <span className="ads-strategist-step-num">{key.replace('step', '')}</span>
-                            <span>{val}</span>
-                          </div>
-                        ))}
-                        {p.expectedImpact && (
-                          <p className="ads-strategist-impact">Expected impact: {p.expectedImpact}</p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Next Moves */}
-          {data.nextMoves?.length > 0 && (
-            <div className="ads-strategist-section">
-              <h3 className="ads-strategist-section-title">Next Moves</h3>
-              <div className="ads-strategist-moves">
-                {data.nextMoves.sort((a, b) => a.priority - b.priority).map((m, i) => (
-                  <div key={i} className="ads-strategist-move">
-                    <div className="ads-strategist-move-header">
-                      <span className="ads-strategist-move-num">{m.priority}</span>
-                      <strong>{m.action}</strong>
-                      <UrgencyBadge urgency={m.urgency} />
-                    </div>
-                    <p className="ads-strategist-move-why">{m.why}</p>
-                    <div className="ads-strategist-move-howto">
-                      <strong>How to do this:</strong>
-                      <p>{m.howTo}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Budget Advice */}
-          {data.budgetAdvice && (
-            <div className="ads-strategist-section">
-              <h3 className="ads-strategist-section-title">Budget Advice</h3>
-              <div className="ads-strategist-budget">
-                <div className="ads-strategist-budget-summary">
-                  <div className="ads-strategist-budget-item">
-                    <span className="ads-strategist-budget-label">Current Daily</span>
-                    <span className="ads-strategist-budget-value">${data.budgetAdvice.currentDaily}</span>
-                  </div>
-                  <div className="ads-strategist-budget-arrow">&#8594;</div>
-                  <div className="ads-strategist-budget-item">
-                    <span className="ads-strategist-budget-label">Recommended</span>
-                    <span className="ads-strategist-budget-value ads-strategist-budget-rec">${data.budgetAdvice.recommendedDaily}</span>
-                  </div>
-                </div>
-                <p className="ads-strategist-budget-reasoning">{data.budgetAdvice.reasoning}</p>
-                {data.budgetAdvice.reallocation?.length > 0 && (
-                  <div className="ads-strategist-reallocation">
-                    <strong>Reallocation breakdown:</strong>
-                    {data.budgetAdvice.reallocation.map((r, i) => (
-                      <div key={i} className="ads-strategist-realloc-row">
-                        <span className="ads-strategist-realloc-name">{r.campaign}</span>
-                        <span className="ads-strategist-realloc-change">
-                          ${r.current} &#8594; ${r.recommended}
-                        </span>
-                        <span className="ads-strategist-realloc-reason">{r.reason}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Creative Freshness */}
-          {data.creativeFreshness && (
-            <div className="ads-strategist-section">
-              <h3 className="ads-strategist-section-title">Creative Freshness</h3>
-              <div className="ads-strategist-freshness">
-                <span className={`ads-strategist-freshness-badge ads-strategist-freshness-${data.creativeFreshness.status?.toLowerCase()?.replace('_', '-')}`}>
-                  {data.creativeFreshness.status?.replace('_', ' ')}
-                </span>
-                {data.creativeFreshness.staleAds?.length > 0 && (
-                  <div className="ads-strategist-stale-list">
-                    <strong>Stale ads:</strong> {data.creativeFreshness.staleAds.join(', ')}
-                  </div>
-                )}
-                <p className="ads-strategist-refresh-brief">{data.creativeFreshness.refreshBrief}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Weekly Forecast */}
-          {data.weeklyForecast && (
-            <div className="ads-strategist-section">
-              <h3 className="ads-strategist-section-title">Weekly Forecast</h3>
-              <div className="ads-strategist-forecast">
-                <p>{data.weeklyForecast}</p>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ── Daily Briefing Card ─────────────────────────────────────────────────────
-
-function DailyBriefingCard({ briefing, loading, onRefresh }) {
-  const [collapsed, setCollapsed] = useState(false)
-
-  if (loading) {
+  if (!campaigns || campaigns.length === 0) {
     return (
-      <div className="ads-strategist-briefing">
-        <div className="ads-strategist-briefing-header">
-          <h3>Daily Briefing</h3>
-        </div>
-        <div className="ads-strategist-briefing-loading">Loading your morning briefing...</div>
+      <div className="ads-dark-card" style={{ padding: 40, textAlign: 'center' }}>
+        <div style={{ fontSize: 32, marginBottom: 12, opacity: 0.4 }}>--</div>
+        <div style={{ color: COLOURS.muted }}>No campaigns found. Check your Meta Ads connection.</div>
       </div>
     )
   }
 
-  if (!briefing) return null
+  return (
+    <div className="ads-dark-card ads-dark-table-section">
+      <h3 className="ads-dark-section-title">Campaigns</h3>
+      <div className="ads-dark-table-wrap">
+        <table className="ads-dark-table">
+          <thead>
+            <tr>
+              <th style={{ width: 40 }}></th>
+              <th>Campaign</th>
+              <th>Health</th>
+              <th>Spend</th>
+              <th>Purch.</th>
+              <th>CPP</th>
+              <th>Meta ROAS</th>
+              <th>True Contribution</th>
+              <th>Budget</th>
+              <th>AI</th>
+            </tr>
+          </thead>
+          <tbody>
+            {campaigns.map(c => (
+              <CampaignRow
+                key={c.id}
+                campaign={c}
+                expanded={expandedId === c.id}
+                onExpand={handleExpand}
+                onBudgetSave={handleBudgetSave}
+                onRequestVerdict={onRequestVerdict}
+                verdicts={verdicts}
+                refreshData={refreshData}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {budgetConfirm && (
+        <ConfirmModal
+          title="Update Budget"
+          message={budgetConfirm.message}
+          onConfirm={budgetConfirm.onConfirm}
+          onCancel={() => setBudgetConfirm(null)}
+          confirmLabel="Apply"
+        />
+      )}
+    </div>
+  )
+}
+
+// ── AI Recommendations Panel ────────────────────────────────────────────────
+
+function AIRecommendations({ loading, recommendations, onRefresh, verdicts }) {
+  const [expandedVerdict, setExpandedVerdict] = useState(null)
+
+  if (loading) return <SectionSkeleton rows={4} />
+
+  if (!recommendations) {
+    return (
+      <div className="ads-dark-card" style={{ padding: 24 }}>
+        <div className="ads-dark-section-header">
+          <h3 className="ads-dark-section-title">Strategic Intelligence</h3>
+          <button className="ads-dark-btn ads-dark-btn-ghost" onClick={onRefresh}>Generate Analysis</button>
+        </div>
+        <p style={{ color: COLOURS.muted, marginTop: 12 }}>Click Generate Analysis to get AI-powered account recommendations.</p>
+      </div>
+    )
+  }
 
   return (
-    <div className="ads-strategist-briefing">
-      <div className="ads-strategist-briefing-header">
-        <h3>Daily Briefing</h3>
-        <div className="ads-strategist-briefing-actions">
-          <button className="ads-btn-sm" onClick={onRefresh} title="Refresh briefing">Refresh</button>
-          <button className="ads-btn-sm" onClick={() => setCollapsed(!collapsed)}>
-            {collapsed ? 'Expand' : 'Collapse'}
-          </button>
+    <div className="ads-dark-card ads-dark-ai-section">
+      <div className="ads-dark-section-header">
+        <h3 className="ads-dark-section-title">Strategic Intelligence</h3>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {recommendations.generatedAt && (
+            <span style={{ color: COLOURS.muted, fontSize: 11 }}>
+              {new Date(recommendations.generatedAt).toLocaleString('en-AU')}
+            </span>
+          )}
+          <button className="ads-dark-btn ads-dark-btn-ghost" onClick={onRefresh}>Refresh</button>
         </div>
       </div>
 
-      {!collapsed && (
-        <div className="ads-strategist-briefing-body">
-          <p className="ads-strategist-greeting">{briefing.greeting}</p>
-
-          {/* Yesterday vs Previous */}
-          {briefing.yesterdayVsPrevious && (
-            <div className="ads-strategist-comparison">
-              <div className="ads-strategist-comp-item">
-                <span className="ads-strategist-comp-label">Spend</span>
-                <span className="ads-strategist-comp-value">{briefing.yesterdayVsPrevious.spend}</span>
-              </div>
-              <div className="ads-strategist-comp-item">
-                <span className="ads-strategist-comp-label">ROAS</span>
-                <span className="ads-strategist-comp-value">{briefing.yesterdayVsPrevious.roas}</span>
-              </div>
-              <div className="ads-strategist-comp-item">
-                <span className="ads-strategist-comp-label">Purchases</span>
-                <span className="ads-strategist-comp-value">{briefing.yesterdayVsPrevious.purchases}</span>
-              </div>
-            </div>
-          )}
-
-          <p className="ads-strategist-headline">{briefing.headline}</p>
-
-          <div className="ads-strategist-briefing-grid">
-            {/* Attention Needed */}
-            {briefing.attentionNeeded?.length > 0 && (
-              <div className="ads-strategist-briefing-col">
-                <h4 className="ads-strategist-briefing-col-title ads-strategist-attention">Needs Attention</h4>
-                <ul className="ads-strategist-briefing-list">
-                  {briefing.attentionNeeded.map((item, i) => (
-                    <li key={i}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* Working Well */}
-            {briefing.workingWell?.length > 0 && (
-              <div className="ads-strategist-briefing-col">
-                <h4 className="ads-strategist-briefing-col-title ads-strategist-working">Working Well</h4>
-                <ul className="ads-strategist-briefing-list">
-                  {briefing.workingWell.map((item, i) => (
-                    <li key={i}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+      <div className="ads-dark-ai-grid">
+        {/* Situation */}
+        {recommendations.situation && (
+          <div className="ads-dark-ai-block">
+            <h4 className="ads-dark-ai-block-title">Situation</h4>
+            <p className="ads-dark-ai-block-text">{recommendations.situation}</p>
           </div>
+        )}
 
-          {/* Today's Plan */}
-          {briefing.todaysPlan?.length > 0 && (
-            <div className="ads-strategist-todays-plan">
-              <h4>Today's Plan</h4>
-              <ol className="ads-strategist-plan-list">
-                {briefing.todaysPlan.map((item, i) => (
-                  <li key={i}>{item}</li>
-                ))}
-              </ol>
-            </div>
-          )}
+        {/* Immediate Actions */}
+        {recommendations.immediateActions?.length > 0 && (
+          <div className="ads-dark-ai-block">
+            <h4 className="ads-dark-ai-block-title" style={{ color: COLOURS.red }}>Immediate Actions</h4>
+            <ul className="ads-dark-ai-list">
+              {recommendations.immediateActions.map((a, i) => <li key={i}>{a}</li>)}
+            </ul>
+          </div>
+        )}
 
-          {/* Market Pulse */}
-          {briefing.marketPulse && (
-            <div className="ads-strategist-market-pulse">
-              <strong>Market Pulse:</strong> {briefing.marketPulse}
-            </div>
-          )}
+        {/* This Week */}
+        {recommendations.thisWeek?.length > 0 && (
+          <div className="ads-dark-ai-block">
+            <h4 className="ads-dark-ai-block-title" style={{ color: COLOURS.yellow }}>This Week</h4>
+            <ul className="ads-dark-ai-list">
+              {recommendations.thisWeek.map((a, i) => <li key={i}>{a}</li>)}
+            </ul>
+          </div>
+        )}
+
+        {/* Scale Path */}
+        {recommendations.scalePath && (
+          <div className="ads-dark-ai-block">
+            <h4 className="ads-dark-ai-block-title" style={{ color: COLOURS.green }}>Scale Path</h4>
+            <p className="ads-dark-ai-block-text">{recommendations.scalePath}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Per-campaign verdict chips */}
+      {verdicts && Object.keys(verdicts).length > 0 && (
+        <div className="ads-dark-verdict-section">
+          <h4 className="ads-dark-subsection-title">Campaign Verdicts</h4>
+          <div className="ads-dark-verdict-chips">
+            {Object.entries(verdicts).map(([id, v]) => (
+              <div key={id} className="ads-dark-verdict-item">
+                <button
+                  className={`ads-dark-verdict-chip ads-dark-verdict-${v.urgency?.toLowerCase()} ads-dark-verdict-expand`}
+                  onClick={() => setExpandedVerdict(expandedVerdict === id ? null : id)}
+                >
+                  {v.headline || v.verdict}
+                </button>
+                {expandedVerdict === id && (
+                  <div className="ads-dark-verdict-detail">
+                    {v.reasoning && <p>{v.reasoning}</p>}
+                    {v.specificAction && <p style={{ color: COLOURS.blue }}>{v.specificAction}</p>}
+                    {v.budgetSuggestion && <p style={{ color: COLOURS.yellow }}>Budget: {v.budgetSuggestion}</p>}
+                    {v.estimatedImpact && <p style={{ color: COLOURS.green }}>Impact: {v.estimatedImpact}</p>}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
   )
 }
 
-// ── Main Component ───────────────────────────────────────────────────────────
+// ── Scale Path Calculator ───────────────────────────────────────────────────
+
+function ScalePathCalc({ scalePath, loading }) {
+  if (loading) return <SectionSkeleton rows={3} />
+  if (!scalePath) return null
+
+  const current = scalePath.current || {}
+  const targets = scalePath.targets || []
+
+  // Calculate key thresholds
+  const millionYearDaily = 1000000 / 365
+  const twoMillionYearDaily = 2000000 / 365
+
+  const dailyRevNeeded1M = millionYearDaily
+  const dailyRevNeeded2M = twoMillionYearDaily
+
+  const dailySpendFor1M = current.mer ? dailyRevNeeded1M / current.mer : null
+  const dailySpendFor2M = current.mer ? dailyRevNeeded2M / current.mer : null
+
+  return (
+    <div className="ads-dark-card ads-dark-scale-section">
+      <h3 className="ads-dark-section-title">Scale Path Calculator</h3>
+
+      {/* Current State */}
+      <div className="ads-dark-scale-current">
+        <div className="ads-dark-scale-stat">
+          <span className="ads-dark-scale-stat-label">Monthly Revenue</span>
+          <span className="ads-dark-scale-stat-value">{fmtCurrency(current.monthlyRev)}</span>
+        </div>
+        <div className="ads-dark-scale-stat">
+          <span className="ads-dark-scale-stat-label">Monthly Spend</span>
+          <span className="ads-dark-scale-stat-value">{fmtCurrency(current.monthlySpend)}</span>
+        </div>
+        <div className="ads-dark-scale-stat">
+          <span className="ads-dark-scale-stat-label">MER</span>
+          <span className="ads-dark-scale-stat-value" style={{ color: merColour(current.mer) }}>
+            {current.mer ? current.mer.toFixed(2) + 'x' : '--'}
+          </span>
+        </div>
+        <div className="ads-dark-scale-stat">
+          <span className="ads-dark-scale-stat-label">Daily Spend</span>
+          <span className="ads-dark-scale-stat-value">{fmtCurrency(current.dailySpend)}</span>
+        </div>
+      </div>
+
+      {/* Targets */}
+      <div className="ads-dark-scale-targets">
+        <div className="ads-dark-scale-target-card">
+          <h4 className="ads-dark-scale-target-title">Path to $1M/year</h4>
+          <div className="ads-dark-scale-target-body">
+            <div>Daily revenue needed: <strong>{fmtCurrency(dailyRevNeeded1M)}</strong></div>
+            <div>Daily spend needed: <strong style={{ color: dailySpendFor1M ? COLOURS.blue : COLOURS.muted }}>{dailySpendFor1M ? fmtCurrency(dailySpendFor1M) : '--'}</strong></div>
+            <div>Gap from current: <strong style={{ color: COLOURS.yellow }}>
+              {dailySpendFor1M && current.dailySpend ? fmtCurrency(dailySpendFor1M - current.dailySpend) + '/day' : '--'}
+            </strong></div>
+          </div>
+        </div>
+
+        <div className="ads-dark-scale-target-card">
+          <h4 className="ads-dark-scale-target-title">Path to $2M/year</h4>
+          <div className="ads-dark-scale-target-body">
+            <div>Daily revenue needed: <strong>{fmtCurrency(dailyRevNeeded2M)}</strong></div>
+            <div>Daily spend needed: <strong style={{ color: dailySpendFor2M ? COLOURS.blue : COLOURS.muted }}>{dailySpendFor2M ? fmtCurrency(dailySpendFor2M) : '--'}</strong></div>
+            <div>Gap from current: <strong style={{ color: COLOURS.yellow }}>
+              {dailySpendFor2M && current.dailySpend ? fmtCurrency(dailySpendFor2M - current.dailySpend) + '/day' : '--'}
+            </strong></div>
+          </div>
+        </div>
+      </div>
+
+      {/* Custom targets from API */}
+      {targets.length > 0 && (
+        <div className="ads-dark-scale-steps">
+          <h4 className="ads-dark-subsection-title">Scaling Steps</h4>
+          {targets.map((t, i) => (
+            <div key={i} className="ads-dark-scale-step">
+              <span className="ads-dark-scale-step-num">{i + 1}</span>
+              <div className="ads-dark-scale-step-info">
+                <div>{t.label || `Step ${i + 1}`}</div>
+                {t.dailySpend && <span>Daily spend: {fmtCurrency(t.dailySpend)}</span>}
+                {t.expectedRevenue && <span>Expected revenue: {fmtCurrency(t.expectedRevenue)}</span>}
+                {t.expectedMer && <span>Expected MER: {t.expectedMer.toFixed(1)}x</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Setup Screen ────────────────────────────────────────────────────────────
+
+function SetupScreen() {
+  return (
+    <div className="ads-dark" style={{ padding: 40 }}>
+      <div className="ads-dark-card" style={{ maxWidth: 600, margin: '0 auto', padding: 40, textAlign: 'center' }}>
+        <div style={{ fontSize: 48, marginBottom: 16, opacity: 0.3 }}>--</div>
+        <h2 style={{ color: COLOURS.text, marginBottom: 12 }}>Meta Ads Not Connected</h2>
+        <p style={{ color: COLOURS.muted, marginBottom: 24, lineHeight: 1.6 }}>
+          To use the Ads Command Centre, you need to configure your Meta (Facebook) Ads API credentials
+          in the server environment variables.
+        </p>
+        <div style={{ textAlign: 'left', background: COLOURS.bg, padding: 20, borderRadius: 8, border: `1px solid ${COLOURS.border}` }}>
+          <p style={{ color: COLOURS.muted, fontSize: 13, marginBottom: 12 }}>Required environment variables:</p>
+          <code style={{ color: COLOURS.pink, fontSize: 13, display: 'block', lineHeight: 1.8 }}>
+            META_ACCESS_TOKEN=your_token<br />
+            META_AD_ACCOUNT_ID=act_123456<br />
+            META_APP_ID=your_app_id<br />
+            META_APP_SECRET=your_app_secret
+          </code>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Stale Data Banner ───────────────────────────────────────────────────────
+
+function StaleBanner() {
+  return (
+    <div className="ads-dark-stale-banner">
+      Showing cached data. Live connection unavailable. Some figures may be out of date.
+    </div>
+  )
+}
+
+// ── Account Health Check Modal ──────────────────────────────────────────────
+
+function AccountHealthModal({ data, loading, onClose }) {
+  if (!data && !loading) return null
+
+  return (
+    <div className="ads-dark-overlay" onClick={onClose}>
+      <div className="ads-dark-modal ads-dark-modal-wide" onClick={e => e.stopPropagation()}>
+        <div className="ads-dark-modal-header">
+          <h3 className="ads-dark-modal-title">Account Health Check</h3>
+          <button className="ads-dark-btn-icon" onClick={onClose}>X</button>
+        </div>
+
+        {loading ? (
+          <div style={{ padding: 40 }}>
+            <SectionSkeleton rows={4} />
+          </div>
+        ) : data ? (
+          <div className="ads-dark-health-modal-body">
+            {/* Score */}
+            {data.healthScore != null && (
+              <div className="ads-dark-health-score-hero">
+                <div className="ads-dark-health-score-circle" style={{
+                  borderColor: data.healthScore >= 75 ? COLOURS.green : data.healthScore >= 50 ? COLOURS.yellow : COLOURS.red
+                }}>
+                  <span className="ads-dark-health-score-num" style={{
+                    color: data.healthScore >= 75 ? COLOURS.green : data.healthScore >= 50 ? COLOURS.yellow : COLOURS.red
+                  }}>
+                    {data.healthScore}
+                  </span>
+                  <span className="ads-dark-health-score-label">/ 100</span>
+                </div>
+                <div>
+                  <span className="ads-dark-health-status" style={{
+                    color: data.healthScore >= 75 ? COLOURS.green : data.healthScore >= 50 ? COLOURS.yellow : COLOURS.red
+                  }}>
+                    {data.overallHealth?.replace('_', ' ') || 'Unknown'}
+                  </span>
+                  <p style={{ color: COLOURS.muted, marginTop: 8, lineHeight: 1.5 }}>{data.summary}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Wins */}
+            {data.topWins?.length > 0 && (
+              <div className="ads-dark-health-section">
+                <h4 style={{ color: COLOURS.green, marginBottom: 12 }}>What is Working</h4>
+                {data.topWins.map((w, i) => (
+                  <div key={i} className="ads-dark-health-item">
+                    <strong>{w.ad}</strong> <span style={{ color: COLOURS.muted }}>({w.campaign})</span>
+                    <p style={{ color: COLOURS.muted, marginTop: 4 }}>{w.why}</p>
+                    <p style={{ color: COLOURS.blue, marginTop: 4 }}>{w.action}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Problems */}
+            {data.problems?.length > 0 && (
+              <div className="ads-dark-health-section">
+                <h4 style={{ color: COLOURS.red, marginBottom: 12 }}>Problems to Fix</h4>
+                {data.problems.map((p, i) => (
+                  <div key={i} className="ads-dark-health-item">
+                    <strong>{p.ad}</strong> <span style={{ color: COLOURS.muted }}>({p.campaign})</span>
+                    <span style={{ marginLeft: 8, fontSize: 11, color: p.severity === 'HIGH' ? COLOURS.red : COLOURS.yellow }}>
+                      {p.severity}
+                    </span>
+                    <p style={{ color: COLOURS.muted, marginTop: 4 }}>{p.issue}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Next Moves */}
+            {data.nextMoves?.length > 0 && (
+              <div className="ads-dark-health-section">
+                <h4 style={{ color: COLOURS.blue, marginBottom: 12 }}>Next Moves</h4>
+                {data.nextMoves.sort((a, b) => a.priority - b.priority).map((m, i) => (
+                  <div key={i} className="ads-dark-health-item">
+                    <span style={{ color: COLOURS.pink, fontWeight: 700, marginRight: 8 }}>#{m.priority}</span>
+                    <strong>{m.action}</strong>
+                    <p style={{ color: COLOURS.muted, marginTop: 4 }}>{m.why}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Budget Advice */}
+            {data.budgetAdvice && (
+              <div className="ads-dark-health-section">
+                <h4 style={{ color: COLOURS.yellow, marginBottom: 12 }}>Budget Advice</h4>
+                <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 12 }}>
+                  <span style={{ color: COLOURS.muted }}>Current: <strong style={{ color: COLOURS.text }}>${data.budgetAdvice.currentDaily}/day</strong></span>
+                  <span style={{ color: COLOURS.muted }}>-&gt;</span>
+                  <span style={{ color: COLOURS.green }}>Recommended: <strong>${data.budgetAdvice.recommendedDaily}/day</strong></span>
+                </div>
+                <p style={{ color: COLOURS.muted }}>{data.budgetAdvice.reasoning}</p>
+              </div>
+            )}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
+// ── Main Component ──────────────────────────────────────────────────────────
 
 export default function AdsPerformanceTab() {
-  const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  // Core state
   const [dateRange, setDateRange] = useState('7d')
-  const [expandedCampaign, setExpandedCampaign] = useState(null)
-  const [sendingReport, setSendingReport] = useState(false)
+  const [perfData, setPerfData] = useState(null)
+  const [perfLoading, setPerfLoading] = useState(true)
+  const [perfError, setPerfError] = useState(null)
   const [lastSynced, setLastSynced] = useState(null)
+  const [staleData, setStaleData] = useState(false)
+  const [notConfigured, setNotConfigured] = useState(false)
 
-  // Strategist state
-  const [healthCheck, setHealthCheck] = useState(null)
-  const [healthCheckLoading, setHealthCheckLoading] = useState(false)
-  const [healthCheckOpen, setHealthCheckOpen] = useState(false)
-  const [briefing, setBriefing] = useState(null)
-  const [briefingLoading, setBriefingLoading] = useState(false)
+  // Truth metrics
+  const [truth, setTruth] = useState(null)
+  const [truthLoading, setTruthLoading] = useState(true)
 
-  // Load daily briefing on mount (cached for the day)
-  const fetchBriefing = useCallback(async () => {
-    const cacheKey = 'ads-briefing-' + new Date().toISOString().slice(0, 10)
-    const cached = sessionStorage.getItem(cacheKey)
-    if (cached) {
-      setBriefing(JSON.parse(cached))
-      return
-    }
-    setBriefingLoading(true)
-    try {
-      const res = await fetch('/api/ads/strategist/daily-briefing')
-      const json = await res.json()
-      if (json.ok) {
-        setBriefing(json)
-        sessionStorage.setItem(cacheKey, JSON.stringify(json))
-      }
-    } catch (err) {
-      console.error('Briefing fetch error:', err)
-    }
-    setBriefingLoading(false)
-  }, [])
+  // Daily breakdown
+  const [breakdown, setBreakdown] = useState([])
+  const [breakdownLoading, setBreakdownLoading] = useState(true)
 
-  const fetchHealthCheck = useCallback(async () => {
-    setHealthCheckLoading(true)
-    try {
-      const res = await fetch('/api/ads/strategist/health-check')
-      const json = await res.json()
-      if (json.ok) {
-        setHealthCheck(json)
-        setHealthCheckOpen(true)
-      }
-    } catch (err) {
-      console.error('Health check error:', err)
-    }
-    setHealthCheckLoading(false)
-  }, [])
+  // Scale path
+  const [scalePath, setScalePath] = useState(null)
+  const [scaleLoading, setScaleLoading] = useState(true)
 
-  useEffect(() => { fetchBriefing() }, [fetchBriefing])
+  // AI recommendations
+  const [aiRec, setAiRec] = useState(null)
+  const [aiRecLoading, setAiRecLoading] = useState(false)
+  const [verdicts, setVerdicts] = useState({})
 
-  const fetchData = useCallback(async (range) => {
-    setLoading(true)
-    setError(null)
+  // Health check
+  const [healthData, setHealthData] = useState(null)
+  const [healthLoading, setHealthLoading] = useState(false)
+  const [healthOpen, setHealthOpen] = useState(false)
+
+  // UI state
+  const [alerts, setAlerts] = useState([])
+  const [showDefinitions, setShowDefinitions] = useState(false)
+
+  // ── Data Fetching ─────────────────────────────────────────────────────────
+
+  const fetchPerformance = useCallback(async (range) => {
+    setPerfLoading(true)
+    setPerfError(null)
     try {
       const res = await fetch(`${API}/performance?dateRange=${range || dateRange}`)
       const json = await res.json()
-      if (!json.ok) throw new Error(json.error || 'Failed to load')
-      setData(json)
+      if (!json.ok) {
+        if (json.error?.includes('not configured') || json.error?.includes('credentials')) {
+          setNotConfigured(true)
+          return
+        }
+        throw new Error(json.error || 'Failed to load performance data')
+      }
+      setPerfData(json)
       setLastSynced(json.lastSynced)
+      setStaleData(false)
+
+      // Generate alerts from campaign data
+      const newAlerts = []
+      const campaigns = json.campaigns || []
+      for (const c of campaigns) {
+        if (c.healthScore != null && c.healthScore < 20) {
+          newAlerts.push({ severity: 'CRITICAL', message: `"${c.name}" health score is ${c.healthScore}. Consider pausing.`, campaignId: c.id })
+        }
+        const ins = c.insights || {}
+        const cpp = ins.purchases > 0 ? ins.spend / ins.purchases : null
+        if (cpp && cpp > GRI.breakevenCPP * 1.5) {
+          newAlerts.push({ severity: 'HIGH', message: `"${c.name}" CPP is ${fmtCurrency(cpp)} - well above breakeven.`, campaignId: c.id })
+        }
+        for (const ad of c.ads || []) {
+          if (ad.fatigue?.status === 'DEAD') {
+            newAlerts.push({ severity: 'HIGH', message: `Ad "${ad.name}" is fatigued (DEAD). Pause or refresh creative.`, adId: ad.id })
+          }
+        }
+      }
+      setAlerts(newAlerts)
     } catch (err) {
-      setError(err.message)
+      setPerfError(err.message)
+      if (perfData) setStaleData(true)
     }
-    setLoading(false)
+    setPerfLoading(false)
   }, [dateRange])
 
-  useEffect(() => { fetchData() }, [dateRange])
+  const fetchTruth = useCallback(async (range) => {
+    setTruthLoading(true)
+    try {
+      const res = await fetch(`${API}/truth-metrics?dateRange=${range || dateRange}`)
+      const json = await res.json()
+      if (json.ok) setTruth(json.truth)
+    } catch (err) {
+      console.error('Truth metrics error:', err)
+    }
+    setTruthLoading(false)
+  }, [dateRange])
+
+  const fetchBreakdown = useCallback(async () => {
+    setBreakdownLoading(true)
+    try {
+      const days = dateRange === 'today' ? 1 : dateRange === '7d' ? 7 : dateRange === '14d' ? 14 : 30
+      const res = await fetch(`${API}/daily-breakdown?days=${days}`)
+      const json = await res.json()
+      if (json.ok) setBreakdown(json.breakdown || [])
+    } catch (err) {
+      console.error('Breakdown error:', err)
+    }
+    setBreakdownLoading(false)
+  }, [dateRange])
+
+  const fetchScalePath = useCallback(async () => {
+    setScaleLoading(true)
+    try {
+      const res = await fetch(`${API}/scale-path`)
+      const json = await res.json()
+      if (json.ok) setScalePath(json)
+    } catch (err) {
+      console.error('Scale path error:', err)
+    }
+    setScaleLoading(false)
+  }, [])
+
+  const fetchAccountRec = useCallback(async () => {
+    setAiRecLoading(true)
+    try {
+      const res = await fetch(`${API}/account-recommendation`, { method: 'POST' })
+      const json = await res.json()
+      if (json.ok) setAiRec(json)
+    } catch (err) {
+      console.error('Account rec error:', err)
+    }
+    setAiRecLoading(false)
+  }, [])
+
+  const fetchHealthCheck = useCallback(async () => {
+    setHealthLoading(true)
+    setHealthOpen(true)
+    try {
+      const res = await fetch('/api/ads/strategist/health-check')
+      const json = await res.json()
+      if (json.ok) setHealthData(json)
+    } catch (err) {
+      console.error('Health check error:', err)
+    }
+    setHealthLoading(false)
+  }, [])
+
+  const requestVerdict = useCallback(async (campaign) => {
+    try {
+      const shopifyData = truth ? {
+        revenue: truth.shopifyRevenue,
+        orders: truth.shopifyOrders,
+        aov: truth.shopifyAov
+      } : {}
+      const res = await fetch(`${API}/recommendation`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ campaignData: campaign, shopifyData, dateRange })
+      })
+      const json = await res.json()
+      if (json.ok) {
+        setVerdicts(prev => ({ ...prev, [campaign.id]: json }))
+      }
+    } catch (err) {
+      console.error('Verdict error:', err)
+    }
+  }, [truth, dateRange])
+
+  // ── Effects ───────────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    fetchPerformance()
+    fetchTruth()
+    fetchBreakdown()
+  }, [dateRange])
+
+  useEffect(() => {
+    fetchScalePath()
+    // Try to load cached AI rec
+    const cached = sessionStorage.getItem('ads-ai-rec')
+    if (cached) {
+      try { setAiRec(JSON.parse(cached)) } catch {}
+    }
+  }, [])
+
+  // Cache AI recs
+  useEffect(() => {
+    if (aiRec) sessionStorage.setItem('ads-ai-rec', JSON.stringify(aiRec))
+  }, [aiRec])
 
   // Auto-refresh every 5 minutes
   useEffect(() => {
-    const iv = setInterval(() => fetchData(), 5 * 60 * 1000)
+    const iv = setInterval(() => {
+      fetchPerformance()
+      fetchTruth()
+    }, 5 * 60 * 1000)
     return () => clearInterval(iv)
-  }, [fetchData])
+  }, [fetchPerformance, fetchTruth])
 
-  const handleSendReport = async () => {
-    setSendingReport(true)
-    try {
-      await fetch(`${API}/report/send`, { method: 'POST' })
-    } catch {}
-    setSendingReport(false)
-  }
+  const refreshAll = useCallback(() => {
+    fetchPerformance()
+    fetchTruth()
+    fetchBreakdown()
+    fetchScalePath()
+  }, [fetchPerformance, fetchTruth, fetchBreakdown, fetchScalePath])
 
-  const handlePauseCampaign = async (id) => {
-    try {
-      await fetch(`${API}/pause/${id}`, { method: 'POST' })
-      fetchData()
-    } catch {}
-  }
+  // ── Derived Data ──────────────────────────────────────────────────────────
 
-  // Daily breakdown state + fetch
-  const [dailyData, setDailyData] = useState([])
+  const campaigns = perfData?.campaigns || []
 
-  useEffect(() => {
-    fetch('/api/ads/daily-breakdown?days=7').then(r => r.json()).then(d => {
-      if (d.ok) setDailyData(d.breakdown || [])
-    }).catch(() => {})
-  }, [])
+  // ── Not Configured ────────────────────────────────────────────────────────
 
-  // Use range KPI for the main cards (matches selected date filter)
-  // Fall back to today if range not available
-  const kpi = data?.kpi?.range || data?.kpi?.today
-  const prevKpi = data?.kpi?.prev || data?.kpi?.yesterday
-  const todayKpi = data?.kpi?.today
-  const yKpi = data?.kpi?.yesterday
-  const campaigns = data?.campaigns || []
+  if (notConfigured) return <SetupScreen />
 
-  // Ad health summary
-  const allAds = campaigns.flatMap(c => (c.ads || []).filter(a => a.status === 'ACTIVE'))
-  const healthCounts = {
-    HEALTHY: allAds.filter(a => a.fatigue?.status === 'HEALTHY').length,
-    WATCH: allAds.filter(a => a.fatigue?.status === 'WATCH').length,
-    FATIGUING: allAds.filter(a => a.fatigue?.status === 'FATIGUING').length,
-    DEAD: allAds.filter(a => a.fatigue?.status === 'DEAD').length,
-  }
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="page ads-page">
-      {/* Header */}
-      <div className="page-header">
-        <div>
-          <h2 className="page-title">Ads Performance</h2>
-          <p className="page-sub">Gender Reveal Ideas — Meta Ads</p>
-        </div>
-        <div className="page-actions">
-          {lastSynced && <span className="muted" style={{ fontSize: 11, marginRight: 8 }}>Last synced: {new Date(lastSynced).toLocaleTimeString('en-AU')}</span>}
-          <button className="btn-sec" onClick={() => fetchData()} disabled={loading}>
-            {loading ? 'Refreshing...' : '↻ Refresh Data'}
-          </button>
-          <button className="btn-sec" onClick={handleSendReport} disabled={sendingReport}>
-            {sendingReport ? 'Sending...' : '📨 Send Report'}
-          </button>
-          <button
-            className="ads-strategist-health-btn"
-            onClick={fetchHealthCheck}
-            disabled={healthCheckLoading}
-          >
-            <span className="ads-strategist-pulse-icon">&#9829;</span>
-            {healthCheckLoading ? 'Analysing...' : 'Account Health Check'}
-          </button>
-        </div>
-      </div>
-
-      {/* Daily Briefing */}
-      <DailyBriefingCard
-        briefing={briefing}
-        loading={briefingLoading}
-        onRefresh={() => {
-          const cacheKey = 'ads-briefing-' + new Date().toISOString().slice(0, 10)
-          sessionStorage.removeItem(cacheKey)
-          fetchBriefing()
-        }}
+    <div className="ads-dark">
+      {/* Command Bar */}
+      <CommandBar
+        dateRange={dateRange}
+        onDateChange={setDateRange}
+        lastSynced={lastSynced}
+        onRefresh={refreshAll}
+        refreshing={perfLoading}
+        onHealthCheck={fetchHealthCheck}
+        healthCheckLoading={healthLoading}
+        onShowDefinitions={() => setShowDefinitions(true)}
       />
 
-      {/* Health Check Panel */}
-      {healthCheckOpen && (
-        <HealthCheckPanel data={healthCheck} onClose={() => setHealthCheckOpen(false)} />
-      )}
+      {/* Stale Data Banner */}
+      {staleData && <StaleBanner />}
 
-      {/* Date Range */}
-      <div className="ads-date-pills">
-        {DATE_RANGES.map(r => (
-          <button
-            key={r.key}
-            className={`ads-pill ${dateRange === r.key ? 'ads-pill-active' : ''}`}
-            onClick={() => setDateRange(r.key)}
-          >
-            {r.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Error State */}
-      {error && (
-        <div className="ads-error">
-          <span>⚠️ {error}</span>
-          <button className="btn-sec" onClick={() => fetchData()}>Retry</button>
+      {/* Error */}
+      {perfError && !staleData && (
+        <div className="ads-dark-error-bar">
+          <span>{perfError}</span>
+          <button className="ads-dark-btn ads-dark-btn-ghost" onClick={() => fetchPerformance()}>Retry</button>
         </div>
       )}
 
-      {/* Warnings from Meta API */}
-      {data?.warnings?.length > 0 && (
-        <div className="ads-error" style={{ background: '#2a2000', borderColor: '#665200' }}>
-          <div>
-            <div style={{ fontWeight: 600, marginBottom: 4 }}>⚠️ Meta API Warnings</div>
-            {data.warnings.map((w, i) => <div key={i} style={{ fontSize: 12, opacity: 0.85 }}>• {w}</div>)}
-          </div>
-          <button className="btn-sec" onClick={() => fetchData()}>Retry</button>
-        </div>
-      )}
+      {/* Alerts */}
+      <AlertBar
+        alerts={alerts}
+        onDismiss={(idx) => setAlerts(prev => prev.filter((_, i) => i !== idx))}
+      />
 
-      {/* Loading State */}
-      {loading && !data && (
-        <div className="ads-loading-wrap">
-          <div className="ads-skeleton" /><div className="ads-skeleton" />
-          <div className="ads-skeleton" /><div className="ads-skeleton" />
-        </div>
-      )}
+      {/* Truth Metrics */}
+      <TruthMetrics truth={truth} loading={truthLoading} />
 
-      {/* KPI Cards */}
-      {kpi && (
-        <div className="ads-kpi-grid">
-          <KpiCard label="Spend" value={kpi.spend} prefix="$" metric="spend" delta={deltaArrow(kpi.spend, prevKpi?.spend)} />
-          <KpiCard label="Revenue" value={kpi.purchaseValue} prefix="$" metric="revenue" delta={deltaArrow(kpi.purchaseValue, prevKpi?.purchaseValue)} />
-          <KpiCard label="ROAS" value={kpi.roas} metric="roas" delta={deltaArrow(kpi.roas, prevKpi?.roas)} />
-          <KpiCard label="Purchases" value={kpi.purchases} metric="purchases" delta={deltaArrow(kpi.purchases, prevKpi?.purchases)} />
-          <KpiCard label="CPA" value={kpi.cpa} prefix="$" metric="cpa" delta={deltaArrow(kpi.cpa, prevKpi?.cpa, true)} />
-          <KpiCard label="CTR" value={kpi.ctr} suffix="%" metric="ctr" delta={deltaArrow(kpi.ctr, prevKpi?.ctr)} />
-        </div>
-      )}
-
-      {/* Health Summary Bar */}
-      {allAds.length > 0 && (
-        <div className="ads-health-bar">
-          <span className="ads-health-item" style={{ color: FATIGUE_COLORS.HEALTHY }}>✅ {healthCounts.HEALTHY} Healthy</span>
-          <span className="ads-health-item" style={{ color: FATIGUE_COLORS.WATCH }}>⚠️ {healthCounts.WATCH} Watch</span>
-          <span className="ads-health-item" style={{ color: FATIGUE_COLORS.FATIGUING }}>🔶 {healthCounts.FATIGUING} Fatiguing</span>
-          <span className="ads-health-item" style={{ color: FATIGUE_COLORS.DEAD }}>🔴 {healthCounts.DEAD} Dead</span>
-        </div>
-      )}
-
-      {/* Daily Performance Chart */}
-      {dailyData.length > 0 && (
-        <div className="ov-card" style={{ marginBottom: 20, padding: 20 }}>
-          <h3 style={{ margin: '0 0 16px', fontSize: 15 }}>Daily Performance (Last 7 Days)</h3>
-          <ResponsiveContainer width="100%" height={280}>
-            <ComposedChart data={dailyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#222" />
-              <XAxis dataKey="date" tick={{ fill: '#888', fontSize: 11 }} tickFormatter={d => { const dt = new Date(d); return `${dt.getDate()}/${dt.getMonth()+1}` }} />
-              <YAxis yAxisId="spend" tick={{ fill: '#888', fontSize: 11 }} tickFormatter={v => `$${v}`} />
-              <YAxis yAxisId="roas" orientation="right" tick={{ fill: '#888', fontSize: 11 }} tickFormatter={v => `${v}x`} />
-              <Tooltip content={({ payload }) => {
-                if (!payload?.[0]) return null
-                const d = payload[0].payload
-                return (
-                  <div style={{ background: '#1a1a2e', border: '1px solid #333', borderRadius: 8, padding: 12, fontSize: 12 }}>
-                    <div style={{ fontWeight: 600, marginBottom: 4 }}>{d.date}</div>
-                    <div>Spend: ${d.spend?.toFixed(2)}</div>
-                    <div>Revenue: ${d.revenue?.toFixed(2)}</div>
-                    <div>ROAS: {d.roas?.toFixed(1)}x</div>
-                    <div>Purchases: {d.purchases}</div>
-                    <div>CTR: {d.ctr?.toFixed(2)}%</div>
-                  </div>
-                )
-              }} />
-              <Bar yAxisId="spend" dataKey="spend" fill="#6366f1" radius={[4, 4, 0, 0]} name="Spend" />
-              <Line yAxisId="roas" type="monotone" dataKey="roas" stroke="#22c55e" strokeWidth={2} dot={{ r: 4 }} name="ROAS" />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
-      )}
+      {/* Spend vs Revenue Chart */}
+      <SpendChart breakdown={breakdown} loading={breakdownLoading} />
 
       {/* Campaign Table */}
-      {campaigns.length > 0 && (
-        <div className="ads-section">
-          <h3 className="ads-section-title">Campaigns</h3>
-          <div className="ads-table-wrap">
-            <table className="ads-table">
-              <thead>
-                <tr>
-                  <th>Campaign</th>
-                  <th>Status</th>
-                  <th>Budget</th>
-                  <th>Spend</th>
-                  <th>ROAS</th>
-                  <th>CPA</th>
-                  <th>CTR</th>
-                  <th>CPM</th>
-                  <th>Freq</th>
-                  <th>Health</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {campaigns.map(c => (
-                  <CampaignRow
-                    key={c.id}
-                    campaign={c}
-                    expanded={expandedCampaign === c.id}
-                    onExpand={id => setExpandedCampaign(prev => prev === id ? null : id)}
-                    onPause={handlePauseCampaign}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+      <CampaignTable
+        campaigns={campaigns}
+        loading={perfLoading && !perfData}
+        verdicts={verdicts}
+        onRequestVerdict={requestVerdict}
+        refreshData={refreshAll}
+      />
 
-      {/* Charts */}
-      {campaigns.length > 0 && <PerformanceCharts campaigns={campaigns} />}
+      {/* AI Recommendations */}
+      <AIRecommendations
+        loading={aiRecLoading}
+        recommendations={aiRec}
+        onRefresh={fetchAccountRec}
+        verdicts={verdicts}
+      />
 
-      {/* Not configured state */}
-      {!loading && !error && !data?.ok && (
-        <div className="ads-empty-state">
-          <div className="ads-empty-icon">📊</div>
-          <h3>Meta Ads Not Connected</h3>
-          <p>Add these environment variables to Railway to connect your Meta ad account:</p>
-          <code className="ads-env-block">
-            META_ACCESS_TOKEN=your_token{'\n'}
-            META_AD_ACCOUNT_ID=act_XXXXXXXXX{'\n'}
-            META_GRI_CAMPAIGN_IDS=campaign_id_1,campaign_id_2
-          </code>
-        </div>
+      {/* Scale Path Calculator */}
+      <ScalePathCalc scalePath={scalePath} loading={scaleLoading} />
+
+      {/* Modals */}
+      {showDefinitions && <MetricDefinitions onClose={() => setShowDefinitions(false)} />}
+      {healthOpen && (
+        <AccountHealthModal
+          data={healthData}
+          loading={healthLoading}
+          onClose={() => setHealthOpen(false)}
+        />
       )}
     </div>
   )
