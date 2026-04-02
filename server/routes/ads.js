@@ -6,6 +6,7 @@ import { readFileSync, writeFileSync, existsSync } from 'fs'
 import {
   isMetaConfigured,
   fetchFullPerformance,
+  fetchAccountInsights,
   fetchCampaigns,
   fetchAdInsights,
   fetchAdInsightsByDay,
@@ -37,6 +38,66 @@ function saveJSON(file, data) {
   writeFileSync(file, JSON.stringify(data, null, 2))
 }
 
+// ── In-memory cache (avoids hammering Meta API on every page load) ──────────
+
+const cache = new Map()
+const CACHE_TTL = 3 * 60 * 1000 // 3 minutes
+
+function getCached(key) {
+  const entry = cache.get(key)
+  if (!entry) return null
+  if (Date.now() - entry.ts > CACHE_TTL) { cache.delete(key); return null }
+  return entry.data
+}
+
+function setCache(key, data) {
+  cache.set(key, { data, ts: Date.now() })
+}
+
+// ── Fetch previous period insights (single lightweight API call) ────────────
+
+async function fetchPrevPeriodInsights(preset) {
+  if (preset === 'today') {
+    return fetchAccountInsights('yesterday')
+  }
+  if (!preset.startsWith('last_')) return null
+
+  const days = parseInt(preset.replace('last_', '').replace('d', ''))
+  const end = new Date()
+  end.setDate(end.getDate() - days)
+  const start = new Date(end)
+  start.setDate(start.getDate() - days)
+  const since = start.toISOString().slice(0, 10)
+  const until = end.toISOString().slice(0, 10)
+
+  const token = process.env.META_ACCESS_TOKEN
+  const accountId = process.env.META_AD_ACCOUNT_ID
+  const url = `https://graph.facebook.com/v20.0/${accountId}/insights?fields=spend,impressions,clicks,actions,action_values&time_range={"since":"${since}","until":"${until}"}&access_token=${token}`
+  const resp = await fetch(url)
+  const prevData = await resp.json()
+
+  if (!prevData.data?.[0]) return null
+  const p = prevData.data[0]
+  const pSpend = parseFloat(p.spend || 0)
+  const pActions = {}
+  for (const a of (p.actions || [])) pActions[a.action_type] = parseInt(a.value)
+  const pValues = {}
+  for (const a of (p.action_values || [])) pValues[a.action_type] = parseFloat(a.value)
+  const pPurchases = pActions.purchase || 0
+  const pRevenue = pValues.purchase || 0
+  return {
+    spend: pSpend,
+    impressions: parseInt(p.impressions || 0),
+    clicks: parseInt(p.clicks || 0),
+    purchases: pPurchases,
+    purchaseValue: pRevenue,
+    roas: pSpend > 0 ? pRevenue / pSpend : 0,
+    cpa: pPurchases > 0 ? pSpend / pPurchases : 0,
+    ctr: parseInt(p.impressions || 0) > 0 ? (parseInt(p.clicks || 0) / parseInt(p.impressions || 0)) * 100 : 0,
+    cpm: parseInt(p.impressions || 0) > 0 ? (pSpend / parseInt(p.impressions || 0)) * 1000 : 0,
+  }
+}
+
 // ── GET /api/ads/performance ─────────────────────────────────────────────────
 
 router.get('/performance', async (req, res) => {
@@ -58,6 +119,14 @@ router.get('/performance', async (req, res) => {
     }
     const preset = datePresetMap[dateRange] || 'last_7d'
 
+    // Check cache first
+    const cacheKey = `perf:${preset}`
+    const cached = getCached(cacheKey)
+    if (cached) {
+      return res.json(cached)
+    }
+
+    // One full fetch for the selected range (campaigns + ads + fatigue)
     const perfData = await fetchFullPerformance(preset)
     const campaigns = perfData.campaigns || perfData
 
@@ -78,60 +147,14 @@ router.get('/performance', async (req, res) => {
     // Aggregate KPI for the selected date range
     const rangeKPI = aggregateKPI(campaigns)
 
-    // Also fetch today + yesterday for comparison cards
-    const todayData = await fetchFullPerformance('today').catch(() => ({ campaigns }))
-    const yesterdayData = await fetchFullPerformance('yesterday').catch(() => null)
+    // Lightweight account-level fetches for today/yesterday/prev (1 API call each, not full fetches)
+    const [todayKPI, yesterdayKPI, prevKPI] = await Promise.all([
+      fetchAccountInsights('today').catch(e => { console.warn('[Ads] Today insights failed:', e.message); return null }),
+      fetchAccountInsights('yesterday').catch(e => { console.warn('[Ads] Yesterday insights failed:', e.message); return null }),
+      fetchPrevPeriodInsights(preset).catch(e => { console.warn('[Ads] Prev period fetch failed:', e.message); return null })
+    ])
 
-    const todayKPI = aggregateKPI(todayData.campaigns || todayData)
-    const yesterdayKPI = yesterdayData ? aggregateKPI(yesterdayData.campaigns || yesterdayData) : null
-
-    // Fetch previous equivalent period for comparison
-    let prevKPI = null
-    try {
-      if (preset === 'today') {
-        prevKPI = yesterdayKPI
-      } else if (preset.startsWith('last_')) {
-        const days = parseInt(preset.replace('last_', '').replace('d', ''))
-        const end = new Date()
-        end.setDate(end.getDate() - days)
-        const start = new Date(end)
-        start.setDate(start.getDate() - days)
-        const since = start.toISOString().slice(0, 10)
-        const until = end.toISOString().slice(0, 10)
-
-        const token = process.env.META_ACCESS_TOKEN
-        const accountId = process.env.META_AD_ACCOUNT_ID
-        const url = `https://graph.facebook.com/v20.0/${accountId}/insights?fields=spend,impressions,clicks,actions,action_values&time_range={"since":"${since}","until":"${until}"}&access_token=${token}`
-        const resp = await fetch(url)
-        const prevData = await resp.json()
-
-        if (prevData.data?.[0]) {
-          const p = prevData.data[0]
-          const pSpend = parseFloat(p.spend || 0)
-          const pActions = {}
-          for (const a of (p.actions || [])) pActions[a.action_type] = parseInt(a.value)
-          const pValues = {}
-          for (const a of (p.action_values || [])) pValues[a.action_type] = parseFloat(a.value)
-          const pPurchases = pActions.purchase || 0
-          const pRevenue = pValues.purchase || 0
-          prevKPI = {
-            spend: pSpend,
-            impressions: parseInt(p.impressions || 0),
-            clicks: parseInt(p.clicks || 0),
-            purchases: pPurchases,
-            purchaseValue: pRevenue,
-            roas: pSpend > 0 ? pRevenue / pSpend : 0,
-            cpa: pPurchases > 0 ? pSpend / pPurchases : 0,
-            ctr: parseInt(p.impressions || 0) > 0 ? (parseInt(p.clicks || 0) / parseInt(p.impressions || 0)) * 100 : 0,
-            cpm: parseInt(p.impressions || 0) > 0 ? (pSpend / parseInt(p.impressions || 0)) * 1000 : 0,
-          }
-        }
-      }
-    } catch (e) {
-      console.warn('[Ads] Previous period fetch failed:', e.message)
-    }
-
-    res.json({
+    const result = {
       ok: true,
       kpi: {
         today: todayKPI,
@@ -142,7 +165,10 @@ router.get('/performance', async (req, res) => {
       },
       campaigns,
       lastSynced: new Date().toISOString()
-    })
+    }
+
+    setCache(cacheKey, result)
+    res.json(result)
   } catch (err) {
     console.error('[Ads] Performance fetch error:', err.message)
     res.status(500).json({ ok: false, error: err.message })
@@ -157,6 +183,12 @@ router.get('/daily-breakdown', async (req, res) => {
       return res.json({ ok: false, error: 'Meta API not configured' })
     }
     const days = parseInt(req.query.days) || 7
+
+    // Check cache
+    const cacheKey = `daily:${days}`
+    const cached = getCached(cacheKey)
+    if (cached) return res.json(cached)
+
     const token = process.env.META_ACCESS_TOKEN
     const accountId = process.env.META_AD_ACCOUNT_ID
     const url = `https://graph.facebook.com/v20.0/${accountId}/insights?fields=spend,impressions,clicks,actions,action_values,cpm,ctr,frequency&time_increment=1&date_preset=last_${days}d&access_token=${token}`
@@ -187,7 +219,9 @@ router.get('/daily-breakdown', async (req, res) => {
       }
     })
 
-    res.json({ ok: true, breakdown })
+    const result = { ok: true, breakdown }
+    setCache(cacheKey, result)
+    res.json(result)
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message })
   }

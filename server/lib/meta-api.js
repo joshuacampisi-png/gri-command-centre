@@ -159,6 +159,17 @@ export async function fetchAdInsightsByDay(adId, days = 7) {
   return (data.data || []).map(parseInsights)
 }
 
+// ── Lightweight account-level insights (single API call) ────────────────
+
+export async function fetchAccountInsights(datePreset = 'today') {
+  const accountId = metaAccountId()
+  const data = await metaGet(`/${accountId}/insights`, {
+    fields: 'spend,impressions,clicks,actions,action_values,frequency,cpm,ctr,reach',
+    date_preset: normalisePreset(datePreset)
+  })
+  return parseInsights(data.data?.[0])
+}
+
 // ── Write operations ─────────────────────────────────────────────────────────
 
 export async function pauseAd(adId) {
