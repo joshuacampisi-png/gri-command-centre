@@ -3,7 +3,7 @@
  * CRUD routes for Instagram scheduled posts + AI caption generation + media upload.
  */
 import { Router } from 'express'
-import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'fs'
+import { readFileSync, writeFileSync, existsSync, unlinkSync, readdirSync, statSync } from 'fs'
 import { join } from 'path'
 import multer from 'multer'
 import { dataFile, dataDir } from '../lib/data-dir.js'
@@ -92,14 +92,32 @@ router.post('/entries', (req, res) => {
   res.json({ ok: true, post: posts.find(p => p.id === post.id) })
 })
 
-// Delete a post (soft delete)
+// Helper: delete media files for a post to free disk space
+function cleanupPostMedia(post) {
+  if (!post?.mediaUrls?.length) return
+  for (const url of post.mediaUrls) {
+    const match = url.match(/\/instagram-media\/(.+)$/)
+    if (match) {
+      const filePath = join(MEDIA_DIR, match[1])
+      try { if (existsSync(filePath)) unlinkSync(filePath) } catch (e) {
+        console.error(`[IG Cleanup] Failed to delete ${filePath}:`, e.message)
+      }
+    }
+  }
+}
+
+// Delete a post — removes media files to free disk space
 router.delete('/entries/:id', (req, res) => {
   const posts = loadPosts()
   const post = posts.find(p => p.id === req.params.id)
   if (!post) return res.json({ ok: true })
-  post._archived = true
-  post._archivedAt = new Date().toISOString()
-  savePosts(posts)
+
+  // Delete actual media files from disk
+  cleanupPostMedia(post)
+
+  // Remove from posts list entirely (not just soft delete)
+  const filtered = posts.filter(p => p.id !== req.params.id)
+  savePosts(filtered)
   res.json({ ok: true })
 })
 
@@ -147,12 +165,66 @@ router.post('/entries/:id/publish-now', async (req, res) => {
   }
 })
 
+// Disk usage helper — total size of instagram-media folder
+function getMediaDiskUsage() {
+  try {
+    const files = readdirSync(MEDIA_DIR)
+    let total = 0
+    for (const f of files) {
+      try { total += statSync(join(MEDIA_DIR, f)).size } catch {}
+    }
+    return { files: files.length, bytes: total, mb: Math.round(total / 1048576 * 10) / 10 }
+  } catch { return { files: 0, bytes: 0, mb: 0 } }
+}
+
+// Disk usage endpoint
+router.get('/disk-usage', (_req, res) => {
+  const usage = getMediaDiskUsage()
+  res.json({ ok: true, ...usage })
+})
+
+// Cleanup orphaned media (files on disk not referenced by any active post)
+router.post('/cleanup-media', (_req, res) => {
+  const posts = loadPosts().filter(p => !p._archived)
+  const activeUrls = new Set()
+  for (const p of posts) {
+    for (const u of (p.mediaUrls || [])) {
+      const match = u.match(/\/instagram-media\/(.+)$/)
+      if (match) activeUrls.add(match[1])
+    }
+  }
+
+  let deleted = 0, freedBytes = 0
+  try {
+    const files = readdirSync(MEDIA_DIR)
+    for (const f of files) {
+      if (!activeUrls.has(f)) {
+        const fp = join(MEDIA_DIR, f)
+        try {
+          const size = statSync(fp).size
+          unlinkSync(fp)
+          deleted++
+          freedBytes += size
+        } catch {}
+      }
+    }
+  } catch {}
+
+  console.log(`[IG Cleanup] Deleted ${deleted} orphaned files, freed ${Math.round(freedBytes / 1048576)}MB`)
+  res.json({ ok: true, deleted, freedMB: Math.round(freedBytes / 1048576 * 10) / 10 })
+})
+
 // Upload media files (images or video)
 router.post('/upload', (req, res) => {
   upload.array('media', 10)(req, res, (err) => {
     if (err) {
       console.error('[IG Upload] Multer error:', err.message)
-      return res.status(400).json({ error: `Upload error: ${err.message}` })
+      const msg = err.code === 'LIMIT_FILE_SIZE'
+        ? 'File too large (max 500MB per file)'
+        : err.message.includes('ENOSPC') || err.message.includes('no space')
+          ? 'Disk full — delete old posts to free space, then try again'
+          : `Upload error: ${err.message}`
+      return res.status(400).json({ error: msg })
     }
     if (!req.files || req.files.length === 0) {
       console.error('[IG Upload] No files received. Content-Type:', req.headers['content-type'])

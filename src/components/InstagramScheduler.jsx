@@ -133,11 +133,40 @@ export default function InstagramScheduler() {
   const [dragOver, setDragOver] = useState(null)
   const [autoPosting, setAutoPosting] = useState(null)
   const [toast, setToast] = useState(null)
+  const [scheduleInput, setScheduleInput] = useState('')
+  const [diskUsage, setDiskUsage] = useState(null)
+  const [cleaning, setCleaning] = useState(false)
   const fileRef = useRef(null)
 
   const showToast = useCallback((message, type = 'success') => {
     setToast({ message, type, key: Date.now() })
   }, [])
+
+  // Convert UTC ISO to AEST display string for the datetime-local input
+  const isoToAESTInput = useCallback((iso) => {
+    if (!iso) return ''
+    try {
+      const utcMs = new Date(iso).getTime()
+      if (isNaN(utcMs)) return ''
+      const aestMs = utcMs + 10 * 60 * 60 * 1000
+      const aest = new Date(aestMs)
+      const y = aest.getUTCFullYear()
+      const mo = String(aest.getUTCMonth() + 1).padStart(2, '0')
+      const d = String(aest.getUTCDate()).padStart(2, '0')
+      const h = String(aest.getUTCHours()).padStart(2, '0')
+      const mi = String(aest.getUTCMinutes()).padStart(2, '0')
+      return `${y}-${mo}-${d}T${h}:${mi}`
+    } catch { return '' }
+  }, [])
+
+  // Sync scheduleInput whenever drawer opens or changes externally
+  useEffect(() => {
+    if (drawer?.scheduledAt) {
+      setScheduleInput(isoToAESTInput(drawer.scheduledAt))
+    } else {
+      setScheduleInput('')
+    }
+  }, [drawer?.id, drawer?.scheduledAt, isoToAESTInput])
 
   const reload = useCallback(async () => {
     try {
@@ -151,11 +180,18 @@ export default function InstagramScheduler() {
     }
   }, [])
 
+  const fetchDiskUsage = useCallback(() => {
+    fetch(`${API}/disk-usage`).then(r => r.json()).then(d => {
+      if (d.ok) setDiskUsage(d)
+    }).catch(() => {})
+  }, [])
+
   useEffect(() => {
     reload()
+    fetchDiskUsage()
     const interval = setInterval(reload, 30000)
     return () => clearInterval(interval)
-  }, [reload])
+  }, [reload, fetchDiskUsage])
 
   // ── Stats ──────────────────────────────────────────────────────────────────
 
@@ -279,11 +315,27 @@ export default function InstagramScheduler() {
     try {
       await deletePostAPI(drawer.id)
       await reload()
+      fetchDiskUsage()
       setDrawer(null)
-      showToast('Post deleted')
+      showToast('Post deleted — media files removed')
     } catch (err) {
       showToast('Delete failed: ' + err.message, 'error')
     }
+  }
+
+  async function handleCleanupMedia() {
+    setCleaning(true)
+    try {
+      const res = await fetch(`${API}/cleanup-media`, { method: 'POST' })
+      const d = await res.json()
+      if (d.ok) {
+        showToast(`Cleaned up ${d.deleted} orphaned file${d.deleted !== 1 ? 's' : ''} — freed ${d.freedMB}MB`)
+        fetchDiskUsage()
+      }
+    } catch (err) {
+      showToast('Cleanup failed: ' + err.message, 'error')
+    }
+    setCleaning(false)
   }
 
   // ── Publish now ────────────────────────────────────────────────────────────
@@ -341,10 +393,14 @@ export default function InstagramScheduler() {
         showToast(`${result.files.length} file${result.files.length > 1 ? 's' : ''} uploaded`)
       }
     } catch (err) {
-      showToast('Upload failed: ' + err.message, 'error')
+      const msg = err.message || 'Upload failed'
+      showToast(msg.includes('Disk full') || msg.includes('no space')
+        ? 'Disk full — delete old posts to free space'
+        : 'Upload failed: ' + msg, 'error')
     }
     setUploading(false)
     setUploadProgress(0)
+    fetchDiskUsage()
     if (fileRef.current) fileRef.current.value = ''
   }
 
@@ -471,6 +527,34 @@ export default function InstagramScheduler() {
         <div className="ig-stat"><span className="ig-stat-num">{stats.failed}</span><span className="ig-stat-label">Failed</span></div>
         <div className="ig-stat"><span className="ig-stat-num">{stats.thisWeek}</span><span className="ig-stat-label">This Week</span></div>
       </div>
+
+      {/* Disk usage bar */}
+      {diskUsage && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 10, padding: '8px 16px',
+          background: diskUsage.mb > 800 ? '#FEF2F2' : '#F8FAFC',
+          borderRadius: 10, margin: '0 0 8px', fontSize: 12,
+        }}>
+          <span style={{ fontWeight: 600, color: diskUsage.mb > 800 ? '#DC2626' : '#64748B' }}>
+            Storage: {diskUsage.mb}MB used ({diskUsage.files} files)
+          </span>
+          <div style={{ flex: 1, height: 6, background: '#E2E8F0', borderRadius: 3, overflow: 'hidden' }}>
+            <div style={{
+              height: '100%', borderRadius: 3, transition: 'width .3s',
+              width: `${Math.min((diskUsage.mb / 1000) * 100, 100)}%`,
+              background: diskUsage.mb > 800 ? '#DC2626' : diskUsage.mb > 500 ? '#F59E0B' : '#059669',
+            }} />
+          </div>
+          <span style={{ color: '#94A3B8', fontSize: 11 }}>1GB</span>
+          <button onClick={handleCleanupMedia} disabled={cleaning}
+            style={{
+              padding: '4px 10px', fontSize: 11, fontWeight: 600, borderRadius: 6,
+              border: '1px solid #E2E8F0', background: '#fff', cursor: 'pointer', whiteSpace: 'nowrap',
+            }}>
+            {cleaning ? 'Cleaning...' : 'Free Space'}
+          </button>
+        </div>
+      )}
 
       {/* Drag hint */}
       <div className="ig-drag-hint">Drag and drop video/image files onto any day to auto-schedule with AI captions</div>
@@ -700,29 +784,26 @@ export default function InstagramScheduler() {
                 <label>Schedule (AEST)</label>
                 <input
                   type="datetime-local"
-                  value={drawer.scheduledAt ? (() => {
-                    try {
-                      // Display: convert UTC ISO to AEST display string (UTC+10)
-                      const utcMs = new Date(drawer.scheduledAt).getTime()
-                      const aestMs = utcMs + 10 * 60 * 60 * 1000
-                      const aest = new Date(aestMs)
-                      const y = aest.getUTCFullYear()
-                      const mo = String(aest.getUTCMonth() + 1).padStart(2, '0')
-                      const d = String(aest.getUTCDate()).padStart(2, '0')
-                      const h = String(aest.getUTCHours()).padStart(2, '0')
-                      const mi = String(aest.getUTCMinutes()).padStart(2, '0')
-                      return `${y}-${mo}-${d}T${h}:${mi}`
-                    } catch { return '' }
-                  })() : ''}
+                  value={scheduleInput}
                   onChange={e => {
-                    try {
-                      // Input is raw AEST time string like "2026-04-02T10:00"
-                      // Parse as AEST by treating it as UTC then subtracting 10 hours
-                      const raw = e.target.value // "YYYY-MM-DDTHH:MM"
-                      const asUtc = new Date(raw + ':00.000Z') // Parse as UTC
-                      const realUtc = new Date(asUtc.getTime() - 10 * 60 * 60 * 1000) // Subtract AEST offset
-                      setDrawer(prev => prev ? { ...prev, scheduledAt: realUtc.toISOString() } : prev)
-                    } catch { /* ignore bad date */ }
+                    const raw = e.target.value
+                    setScheduleInput(raw)
+                    // Only commit to drawer state when we have a full valid datetime
+                    if (raw && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(raw)) {
+                      try {
+                        const asUtc = new Date(raw + ':00.000Z')
+                        if (!isNaN(asUtc.getTime())) {
+                          const realUtc = new Date(asUtc.getTime() - 10 * 60 * 60 * 1000)
+                          setDrawer(prev => prev ? { ...prev, scheduledAt: realUtc.toISOString() } : prev)
+                        }
+                      } catch { /* ignore partial input */ }
+                    }
+                  }}
+                  onBlur={() => {
+                    // On blur, if the input is incomplete/invalid, reset to the last good value
+                    if (scheduleInput && !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(scheduleInput)) {
+                      setScheduleInput(isoToAESTInput(drawer.scheduledAt))
+                    }
                   }}
                 />
                 <span className="muted">Gold Coast time (AEST UTC+10)</span>
