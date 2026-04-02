@@ -1039,6 +1039,17 @@ export default function AdsPerformanceTab() {
         </div>
       )}
 
+      {/* Warnings from Meta API */}
+      {data?.warnings?.length > 0 && (
+        <div className="ads-error" style={{ background: '#2a2000', borderColor: '#665200' }}>
+          <div>
+            <div style={{ fontWeight: 600, marginBottom: 4 }}>⚠️ Meta API Warnings</div>
+            {data.warnings.map((w, i) => <div key={i} style={{ fontSize: 12, opacity: 0.85 }}>• {w}</div>)}
+          </div>
+          <button className="btn-sec" onClick={() => fetchData()}>Retry</button>
+        </div>
+      )}
+
       {/* Loading State */}
       {loading && !data && (
         <div className="ads-loading-wrap">

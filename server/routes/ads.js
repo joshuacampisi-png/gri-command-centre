@@ -126,12 +126,42 @@ router.get('/performance', async (req, res) => {
       return res.json(cached)
     }
 
+    // Quick token validation — catch expired/invalid tokens early
+    const token = process.env.META_ACCESS_TOKEN
+    const accountId = process.env.META_AD_ACCOUNT_ID
+    try {
+      const check = await fetch(`https://graph.facebook.com/v20.0/${accountId}?fields=name,account_status&access_token=${token}`)
+      const checkData = await check.json()
+      if (checkData.error) {
+        const msg = checkData.error.message || 'Unknown Meta API error'
+        console.error('[Ads] Meta token/account check failed:', msg)
+        return res.json({ ok: false, error: `Meta API error: ${msg}` })
+      }
+      // account_status: 1 = ACTIVE, 2 = DISABLED, 3 = UNSETTLED, 7 = PENDING_RISK_REVIEW, 8 = PENDING_SETTLEMENT, 9 = IN_GRACE_PERIOD, 100 = PENDING_CLOSURE, 101 = CLOSED, 201 = ANY_ACTIVE, 202 = ANY_CLOSED
+      if (checkData.account_status && checkData.account_status !== 1) {
+        console.warn(`[Ads] Account status is ${checkData.account_status} (not ACTIVE)`)
+      }
+    } catch (e) {
+      console.error('[Ads] Could not reach Meta API:', e.message)
+      return res.json({ ok: false, error: `Cannot reach Meta API: ${e.message}` })
+    }
+
+    // Track warnings from sub-fetches
+    const warnings = []
+
     // One full fetch for the selected range (campaigns + ads + fatigue)
     const perfData = await fetchFullPerformance(preset)
     const campaigns = perfData.campaigns || perfData
 
+    if (campaigns.length === 0) {
+      warnings.push('No campaigns found. Check META_GRI_CAMPAIGN_IDS or ad account permissions.')
+    }
+
     // Enrich with fatigue scores
     for (const campaign of campaigns) {
+      if (!campaign.insights) {
+        warnings.push(`Campaign "${campaign.name}" returned no insights for ${preset}`)
+      }
       for (const ad of campaign.ads || []) {
         const metrics = prepareFatigueMetrics(ad)
         ad.fatigue = calculateFatigueScore(metrics)
@@ -149,10 +179,19 @@ router.get('/performance', async (req, res) => {
 
     // Lightweight account-level fetches for today/yesterday/prev (1 API call each, not full fetches)
     const [todayKPI, yesterdayKPI, prevKPI] = await Promise.all([
-      fetchAccountInsights('today').catch(e => { console.warn('[Ads] Today insights failed:', e.message); return null }),
-      fetchAccountInsights('yesterday').catch(e => { console.warn('[Ads] Yesterday insights failed:', e.message); return null }),
-      fetchPrevPeriodInsights(preset).catch(e => { console.warn('[Ads] Prev period fetch failed:', e.message); return null })
+      fetchAccountInsights('today').catch(e => { warnings.push(`Today insights: ${e.message}`); return null }),
+      fetchAccountInsights('yesterday').catch(e => { warnings.push(`Yesterday insights: ${e.message}`); return null }),
+      fetchPrevPeriodInsights(preset).catch(e => { warnings.push(`Prev period: ${e.message}`); return null })
     ])
+
+    // If everything is zero, flag it
+    if (rangeKPI.spend === 0 && rangeKPI.impressions === 0 && !todayKPI && !yesterdayKPI) {
+      warnings.push('All KPIs are zero — Meta may be returning empty data. Check token permissions and campaign status.')
+    }
+
+    if (warnings.length > 0) {
+      console.warn('[Ads] Warnings:', warnings.join(' | '))
+    }
 
     const result = {
       ok: true,
@@ -164,6 +203,7 @@ router.get('/performance', async (req, res) => {
         rangeLabel: preset
       },
       campaigns,
+      warnings: warnings.length > 0 ? warnings : undefined,
       lastSynced: new Date().toISOString()
     }
 
