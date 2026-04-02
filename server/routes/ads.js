@@ -85,12 +85,59 @@ router.get('/performance', async (req, res) => {
     const todayKPI = aggregateKPI(todayData.campaigns || todayData)
     const yesterdayKPI = yesterdayData ? aggregateKPI(yesterdayData.campaigns || yesterdayData) : null
 
+    // Fetch previous equivalent period for comparison
+    let prevKPI = null
+    try {
+      if (preset === 'today') {
+        prevKPI = yesterdayKPI
+      } else if (preset.startsWith('last_')) {
+        const days = parseInt(preset.replace('last_', '').replace('d', ''))
+        const end = new Date()
+        end.setDate(end.getDate() - days)
+        const start = new Date(end)
+        start.setDate(start.getDate() - days)
+        const since = start.toISOString().slice(0, 10)
+        const until = end.toISOString().slice(0, 10)
+
+        const token = process.env.META_ACCESS_TOKEN
+        const accountId = process.env.META_AD_ACCOUNT_ID
+        const url = `https://graph.facebook.com/v20.0/${accountId}/insights?fields=spend,impressions,clicks,actions,action_values&time_range={"since":"${since}","until":"${until}"}&access_token=${token}`
+        const resp = await fetch(url)
+        const prevData = await resp.json()
+
+        if (prevData.data?.[0]) {
+          const p = prevData.data[0]
+          const pSpend = parseFloat(p.spend || 0)
+          const pActions = {}
+          for (const a of (p.actions || [])) pActions[a.action_type] = parseInt(a.value)
+          const pValues = {}
+          for (const a of (p.action_values || [])) pValues[a.action_type] = parseFloat(a.value)
+          const pPurchases = pActions.purchase || 0
+          const pRevenue = pValues.purchase || 0
+          prevKPI = {
+            spend: pSpend,
+            impressions: parseInt(p.impressions || 0),
+            clicks: parseInt(p.clicks || 0),
+            purchases: pPurchases,
+            purchaseValue: pRevenue,
+            roas: pSpend > 0 ? pRevenue / pSpend : 0,
+            cpa: pPurchases > 0 ? pSpend / pPurchases : 0,
+            ctr: parseInt(p.impressions || 0) > 0 ? (parseInt(p.clicks || 0) / parseInt(p.impressions || 0)) * 100 : 0,
+            cpm: parseInt(p.impressions || 0) > 0 ? (pSpend / parseInt(p.impressions || 0)) * 1000 : 0,
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[Ads] Previous period fetch failed:', e.message)
+    }
+
     res.json({
       ok: true,
       kpi: {
         today: todayKPI,
         yesterday: yesterdayKPI,
         range: rangeKPI,
+        prev: prevKPI,
         rangeLabel: preset
       },
       campaigns,
@@ -98,6 +145,50 @@ router.get('/performance', async (req, res) => {
     })
   } catch (err) {
     console.error('[Ads] Performance fetch error:', err.message)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── GET /api/ads/daily-breakdown ─────────────────────────────────────────────
+
+router.get('/daily-breakdown', async (req, res) => {
+  try {
+    if (!isMetaConfigured()) {
+      return res.json({ ok: false, error: 'Meta API not configured' })
+    }
+    const days = parseInt(req.query.days) || 7
+    const token = process.env.META_ACCESS_TOKEN
+    const accountId = process.env.META_AD_ACCOUNT_ID
+    const url = `https://graph.facebook.com/v20.0/${accountId}/insights?fields=spend,impressions,clicks,actions,action_values,cpm,ctr,frequency&time_increment=1&date_preset=last_${days}d&access_token=${token}`
+    const resp = await fetch(url)
+    const data = await resp.json()
+
+    if (data.error) throw new Error(data.error.message)
+
+    const breakdown = (data.data || []).map(day => {
+      const actions = {}
+      for (const a of (day.actions || [])) actions[a.action_type] = parseInt(a.value)
+      const values = {}
+      for (const a of (day.action_values || [])) values[a.action_type] = parseFloat(a.value)
+      const spend = parseFloat(day.spend || 0)
+      const purchases = actions.purchase || 0
+      const revenue = values.purchase || 0
+      return {
+        date: day.date_start,
+        spend,
+        impressions: parseInt(day.impressions || 0),
+        clicks: parseInt(day.clicks || 0),
+        purchases,
+        revenue,
+        roas: spend > 0 ? revenue / spend : 0,
+        ctr: parseFloat(day.ctr || 0),
+        cpm: parseFloat(day.cpm || 0),
+        frequency: parseFloat(day.frequency || 0),
+      }
+    })
+
+    res.json({ ok: true, breakdown })
+  } catch (err) {
     res.status(500).json({ ok: false, error: err.message })
   }
 })

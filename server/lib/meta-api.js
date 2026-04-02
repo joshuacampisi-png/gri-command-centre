@@ -217,9 +217,13 @@ export async function fetchFullPerformance(datePreset = 'last_7d') {
     })
     const adsetResults = await Promise.all(adsetPromises)
 
-    // Fetch ad insights in parallel
+    // Fetch ad insights + daily insights (for active ads) in parallel
     const adPromises = ads.map(async (ad) => {
-      const insights = await fetchAdInsights(ad.id, datePreset).catch(() => null)
+      const isActive = ad.status === 'ACTIVE'
+      const [insights, dailyInsights] = await Promise.all([
+        fetchAdInsights(ad.id, datePreset).catch(() => null),
+        isActive ? fetchAdInsightsByDay(ad.id, 7).catch(() => []) : Promise.resolve([])
+      ])
       const createdDate = ad.created_time ? new Date(ad.created_time) : null
       const daysRunning = createdDate ? Math.floor((Date.now() - createdDate.getTime()) / 86400000) : 0
 
@@ -233,7 +237,7 @@ export async function fetchFullPerformance(datePreset = 'last_7d') {
         targeting: adsetMap.get(ad.adset_id)?.targeting || null,
         daysRunning,
         insights,
-        dailyInsights: []
+        dailyInsights
       }
     })
 

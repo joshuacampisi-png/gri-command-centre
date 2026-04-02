@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { LineChart, Line, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
+import { LineChart, Line, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ComposedChart, Bar } from 'recharts'
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -23,6 +23,20 @@ const KPI_THRESHOLDS = {
   cpa: { green: 25, amber: 45 },
   ctr: { green: 2, amber: 1 },
   cpm: { green: 12, amber: 20 },
+}
+
+const OBJECTIVE_LABELS = {
+  OUTCOME_SALES: 'Sales',
+  OUTCOME_TRAFFIC: 'Traffic',
+  OUTCOME_ENGAGEMENT: 'Engagement',
+  OUTCOME_LEADS: 'Leads',
+  OUTCOME_APP_PROMOTION: 'App',
+  OUTCOME_AWARENESS: 'Awareness',
+  CONVERSIONS: 'Conversions',
+  LINK_CLICKS: 'Traffic',
+  POST_ENGAGEMENT: 'Engagement',
+  REACH: 'Reach',
+  BRAND_AWARENESS: 'Awareness',
 }
 
 function kpiColor(metric, value) {
@@ -65,7 +79,7 @@ function KpiCard({ label, value, prefix, suffix, metric, delta }) {
       </div>
       {delta && (
         <div className={`ads-kpi-delta ${delta.isGood ? 'ads-delta-good' : 'ads-delta-bad'}`}>
-          {delta.isGood ? '▲' : '▼'} {delta.pct} vs yesterday
+          {delta.isGood ? '▲' : '▼'} {delta.pct} vs prev
         </div>
       )}
     </div>
@@ -93,13 +107,31 @@ function CampaignRow({ campaign, onExpand, expanded, onPause }) {
         <td className="ads-name-cell">
           <span className="ads-expand-icon">{expanded ? '▼' : '▶'}</span>
           {campaign.name}
+          {campaign.objective && (
+            <span style={{ marginLeft: 8, fontSize: 10, padding: '2px 6px', borderRadius: 4, background: '#3B82F618', color: '#3B82F6', fontWeight: 500 }}>
+              {OBJECTIVE_LABELS[campaign.objective] || campaign.objective}
+            </span>
+          )}
         </td>
         <td>
           <span className={`ads-status-badge ads-status-${campaign.status?.toLowerCase()}`}>
             {campaign.status}
           </span>
         </td>
-        <td>${campaign.dailyBudget ? fmtNum(campaign.dailyBudget) : '—'}</td>
+        <td>
+          ${campaign.dailyBudget ? fmtNum(campaign.dailyBudget) : '—'}
+          {(() => {
+            const budget = campaign.dailyBudget || 0
+            if (!budget || !ins?.spend) return null
+            const hourOfDay = new Date().getHours()
+            const expectedSpend = budget * (hourOfDay / 24)
+            const actualSpend = ins.spend
+            const pacing = expectedSpend > 0 ? (actualSpend / expectedSpend) * 100 : 0
+            const label = pacing > 110 ? 'Over' : pacing < 70 ? 'Under' : 'On Track'
+            const color = pacing > 110 ? '#f59e0b' : pacing < 70 ? '#ef4444' : '#22c55e'
+            return <span style={{ display: 'block', fontSize: 10, color, marginTop: 2 }}>{label}</span>
+          })()}
+        </td>
         <td>${fmtNum(ins?.spend)}</td>
         <td style={{ color: kpiColor('roas', ins?.roas) }}>{fmtNum(ins?.roas)}</td>
         <td style={{ color: kpiColor('cpa', ins?.cpa) }}>${fmtNum(ins?.cpa)}</td>
@@ -121,6 +153,25 @@ function CampaignRow({ campaign, onExpand, expanded, onPause }) {
         <tr className="ads-ad-expand-row">
           <td colSpan={11} style={{ padding: 0 }}>
             <AdTable ads={campaign.ads || []} campaignName={campaign.name} />
+            {campaign.adsets?.length > 0 && (
+              <div style={{ marginTop: 16, padding: '0 12px 12px' }}>
+                <h4 style={{ fontSize: 13, color: '#888', marginBottom: 8 }}>Audiences</h4>
+                {campaign.adsets.map(adset => (
+                  <div key={adset.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 12px', borderBottom: '1px solid #1a1a1a', fontSize: 12 }}>
+                    <span style={{ color: '#ccc' }}>{adset.name}</span>
+                    <div style={{ display: 'flex', gap: 16, color: '#888' }}>
+                      {adset.insights && (
+                        <>
+                          <span>Spend: ${adset.insights.spend?.toFixed(2)}</span>
+                          <span>ROAS: {adset.insights.roas?.toFixed(1)}x</span>
+                          <span>CPA: ${adset.insights.cpa?.toFixed(2)}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </td>
         </tr>
       )}
@@ -898,9 +949,19 @@ export default function AdsPerformanceTab() {
     } catch {}
   }
 
+  // Daily breakdown state + fetch
+  const [dailyData, setDailyData] = useState([])
+
+  useEffect(() => {
+    fetch('/api/ads/daily-breakdown?days=7').then(r => r.json()).then(d => {
+      if (d.ok) setDailyData(d.breakdown || [])
+    }).catch(() => {})
+  }, [])
+
   // Use range KPI for the main cards (matches selected date filter)
   // Fall back to today if range not available
   const kpi = data?.kpi?.range || data?.kpi?.today
+  const prevKpi = data?.kpi?.prev || data?.kpi?.yesterday
   const todayKpi = data?.kpi?.today
   const yKpi = data?.kpi?.yesterday
   const campaigns = data?.campaigns || []
@@ -989,43 +1050,12 @@ export default function AdsPerformanceTab() {
       {/* KPI Cards */}
       {kpi && (
         <div className="ads-kpi-grid">
-          <KpiCard
-            label="Spend"
-            value={kpi.spend}
-            prefix="$"
-            metric="spend"
-          />
-          <KpiCard
-            label="Revenue"
-            value={kpi.purchaseValue}
-            prefix="$"
-            metric="revenue"
-          />
-          <KpiCard
-            label="ROAS"
-            value={kpi.roas}
-            metric="roas"
-            delta={dateRange === 'today' ? deltaArrow(kpi.roas, yKpi?.roas) : null}
-          />
-          <KpiCard
-            label="Purchases"
-            value={kpi.purchases}
-            metric="purchases"
-          />
-          <KpiCard
-            label="CPA"
-            value={kpi.cpa}
-            prefix="$"
-            metric="cpa"
-            delta={dateRange === 'today' ? deltaArrow(kpi.cpa, yKpi?.cpa, true) : null}
-          />
-          <KpiCard
-            label="CTR"
-            value={kpi.ctr}
-            suffix="%"
-            metric="ctr"
-            delta={dateRange === 'today' ? deltaArrow(kpi.ctr, yKpi?.ctr) : null}
-          />
+          <KpiCard label="Spend" value={kpi.spend} prefix="$" metric="spend" delta={deltaArrow(kpi.spend, prevKpi?.spend)} />
+          <KpiCard label="Revenue" value={kpi.purchaseValue} prefix="$" metric="revenue" delta={deltaArrow(kpi.purchaseValue, prevKpi?.purchaseValue)} />
+          <KpiCard label="ROAS" value={kpi.roas} metric="roas" delta={deltaArrow(kpi.roas, prevKpi?.roas)} />
+          <KpiCard label="Purchases" value={kpi.purchases} metric="purchases" delta={deltaArrow(kpi.purchases, prevKpi?.purchases)} />
+          <KpiCard label="CPA" value={kpi.cpa} prefix="$" metric="cpa" delta={deltaArrow(kpi.cpa, prevKpi?.cpa, true)} />
+          <KpiCard label="CTR" value={kpi.ctr} suffix="%" metric="ctr" delta={deltaArrow(kpi.ctr, prevKpi?.ctr)} />
         </div>
       )}
 
@@ -1036,6 +1066,37 @@ export default function AdsPerformanceTab() {
           <span className="ads-health-item" style={{ color: FATIGUE_COLORS.WATCH }}>⚠️ {healthCounts.WATCH} Watch</span>
           <span className="ads-health-item" style={{ color: FATIGUE_COLORS.FATIGUING }}>🔶 {healthCounts.FATIGUING} Fatiguing</span>
           <span className="ads-health-item" style={{ color: FATIGUE_COLORS.DEAD }}>🔴 {healthCounts.DEAD} Dead</span>
+        </div>
+      )}
+
+      {/* Daily Performance Chart */}
+      {dailyData.length > 0 && (
+        <div className="ov-card" style={{ marginBottom: 20, padding: 20 }}>
+          <h3 style={{ margin: '0 0 16px', fontSize: 15 }}>Daily Performance (Last 7 Days)</h3>
+          <ResponsiveContainer width="100%" height={280}>
+            <ComposedChart data={dailyData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#222" />
+              <XAxis dataKey="date" tick={{ fill: '#888', fontSize: 11 }} tickFormatter={d => { const dt = new Date(d); return `${dt.getDate()}/${dt.getMonth()+1}` }} />
+              <YAxis yAxisId="spend" tick={{ fill: '#888', fontSize: 11 }} tickFormatter={v => `$${v}`} />
+              <YAxis yAxisId="roas" orientation="right" tick={{ fill: '#888', fontSize: 11 }} tickFormatter={v => `${v}x`} />
+              <Tooltip content={({ payload }) => {
+                if (!payload?.[0]) return null
+                const d = payload[0].payload
+                return (
+                  <div style={{ background: '#1a1a2e', border: '1px solid #333', borderRadius: 8, padding: 12, fontSize: 12 }}>
+                    <div style={{ fontWeight: 600, marginBottom: 4 }}>{d.date}</div>
+                    <div>Spend: ${d.spend?.toFixed(2)}</div>
+                    <div>Revenue: ${d.revenue?.toFixed(2)}</div>
+                    <div>ROAS: {d.roas?.toFixed(1)}x</div>
+                    <div>Purchases: {d.purchases}</div>
+                    <div>CTR: {d.ctr?.toFixed(2)}%</div>
+                  </div>
+                )
+              }} />
+              <Bar yAxisId="spend" dataKey="spend" fill="#6366f1" radius={[4, 4, 0, 0]} name="Spend" />
+              <Line yAxisId="roas" type="monotone" dataKey="roas" stroke="#22c55e" strokeWidth={2} dot={{ r: 4 }} name="ROAS" />
+            </ComposedChart>
+          </ResponsiveContainer>
         </div>
       )}
 
