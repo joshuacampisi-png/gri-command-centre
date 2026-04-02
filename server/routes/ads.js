@@ -75,7 +75,10 @@ router.get('/performance', async (req, res) => {
         : 100
     }
 
-    // Aggregate KPI totals
+    // Aggregate KPI for the selected date range
+    const rangeKPI = aggregateKPI(campaigns)
+
+    // Also fetch today + yesterday for comparison cards
     const todayData = await fetchFullPerformance('today').catch(() => ({ campaigns }))
     const yesterdayData = await fetchFullPerformance('yesterday').catch(() => null)
 
@@ -86,7 +89,9 @@ router.get('/performance', async (req, res) => {
       ok: true,
       kpi: {
         today: todayKPI,
-        yesterday: yesterdayKPI
+        yesterday: yesterdayKPI,
+        range: rangeKPI,
+        rangeLabel: preset
       },
       campaigns,
       lastSynced: new Date().toISOString()

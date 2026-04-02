@@ -898,7 +898,10 @@ export default function AdsPerformanceTab() {
     } catch {}
   }
 
-  const kpi = data?.kpi?.today
+  // Use range KPI for the main cards (matches selected date filter)
+  // Fall back to today if range not available
+  const kpi = data?.kpi?.range || data?.kpi?.today
+  const todayKpi = data?.kpi?.today
   const yKpi = data?.kpi?.yesterday
   const campaigns = data?.campaigns || []
 
@@ -987,33 +990,41 @@ export default function AdsPerformanceTab() {
       {kpi && (
         <div className="ads-kpi-grid">
           <KpiCard
+            label="Spend"
+            value={kpi.spend}
+            prefix="$"
+            metric="spend"
+          />
+          <KpiCard
+            label="Revenue"
+            value={kpi.purchaseValue}
+            prefix="$"
+            metric="revenue"
+          />
+          <KpiCard
             label="ROAS"
             value={kpi.roas}
             metric="roas"
-            delta={deltaArrow(kpi.roas, yKpi?.roas)}
+            delta={dateRange === 'today' ? deltaArrow(kpi.roas, yKpi?.roas) : null}
+          />
+          <KpiCard
+            label="Purchases"
+            value={kpi.purchases}
+            metric="purchases"
           />
           <KpiCard
             label="CPA"
             value={kpi.cpa}
             prefix="$"
-            suffix=" AUD"
             metric="cpa"
-            delta={deltaArrow(kpi.cpa, yKpi?.cpa, true)}
+            delta={dateRange === 'today' ? deltaArrow(kpi.cpa, yKpi?.cpa, true) : null}
           />
           <KpiCard
             label="CTR"
             value={kpi.ctr}
             suffix="%"
             metric="ctr"
-            delta={deltaArrow(kpi.ctr, yKpi?.ctr)}
-          />
-          <KpiCard
-            label="CPM"
-            value={kpi.cpm}
-            prefix="$"
-            suffix=" AUD"
-            metric="cpm"
-            delta={deltaArrow(kpi.cpm, yKpi?.cpm, true)}
+            delta={dateRange === 'today' ? deltaArrow(kpi.ctr, yKpi?.ctr) : null}
           />
         </div>
       )}
