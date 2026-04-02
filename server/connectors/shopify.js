@@ -203,10 +203,15 @@ export async function getShopifyOrdersRange(fromDate, toDate) {
 
   let revenue = 0, shipping = 0, orderCount = 0, protectionCount = 0, protectionRevenue = 0, productRevenue = 0
   for (const order of validOrders) {
+    // Use total_price minus any refunds to match Shopify's "Total sales" metric
     const total = parseFloat(order.total_price || 0)
+    const refunded = (order.refunds || []).reduce((sum, r) => {
+      return sum + (r.transactions || []).reduce((ts, t) => ts + parseFloat(t.amount || 0), 0)
+    }, 0)
+    const netTotal = total - refunded
     const subtotal = parseFloat(order.subtotal_price || 0)
     const ship = (order.shipping_lines || []).reduce((sum, s) => sum + parseFloat(s.price || 0), 0)
-    revenue += total
+    revenue += netTotal
     shipping += ship
     orderCount++
     const hasProtection = (order.line_items || []).some(

@@ -567,17 +567,30 @@ router.get('/truth-metrics', async (req, res) => {
     }
 
     const dateRange = req.query.dateRange || '7d'
-    const daysMap = { 'today': 0, '7d': 7, '14d': 14, '30d': 30, 'last_7d': 7, 'last_14d': 14, 'last_30d': 30 }
-    const days = daysMap[dateRange] ?? 7
 
-    // Calculate date range for Shopify query (AEST dates)
-    // Use +10 for AEST (close enough — off by 1hr during AEDT)
-    const toDate = new Date()
-    toDate.setHours(toDate.getHours() + 10)
-    const toStr = toDate.toISOString().slice(0, 10)
-    const fromDate = new Date(toDate)
-    if (days > 0) fromDate.setDate(fromDate.getDate() - days)
-    const fromStr = days === 0 ? toStr : fromDate.toISOString().slice(0, 10)
+    // AEST date (use Intl to get correct offset including daylight saving)
+    const aestNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Australia/Brisbane' }))
+    const todayStr = aestNow.toISOString().slice(0, 10)
+
+    // For "today": just today. For Xd ranges: match Meta's last_Xd = X days ending yesterday.
+    // This ensures Shopify revenue window aligns exactly with Meta spend window.
+    let fromStr, toStr
+    if (dateRange === 'today') {
+      fromStr = todayStr
+      toStr = todayStr
+    } else {
+      const daysMap = { '7d': 7, '14d': 14, '30d': 30, 'last_7d': 7, 'last_14d': 14, 'last_30d': 30 }
+      const days = daysMap[dateRange] || 7
+      // Meta last_7d = 7 days ending yesterday, so Shopify should match
+      const yesterday = new Date(aestNow)
+      yesterday.setDate(yesterday.getDate() - 1)
+      toStr = yesterday.toISOString().slice(0, 10)
+      const fromDate = new Date(yesterday)
+      fromDate.setDate(fromDate.getDate() - (days - 1))
+      fromStr = fromDate.toISOString().slice(0, 10)
+    }
+
+    console.log(`[Truth] dateRange=${dateRange}, Shopify window: ${fromStr} to ${toStr}`)
 
     // Map to Meta preset
     const presetMap = { 'today': 'today', '7d': 'last_7d', '14d': 'last_14d', '30d': 'last_30d', 'last_7d': 'last_7d', 'last_14d': 'last_14d', 'last_30d': 'last_30d' }
