@@ -330,6 +330,17 @@ router.post('/shopify/shipping-costs', (req, res) => {
   res.json({ ok: true, costs })
 })
 
+router.delete('/shopify/shipping-costs', (req, res) => {
+  const { weekStart } = req.body
+  if (!weekStart) {
+    return res.status(400).json({ ok: false, error: 'weekStart required' })
+  }
+  const costs = loadShippingCosts()
+  delete costs[weekStart]
+  saveShippingCosts(costs)
+  res.json({ ok: true, costs })
+})
+
 router.post('/slack/report', async (req, res) => res.json(await postSlackMessage(req.body)))
 router.post('/slack/role/:role', async (req, res) => res.json(await postRoleMessage(req.params.role, req.body?.text || 'Role test message')))
 router.post('/slack/test', async (_req, res) => res.json(await postInitialCommandCentreMessage()))

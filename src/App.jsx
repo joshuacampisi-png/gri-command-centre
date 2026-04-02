@@ -250,6 +250,26 @@ function OverviewPage({ data, company }) {
     setShippingCostSaving(false)
   }
 
+  const clearShippingCost = async () => {
+    const { from } = getWedTueWeek(shippingWeekOffset)
+    setShippingCostSaving(true)
+    try {
+      const res = await fetch('/api/shopify/shipping-costs', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ weekStart: from })
+      })
+      const d = await res.json()
+      if (d.ok) {
+        setShippingCosts(d.costs)
+        setShippingCostInput('')
+      }
+    } catch (e) {
+      console.error('Clear shipping cost error:', e)
+    }
+    setShippingCostSaving(false)
+  }
+
   // Build the week buttons: current week + last 3 weeks
   const shippingWeeks = [0, -1, -2, -3].map(offset => {
     const { wedDate, tueDate } = getWedTueWeek(offset)
@@ -389,6 +409,17 @@ function OverviewPage({ data, company }) {
                   }}>
                   {shippingCostSaving ? 'Saving...' : 'Save'}
                 </button>
+                {shippingCosts[getWedTueWeek(shippingWeekOffset).from] && (
+                  <button onClick={clearShippingCost} disabled={shippingCostSaving}
+                    title="Clear this week's entry"
+                    style={{
+                      padding: '7px 10px', fontSize: 14, fontWeight: 700, borderRadius: 8,
+                      border: '1px solid #e5e7eb', background: '#fff', color: '#E43F7B',
+                      cursor: 'pointer', lineHeight: 1,
+                    }}>
+                    ✕
+                  </button>
+                )}
               </div>
               {(() => {
                 const { from } = getWedTueWeek(shippingWeekOffset)
