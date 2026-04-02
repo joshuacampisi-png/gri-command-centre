@@ -6,17 +6,27 @@ import { env } from './env.js'
 
 const BASE = 'https://graph.facebook.com/v20.0'
 
+// Hardcoded GRI Meta Ads credentials (env vars override if set)
+const HARDCODED_META_TOKEN = 'EAF4DTuDsScIBRGL36ml9CT7QsG3K5ZB4CdKkZC7n8DB7SmwrGy7nAN6iYO3uBYIKmKkVVHwognPG6Ro4DofWNffZCg4ZCsM3s2IJhqYI2CD57Pq1mE3F0X3HPAZCqr4MvYhWl2j6ZClnEojxdrZAjp5Y9KB54aVAaL6tp9HKgZAUW1MrGPz2x8HtK14GaICHIGiftuf57bEcQnWyxBcUIDsb6EOU5clxEQYU8XW5P7OEd7quvQZDZD'
+const HARDCODED_AD_ACCOUNT_ID = 'act_1519116685663528'
+const HARDCODED_CAMPAIGN_IDS = [
+  '120233436381360711',  // GRI - Local (TNT Hire)
+  '120226215760060711',  // GRI - Advantage+ Catalogue (Testing)
+  '120216057846380711',  // GRI - AUS Wide [Broad Targeting]
+]
+
 function metaToken() {
-  return process.env.META_ACCESS_TOKEN || ''
+  return process.env.META_ACCESS_TOKEN || HARDCODED_META_TOKEN
 }
 
 function metaAccountId() {
-  return process.env.META_AD_ACCOUNT_ID || '' // act_XXXXXXXXX
+  return process.env.META_AD_ACCOUNT_ID || HARDCODED_AD_ACCOUNT_ID
 }
 
 function griCampaignIds() {
   const raw = process.env.META_GRI_CAMPAIGN_IDS || ''
-  return raw.split(',').map(s => s.trim()).filter(Boolean)
+  const envIds = raw.split(',').map(s => s.trim()).filter(Boolean)
+  return envIds.length > 0 ? envIds : HARDCODED_CAMPAIGN_IDS
 }
 
 export function isMetaConfigured() {
