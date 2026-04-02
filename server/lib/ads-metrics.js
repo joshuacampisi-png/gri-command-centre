@@ -54,11 +54,16 @@ export function calculateNPOAS(shopifyRevenue, totalAdSpend, grossMarginPct = 0.
 }
 
 /**
- * Campaign Health Score 0-100
+ * Campaign Health Score 0-100 (portfolio-aware)
  * Returns { score, status, reasons }
  * Status: SCALE | HEALTHY | MONITOR | CULL | EMERGENCY
+ *
+ * @param {object} campaign - campaign with insights
+ * @param {object} [portfolio] - { totalSpend, totalRevenue, weeklyTarget }
+ *   If provided, campaigns that contribute significant revenue get protected
+ *   from harsh scores (we can't cull revenue we need to survive).
  */
-export function calculateCampaignHealth(campaign) {
+export function calculateCampaignHealth(campaign, portfolio = null) {
   const insights = campaign.insights || {}
   const spend = insights.spend || 0
   const purchases = insights.purchases || 0
@@ -84,15 +89,21 @@ export function calculateCampaignHealth(campaign) {
   } else if (cpp > GRI_ADS.breakevenCPP) {
     score -= 20
     reasons.push(`CPP $${cpp.toFixed(2)} above breakeven ($${GRI_ADS.breakevenCPP})`)
-  } else if (cpp > 0 && cpp < GRI_ADS.profitableCPP) {
+  } else if (cpp > 0 && cpp <= GRI_ADS.profitableCPP) {
     score += 10
     reasons.push(`CPP $${cpp.toFixed(2)} below profitable threshold ($${GRI_ADS.profitableCPP})`)
+  } else if (cpp > GRI_ADS.profitableCPP && cpp <= GRI_ADS.breakevenCPP) {
+    // Between profitable and breakeven — acceptable but not great
+    reasons.push(`CPP $${cpp.toFixed(2)} between profitable and breakeven`)
   }
 
   // Volume scoring
-  if (purchases < 10) {
-    score -= 25
-    reasons.push(`Only ${purchases} purchases — insufficient volume`)
+  if (purchases < 5) {
+    score -= 15
+    reasons.push(`Only ${purchases} purchases — low volume`)
+  } else if (purchases >= 5 && purchases < 10) {
+    score -= 5
+    reasons.push(`${purchases} purchases — building volume`)
   } else if (purchases > 50) {
     score += 10
     reasons.push(`${purchases} purchases — strong volume`)
@@ -107,6 +118,18 @@ export function calculateCampaignHealth(campaign) {
     reasons.push(`Frequency ${frequency.toFixed(1)} is high (>4) — creative fatigue likely`)
   }
 
+  // Portfolio protection: if this campaign contributes >25% of total revenue,
+  // boost score to prevent culling a revenue pillar we depend on
+  if (portfolio && portfolio.totalSpend > 0 && purchases > 0) {
+    const estRevenue = purchases * GRI_ADS.aov
+    const revenueShare = estRevenue / (portfolio.totalRevenue || 1)
+    if (revenueShare > 0.25) {
+      const boost = Math.min(15, Math.round(revenueShare * 30))
+      score += boost
+      reasons.push(`Revenue pillar (${(revenueShare * 100).toFixed(0)}% of total) — protected`)
+    }
+  }
+
   // Clamp
   score = Math.max(0, Math.min(100, score))
 
@@ -119,6 +142,174 @@ export function calculateCampaignHealth(campaign) {
   else status = 'EMERGENCY'
 
   return { score, status, reasons }
+}
+
+/**
+ * Generate surgical actions at ad-set and ad level within a campaign.
+ * Returns array of { level, entityId, entityName, action, priority, reason, impact }
+ * priority: URGENT | HIGH | MEDIUM | LOW
+ * action: PAUSE | SCALE_BUDGET | REDUCE_BUDGET | REPLACE_CREATIVE | REFRESH_AUDIENCE | WATCH
+ */
+export function generateSurgicalActions(campaign) {
+  const actions = []
+  const campaignInsights = campaign.insights || {}
+  const campaignSpend = campaignInsights.spend || 0
+
+  // ── Ad Set level analysis ──
+  for (const adset of (campaign.adsets || [])) {
+    const ins = adset.insights || {}
+    const spend = ins.spend || 0
+    const purchases = ins.purchases || 0
+    const cpp = purchases > 0 ? spend / purchases : Infinity
+    const frequency = ins.frequency || 0
+
+    // Ad set spending with zero conversions
+    if (spend > 100 && purchases === 0) {
+      actions.push({
+        level: 'adset',
+        entityId: adset.id,
+        entityName: adset.name,
+        action: 'PAUSE',
+        priority: 'URGENT',
+        reason: `$${spend.toFixed(0)} spent with zero purchases`,
+        impact: `Save $${(spend / 7).toFixed(0)}/day`
+      })
+      continue
+    }
+
+    // Ad set CPP above breakeven with meaningful spend
+    if (cpp > GRI_ADS.breakevenCPP && spend > 50 && purchases > 0) {
+      if (cpp > 50) {
+        actions.push({
+          level: 'adset',
+          entityId: adset.id,
+          entityName: adset.name,
+          action: 'PAUSE',
+          priority: 'HIGH',
+          reason: `CPP $${cpp.toFixed(2)} is dangerously high (breakeven is $${GRI_ADS.breakevenCPP})`,
+          impact: `Losing $${((cpp - GRI_ADS.breakevenCPP) * purchases).toFixed(0)} over this period`
+        })
+      } else {
+        actions.push({
+          level: 'adset',
+          entityId: adset.id,
+          entityName: adset.name,
+          action: 'REDUCE_BUDGET',
+          priority: 'MEDIUM',
+          reason: `CPP $${cpp.toFixed(2)} above breakeven ($${GRI_ADS.breakevenCPP})`,
+          impact: `Reduce budget 20-30% to see if CPP improves with less spend`
+        })
+      }
+    }
+
+    // Ad set with great CPP — scale opportunity
+    if (cpp < GRI_ADS.profitableCPP && purchases >= 3) {
+      actions.push({
+        level: 'adset',
+        entityId: adset.id,
+        entityName: adset.name,
+        action: 'SCALE_BUDGET',
+        priority: 'MEDIUM',
+        reason: `CPP $${cpp.toFixed(2)} well below target ($${GRI_ADS.profitableCPP}) with ${purchases} purchases`,
+        impact: `Increase budget 20% — this ad set is profitable`
+      })
+    }
+
+    // High frequency on ad set — audience fatigue
+    if (frequency > 4 && spend > 50) {
+      actions.push({
+        level: 'adset',
+        entityId: adset.id,
+        entityName: adset.name,
+        action: 'REFRESH_AUDIENCE',
+        priority: frequency > 6 ? 'HIGH' : 'MEDIUM',
+        reason: `Frequency ${frequency.toFixed(1)} means audience is seeing ads too often`,
+        impact: `Broaden targeting or exclude past purchasers`
+      })
+    }
+  }
+
+  // ── Ad (creative) level analysis ──
+  for (const ad of (campaign.ads || [])) {
+    if (ad.status !== 'ACTIVE') continue
+
+    const ins = ad.insights || {}
+    const spend = ins.spend || 0
+    const purchases = ins.purchases || 0
+    const cpp = purchases > 0 ? spend / purchases : Infinity
+    const ctr = ins.ctr || 0
+    const frequency = ins.frequency || 0
+    const fatigue = ad.fatigue || {}
+
+    // Ad spending with zero conversions and meaningful spend
+    if (spend > 50 && purchases === 0) {
+      actions.push({
+        level: 'ad',
+        entityId: ad.id,
+        entityName: ad.name,
+        action: 'PAUSE',
+        priority: spend > 150 ? 'URGENT' : 'HIGH',
+        reason: `$${spend.toFixed(0)} spent with zero purchases — this creative isn't converting`,
+        impact: `Pause and replace with new creative. Save $${(spend / 7).toFixed(0)}/day.`
+      })
+      continue
+    }
+
+    // Ad with terrible CPP compared to other ads in same campaign
+    if (purchases > 0 && cpp > GRI_ADS.breakevenCPP * 1.5) {
+      actions.push({
+        level: 'ad',
+        entityId: ad.id,
+        entityName: ad.name,
+        action: 'PAUSE',
+        priority: 'HIGH',
+        reason: `CPP $${cpp.toFixed(2)} is 50%+ above breakeven — dragging campaign down`,
+        impact: `Replace with new creative. Budget will redistribute to better performers.`
+      })
+    }
+
+    // Fatigued creative (from fatigue engine)
+    if (fatigue.status === 'DEAD' || fatigue.score < 25) {
+      actions.push({
+        level: 'ad',
+        entityId: ad.id,
+        entityName: ad.name,
+        action: 'REPLACE_CREATIVE',
+        priority: 'HIGH',
+        reason: `Creative fatigue score ${fatigue.score}/100 — ${(fatigue.signals || []).join(', ') || 'exhausted'}`,
+        impact: `Pause this ad and launch fresh creative. Audience is blind to this one.`
+      })
+    } else if (fatigue.status === 'FATIGUING' || (fatigue.score >= 25 && fatigue.score < 50)) {
+      actions.push({
+        level: 'ad',
+        entityId: ad.id,
+        entityName: ad.name,
+        action: 'REPLACE_CREATIVE',
+        priority: 'MEDIUM',
+        reason: `Creative fatiguing (score ${fatigue.score}/100) — ${(fatigue.signals || []).join(', ') || 'declining'}`,
+        impact: `Start testing replacement creative now. This one has 3-5 days left.`
+      })
+    }
+
+    // Strong performer — flag as the one to protect
+    if (cpp > 0 && cpp < GRI_ADS.profitableCPP && purchases >= 2) {
+      actions.push({
+        level: 'ad',
+        entityId: ad.id,
+        entityName: ad.name,
+        action: 'PROTECT',
+        priority: 'LOW',
+        reason: `Top performer: CPP $${cpp.toFixed(2)}, ${purchases} purchases`,
+        impact: `Do not touch. This creative is printing money.`
+      })
+    }
+  }
+
+  // Sort: URGENT first, then HIGH, MEDIUM, LOW
+  const priorityOrder = { URGENT: 0, HIGH: 1, MEDIUM: 2, LOW: 3 }
+  actions.sort((a, b) => (priorityOrder[a.priority] || 9) - (priorityOrder[b.priority] || 9))
+
+  return actions
 }
 
 /**

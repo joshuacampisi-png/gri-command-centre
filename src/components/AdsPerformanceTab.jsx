@@ -512,6 +512,106 @@ function SpendChart({ breakdown, loading }) {
   )
 }
 
+// ── Surgical Actions Panel ──────────────────────────────────────────────────
+
+const ACTION_ICONS = {
+  PAUSE: { icon: '\u23F8', label: 'Pause' },
+  SCALE_BUDGET: { icon: '\u2197', label: 'Scale' },
+  REDUCE_BUDGET: { icon: '\u2198', label: 'Reduce' },
+  REPLACE_CREATIVE: { icon: '\u267B', label: 'Replace' },
+  REFRESH_AUDIENCE: { icon: '\uD83C\uDFAF', label: 'Refresh' },
+  PROTECT: { icon: '\u2705', label: 'Protect' },
+  WATCH: { icon: '\uD83D\uDC41', label: 'Watch' },
+}
+
+const PRIORITY_STYLES = {
+  URGENT: { bg: '#F8514930', border: '#F85149', color: '#F85149', label: 'URGENT' },
+  HIGH: { bg: '#E3651D30', border: '#E3651D', color: '#E3651D', label: 'HIGH' },
+  MEDIUM: { bg: '#D2992230', border: '#D29922', color: '#D29922', label: 'MEDIUM' },
+  LOW: { bg: '#3FB95020', border: '#3FB950', color: '#3FB950', label: 'INFO' },
+}
+
+function SurgicalActions({ actions, onPauseEntity, refreshData }) {
+  if (!actions || actions.length === 0) {
+    return (
+      <div className="ads-dark-surgical-section">
+        <h4 className="ads-dark-subsection-title">Surgical Actions</h4>
+        <div style={{ color: COLOURS.muted, padding: '8px 0', fontSize: 13 }}>
+          No immediate actions needed. All elements performing within thresholds.
+        </div>
+      </div>
+    )
+  }
+
+  const urgentActions = actions.filter(a => a.priority === 'URGENT' || a.priority === 'HIGH')
+  const otherActions = actions.filter(a => a.priority !== 'URGENT' && a.priority !== 'HIGH')
+
+  return (
+    <div className="ads-dark-surgical-section">
+      <h4 className="ads-dark-subsection-title">
+        Surgical Actions
+        {urgentActions.length > 0 && (
+          <span style={{ color: COLOURS.red, fontSize: 12, marginLeft: 8 }}>
+            {urgentActions.length} urgent
+          </span>
+        )}
+      </h4>
+      <div className="ads-dark-surgical-list">
+        {actions.map((action, i) => {
+          const pStyle = PRIORITY_STYLES[action.priority] || PRIORITY_STYLES.MEDIUM
+          const aInfo = ACTION_ICONS[action.action] || ACTION_ICONS.WATCH
+          const isPauseAction = action.action === 'PAUSE'
+
+          return (
+            <div key={i} className="ads-dark-surgical-item" style={{ borderLeftColor: pStyle.border }}>
+              <div className="ads-dark-surgical-header">
+                <span className="ads-dark-surgical-priority" style={{ background: pStyle.bg, color: pStyle.color, borderColor: pStyle.border }}>
+                  {pStyle.label}
+                </span>
+                <span className="ads-dark-surgical-action-badge">
+                  {aInfo.icon} {aInfo.label}
+                </span>
+                <span className="ads-dark-surgical-level" style={{ color: COLOURS.muted }}>
+                  {action.level === 'adset' ? 'Ad Set' : 'Ad'}
+                </span>
+              </div>
+              <div className="ads-dark-surgical-entity" style={{ color: COLOURS.text }}>
+                {action.entityName}
+              </div>
+              <div className="ads-dark-surgical-reason" style={{ color: COLOURS.muted }}>
+                {action.reason}
+              </div>
+              <div className="ads-dark-surgical-impact" style={{ color: pStyle.color }}>
+                {action.impact}
+              </div>
+              {isPauseAction && onPauseEntity && (
+                <button
+                  className="ads-dark-btn-micro ads-dark-btn-danger"
+                  style={{ marginTop: 6 }}
+                  onClick={async () => {
+                    await fetch(`${API}/status`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        entityId: action.entityId,
+                        entityType: action.level === 'adset' ? 'adset' : 'ad',
+                        status: 'PAUSED'
+                      })
+                    })
+                    refreshData && refreshData()
+                  }}
+                >
+                  Pause Now
+                </button>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 // ── Creative Card (Ad) ──────────────────────────────────────────────────────
 
 function CreativeCard({ ad, onPause, pausing }) {
@@ -750,10 +850,17 @@ function CampaignRow({ campaign, expanded, onExpand, onStatusChange, onBudgetSav
         </td>
       </tr>
 
-      {/* Expanded: Ad Sets + Creatives */}
+      {/* Expanded: Surgical Actions + Ad Sets + Creatives */}
       {expanded && (
         <tr className="ads-dark-expand-row">
           <td colSpan={10} style={{ padding: 0 }}>
+            {/* Surgical Actions — always first */}
+            <SurgicalActions
+              actions={campaign.surgicalActions}
+              onPauseEntity={true}
+              refreshData={refreshData}
+            />
+
             {/* Ad Sets */}
             {campaign.adsets?.length > 0 && (
               <div className="ads-dark-adsets-section">

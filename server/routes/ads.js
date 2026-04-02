@@ -27,7 +27,8 @@ import {
   calculateNPOAS,
   calculateCampaignHealth,
   generateAlerts,
-  calculateScalePath
+  calculateScalePath,
+  generateSurgicalActions
 } from '../lib/ads-metrics.js'
 import {
   calculateFatigueScore,
@@ -174,7 +175,19 @@ router.get('/performance', async (req, res) => {
       warnings.push('No campaigns found. Check META_GRI_CAMPAIGN_IDS or ad account permissions.')
     }
 
-    // Enrich with fatigue scores
+    // Build portfolio context for revenue-aware health scoring
+    let portfolioTotalSpend = 0, portfolioTotalPurchases = 0
+    for (const c of campaigns) {
+      portfolioTotalSpend += c.insights?.spend || 0
+      portfolioTotalPurchases += c.insights?.purchases || 0
+    }
+    const portfolio = {
+      totalSpend: portfolioTotalSpend,
+      totalRevenue: portfolioTotalPurchases * GRI_ADS.aov,
+      weeklyTarget: 10000
+    }
+
+    // Enrich with fatigue scores, health, and surgical actions
     for (const campaign of campaigns) {
       if (!campaign.insights) {
         warnings.push(`Campaign "${campaign.name}" returned no insights for ${preset}`)
@@ -184,11 +197,14 @@ router.get('/performance', async (req, res) => {
         ad.fatigue = calculateFatigueScore(metrics)
       }
 
-      // Campaign-level health score based on CPP, volume, frequency (not ad fatigue)
-      const health = calculateCampaignHealth(campaign)
+      // Campaign-level health score (portfolio-aware — won't cull revenue pillars)
+      const health = calculateCampaignHealth(campaign, portfolio)
       campaign.healthScore = health.score
       campaign.healthStatus = health.status
       campaign.healthReasons = health.reasons
+
+      // Surgical actions: specific ad-set and ad-level recommendations
+      campaign.surgicalActions = generateSurgicalActions(campaign)
     }
 
     // Aggregate KPI for the selected date range
