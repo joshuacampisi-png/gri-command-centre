@@ -1,0 +1,164 @@
+{
+  "lastUpdated": "2026-04-02",
+  "market": {
+    "size": "$1.42B USD (2024)",
+    "growth": "8.1% CAGR to $2.77B by 2033",
+    "nature": "OTP (one time purchase). No returning customers. Every acquisition must count.",
+    "decisionWindow": "Short. Gender reveals have a hard deadline (the party date). Urgency is real, not manufactured.",
+    "avgPartySpend": "$250 to $1000+ total. Product portion is $50 to $200.",
+    "impulseLevel": "High. Emotional, event driven, short consideration window. Ads fatigue fast."
+  },
+  "aovStrategy": {
+    "currentBenchmark": "$45 to $75 unbundled party supplies",
+    "targetAov": "$160 AUD",
+    "bundleLift": "20 to 55% AOV increase from bundling",
+    "tactics": [
+      {
+        "name": "Tiered threshold rewards",
+        "detail": "Free shipping at $75. Free gift (mini confetti popper) at $100. VIP bonus (party planning printable) at $150.",
+        "expectedLift": "15 to 30% AOV increase"
+      },
+      {
+        "name": "Free shipping threshold",
+        "detail": "Set 20 to 40% above current AOV. If AOV is $70, threshold at $89 to $99. 58% of shoppers add items to reach threshold.",
+        "expectedLift": "15 to 30%"
+      },
+      {
+        "name": "Bridge products",
+        "detail": "Curate add ons priced $8 to $15: reveal stickers, voting cards, photo props, balloon garlands.",
+        "expectedLift": "Fills the gap between current cart and threshold"
+      },
+      {
+        "name": "Good Better Best bundle architecture",
+        "detail": "Essential ($79) / Premium ($129) / Ultimate ($179). Always show individual prices to anchor savings.",
+        "expectedLift": "Most customers choose middle tier"
+      },
+      {
+        "name": "Peace of mind upsell",
+        "detail": "What if the cannon doesn't fire? Sell backup packs. You cannot redo this moment. Insurance framing.",
+        "expectedLift": "10 to 20% from backup/duplicate purchases"
+      }
+    ],
+    "keyInsight": "Customers buy duplicates and backups because they cannot redo the moment. Sell peace of mind packs with extras, backup colours, and re shoot supplies."
+  },
+  "metaAds": {
+    "benchmarks": {
+      "cpc": "$0.34 (lowest of any category)",
+      "ctr": "4.13% (highest of any category)",
+      "medianCpa": "$38.17 all industries, $20 to $35 for shopping/gifts",
+      "cpmQ1_2026": "$10.88 (up 19.2% YoY)",
+      "retargetingRoas": "3.61 vs prospecting 2.19"
+    },
+    "roasTargets": {
+      "breakeven": "3.33 (at 30% margin)",
+      "coldProspecting": "3.0 to 4.0",
+      "retargeting": "5.0+",
+      "asc": "3.5+",
+      "scalable": "4.0+"
+    },
+    "creativeAngles": {
+      "ranked": [
+        {
+          "angle": "Reaction/unboxing UGC",
+          "why": "Real couples filming the reveal moment. 79% say UGC influences buying. First 2 to 3 seconds are everything.",
+          "bestFor": "Cold prospecting"
+        },
+        {
+          "angle": "Before/after transformation",
+          "why": "Boring backyard to epic gender reveal setup. Visual hook is strong.",
+          "bestFor": "Retargeting, social proof"
+        },
+        {
+          "angle": "Everything you need problem solution",
+          "why": "Stress of planning a reveal, solved by one bundle. Drives AOV.",
+          "bestFor": "Bundle focused campaigns"
+        },
+        {
+          "angle": "Social proof compilation",
+          "why": "Multiple reveal reaction clips stitched together. Volume of proof.",
+          "bestFor": "Cold broad"
+        },
+        {
+          "angle": "Urgency/countdown",
+          "why": "Gender reveals have a hard deadline. Real urgency.",
+          "bestFor": "Retargeting ATC and warm audiences"
+        }
+      ]
+    },
+    "campaignStructure": {
+      "phase1_testing": {
+        "type": "ABO",
+        "purpose": "Creative testing. ABO guarantees every creative/audience gets equal budget.",
+        "setup": "3 to 5 ad sets per campaign, 8 to 10 creative variations per round",
+        "budget": "Enough for 50 conversions per week total"
+      },
+      "phase2_scaling": {
+        "type": "CBO + ASC",
+        "purpose": "Graduate winners into CBO using post ID duplication (preserves social proof)",
+        "setup": "CBO budget at 5 to 10x target CPA minimum",
+        "ascMinBudget": "$100/day, recommended $150 to $300/day"
+      },
+      "phase3_mature": {
+        "type": "ASC primary",
+        "purpose": "ASC as workhorse with small manual CBO for tests",
+        "requirement": "50+ purchase events per week through pixel",
+        "retargetingBudget": "15 to 25% of total Meta spend"
+      }
+    },
+    "budgetRules": {
+      "scaleIncrement": "10 to 20% per edit maximum",
+      "waitBetweenEdits": "3+ days minimum",
+      "whyConservative": "Aggressive scaling disrupts learning phase and spikes costs",
+      "learningPhase": "Requires ~50 optimisation events per week"
+    },
+    "ascBestPractices": [
+      "Minimum 5 to 10 ad variations per ASC campaign",
+      "ASC delivers 22% higher ROAS and 9% lower CPA vs traditional targeting",
+      "Retargeting video viewers achieves 3.2x higher CTR and 41% lower CPA",
+      "Let creative be the targeting. Meta algorithm evaluates engagement signals."
+    ]
+  },
+  "productBundles": {
+    "highAovBasket": [
+      { "item": "Primary reveal: 2 to 4 confetti cannons or powder cannons", "price": "$40 to $60" },
+      { "item": "Secondary reveal: Smoke bombs for dramatic outdoor effect", "price": "$20 to $35" },
+      { "item": "Backup: Extra pack in opposite colour (both colours bought pre reveal)", "price": "$15 to $25" },
+      { "item": "Accessories: Voting stickers, photo props, scratch cards", "price": "$10 to $20" },
+      { "item": "Decorations: Balloons, banners, streamers", "price": "$15 to $30" }
+    ],
+    "bundleTiers": [
+      { "name": "Reveal Moment", "contents": "4 pack cannons + 2 smoke bombs", "price": "$70 to $90" },
+      { "name": "Complete Party", "contents": "Cannons + smoke + decorations + voting cards + photo props", "price": "$120 to $150" },
+      { "name": "Ultimate Package", "contents": "Everything above + personalised banner + planning guide + sparklers", "price": "$170 to $200" }
+    ]
+  },
+  "verticalStrategy": {
+    "recommendation": "Stay in product ecommerce. Expand horizontally (complete party supplies, personalisation, digital add ons) rather than vertically into services.",
+    "highPotential": [
+      "Party planning printable kits (near zero COGS, $15 to $30 AOV boost)",
+      "Digital content/guides as value add or lead magnet",
+      "Personalisation (custom names/dates on products for $10 to $20 upcharge)"
+    ],
+    "lowPriority": [
+      "Rentals (different business model, logistics complexity)",
+      "Party planning services (labour intensive, unscalable)",
+      "Physical events/venues (capital intensive)"
+    ]
+  },
+  "killRuleReasoning": {
+    "cpaBreach": "CPA exceeding 2.5x target for 3 days means the ad has found the wrong audience or creative is dead. Cut it.",
+    "frequencyBreach": "Frequency above 6 on cold = audience exhausted. No amount of spend fixes a saturated pool.",
+    "ctrDrop": "40% CTR drop from baseline = creative fatigue. The hook is dead. Rotate.",
+    "zeroPurchase": "Spending 2x CPA target with zero conversions in 72 hours = something is fundamentally broken.",
+    "cpmSpike": "CPM rising 30% WoW with flat CTR = auction competition increasing for same audience. Time to refresh."
+  },
+  "cashFlowPrinciples": {
+    "rule1": "Never increase daily spend by more than 20% in a single edit. 15% is safer.",
+    "rule2": "Wait at least 3 days between budget increases to let Meta reoptimise.",
+    "rule3": "Kill losers fast (3 days data) but let winners run (scale only after 5 day confirmation).",
+    "rule4": "Cash flow > vanity metrics. ROAS means nothing if CPA eats your margin.",
+    "rule5": "At 30% margin, breakeven ROAS is 3.33. Anything below that is losing money.",
+    "rule6": "Fail fast: test 8 to 10 creatives, kill 80% in week 1, double down on 20%.",
+    "rule7": "OTP business = no LTV to fall back on. Every order must be profitable at first purchase."
+  }
+}
