@@ -1,424 +1,326 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  ReferenceLine, Legend, Line, ComposedChart
+  ReferenceLine, Line, ComposedChart
 } from 'recharts'
 
-// ── Colours ─────────────────────────────────────────────────────────────────
+// ── Dark Theme Colours (high contrast) ──────────────────────────────────────
 
 const C = {
   bg: '#0D1117', card: '#161B22', border: '#30363D',
-  text: '#E6EDF3', muted: '#7D8590',
+  text: '#E6EDF3', muted: '#8B949E',
   green: '#3FB950', red: '#F85149', yellow: '#D29922',
   blue: '#58A6FF', pink: '#E43F7B', purple: '#A371F7',
+  orange: '#E3651D',
 }
 
 const API = '/api/flywheel'
+const RANGES = [
+  { key: 'today', label: 'Today (Live)' },
+  { key: '7d', label: '7 Days' },
+  { key: '14d', label: '14 Days' },
+  { key: '30d', label: '30 Days' },
+]
 
 function fmt$(n) {
   if (n == null || isNaN(n)) return '$0.00'
   return '$' + Number(n).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
+function fmtPct(n) { return n != null && !isNaN(n) ? n.toFixed(1) + '%' : '--' }
+function fmtX(n) { return n != null && !isNaN(n) ? n.toFixed(2) + 'x' : '--' }
 
-function fmtPct(n) { return n != null ? n.toFixed(1) + '%' : '--' }
+// ── Recommendation colours ──────────────────────────────────────────────────
+
+const REC_COLORS = {
+  SCALE: C.green, PROTECT: C.blue, KILL: C.red, REPLACE: C.pink, WATCH: C.yellow,
+}
+const ACTION_COLORS = {
+  PAUSE: C.red, SCALE_BUDGET: C.green, REDUCE_BUDGET: C.yellow,
+  REPLACE_CREATIVE: C.pink, REFRESH_AUDIENCE: C.purple,
+}
+const PRIORITY_COLORS = {
+  URGENT: C.red, HIGH: C.orange, MEDIUM: C.yellow, LOW: C.muted,
+}
 
 // ── Main Component ──────────────────────────────────────────────────────────
 
 export function AdsFlywheelTab() {
-  const [summary, setSummary] = useState(null)
-  const [rhythm, setRhythm] = useState(null)
-  const [alerts, setAlerts] = useState([])
-  const [campaigns, setCampaigns] = useState([])
-  const [aov, setAov] = useState(null)
-  const [creatives, setCreatives] = useState([])
-  const [brief, setBrief] = useState(null)
-  const [conversions, setConversions] = useState([])
-  const [actions, setActions] = useState([])
-  const [log, setLog] = useState([])
-  const [targets, setTargets] = useState({})
-  const [learning, setLearning] = useState([])
-  const [opportunities, setOpportunities] = useState([])
-  const [health, setHealth] = useState(null)
-  const [scaleAdSetId, setScaleAdSetId] = useState(null)
+  const [range, setRange] = useState('today')
+  const [d, setD] = useState(null) // dashboard data
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [syncing, setSyncing] = useState(false)
+  const [generating, setGenerating] = useState(false)
+  const [expandedCamp, setExpandedCamp] = useState(null)
+  const [scaleTarget, setScaleTarget] = useState(null) // { id, type:'adset'|'ad', name, budget, roas }
   const [scalePct, setScalePct] = useState(15)
   const [scaling, setScaling] = useState(false)
   const [scaleResult, setScaleResult] = useState(null)
   const [analyseAdName, setAnalyseAdName] = useState('')
   const [analysing, setAnalysing] = useState(false)
   const [analysis, setAnalysis] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [syncing, setSyncing] = useState(false)
-  const [generating, setGenerating] = useState(false)
 
   const load = useCallback(async () => {
     try {
-      const [sumRes, alertRes, campRes, aovRes, crRes, brRes, convRes, actRes, logRes, tgtRes, learnRes, oppRes, healthRes] = await Promise.all([
-        fetch(`${API}/summary`).then(r => r.json()),
-        fetch(`${API}/alerts`).then(r => r.json()),
-        fetch(`${API}/campaigns`).then(r => r.json()),
-        fetch(`${API}/aov`).then(r => r.json()),
-        fetch(`${API}/creatives`).then(r => r.json()),
-        fetch(`${API}/brief/latest`).then(r => r.json()),
-        fetch(`${API}/conversions?days=14`).then(r => r.json()),
-        fetch(`${API}/actions`).then(r => r.json()),
-        fetch(`${API}/log?days=14`).then(r => r.json()),
-        fetch(`${API}/targets`).then(r => r.json()),
-        fetch(`${API}/learning`).then(r => r.json()),
-        fetch(`${API}/opportunities`).then(r => r.json()),
-        fetch(`${API}/health`).then(r => r.json()),
-      ])
-      if (sumRes.ok) { setSummary(sumRes.summary); setRhythm(sumRes.rhythm) }
-      if (alertRes.ok) setAlerts(alertRes.alerts || [])
-      if (campRes.ok) setCampaigns(campRes.campaigns || [])
-      if (aovRes.ok) setAov(aovRes.current)
-      if (crRes.ok) setCreatives(crRes.creatives || [])
-      if (brRes.ok) setBrief(brRes.brief)
-      if (convRes.ok) setConversions(convRes.conversions || [])
-      if (actRes.ok) setActions(actRes.actions || [])
-      if (logRes.ok) setLog(logRes.log || [])
-      if (tgtRes.ok) setTargets(tgtRes.targets || {})
-      if (learnRes.ok) setLearning(learnRes.learning || [])
-      if (oppRes.ok) setOpportunities(oppRes.opportunities || [])
-      if (healthRes) setHealth(healthRes)
-      setError('')
+      const res = await fetch(`${API}/dashboard?range=${range}`).then(r => r.json())
+      if (res.ok) setD(res)
+      else setError(res.error || 'Failed to load')
     } catch (e) { setError(e.message) }
     setLoading(false)
-  }, [])
+  }, [range])
 
-  useEffect(() => { load(); const i = setInterval(load, 60000); return () => clearInterval(i) }, [load])
+  useEffect(() => { setLoading(true); load(); const i = setInterval(load, 60000); return () => clearInterval(i) }, [load])
 
-  async function resolveAlert(id) {
-    await fetch(`${API}/alerts/${id}/resolve`, { method: 'POST' })
-    load()
-  }
+  // Action handlers
+  async function resolveAlert(id) { await fetch(`${API}/alerts/${id}/resolve`, { method: 'POST' }); load() }
+  async function approveAction(id) { await fetch(`${API}/actions/${id}/approve`, { method: 'POST' }); load() }
+  async function rejectAction(id) { await fetch(`${API}/actions/${id}/reject`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reason: '' }) }); load() }
+  async function markDay(day) { await fetch(`${API}/rhythm/${day}/complete`, { method: 'POST' }); load() }
+  async function triggerSync() { setSyncing(true); await fetch(`${API}/meta-sync/trigger`, { method: 'POST' }); setSyncing(false); load() }
+  async function triggerBrief() { setGenerating(true); await fetch(`${API}/brief/generate`, { method: 'POST' }); setGenerating(false); load() }
+  async function approveBrief(id) { await fetch(`${API}/brief/${id}/approve`, { method: 'POST' }); load() }
+  async function runEngine() { await fetch(`${API}/decision-engine/run`, { method: 'POST' }); load() }
 
-  async function approveAction(id) {
-    await fetch(`${API}/actions/${id}/approve`, { method: 'POST' })
-    load()
-  }
-
-  async function rejectAction(id) {
-    await fetch(`${API}/actions/${id}/reject`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reason: 'Rejected by Josh' }) })
-    load()
-  }
-
-  async function markDay(day) {
-    await fetch(`${API}/rhythm/${day}/complete`, { method: 'POST' })
-    load()
-  }
-
-  async function triggerSync() {
-    setSyncing(true)
-    await fetch(`${API}/meta-sync/trigger`, { method: 'POST' })
-    setSyncing(false)
-    load()
-  }
-
-  async function triggerBrief() {
-    setGenerating(true)
-    await fetch(`${API}/brief/generate`, { method: 'POST' })
-    setGenerating(false)
-    load()
-  }
-
-  async function approveBrief(id) {
-    await fetch(`${API}/brief/${id}/approve`, { method: 'POST' })
-    load()
-  }
-
-  async function runEngine() {
-    await fetch(`${API}/decision-engine/run`, { method: 'POST' })
-    load()
-  }
-
-  async function scaleSpend(adSetId, pct) {
-    setScaling(true)
-    setScaleResult(null)
+  async function executeScale(adSetId, pct) {
+    setScaling(true); setScaleResult(null)
     try {
-      const r = await fetch(`${API}/scale/${adSetId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ percentage: pct }),
-      }).then(r => r.json())
+      const r = await fetch(`${API}/scale/${adSetId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ percentage: pct }) }).then(r => r.json())
       setScaleResult(r)
-      if (r.ok) { setScaleAdSetId(null); load() }
+      if (r.ok) { setScaleTarget(null); load() }
     } catch (e) { setScaleResult({ ok: false, error: e.message }) }
     setScaling(false)
   }
 
-  async function analyseCreative(adName) {
-    setAnalysing(true)
-    setAnalysis(null)
+  async function executeAction2(method, params) {
     try {
-      const r = await fetch(`${API}/analyse-creative`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ adName }),
-      }).then(r => r.json())
+      if (method === 'updateAdSetStatus') await fetch(`${API}/scale/${params.adSetId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ percentage: 0 }) })
+      // For pause actions, use the Meta API directly through the action approval flow
+      load()
+    } catch {}
+  }
+
+  async function analyseCreative(name) {
+    setAnalysing(true); setAnalysis(null)
+    try {
+      const r = await fetch(`${API}/analyse-creative`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ adName: name }) }).then(r => r.json())
       setAnalysis(r.ok ? r.analysis : { error: r.error })
     } catch (e) { setAnalysis({ error: e.message }) }
     setAnalysing(false)
   }
 
-  if (loading) return <div style={{ color: C.muted, padding: 40, textAlign: 'center' }}>Loading flywheel data...</div>
-  if (error) return <div style={{ color: C.red, padding: 40 }}>Error: {error}</div>
+  if (loading) return <div style={{ background: C.bg, color: C.muted, padding: 60, textAlign: 'center', minHeight: '100vh' }}>Loading flywheel...</div>
+  if (error && !d) return <div style={{ background: C.bg, color: C.red, padding: 40, minHeight: '100vh' }}>Error: {error}</div>
 
+  const h = d?.hero || {}
   const today = new Date()
   const dayOfWeek = today.getDay()
-  const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
-  const todayName = dayNames[dayOfWeek]
 
   return (
-    <div style={{ background: C.bg, color: C.text, padding: '24px 20px', minHeight: '100vh' }}>
+    <div style={{ background: C.bg, color: C.text, padding: '20px 20px 40px', minHeight: '100vh', colorScheme: 'dark' }}>
 
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+      {/* ── 1. Header + Date Range ────────────────────────────────────────── */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0, letterSpacing: '-0.5px' }}>Ads Intelligence Flywheel</h1>
-          <p style={{ color: C.muted, margin: '4px 0 0', fontSize: 13 }}>Every purchase makes the next brief smarter. Every dollar spent improves the next spend decision.</p>
+          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: C.text }}>Ads Intelligence Flywheel</h1>
+          <p style={{ color: C.muted, margin: '2px 0 0', fontSize: 12 }}>Every purchase makes the next brief smarter</p>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {RANGES.map(r => (
+            <button key={r.key} onClick={() => setRange(r.key)} style={{
+              background: range === r.key ? C.blue : C.card,
+              color: range === r.key ? '#fff' : C.muted,
+              border: `1px solid ${range === r.key ? C.blue : C.border}`,
+              borderRadius: 6, padding: '6px 14px', fontSize: 12, fontWeight: range === r.key ? 700 : 500, cursor: 'pointer',
+            }}>{r.label}</button>
+          ))}
           <button onClick={triggerSync} disabled={syncing} style={btnStyle(C.blue)}>{syncing ? 'Syncing...' : 'Sync Meta'}</button>
           <button onClick={runEngine} style={btnStyle(C.purple)}>Run AI Engine</button>
         </div>
       </div>
 
-      {/* Section 1: Daily Command */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 20 }}>
-        <RhythmCard day="monday" label="Monday" task="Review + Kill Rules" subtitle="Check alerts, pause dead ads, review CPA" done={rhythm?.mondayDone} isToday={todayName === 'monday'} onMark={() => markDay('monday')} />
-        <RhythmCard day="wednesday" label="Wednesday" task="Creative Launch" subtitle="Launch new creatives, duplicate winners" done={rhythm?.wednesdayDone} isToday={todayName === 'wednesday'} onMark={() => markDay('wednesday')} />
-        <RhythmCard day="friday" label="Friday" task="Brief Generation" subtitle="Generate weekly brief, review data" done={rhythm?.fridayDone} isToday={todayName === 'friday'} onMark={() => markDay('friday')} />
+      {/* ── 2. Hero Metrics (6 cards) ─────────────────────────────────────── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 10, marginBottom: 16 }}>
+        <HeroCard label="Shopify Revenue" value={fmt$(h.shopifyRevenue)} sub={`${h.shopifyOrders || 0} orders`} color={C.text} />
+        <HeroCard label="Meta Spend" value={fmt$(h.metaSpend)} sub={`${h.metaPurchases || 0} attributed`} color={C.text} />
+        <HeroCard label="ROAS" value={fmtX(h.roas)} sub="Target: 3.33x" color={h.roas >= 3.33 ? C.green : C.red} />
+        <HeroCard label="MER" value={fmtX(h.mer)} sub="Target: 4.0x" color={h.mer >= 4.0 ? C.green : h.mer >= 3.33 ? C.yellow : C.red} />
+        <HeroCard label="CPA" value={fmt$(h.cpa)} sub="Target: $26.00" color={h.cpa <= 26 ? C.green : h.cpa <= 31.5 ? C.yellow : C.red} />
+        <HeroCard label="AOV" value={fmt$(h.aov)} sub="Target: $160" color={h.aov >= 160 ? C.green : h.aov >= 100 ? C.yellow : C.red} />
       </div>
 
-      {/* Section 2: AI Agent Actions */}
-      {actions.length > 0 && (
-        <div style={{ marginBottom: 20 }}>
-          <h2 style={sectionTitle}>AI Recommendations ({actions.length})</h2>
-          {actions.map(a => (
-            <div key={a.id} style={{ ...cardStyle, borderLeft: `3px solid ${a.riskLevel === 'high' ? C.red : a.riskLevel === 'medium' ? C.yellow : C.green}`, marginBottom: 8 }}>
+      {/* Profit + AMER row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 16 }}>
+        <HeroCard label="Gross Profit" value={fmt$(h.profit)} sub="Revenue x 30% margin minus spend" color={h.profit > 0 ? C.green : C.red} />
+        <HeroCard label="AMER" value={h.amer != null ? h.amer.toFixed(0) + '%' : '--'} sub="Ad margin efficiency" color={h.amer > 0 ? C.green : C.red} />
+        <HeroCard label="Bundle Rate" value={fmtPct(d?.aov?.bundleRate)} sub="Target: 30%+" color={(d?.aov?.bundleRate || 0) >= 30 ? C.green : C.yellow} />
+        <HeroCard label="Orders Today" value={range === 'today' ? (h.shopifyOrders || 0) : '--'} sub="From Shopify" color={C.text} />
+      </div>
+
+      {/* ── Scale Result Toast ─────────────────────────────────────────────── */}
+      {scaleResult && (
+        <div style={{ ...card, marginBottom: 12, borderLeft: `3px solid ${scaleResult.ok ? C.green : C.red}` }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: 13, color: C.text }}>{scaleResult.ok ? scaleResult.message : `Scale failed: ${scaleResult.error}`}</span>
+            <button onClick={() => setScaleResult(null)} style={{ ...btnSm, color: C.muted }}>Dismiss</button>
+          </div>
+        </div>
+      )}
+
+      {/* ── 3. Alerts + AI Actions ─────────────────────────────────────────── */}
+      {(d?.alerts?.length > 0 || d?.pendingActions?.length > 0) && (
+        <div style={{ marginBottom: 16 }}>
+          {d.pendingActions?.map(a => (
+            <div key={a.id} style={{ ...card, borderLeft: `3px solid ${a.riskLevel === 'high' ? C.red : C.green}`, marginBottom: 6 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                    <span style={{ fontWeight: 600 }}>{a.actionTitle}</span>
-                    <span style={badgeStyle(a.aiConfidence >= 7 ? C.green : a.aiConfidence >= 5 ? C.yellow : C.red)}>
-                      Confidence: {a.aiConfidence}/10
-                    </span>
-                    <span style={badgeStyle(a.riskLevel === 'high' ? C.red : a.riskLevel === 'medium' ? C.yellow : C.green)}>
-                      {a.riskLevel} risk
-                    </span>
+                <div>
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 2 }}>
+                    <span style={badge(a.aiConfidence >= 7 ? C.green : C.yellow)}>Confidence {a.aiConfidence}/10</span>
+                    <span style={{ fontWeight: 600, fontSize: 13, color: C.text }}>{a.actionTitle}</span>
                   </div>
-                  <p style={{ color: C.muted, fontSize: 13, margin: '4px 0' }}>{a.actionSummary}</p>
-                  <details style={{ fontSize: 12, color: C.muted, marginTop: 4 }}>
-                    <summary style={{ cursor: 'pointer' }}>Full reasoning</summary>
-                    <p style={{ marginTop: 8, whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>{a.aiReasoning}</p>
-                    <p style={{ marginTop: 4 }}><strong>Expected outcome:</strong> {a.expectedOutcome}</p>
-                  </details>
+                  <p style={{ color: C.muted, fontSize: 12, margin: 0 }}>{a.actionSummary}</p>
                 </div>
-                <div style={{ display: 'flex', gap: 6 }}>
+                <div style={{ display: 'flex', gap: 4 }}>
                   <button onClick={() => approveAction(a.id)} style={btnStyle(C.green)}>Approve</button>
                   <button onClick={() => rejectAction(a.id)} style={btnStyle(C.red)}>Reject</button>
                 </div>
               </div>
             </div>
           ))}
-        </div>
-      )}
-
-      {/* Section 3: Live Alerts */}
-      {alerts.length > 0 && (
-        <div style={{ marginBottom: 20 }}>
-          <h2 style={sectionTitle}>Live Alerts ({alerts.length})</h2>
-          {alerts.slice(0, 10).map(a => (
-            <div key={a.id} style={{
-              ...cardStyle,
-              borderLeft: `3px solid ${a.severity === 'critical' ? C.red : a.severity === 'warning' ? C.yellow : C.blue}`,
-              marginBottom: 6,
-            }}>
+          {d.alerts?.slice(0, 5).map(a => (
+            <div key={a.id} style={{ ...card, borderLeft: `3px solid ${a.severity === 'critical' ? C.red : a.severity === 'warning' ? C.yellow : C.blue}`, marginBottom: 4, padding: '8px 12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={badgeStyle(a.severity === 'critical' ? C.red : a.severity === 'warning' ? C.yellow : C.blue)}>
-                      {a.severity === 'critical' ? 'Kill recommended' : a.severity === 'warning' ? 'Review required' : 'Opportunity'}
-                    </span>
-                    <span style={{ fontWeight: 600, fontSize: 14 }}>{a.title}</span>
-                  </div>
-                  <p style={{ color: C.muted, fontSize: 12, margin: '4px 0 0' }}>{a.body}</p>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                  <span style={badge(a.severity === 'critical' ? C.red : a.severity === 'warning' ? C.yellow : C.blue)}>{a.severity}</span>
+                  <span style={{ fontSize: 13, color: C.text }}>{a.title}</span>
                 </div>
-                <button onClick={() => resolveAlert(a.id)} style={btnSmall}>Resolve</button>
+                <button onClick={() => resolveAlert(a.id)} style={btnSm}>Resolve</button>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* Section 4: Flywheel Metrics */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
-        <MetricCard label="Today's Spend" value={fmt$(summary?.todaySpend)} sub={`${summary?.spendDelta > 0 ? '+' : ''}${summary?.spendDelta || 0}% vs yesterday`} color={C.text} />
-        <MetricCard label="7 Day ROAS" value={summary?.weekRoas?.toFixed(2) || '--'} sub="Target: 3.33" color={summary?.weekRoas >= 3.33 ? C.green : C.red} />
-        <MetricCard label="7 Day CPA" value={fmt$(summary?.weekCpa)} sub={`Target: ${fmt$(summary?.cpaTarget)}`} color={summary?.weekCpa <= (summary?.cpaTarget || 28) ? C.green : C.red} />
-        <MetricCard label="7 Day AOV" value={fmt$(summary?.avgAov7d)} sub={`${summary?.aovVsTarget > 0 ? '+' : ''}${fmt$(summary?.aovVsTarget)} vs $160 target`} color={summary?.avgAov7d >= 160 ? C.green : C.yellow} />
-      </div>
-
-      {/* Extra metrics row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
-        <MetricCard label="Week Spend" value={fmt$(summary?.weekSpend)} sub={`${summary?.weekPurchases || 0} purchases`} color={C.text} />
-        <MetricCard label="Week Revenue" value={fmt$(summary?.weekRevenue)} sub="From Meta attributed" color={C.text} />
-        <MetricCard label="Bundle Rate" value={fmtPct(summary?.bundleRate7d)} sub="Target: 30%+" color={summary?.bundleRate7d >= 30 ? C.green : C.yellow} />
-        <MetricCard label="Orders Today" value={summary?.ordersToday || 0} sub="From Shopify webhook" color={C.text} />
-      </div>
-
-      {/* Section 5: Campaign Health Table */}
-      <div style={{ marginBottom: 20 }}>
-        <h2 style={sectionTitle}>Campaign Health</h2>
-        <div style={{ ...cardStyle, overflowX: 'auto' }}>
-          <table style={tableStyle}>
-            <thead>
-              <tr>
-                <th style={thStyle}>Campaign</th>
-                <th style={thStyle}>Budget/day</th>
-                <th style={thStyle}>7d ROAS</th>
-                <th style={thStyle}>7d CPA</th>
-                <th style={thStyle}>Frequency</th>
-                <th style={thStyle}>Score</th>
-                <th style={thStyle}>Status</th>
-                <th style={thStyle}>Action</th>
-              </tr>
-            </thead>
+      {/* ── 4. Campaign Table (expandable with surgical actions) ────────────── */}
+      <div style={{ marginBottom: 16 }}>
+        <h2 style={secTitle}>Campaign Health</h2>
+        <div style={card}>
+          <table style={tbl}>
+            <thead><tr>
+              <th style={th}></th><th style={th}>Campaign</th><th style={th}>Budget/day</th>
+              <th style={th}>Spend</th><th style={th}>Purchases</th><th style={th}>CPA</th>
+              <th style={th}>Freq</th><th style={th}>Score</th><th style={th}>Status</th><th style={th}>Actions</th>
+            </tr></thead>
             <tbody>
-              {campaigns.length === 0 && (
-                <tr><td colSpan={8} style={{ ...tdStyle, textAlign: 'center', color: C.muted }}>No campaign data yet. Click "Sync Meta" to pull data.</td></tr>
-              )}
-              {campaigns.map((c, i) => {
-                const h = c.health || {}
-                const m = h.metrics || {}
-                const statusColors = {
-                  SCALE_READY: C.blue, HEALTHY: C.green, WATCH: C.yellow, KILL_SIGNAL: C.red, NO_DATA: C.muted,
-                }
-                return (
-                  <tr key={i}>
-                    <td style={tdStyle}>{c.name}</td>
-                    <td style={tdStyle}>{fmt$(c.dailyBudget || c.budget)}</td>
-                    <td style={{ ...tdStyle, color: m.roas >= 3.33 ? C.green : C.red }}>{m.roas?.toFixed(2) || '--'}</td>
-                    <td style={{ ...tdStyle, color: m.cpa <= 28 ? C.green : C.red }}>{m.cpa > 0 ? fmt$(m.cpa) : '--'}</td>
-                    <td style={{ ...tdStyle, color: m.frequency > 5 ? C.red : m.frequency > 3.5 ? C.yellow : C.text }}>{m.frequency?.toFixed(1) || '--'}</td>
-                    <td style={tdStyle}>{h.score || '--'}</td>
-                    <td style={tdStyle}>
-                      <span style={badgeStyle(statusColors[h.status] || C.muted)}>{h.status || 'Unknown'}</span>
-                    </td>
-                    <td style={{ ...tdStyle, fontSize: 12 }}>
-                      {h.status === 'SCALE_READY' && 'Increase budget 15%'}
-                      {h.status === 'KILL_SIGNAL' && 'Pause or rotate creative'}
-                      {h.status === 'WATCH' && 'Monitor closely'}
-                      {h.status === 'HEALTHY' && 'Hold steady'}
-                      {h.status === 'NO_DATA' && 'Sync data'}
-                    </td>
-                  </tr>
-                )
+              {(d?.campaigns || []).map((c, i) => {
+                const m = c.health?.metrics || {}
+                const statusColor = { SCALE_READY: C.green, HEALTHY: C.blue, WATCH: C.yellow, KILL_SIGNAL: C.red, NO_DATA: C.muted }
+                const isExpanded = expandedCamp === i
+                const actionCount = (c.surgicalActions || []).length
+                return [
+                  <tr key={i} onClick={() => setExpandedCamp(isExpanded ? null : i)} style={{ cursor: 'pointer', background: isExpanded ? '#1C2333' : 'transparent' }}>
+                    <td style={td}><span style={{ color: C.muted }}>{isExpanded ? '▼' : '▶'}</span></td>
+                    <td style={{ ...td, fontWeight: 600 }}>{c.name}</td>
+                    <td style={td}>{fmt$(c.dailyBudget || c.budget)}</td>
+                    <td style={td}>{fmt$(m.spend)}</td>
+                    <td style={td}>{m.purchases || 0}</td>
+                    <td style={{ ...td, color: m.cpa <= 26 ? C.green : m.cpa <= 31.5 ? C.yellow : C.red }}>{m.cpa > 0 ? fmt$(m.cpa) : '--'}</td>
+                    <td style={{ ...td, color: m.frequency > 5 ? C.red : m.frequency > 3.5 ? C.yellow : C.text }}>{m.frequency?.toFixed(1) || '--'}</td>
+                    <td style={td}>{c.health?.score || '--'}</td>
+                    <td style={td}><span style={badge(statusColor[c.health?.status] || C.muted)}>{c.health?.status || '?'}</span></td>
+                    <td style={td}>{actionCount > 0 ? <span style={badge(C.pink)}>{actionCount} actions</span> : <span style={{ color: C.muted, fontSize: 11 }}>Hold</span>}</td>
+                  </tr>,
+                  isExpanded && (c.surgicalActions || []).length > 0 && (
+                    <tr key={`${i}-actions`}>
+                      <td colSpan={10} style={{ padding: 0, background: '#1C2333' }}>
+                        <div style={{ padding: '8px 16px 12px' }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 }}>Surgical Actions</div>
+                          {(c.surgicalActions || []).map((sa, j) => (
+                            <div key={j} style={{ ...card, borderLeft: `3px solid ${ACTION_COLORS[sa.action] || C.muted}`, marginBottom: 6, padding: '8px 12px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                <div>
+                                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 2 }}>
+                                    <span style={badge(PRIORITY_COLORS[sa.priority] || C.muted)}>{sa.priority}</span>
+                                    <span style={badge(ACTION_COLORS[sa.action] || C.muted)}>{sa.action.replace(/_/g, ' ')}</span>
+                                    <span style={{ fontWeight: 600, fontSize: 13, color: C.text }}>{sa.entityName}</span>
+                                  </div>
+                                  <p style={{ color: C.muted, fontSize: 12, margin: '2px 0 0' }}>{sa.reason}</p>
+                                  {sa.impact && <p style={{ color: C.green, fontSize: 12, margin: '2px 0 0' }}>{sa.impact}</p>}
+                                  {sa.revenueProjection && (
+                                    <div style={{ background: C.bg, borderRadius: 4, padding: '6px 8px', marginTop: 4, fontSize: 12 }}>
+                                      <span style={{ color: C.muted }}>Current: {fmt$(sa.revenueProjection.currentBudget)}/day</span>
+                                      <span style={{ color: C.text }}> → New: {fmt$(sa.revenueProjection.newBudget)}/day</span>
+                                      <br/>
+                                      <span style={{ color: C.green }}>Expected: +{fmt$(sa.revenueProjection.expectedRevenuePerDay)} revenue/day, +{fmt$(sa.revenueProjection.expectedProfitPerDay)} profit/day</span>
+                                      <span style={{ color: C.muted }}> (based on {sa.revenueProjection.basedOnRoas}x ROAS)</span>
+                                    </div>
+                                  )}
+                                </div>
+                                <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                                  {sa.action === 'SCALE_BUDGET' && sa.execute && (
+                                    <ScaleButton entityId={sa.execute.params.adSetId} entityName={sa.entityName} currentBudget={sa.revenueProjection?.currentBudget} roas={sa.revenueProjection?.basedOnRoas} onScale={executeScale} scaling={scaling} />
+                                  )}
+                                  {sa.action === 'PAUSE' && (
+                                    <button onClick={() => executeAction2(sa.execute?.method, sa.execute?.params)} style={btnStyle(C.red)}>Pause</button>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                ]
               })}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* Section 6: AOV Intelligence */}
-      <div style={{ marginBottom: 20 }}>
-        <h2 style={sectionTitle}>AOV Intelligence</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
-          <div style={cardStyle}>
-            <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: C.text }}>Daily AOV vs $160 Target</h3>
-            {aov?.dailyAvgAov?.length > 0 ? (
-              <ResponsiveContainer width="100%" height={220}>
-                <ComposedChart data={aov.dailyAvgAov}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={C.border} />
-                  <XAxis dataKey="date" tick={{ fill: C.muted, fontSize: 11 }} tickFormatter={d => d.slice(5)} />
-                  <YAxis tick={{ fill: C.muted, fontSize: 11 }} domain={[0, 'auto']} />
-                  <Tooltip contentStyle={{ background: C.card, border: `1px solid ${C.border}`, color: C.text, fontSize: 12 }} />
-                  <ReferenceLine y={160} stroke={C.green} strokeDasharray="5 5" label={{ value: '$160 target', fill: C.green, fontSize: 11 }} />
-                  <Bar dataKey="avgAov" fill={C.blue} name="Avg AOV" radius={[3, 3, 0, 0]} />
-                  <Line type="monotone" dataKey="orders" stroke={C.pink} name="Orders" yAxisId={0} dot={false} />
-                </ComposedChart>
-              </ResponsiveContainer>
-            ) : (
-              <p style={{ color: C.muted, fontSize: 13 }}>No AOV data yet. Orders will appear here once Shopify webhook data flows in.</p>
-            )}
-          </div>
-          <div style={cardStyle}>
-            <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 12px', color: C.text }}>Bundle Gap</h3>
-            <div style={{ fontSize: 28, fontWeight: 700, color: aov?.bundleRate >= 30 ? C.green : C.yellow }}>
-              {fmtPct(aov?.bundleRate)}
-            </div>
-            <p style={{ color: C.muted, fontSize: 12, margin: '4px 0 8px' }}>of orders are bundles (target: 30%+)</p>
-            <div style={{ fontSize: 28, fontWeight: 700, color: C.text }}>
-              {fmtPct(aov?.singleItemRate)}
-            </div>
-            <p style={{ color: C.muted, fontSize: 12, margin: '4px 0 8px' }}>of orders are single item</p>
-            <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 8, marginTop: 8 }}>
-              <p style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }}>Top combinations</p>
-              {(aov?.topCombos || []).map((tc, i) => (
-                <div key={i} style={{ fontSize: 11, color: C.muted, padding: '2px 0' }}>
-                  {tc.combo}: {tc.count} orders ({tc.pctOfOrders}%)
-                </div>
-              ))}
-              {(!aov?.topCombos || aov.topCombos.length === 0) && (
-                <p style={{ fontSize: 11, color: C.muted }}>No bundle data yet</p>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Section 7: Creative Performance Leaderboard */}
-      <div style={{ marginBottom: 20 }}>
-        <h2 style={sectionTitle}>Creative Performance Leaderboard</h2>
-        <div style={{ ...cardStyle, overflowX: 'auto' }}>
-          <table style={tableStyle}>
-            <thead>
-              <tr>
-                <th style={thStyle}>Creative</th>
-                <th style={thStyle}>Angle</th>
-                <th style={thStyle}>Format</th>
-                <th style={thStyle}>Thumbstop</th>
-                <th style={thStyle}>Sustain</th>
-                <th style={thStyle}>7d ROAS</th>
-                <th style={thStyle}>7d CPA</th>
-                <th style={thStyle}>Avg AOV</th>
-                <th style={thStyle}>Freq</th>
-                <th style={thStyle}>Status</th>
-                <th style={thStyle}>Actions</th>
-              </tr>
-            </thead>
+      {/* ── 5. Creative Table with Recommendations ─────────────────────────── */}
+      <div style={{ marginBottom: 16 }}>
+        <h2 style={secTitle}>Creative Performance</h2>
+        <div style={{ ...card, overflowX: 'auto' }}>
+          <table style={tbl}>
+            <thead><tr>
+              <th style={th}>Creative</th><th style={th}>Angle</th><th style={th}>ROAS</th>
+              <th style={th}>CPA</th><th style={th}>Spend</th><th style={th}>Purchases</th>
+              <th style={th}>Freq</th><th style={th}>Fatigue</th><th style={th}>Recommendation</th><th style={th}>Actions</th>
+            </tr></thead>
             <tbody>
-              {creatives.length === 0 && (
-                <tr><td colSpan={11} style={{ ...tdStyle, textAlign: 'center', color: C.muted }}>No creative data yet. Sync Meta to populate.</td></tr>
+              {(d?.creatives || []).length === 0 && (
+                <tr><td colSpan={10} style={{ ...td, textAlign: 'center', color: C.muted }}>No creative data. Click Sync Meta.</td></tr>
               )}
-              {creatives.map((cr, i) => {
-                const rowBg = i < 3 ? '#3FB95010' : cr.frequency > 5 ? '#F8514910' : 'transparent'
+              {(d?.creatives || []).map((cr, i) => {
+                const recColor = REC_COLORS[cr.recommendation] || C.muted
+                const rowBg = cr.recommendation === 'SCALE' ? '#3FB95008' : cr.recommendation === 'KILL' ? '#F8514908' : 'transparent'
                 return (
                   <tr key={i} style={{ background: rowBg }}>
-                    <td style={{ ...tdStyle, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cr.name}</td>
-                    <td style={tdStyle}><span style={badgeStyle(C.purple)}>{cr.creativeAngle}</span></td>
-                    <td style={tdStyle}>{cr.formatType}</td>
-                    <td style={{ ...tdStyle, color: cr.thumbstopPct >= 25 ? C.green : C.yellow }}>{cr.thumbstopPct}%</td>
-                    <td style={tdStyle}>{cr.sustainPct}%</td>
-                    <td style={{ ...tdStyle, fontWeight: 600, color: cr.roas7d >= 3.33 ? C.green : C.red }}>{cr.roas7d}</td>
-                    <td style={{ ...tdStyle, color: cr.cpa7d <= 28 ? C.green : C.red }}>{fmt$(cr.cpa7d)}</td>
-                    <td style={{ ...tdStyle, color: cr.avgAov >= 160 ? C.green : cr.avgAov >= 100 ? C.yellow : C.text }}>{cr.avgAov > 0 ? fmt$(cr.avgAov) : '--'}</td>
-                    <td style={{ ...tdStyle, color: cr.frequency > 5 ? C.red : cr.frequency > 3.5 ? C.yellow : C.text }}>{cr.frequency}</td>
-                    <td style={tdStyle}><span style={badgeStyle(cr.status === 'winner' ? C.green : cr.status === 'fatigued' ? C.red : cr.status === 'watch' ? C.yellow : C.muted)}>{cr.status}</span></td>
-                    <td style={{ ...tdStyle, whiteSpace: 'nowrap' }}>
-                      {scaleAdSetId === cr.adId ? (
-                        <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-                          <select value={scalePct} onChange={e => setScalePct(Number(e.target.value))} style={{ background: C.card, color: C.text, border: `1px solid ${C.border}`, borderRadius: 4, padding: '2px 4px', fontSize: 11 }}>
-                            {[5,8,10,12,15,18].map(p => <option key={p} value={p}>{p}%</option>)}
-                          </select>
-                          <button onClick={() => scaleSpend(cr.adId, scalePct)} disabled={scaling} style={btnStyle(C.green)}>{scaling ? '...' : 'Go'}</button>
-                          <button onClick={() => setScaleAdSetId(null)} style={{ ...btnSmall, color: C.muted }}>X</button>
+                    <td style={{ ...td, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={cr.name}>{cr.name}</td>
+                    <td style={td}><span style={badge(C.purple)}>{cr.creativeAngle}</span></td>
+                    <td style={{ ...td, fontWeight: 600, color: cr.roas7d >= 3.33 ? C.green : cr.roas7d > 0 ? C.red : C.muted }}>{cr.roas7d > 0 ? fmtX(cr.roas7d) : '--'}</td>
+                    <td style={{ ...td, color: cr.cpa7d > 0 && cr.cpa7d <= 26 ? C.green : cr.cpa7d > 31.5 ? C.red : C.text }}>{cr.cpa7d > 0 ? fmt$(cr.cpa7d) : '--'}</td>
+                    <td style={td}>{fmt$(cr.spend)}</td>
+                    <td style={td}>{cr.purchases}</td>
+                    <td style={{ ...td, color: cr.frequency > 5 ? C.red : cr.frequency > 3.5 ? C.yellow : C.text }}>{cr.frequency}</td>
+                    <td style={td}><FatigueBar score={cr.fatigueScore} status={cr.fatigueStatus} /></td>
+                    <td style={td}>
+                      <span style={recBadge(recColor)}>{cr.recommendation}</span>
+                      <div style={{ fontSize: 10, color: C.muted, marginTop: 2, maxWidth: 180 }}>{cr.recommendationReason}</div>
+                      {cr.revenueProjection && (
+                        <div style={{ fontSize: 10, color: C.green, marginTop: 2 }}>
+                          +{fmt$(cr.revenueProjection.expectedRevenuePerDay)}/day rev, +{fmt$(cr.revenueProjection.expectedProfitPerDay)}/day profit
                         </div>
+                      )}
+                    </td>
+                    <td style={{ ...td, whiteSpace: 'nowrap' }}>
+                      {scaleTarget?.id === cr.adId ? (
+                        <ScaleInline target={scaleTarget} onScale={executeScale} onCancel={() => setScaleTarget(null)} scaling={scaling} />
                       ) : (
-                        <div style={{ display: 'flex', gap: 4 }}>
-                          <button onClick={() => setScaleAdSetId(cr.adId)} style={btnStyle(C.green)} title="Scale this ad's budget">Scale</button>
-                          <button onClick={() => analyseCreative(cr.name)} style={btnStyle(C.purple)} title="AI analyse this creative">AI</button>
+                        <div style={{ display: 'flex', gap: 3 }}>
+                          {cr.recommendation === 'SCALE' && <button onClick={() => setScaleTarget({ id: cr.adId, name: cr.name, budget: cr.spend / 7, roas: cr.roas7d })} style={btnStyle(C.green)}>Scale</button>}
+                          {cr.recommendation === 'KILL' && <button style={btnStyle(C.red)}>Pause</button>}
+                          <button onClick={() => analyseCreative(cr.name)} style={btnStyle(C.purple)}>AI</button>
                         </div>
                       )}
                     </td>
@@ -427,389 +329,228 @@ export function AdsFlywheelTab() {
               })}
             </tbody>
           </table>
-          {creatives.length > 3 && (
-            <p style={{ color: C.muted, fontSize: 11, padding: '8px 12px', borderTop: `1px solid ${C.border}` }}>
-              Top 3 highlighted green. Red rows indicate frequency above 5 (fatigued). 10% of creatives generate 90% of spend. Meta has identified its winners.
-            </p>
-          )}
         </div>
       </div>
 
-      {/* Section 8: Creative Brief */}
-      <div style={{ marginBottom: 20 }}>
-        <h2 style={sectionTitle}>Creative Brief</h2>
-        <div style={cardStyle}>
-          {brief ? (
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <div>
-                  <span style={{ fontWeight: 600 }}>Week of {brief.weekOf}</span>
-                  <span style={{ ...badgeStyle(brief.status === 'approved' ? C.green : C.yellow), marginLeft: 8 }}>{brief.status}</span>
-                </div>
-                {brief.status === 'draft' && (
-                  <button onClick={() => approveBrief(brief.id)} style={btnStyle(C.green)}>Approve Brief</button>
-                )}
-              </div>
-              <div style={{ whiteSpace: 'pre-wrap', fontSize: 13, lineHeight: 1.6, color: C.text, maxHeight: 400, overflow: 'auto' }}>
-                {brief.fullBrief}
-              </div>
-            </div>
-          ) : (
-            <div style={{ textAlign: 'center', padding: 20 }}>
-              <p style={{ color: C.muted, marginBottom: 12 }}>No creative brief generated yet.</p>
-              <button onClick={triggerBrief} disabled={generating} style={btnStyle(C.pink)}>
-                {generating ? 'Generating...' : 'Generate This Week\'s Brief'}
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Scale Result Toast */}
-      {scaleResult && (
-        <div style={{ ...cardStyle, marginBottom: 12, borderLeft: `3px solid ${scaleResult.ok ? C.green : C.red}` }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 13 }}>{scaleResult.ok ? scaleResult.message : `Scale failed: ${scaleResult.error}`}</span>
-            <button onClick={() => setScaleResult(null)} style={{ ...btnSmall, color: C.muted }}>Dismiss</button>
+      {/* ── 6. Growth Opportunities (always visible) ───────────────────────── */}
+      <div style={{ marginBottom: 16 }}>
+        <h2 style={secTitle}>Growth Opportunities</h2>
+        {(d?.opportunities || []).length === 0 ? (
+          <div style={{ ...card, borderLeft: `3px solid ${C.green}` }}>
+            <span style={{ color: C.green, fontWeight: 600 }}>All clear</span>
+            <span style={{ color: C.muted, marginLeft: 8, fontSize: 12 }}>No gaps detected in current setup</span>
           </div>
-        </div>
-      )}
-
-      {/* Growth Opportunities */}
-      {opportunities.length > 0 && (
-        <div style={{ marginBottom: 20 }}>
-          <h2 style={sectionTitle}>Growth Opportunities ({opportunities.length})</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
-            {opportunities.map((opp, i) => (
-              <div key={i} style={{ ...cardStyle, borderLeft: `3px solid ${opp.priority === 'high' ? C.pink : C.blue}` }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                  <span style={badgeStyle(opp.priority === 'high' ? C.pink : opp.priority === 'medium' ? C.blue : C.muted)}>{opp.priority}</span>
-                  <span style={badgeStyle(C.purple)}>{opp.type.replace(/_/g, ' ')}</span>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            {(d?.opportunities || []).map((o, i) => (
+              <div key={i} style={{ ...card, borderLeft: `3px solid ${o.priority === 'high' ? C.pink : C.blue}` }}>
+                <div style={{ display: 'flex', gap: 4, marginBottom: 4 }}>
+                  <span style={badge(o.priority === 'high' ? C.pink : C.blue)}>{o.priority}</span>
+                  <span style={badge(C.purple)}>{o.type.replace(/_/g, ' ')}</span>
                 </div>
-                <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>{opp.title}</div>
-                <p style={{ color: C.muted, fontSize: 12, margin: 0, lineHeight: 1.5 }}>{opp.detail}</p>
+                <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 2, color: C.text }}>{o.title}</div>
+                <p style={{ color: C.muted, fontSize: 12, margin: 0, lineHeight: 1.4 }}>{o.detail}</p>
               </div>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* Creative Analysis Panel */}
-      <div style={{ marginBottom: 20 }}>
-        <h2 style={sectionTitle}>Creative Analysis</h2>
-        <div style={cardStyle}>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-            <input
-              type="text" value={analyseAdName} onChange={e => setAnalyseAdName(e.target.value)}
-              placeholder="Paste ad name or describe the creative..."
-              style={{ flex: 1, background: C.bg, color: C.text, border: `1px solid ${C.border}`, borderRadius: 6, padding: '8px 12px', fontSize: 13 }}
-            />
+      {/* ── 7. Creative Analysis ───────────────────────────────────────────── */}
+      <div style={{ marginBottom: 16 }}>
+        <h2 style={secTitle}>Creative Analysis</h2>
+        <div style={card}>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+            <input type="text" value={analyseAdName} onChange={e => setAnalyseAdName(e.target.value)} placeholder="Paste ad name or describe the creative..."
+              style={{ flex: 1, background: C.bg, color: C.text, border: `1px solid ${C.border}`, borderRadius: 6, padding: '8px 12px', fontSize: 13 }} />
             <button onClick={() => analyseCreative(analyseAdName)} disabled={analysing || !analyseAdName} style={btnStyle(C.purple)}>
-              {analysing ? 'Analysing...' : 'Analyse Creative'}
+              {analysing ? 'Analysing...' : 'Analyse'}
             </button>
           </div>
-          <p style={{ color: C.muted, fontSize: 11, margin: '0 0 8px' }}>
-            Enter an ad name or describe a new creative. The AI will detect the angle, recommend placement, write copy, and suggest which campaign/ad set it belongs in.
-          </p>
+          <p style={{ color: C.muted, fontSize: 11, margin: 0 }}>AI detects angle, recommends placement, writes copy, suggests campaign and ad set.</p>
           {analysis && !analysis.error && (
-            <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 12 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 12 }}>
-                <div>
-                  <div style={{ fontSize: 11, color: C.muted }}>Detected Angle</div>
-                  <span style={badgeStyle(C.purple)}>{analysis.detectedAngle}</span>
-                </div>
-                <div>
-                  <div style={{ fontSize: 11, color: C.muted }}>Format</div>
-                  <span style={badgeStyle(C.blue)}>{analysis.detectedFormat}</span>
-                </div>
-                <div>
-                  <div style={{ fontSize: 11, color: C.muted }}>AOV Potential</div>
-                  <span style={badgeStyle(analysis.aovPotential === 'premium' ? C.green : analysis.aovPotential === 'high' ? C.green : C.yellow)}>{analysis.aovPotential}</span>
-                </div>
+            <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 10, marginTop: 10 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 10 }}>
+                <div><div style={{ fontSize: 10, color: C.muted }}>Angle</div><span style={badge(C.purple)}>{analysis.detectedAngle}</span></div>
+                <div><div style={{ fontSize: 10, color: C.muted }}>Format</div><span style={badge(C.blue)}>{analysis.detectedFormat}</span></div>
+                <div><div style={{ fontSize: 10, color: C.muted }}>AOV Potential</div><span style={badge(analysis.aovPotential === 'premium' ? C.green : C.yellow)}>{analysis.aovPotential}</span></div>
+                <div><div style={{ fontSize: 10, color: C.muted }}>Spend</div><span style={{ color: C.green, fontWeight: 600 }}>${analysis.recommendedDailySpend}/day</span></div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
-                <div>
-                  <div style={{ fontSize: 11, color: C.muted, marginBottom: 2 }}>Recommended Campaign</div>
-                  <div style={{ fontSize: 13, fontWeight: 600 }}>{analysis.recommendedCampaign}</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: 11, color: C.muted, marginBottom: 2 }}>Recommended Audience</div>
-                  <div style={{ fontSize: 13, fontWeight: 600 }}>{analysis.recommendedAudience}</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: 11, color: C.muted, marginBottom: 2 }}>Recommended Ad Set</div>
-                  <div style={{ fontSize: 13, fontWeight: 600 }}>{analysis.recommendedAdSet}</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: 11, color: C.muted, marginBottom: 2 }}>Starting Daily Spend</div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: C.green }}>${analysis.recommendedDailySpend}</div>
-                </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+                <div><div style={{ fontSize: 10, color: C.muted }}>Campaign</div><div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{analysis.recommendedCampaign}</div></div>
+                <div><div style={{ fontSize: 10, color: C.muted }}>Audience</div><div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{analysis.recommendedAudience}</div></div>
               </div>
-              <div style={{ fontSize: 11, color: C.muted, marginBottom: 2 }}>Target Persona</div>
-              <p style={{ fontSize: 13, margin: '0 0 8px' }}>{analysis.targetPersona}</p>
-              <div style={{ fontSize: 11, color: C.muted, marginBottom: 2 }}>Placement Reasoning</div>
-              <p style={{ fontSize: 13, margin: '0 0 8px' }}>{analysis.placementReasoning}</p>
-              {analysis.suggestedHookLine && (
-                <div style={{ background: C.bg, borderRadius: 6, padding: 10, marginBottom: 8 }}>
-                  <div style={{ fontSize: 11, color: C.muted, marginBottom: 2 }}>Suggested Hook</div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: C.pink }}>{analysis.suggestedHookLine}</div>
-                </div>
-              )}
-              {analysis.suggestedBodyCopy && (
-                <div style={{ background: C.bg, borderRadius: 6, padding: 10, marginBottom: 8 }}>
-                  <div style={{ fontSize: 11, color: C.muted, marginBottom: 2 }}>Suggested Body Copy</div>
-                  <div style={{ fontSize: 13, whiteSpace: 'pre-wrap' }}>{analysis.suggestedBodyCopy}</div>
-                </div>
-              )}
-              {analysis.growthOpportunities && analysis.growthOpportunities.length > 0 && (
-                <div style={{ marginTop: 8 }}>
-                  <div style={{ fontSize: 11, color: C.muted, marginBottom: 4 }}>Growth Ideas</div>
-                  {analysis.growthOpportunities.map((g, i) => (
-                    <div key={i} style={{ fontSize: 12, color: C.text, padding: '2px 0' }}>+ {g}</div>
-                  ))}
-                </div>
-              )}
+              {analysis.suggestedHookLine && <div style={{ background: C.bg, borderRadius: 6, padding: 8, marginBottom: 6 }}><div style={{ fontSize: 10, color: C.muted }}>Hook</div><div style={{ fontSize: 14, fontWeight: 600, color: C.pink }}>{analysis.suggestedHookLine}</div></div>}
+              {analysis.suggestedBodyCopy && <div style={{ background: C.bg, borderRadius: 6, padding: 8, marginBottom: 6 }}><div style={{ fontSize: 10, color: C.muted }}>Body Copy</div><div style={{ fontSize: 12, whiteSpace: 'pre-wrap', color: C.text }}>{analysis.suggestedBodyCopy}</div></div>}
+              <p style={{ color: C.muted, fontSize: 12, margin: '4px 0 0' }}>{analysis.placementReasoning}</p>
             </div>
           )}
-          {analysis && analysis.error && (
-            <div style={{ color: C.red, fontSize: 12, marginTop: 8 }}>Error: {analysis.error}</div>
-          )}
+          {analysis?.error && <div style={{ color: C.red, fontSize: 12, marginTop: 8 }}>Error: {analysis.error}</div>}
         </div>
       </div>
 
-      {/* System Health */}
-      {health && (
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-            <h2 style={{ ...sectionTitle, margin: 0 }}>System Health</h2>
-            <span style={badgeStyle(health.status === 'healthy' ? C.green : health.status === 'warning' ? C.yellow : C.red)}>{health.status}</span>
-            {health.backups && <span style={{ fontSize: 11, color: C.muted }}>Last backup: {health.backups?.latest || 'none'} ({health.backups?.totalDays || 0} days stored)</span>}
+      {/* ── 8. AOV Intelligence ─────────────────────────────────────────────── */}
+      <div style={{ marginBottom: 16 }}>
+        <h2 style={secTitle}>AOV Intelligence</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 10 }}>
+          <div style={card}>
+            <h3 style={{ fontSize: 13, fontWeight: 600, margin: '0 0 8px', color: C.text }}>Daily AOV vs $160 Target</h3>
+            {d?.aov?.dailyAvgAov?.length > 0 ? (
+              <ResponsiveContainer width="100%" height={180}>
+                <ComposedChart data={d.aov.dailyAvgAov}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={C.border} />
+                  <XAxis dataKey="date" tick={{ fill: C.muted, fontSize: 10 }} tickFormatter={dt => dt.slice(5)} />
+                  <YAxis tick={{ fill: C.muted, fontSize: 10 }} />
+                  <Tooltip contentStyle={{ background: C.card, border: `1px solid ${C.border}`, color: C.text, fontSize: 11 }} />
+                  <ReferenceLine y={160} stroke={C.green} strokeDasharray="5 5" />
+                  <Bar dataKey="avgAov" fill={C.blue} name="Avg AOV" radius={[3, 3, 0, 0]} />
+                </ComposedChart>
+              </ResponsiveContainer>
+            ) : <p style={{ color: C.muted, fontSize: 12 }}>Waiting for order data via Shopify webhook</p>}
           </div>
-          {health.issues && health.issues.length > 0 && (
-            <div style={cardStyle}>
-              {health.issues.map((issue, i) => (
-                <div key={i} style={{ fontSize: 12, color: C.yellow, padding: '4px 0' }}>{issue}</div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Section 9: CPA Targets */}
-      <div style={{ marginBottom: 20 }}>
-        <h2 style={sectionTitle}>CPA Targets</h2>
-        <div style={{ ...cardStyle, overflowX: 'auto' }}>
-          <table style={tableStyle}>
-            <thead>
-              <tr>
-                <th style={thStyle}>Category</th>
-                <th style={thStyle}>Target CPA</th>
-                <th style={thStyle}>Kill CPA (2.5x)</th>
-                <th style={thStyle}>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.entries(targets).map(([cat, t]) => (
-                <tr key={cat}>
-                  <td style={{ ...tdStyle, textTransform: 'capitalize' }}>{cat.replace(/_/g, ' ')}</td>
-                  <td style={tdStyle}>{fmt$(t.target)}</td>
-                  <td style={{ ...tdStyle, color: C.red }}>{fmt$(t.max)}</td>
-                  <td style={tdStyle}>
-                    <span style={badgeStyle(C.green)}>Active</span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <p style={{ color: C.muted, fontSize: 11, padding: '8px 12px', borderTop: `1px solid ${C.border}` }}>
-            Kill rule fires when an ad exceeds the max CPA for 3 consecutive days. Scale rule fires when below target for 5 consecutive days.
-          </p>
+          <div style={card}>
+            <div style={{ fontSize: 24, fontWeight: 700, color: (d?.aov?.bundleRate || 0) >= 30 ? C.green : C.yellow }}>{fmtPct(d?.aov?.bundleRate)}</div>
+            <p style={{ color: C.muted, fontSize: 11 }}>bundle rate (target: 30%)</p>
+            <div style={{ fontSize: 24, fontWeight: 700, color: C.text, marginTop: 8 }}>{fmtPct(d?.aov?.singleItemRate)}</div>
+            <p style={{ color: C.muted, fontSize: 11 }}>single item orders</p>
+            {(d?.aov?.topCombos || []).length > 0 && (
+              <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 6, marginTop: 8 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: C.text, marginBottom: 2 }}>Top combos</div>
+                {d.aov.topCombos.map((tc, i) => <div key={i} style={{ fontSize: 10, color: C.muted }}>{tc.combo}: {tc.count} ({tc.pctOfOrders}%)</div>)}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Section 10: Flywheel Log */}
-      <div style={{ marginBottom: 20 }}>
-        <h2 style={sectionTitle}>Flywheel Log (last 14 days)</h2>
-        <div style={cardStyle}>
-          {conversions.length > 0 ? (
-            <div style={{ maxHeight: 400, overflow: 'auto' }}>
-              <table style={tableStyle}>
-                <thead>
-                  <tr>
-                    <th style={thStyle}>Date</th>
-                    <th style={thStyle}>Order</th>
-                    <th style={thStyle}>AOV</th>
-                    <th style={thStyle}>Products</th>
-                    <th style={thStyle}>Source</th>
-                    <th style={thStyle}>Angle</th>
-                    <th style={thStyle}>Bundle</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {conversions.slice(0, 50).map((c, i) => (
-                    <tr key={i}>
-                      <td style={{ ...tdStyle, fontSize: 11 }}>{new Date(c.orderedAt).toLocaleDateString('en-AU')}</td>
-                      <td style={tdStyle}>{c.orderName || c.shopifyOrderId}</td>
-                      <td style={{ ...tdStyle, fontWeight: 600, color: c.aov >= 160 ? C.green : c.aov >= 100 ? C.yellow : C.text }}>{fmt$(c.aov)}</td>
-                      <td style={{ ...tdStyle, fontSize: 11, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {(c.products || []).map(p => p.title).join(', ')}
-                      </td>
-                      <td style={tdStyle}><span style={badgeStyle(c.utmSource === 'facebook' ? C.blue : C.muted)}>{c.utmSource || 'direct'}</span></td>
-                      <td style={tdStyle}>{c.creativeAngle || '--'}</td>
-                      <td style={tdStyle}>{c.bundleDetected ? <span style={badgeStyle(C.green)}>Bundle</span> : <span style={{ color: C.muted }}>Single</span>}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+      {/* ── 9. Weekly Rhythm ────────────────────────────────────────────────── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 16 }}>
+        {[{ day: 'monday', label: 'Monday', task: 'Review + Kill Rules', d: 1 }, { day: 'wednesday', label: 'Wednesday', task: 'Creative Launch', d: 3 }, { day: 'friday', label: 'Friday', task: 'Brief Generation', d: 5 }].map(r => {
+          const done = d?.rhythm?.[`${r.day}Done`]
+          const isToday = dayOfWeek === r.d
+          return (
+            <div key={r.day} style={{ ...card, borderTop: `3px solid ${done ? C.green : isToday ? C.blue : C.border}`, opacity: isToday || done ? 1 : 0.5 }}>
+              <div style={{ fontSize: 11, color: C.muted }}>{r.label}</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{r.task}</div>
+              {done ? <span style={badge(C.green)}>Done</span> : isToday ? <button onClick={() => markDay(r.day)} style={btnSm}>Mark Done</button> : null}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* ── 10. Creative Brief ──────────────────────────────────────────────── */}
+      <div style={{ marginBottom: 16 }}>
+        <h2 style={secTitle}>Creative Brief</h2>
+        <div style={card}>
+          {d?.brief ? (
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                <span style={{ fontWeight: 600, color: C.text }}>Week of {d.brief.weekOf}</span>
+                {d.brief.status === 'draft' && <button onClick={() => approveBrief(d.brief.id)} style={btnStyle(C.green)}>Approve Brief</button>}
+              </div>
+              <div style={{ whiteSpace: 'pre-wrap', fontSize: 12, lineHeight: 1.5, color: C.text, maxHeight: 300, overflow: 'auto' }}>{d.brief.fullBrief}</div>
             </div>
           ) : (
-            <p style={{ color: C.muted, fontSize: 13, padding: 12 }}>No conversion data yet. Register the Shopify webhook to start tracking orders.</p>
+            <div style={{ textAlign: 'center', padding: 16 }}>
+              <p style={{ color: C.muted, marginBottom: 8 }}>No brief generated yet</p>
+              <button onClick={triggerBrief} disabled={generating} style={btnStyle(C.pink)}>{generating ? 'Generating...' : 'Generate Brief'}</button>
+            </div>
           )}
         </div>
       </div>
 
-      {/* Section 11: Agent Learning */}
-      {learning.length > 0 && (
-        <div style={{ marginBottom: 20 }}>
-          <h2 style={sectionTitle}>Agent Learning History</h2>
-          <div style={cardStyle}>
-            <div style={{ maxHeight: 300, overflow: 'auto' }}>
-              {learning.slice(0, 20).map((l, i) => (
-                <div key={i} style={{ padding: '8px 12px', borderBottom: `1px solid ${C.border}`, fontSize: 12 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ fontWeight: 600 }}>{l.actionType}</span>
-                    <span style={{ color: C.muted }}>{l.predictionAccuracy ? `${l.predictionAccuracy}% accurate` : 'Pending'}</span>
-                  </div>
-                  <p style={{ color: C.muted, margin: '2px 0' }}>
-                    Confidence was {l.confidenceWas}, should be {l.confidenceShouldBe || '?'}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
+      {/* ── 11. System Health (compact footer) ─────────────────────────────── */}
+      {d?.health && (
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 11, color: C.muted, marginTop: 8 }}>
+          <span style={badge(d.health.status === 'healthy' ? C.green : C.yellow)}>{d.health.status}</span>
+          <span>Backup: {d.health.backups?.latest || 'none'} ({d.health.backups?.totalDays || 0} days)</span>
+          {d.health.issues?.length > 0 && <span style={{ color: C.yellow }}>{d.health.issues.length} issues</span>}
         </div>
       )}
-
-      {/* Section 12: System Event Log */}
-      <details style={{ marginBottom: 20 }}>
-        <summary style={{ ...sectionTitle, cursor: 'pointer' }}>System Event Log ({log.length} events)</summary>
-        <div style={{ ...cardStyle, marginTop: 8, maxHeight: 300, overflow: 'auto' }}>
-          {log.slice(0, 50).map((e, i) => (
-            <div key={i} style={{ padding: '6px 12px', borderBottom: `1px solid ${C.border}`, fontSize: 11 }}>
-              <span style={{ color: C.muted, marginRight: 8 }}>{new Date(e.timestamp).toLocaleString('en-AU')}</span>
-              <span style={badgeStyle(C.blue)}>{e.type}</span>
-              <span style={{ marginLeft: 8 }}>{typeof e.detail === 'string' ? e.detail : JSON.stringify(e.detail)}</span>
-            </div>
-          ))}
-          {log.length === 0 && <p style={{ color: C.muted, padding: 12, fontSize: 12 }}>No events yet</p>}
-        </div>
-      </details>
-
     </div>
   )
 }
 
 // ── Subcomponents ───────────────────────────────────────────────────────────
 
-function RhythmCard({ day, label, task, subtitle, done, isToday, onMark }) {
-  const borderColor = done ? C.green : isToday ? C.blue : C.border
+function HeroCard({ label, value, sub, color }) {
   return (
-    <div style={{ ...cardStyle, borderTop: `3px solid ${borderColor}`, opacity: isToday || done ? 1 : 0.6 }}>
-      <div style={{ fontSize: 12, color: C.muted, marginBottom: 4 }}>{label}</div>
-      <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>{task}</div>
-      <div style={{ fontSize: 11, color: C.muted, marginBottom: 8 }}>{subtitle}</div>
-      {done ? (
-        <span style={badgeStyle(C.green)}>Done</span>
-      ) : isToday ? (
-        <button onClick={onMark} style={btnSmall}>Mark Done</button>
-      ) : (
-        <span style={{ fontSize: 11, color: C.muted }}>{new Date().getDay() > ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].indexOf(day) ? 'Completed' : 'Upcoming'}</span>
-      )}
+    <div style={card}>
+      <div style={{ fontSize: 11, color: C.muted, marginBottom: 2 }}>{label}</div>
+      <div style={{ fontSize: 22, fontWeight: 700, color: color || C.text, lineHeight: 1.1 }}>{value}</div>
+      <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>{sub}</div>
     </div>
   )
 }
 
-function MetricCard({ label, value, sub, color }) {
+function FatigueBar({ score, status }) {
+  const color = score >= 75 ? C.green : score >= 50 ? C.yellow : score >= 25 ? C.orange : C.red
   return (
-    <div style={cardStyle}>
-      <div style={{ fontSize: 12, color: C.muted, marginBottom: 4 }}>{label}</div>
-      <div style={{ fontSize: 24, fontWeight: 700, color: color || C.text }}>{value}</div>
-      <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>{sub}</div>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+      <div style={{ width: 40, height: 6, background: C.bg, borderRadius: 3, overflow: 'hidden' }}>
+        <div style={{ width: `${score || 0}%`, height: '100%', background: color, borderRadius: 3 }} />
+      </div>
+      <span style={{ fontSize: 10, color }}>{score || 0}</span>
+    </div>
+  )
+}
+
+function ScaleButton({ entityId, entityName, currentBudget, roas, onScale, scaling }) {
+  const [show, setShow] = useState(false)
+  const [pct, setPct] = useState(15)
+  if (!show) return <button onClick={() => setShow(true)} style={btnStyle(C.green)}>Scale</button>
+  const extra = (currentBudget || 0) * (pct / 100)
+  const expectedRev = extra * (roas || 3)
+  const expectedProfit = (expectedRev * 0.30) - extra
+  return (
+    <div style={{ background: C.bg, borderRadius: 6, padding: 8, minWidth: 220 }}>
+      <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginBottom: 4 }}>
+        <select value={pct} onChange={e => setPct(Number(e.target.value))} style={sel}>{[5, 8, 10, 12, 15, 18].map(p => <option key={p} value={p}>{p}%</option>)}</select>
+        <button onClick={() => onScale(entityId, pct)} disabled={scaling} style={btnStyle(C.green)}>{scaling ? '...' : 'Execute'}</button>
+        <button onClick={() => setShow(false)} style={{ ...btnSm, color: C.muted }}>X</button>
+      </div>
+      <div style={{ fontSize: 11, color: C.muted }}>Current: {fmt$(currentBudget)}/day → New: {fmt$((currentBudget || 0) * (1 + pct / 100))}/day</div>
+      <div style={{ fontSize: 11, color: C.green }}>Expected: +{fmt$(expectedRev)} rev/day, +{fmt$(expectedProfit)} profit/day ({roas || 3}x ROAS)</div>
+    </div>
+  )
+}
+
+function ScaleInline({ target, onScale, onCancel, scaling }) {
+  const [pct, setPct] = useState(15)
+  const extra = (target.budget || 0) * (pct / 100)
+  const expectedRev = extra * (target.roas || 3)
+  const expectedProfit = (expectedRev * 0.30) - extra
+  return (
+    <div style={{ background: C.bg, borderRadius: 6, padding: 6, minWidth: 200 }}>
+      <div style={{ display: 'flex', gap: 3, alignItems: 'center', marginBottom: 3 }}>
+        <select value={pct} onChange={e => setPct(Number(e.target.value))} style={sel}>{[5, 8, 10, 12, 15, 18].map(p => <option key={p} value={p}>{p}%</option>)}</select>
+        <button onClick={() => onScale(target.id, pct)} disabled={scaling} style={btnStyle(C.green)}>{scaling ? '...' : 'Go'}</button>
+        <button onClick={onCancel} style={{ ...btnSm, color: C.muted }}>X</button>
+      </div>
+      <div style={{ fontSize: 10, color: C.muted }}>{fmt$(target.budget)}/day → {fmt$((target.budget || 0) * (1 + pct / 100))}/day</div>
+      <div style={{ fontSize: 10, color: C.green }}>+{fmt$(expectedRev)} rev, +{fmt$(expectedProfit)} profit ({(target.roas || 3).toFixed(1)}x)</div>
     </div>
   )
 }
 
 // ── Styles ───────────────────────────────────────────────────────────────────
 
-const cardStyle = {
-  background: C.card,
-  border: `1px solid ${C.border}`,
-  borderRadius: 8,
-  padding: '14px 16px',
-}
-
-const sectionTitle = {
-  fontSize: 16,
-  fontWeight: 600,
-  margin: '0 0 10px',
-  color: C.text,
-}
-
-const tableStyle = {
-  width: '100%',
-  borderCollapse: 'collapse',
-  fontSize: 13,
-}
-
-const thStyle = {
-  textAlign: 'left',
-  padding: '8px 10px',
-  borderBottom: `1px solid ${C.border}`,
-  color: C.muted,
-  fontSize: 11,
-  fontWeight: 600,
-  textTransform: 'uppercase',
-  letterSpacing: '0.5px',
-}
-
-const tdStyle = {
-  padding: '8px 10px',
-  borderBottom: `1px solid ${C.border}`,
-  verticalAlign: 'middle',
-}
+const card = { background: C.card, border: `1px solid ${C.border}`, borderRadius: 8, padding: '12px 14px', color: C.text }
+const secTitle = { fontSize: 15, fontWeight: 600, margin: '0 0 8px', color: C.text }
+const tbl = { width: '100%', borderCollapse: 'collapse', fontSize: 12 }
+const th = { textAlign: 'left', padding: '6px 8px', borderBottom: `1px solid ${C.border}`, color: C.muted, fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', background: C.card }
+const td = { padding: '6px 8px', borderBottom: `1px solid ${C.border}`, verticalAlign: 'top', color: C.text }
+const sel = { background: C.card, color: C.text, border: `1px solid ${C.border}`, borderRadius: 4, padding: '2px 4px', fontSize: 11 }
 
 function btnStyle(color) {
-  return {
-    background: `${color}20`,
-    color,
-    border: `1px solid ${color}44`,
-    borderRadius: 6,
-    padding: '6px 14px',
-    fontSize: 12,
-    fontWeight: 600,
-    cursor: 'pointer',
-  }
+  return { background: `${color}30`, color, border: `1px solid ${color}66`, borderRadius: 5, padding: '4px 10px', fontSize: 11, fontWeight: 600, cursor: 'pointer' }
+}
+const btnSm = { background: `${C.blue}30`, color: C.blue, border: `1px solid ${C.blue}66`, borderRadius: 4, padding: '3px 8px', fontSize: 10, cursor: 'pointer' }
+
+function badge(color) {
+  return { display: 'inline-block', background: `${color}38`, color, border: `1px solid ${color}66`, borderRadius: 4, padding: '1px 6px', fontSize: 10, fontWeight: 600 }
 }
 
-const btnSmall = {
-  background: `${C.blue}20`,
-  color: C.blue,
-  border: `1px solid ${C.blue}44`,
-  borderRadius: 4,
-  padding: '4px 10px',
-  fontSize: 11,
-  cursor: 'pointer',
-}
-
-function badgeStyle(color) {
-  return {
-    display: 'inline-block',
-    background: `${color}20`,
-    color,
-    border: `1px solid ${color}44`,
-    borderRadius: 4,
-    padding: '2px 8px',
-    fontSize: 11,
-    fontWeight: 600,
-  }
+function recBadge(color) {
+  return { display: 'inline-block', background: `${color}40`, color, border: `2px solid ${color}88`, borderRadius: 5, padding: '2px 8px', fontSize: 11, fontWeight: 700, letterSpacing: '0.3px' }
 }

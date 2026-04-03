@@ -9,6 +9,7 @@ import {
   markActionExecuted, getFlywheelLog, getAovIntel, getAgentLearning,
   getIndustryKnowledge, saveIndustryKnowledge, getLatestBrief, approveBrief,
   getCampaigns, getAdSets, getAds, getFlywheelHealth, runDailyBackup,
+  getAdSetSnapshots,
 } from '../lib/flywheel-store.js'
 import {
   getFlywheelSummary, getCreativeLeaderboard, scoreCampaignHealth,
@@ -19,11 +20,183 @@ import {
 } from '../lib/flywheel-intelligence.js'
 import { metaSyncJob } from '../lib/flywheel-cron.js'
 import {
-  updateAdSetBudget, updateCampaignBudget, fetchAdsetsForCampaign
+  updateAdSetBudget, updateCampaignBudget, fetchAdsetsForCampaign, fetchAccountInsights
 } from '../lib/meta-api.js'
+import { getShopifyTodayOrders, getShopifyOrdersRange } from '../connectors/shopify.js'
+import { GRI_ADS, calculateMER, calculateTrueCAC, calculateAMER } from '../lib/ads-metrics.js'
+import { calculateFatigueScore } from '../lib/fatigue-engine.js'
 import { processShopifyOrder, verifyShopifyHmac } from '../lib/flywheel-webhook.js'
 
 const router = Router()
+
+// ── Unified Dashboard Endpoint ──────────────────────────────────────────────
+
+router.get('/dashboard', async (req, res) => {
+  try {
+    const range = req.query.range || 'today'
+    const metaPresetMap = { today: 'today', '7d': 'last_7d', '14d': 'last_14d', '30d': 'last_30d' }
+    const metaPreset = metaPresetMap[range] || 'today'
+    const daysMap = { today: 1, '7d': 7, '14d': 14, '30d': 30 }
+    const days = daysMap[range] || 1
+
+    // Parallel fetch: Shopify revenue + Meta insights + all store data
+    const [shopifyData, metaData] = await Promise.all([
+      (async () => {
+        try {
+          if (range === 'today') return await getShopifyTodayOrders()
+          const to = new Date()
+          const from = new Date()
+          from.setDate(from.getDate() - days)
+          // AEST dates
+          const aestNow = new Date(to.getTime() + 10 * 3600000)
+          const aestFrom = new Date(from.getTime() + 10 * 3600000)
+          return await getShopifyOrdersRange(
+            aestFrom.toISOString().slice(0, 10),
+            aestNow.toISOString().slice(0, 10)
+          )
+        } catch (e) { return { ok: false, revenue: 0, orders: 0, error: e.message } }
+      })(),
+      (async () => {
+        try { return await fetchAccountInsights(metaPreset) }
+        catch (e) { return { spend: 0, purchases: 0, error: e.message } }
+      })(),
+    ])
+
+    const shopifyRevenue = shopifyData.revenue || shopifyData.productRevenue || 0
+    const shopifyOrders = shopifyData.orders || 0
+    const metaSpend = metaData.spend || 0
+    const metaPurchases = metaData.purchases || 0
+
+    // Hero metrics
+    const roas = metaSpend > 0 ? shopifyRevenue / metaSpend : 0
+    const mer = calculateMER(shopifyRevenue, metaSpend)
+    const cpa = shopifyOrders > 0 ? metaSpend / shopifyOrders : 0
+    const aov = shopifyOrders > 0 ? shopifyRevenue / shopifyOrders : 0
+    const amer = calculateAMER(shopifyRevenue, metaSpend)
+    const profit = (shopifyRevenue * GRI_ADS.grossMarginPct) - metaSpend
+
+    // Store data (instant reads)
+    const campaigns = getCampaigns()
+    const adSetsAll = getAdSets()
+    const adsAll = getAds()
+    const alerts = getAlerts(true)
+    const pendingActions = getPendingActions('awaiting_approval')
+    const aovIntel = calculateAovIntelligence()
+    const brief = getLatestBrief()
+    const health = getFlywheelHealth()
+    const rhythm = getWeeklyRhythm()
+    const leaderboard = getCreativeLeaderboard()
+    const conversions = getConversions(days)
+
+    // Enrich campaigns with health + surgical actions
+    const enrichedCampaigns = campaigns.map(camp => {
+      const campId = camp.metaCampaignId || camp.id
+      const campAdSets = adSetsAll.filter(a => a.campaignId === campId)
+      const campAds = adsAll.filter(a => a.campaignId === campId)
+      const campHealth = scoreCampaignHealth(camp)
+
+      // Build surgical actions per adset/ad
+      const surgicalActions = []
+      for (const adSet of campAdSets) {
+        const asId = adSet.metaAdSetId || adSet.id
+        const asSnaps = getAdSetSnapshots(asId, days)
+        const asSpend = asSnaps.reduce((a, s) => a + (s.spend || 0), 0)
+        const asPurchases = asSnaps.reduce((a, s) => a + (s.purchases || 0), 0)
+        const asRevenue = asSnaps.reduce((a, s) => a + (s.revenue || 0), 0)
+        const asFreq = asSnaps.length > 0 ? asSnaps.reduce((a, s) => a + (s.frequency || 0), 0) / asSnaps.length : 0
+        const asCpa = asPurchases > 0 ? asSpend / asPurchases : 0
+        const asRoas = asSpend > 0 ? asRevenue / asSpend : 0
+        const dailyBudget = adSet.dailyBudget || adSet.budget || 0
+
+        if (asSpend > 100 && asPurchases === 0) {
+          surgicalActions.push({ level: 'adset', entityId: asId, entityName: adSet.name, action: 'PAUSE', priority: 'URGENT', reason: `$${asSpend.toFixed(0)} spent with zero purchases`, impact: `Save $${(asSpend / Math.max(days, 1)).toFixed(0)}/day`, execute: { method: 'updateAdSetStatus', params: { adSetId: asId, status: 'PAUSED' } } })
+        } else if (asCpa > GRI_ADS.breakevenCPP && asSpend > 50 && asPurchases > 0) {
+          surgicalActions.push({ level: 'adset', entityId: asId, entityName: adSet.name, action: 'REDUCE_BUDGET', priority: 'HIGH', reason: `CPA $${asCpa.toFixed(2)} above breakeven ($${GRI_ADS.breakevenCPP})`, impact: `Losing $${((asCpa - GRI_ADS.breakevenCPP) * asPurchases).toFixed(0)} over period` })
+        } else if (asCpa > 0 && asCpa < GRI_ADS.profitableCPP && asPurchases >= 3) {
+          // Scale opportunity — include revenue projection
+          const extraSpend = dailyBudget * 0.15
+          const expectedRevFromExtra = asRoas > 0 ? extraSpend * asRoas : extraSpend * roas
+          const expectedProfit = (expectedRevFromExtra * GRI_ADS.grossMarginPct) - extraSpend
+          surgicalActions.push({ level: 'adset', entityId: asId, entityName: adSet.name, action: 'SCALE_BUDGET', priority: 'MEDIUM', reason: `CPA $${asCpa.toFixed(2)} well below target ($${GRI_ADS.profitableCPP}) with ${asPurchases} purchases`, impact: `Increase budget 15%`, execute: { method: 'updateAdSetBudget', params: { adSetId: asId, newDailyBudget: Math.round(dailyBudget * 1.15 * 100) / 100 } }, revenueProjection: { currentBudget: dailyBudget, newBudget: Math.round(dailyBudget * 1.15 * 100) / 100, extraSpendPerDay: Math.round(extraSpend * 100) / 100, expectedRevenuePerDay: Math.round(expectedRevFromExtra * 100) / 100, expectedProfitPerDay: Math.round(expectedProfit * 100) / 100, basedOnRoas: Math.round((asRoas || roas) * 100) / 100 } })
+        }
+        if (asFreq > 4) {
+          surgicalActions.push({ level: 'adset', entityId: asId, entityName: adSet.name, action: 'REFRESH_AUDIENCE', priority: asFreq > 6 ? 'URGENT' : 'MEDIUM', reason: `Frequency ${asFreq.toFixed(1)} — audience saturated` })
+        }
+      }
+
+      return { ...camp, health: campHealth, adSetCount: campAdSets.length, adCount: campAds.length, surgicalActions }
+    })
+
+    // Enrich creatives with fatigue + recommendations + revenue projections
+    const enrichedCreatives = leaderboard.map(cr => {
+      const freq = cr.frequency || 0
+      const daysRunning = 7 // approximate
+      const fatigue = calculateFatigueScore({ frequency: freq, daysRunning, roas: cr.roas7d, ctrByDay: [], cpaByDay: [] })
+
+      let recommendation, recommendationReason
+      if (cr.roas7d >= 5.0 && freq < 3.5) {
+        recommendation = 'SCALE'
+        recommendationReason = `ROAS ${cr.roas7d}x with low frequency ${freq} — increase budget, this is printing money`
+      } else if (cr.roas7d >= GRI_ADS.breakevenROAS && freq < 5.0) {
+        recommendation = 'PROTECT'
+        recommendationReason = `ROAS ${cr.roas7d}x is profitable — do not touch, let it run`
+      } else if (fatigue.score < 25 || (cr.roas7d < 1.2 && cr.spend > 50)) {
+        recommendation = 'KILL'
+        recommendationReason = cr.roas7d < 1.2 ? `ROAS ${cr.roas7d}x with $${cr.spend} spent — losing money, pause immediately` : `Fatigue score ${fatigue.score}/100 — creative is dead, replace it`
+      } else if (fatigue.score < 50) {
+        recommendation = 'REPLACE'
+        recommendationReason = `Fatigue score ${fatigue.score}/100 — start testing replacement now before it dies`
+      } else {
+        recommendation = 'WATCH'
+        recommendationReason = `Needs more data or borderline performance — monitor for 3 more days`
+      }
+
+      // Revenue projection for scalable creatives
+      let revenueProjection = null
+      if (recommendation === 'SCALE' && cr.spend > 0) {
+        const dailySpend = cr.spend / Math.max(days, 1)
+        const extraSpend = dailySpend * 0.15
+        const crRoas = cr.roas7d || roas
+        const expectedRev = extraSpend * crRoas
+        const expectedProfit = (expectedRev * GRI_ADS.grossMarginPct) - extraSpend
+        revenueProjection = { currentDailySpend: Math.round(dailySpend * 100) / 100, extraSpendPerDay: Math.round(extraSpend * 100) / 100, expectedRevenuePerDay: Math.round(expectedRev * 100) / 100, expectedProfitPerDay: Math.round(expectedProfit * 100) / 100, basedOnRoas: Math.round(crRoas * 100) / 100 }
+      }
+
+      return { ...cr, fatigueScore: fatigue.score, fatigueStatus: fatigue.status, fatigueSignals: fatigue.signals, recommendation, recommendationReason, revenueProjection }
+    })
+
+    // Growth opportunities
+    const opportunities = []
+    const audienceTypes = {}
+    for (const as of adSetsAll) {
+      const aud = as.audience || 'unknown'
+      audienceTypes[aud] = (audienceTypes[aud] || 0) + 1
+    }
+    if (!audienceTypes['lookalike']) opportunities.push({ type: 'audience_gap', title: 'No lookalike audiences detected', detail: 'Lookalike audiences based on purchasers typically deliver 3.2x higher CTR. Create a 1% lookalike from your purchase pixel data.', priority: 'high' })
+    if ((audienceTypes['retargeting_warm'] || 0) < 2) opportunities.push({ type: 'audience_gap', title: 'Retargeting is underbuilt', detail: 'Retargeting achieves 3.61 ROAS vs 2.19 for prospecting. Create ad sets for: video viewers (7d), ATC abandoners (3d), page visitors (7d).', priority: 'high' })
+    const angleCount = {}
+    for (const cr of enrichedCreatives) { angleCount[cr.creativeAngle] = (angleCount[cr.creativeAngle] || 0) + 1 }
+    const testedAngles = Object.keys(angleCount).filter(a => a !== 'unknown')
+    const missingAngles = ['emotion', 'social_proof', 'fomo', 'problem', 'confrontational'].filter(a => !testedAngles.includes(a))
+    if (missingAngles.length > 0) opportunities.push({ type: 'creative_gap', title: `Untested creative angles: ${missingAngles.join(', ')}`, detail: `Only testing ${testedAngles.length} of 5 proven angles. The ${missingAngles[0]} angle is untested.`, priority: 'medium' })
+    if (aovIntel && aovIntel.bundleRate < 30) opportunities.push({ type: 'aov_opportunity', title: `Bundle rate ${aovIntel.bundleRate}% (target: 30%)`, detail: 'Create "Complete Reveal Kit" bundle ads. Use "Everything you need for the moment" messaging.', priority: 'high' })
+    const hasIntl = adSetsAll.some(a => (a.name || '').toLowerCase().includes('brazil'))
+    if (hasIntl) opportunities.push({ type: 'expansion', title: 'Brazilian audience detected', detail: 'If converting, create Portuguese language creative. Gender reveal parties are massive in Brazil.', priority: 'medium' })
+
+    res.json({
+      ok: true, range,
+      hero: { shopifyRevenue: Math.round(shopifyRevenue * 100) / 100, shopifyOrders, metaSpend: Math.round(metaSpend * 100) / 100, metaPurchases, roas: Math.round(roas * 100) / 100, mer: Math.round(mer * 100) / 100, cpa: Math.round(cpa * 100) / 100, aov: Math.round(aov * 100) / 100, amer: Math.round(amer * 100) / 100, profit: Math.round(profit * 100) / 100 },
+      campaigns: enrichedCampaigns,
+      creatives: enrichedCreatives,
+      alerts, pendingActions, opportunities,
+      aov: aovIntel, brief, health, rhythm,
+      conversions: conversions.slice(0, 50),
+    })
+  } catch (err) {
+    console.error('[Flywheel Dashboard]', err.message)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
 
 // ── Summary metrics (top cards) ─────────────────────────────────────────────
 
