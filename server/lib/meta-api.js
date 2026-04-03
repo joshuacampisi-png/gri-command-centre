@@ -232,6 +232,143 @@ export async function createAd(params) {
   return metaPost(`/${accountId}/ads`, params)
 }
 
+// ── Audience Creation ───────────────────────────────────────────────────────
+
+const GRI_PIXEL_ID = '810404797873042'
+
+/**
+ * Create a website custom audience from pixel events.
+ * @param {string} name - Audience name
+ * @param {string} eventType - Pixel event: PageView, ViewContent, AddToCart, Purchase
+ * @param {number} retentionDays - Lookback window in days
+ * @param {object} [options] - Optional filters
+ * @returns {{ id: string }} - New audience ID
+ */
+export async function createWebsiteAudience(name, eventType, retentionDays, options = {}) {
+  const accountId = metaAccountId()
+  const pixelId = options.pixelId || GRI_PIXEL_ID
+  const retentionSeconds = retentionDays * 86400
+
+  const rule = {
+    inclusions: {
+      operator: 'or',
+      rules: [{
+        event_sources: [{ id: pixelId, type: 'pixel' }],
+        retention_seconds: retentionSeconds,
+        filter: {
+          operator: 'and',
+          filters: [{ field: 'event', operator: 'eq', value: eventType }]
+        }
+      }]
+    }
+  }
+
+  // Add exclusion if specified (e.g. exclude purchasers)
+  if (options.excludeEvent) {
+    rule.exclusions = {
+      operator: 'or',
+      rules: [{
+        event_sources: [{ id: pixelId, type: 'pixel' }],
+        retention_seconds: options.excludeRetentionDays ? options.excludeRetentionDays * 86400 : retentionSeconds,
+        filter: {
+          operator: 'and',
+          filters: [{ field: 'event', operator: 'eq', value: options.excludeEvent }]
+        }
+      }]
+    }
+  }
+
+  const url = `${BASE}/${accountId}/customaudiences`
+  const body = new URLSearchParams({
+    access_token: metaToken(),
+    name,
+    rule: JSON.stringify(rule),
+    prefill: 'true',
+    customer_file_source: 'USER_PROVIDED_ONLY',
+  })
+  const res = await fetch(url, { method: 'POST', body })
+  const data = await res.json()
+  if (data.error) throw new Error(`Meta API (audience): ${data.error.message}`)
+  return data
+}
+
+/**
+ * Create a lookalike audience from a source custom audience.
+ * @param {string} name - Audience name
+ * @param {string} sourceAudienceId - Source custom audience ID
+ * @param {string} country - Country code (AU)
+ * @param {number} ratio - Lookalike percentage (0.01 to 0.20 = 1% to 20%)
+ * @returns {{ id: string }}
+ */
+export async function createLookalikeAudience(name, sourceAudienceId, country = 'AU', ratio = 0.02) {
+  const accountId = metaAccountId()
+  const url = `${BASE}/${accountId}/customaudiences`
+  const body = new URLSearchParams({
+    access_token: metaToken(),
+    name,
+    subtype: 'LOOKALIKE',
+    origin_audience_id: sourceAudienceId,
+    lookalike_spec: JSON.stringify({
+      type: 'custom_ratio',
+      ratio,
+      country,
+    }),
+  })
+  const res = await fetch(url, { method: 'POST', body })
+  const data = await res.json()
+  if (data.error) throw new Error(`Meta API (lookalike): ${data.error.message}`)
+  return data
+}
+
+/**
+ * List all custom audiences on the account.
+ */
+export async function listAudiences() {
+  const accountId = metaAccountId()
+  const data = await metaGet(`/${accountId}/customaudiences`, {
+    fields: 'id,name,subtype,delivery_status',
+    limit: '100',
+  })
+  return data.data || []
+}
+
+/**
+ * Full audience refresh: creates a replacement set of audiences when the old ones are saturated.
+ * Creates: Website visitors (7d, 14d, 30d), ATC (7d, 30d), Purchasers (30d, 90d), Lookalikes (1%, 2%)
+ * @returns {Array} Created audiences
+ */
+export async function createFreshAudienceSet() {
+  const results = []
+  const ts = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+
+  try {
+    // Retargeting audiences
+    results.push({ type: 'website', ...await createWebsiteAudience(`Flywheel: Visitors 7d [${ts}]`, 'PageView', 7) })
+    results.push({ type: 'website', ...await createWebsiteAudience(`Flywheel: Visitors 14d [${ts}]`, 'PageView', 14) })
+    results.push({ type: 'website', ...await createWebsiteAudience(`Flywheel: Visitors 30d no purchase [${ts}]`, 'PageView', 30, { excludeEvent: 'Purchase', excludeRetentionDays: 30 }) })
+    results.push({ type: 'website', ...await createWebsiteAudience(`Flywheel: ATC 7d [${ts}]`, 'AddToCart', 7) })
+    results.push({ type: 'website', ...await createWebsiteAudience(`Flywheel: ATC 30d [${ts}]`, 'AddToCart', 30) })
+    results.push({ type: 'website', ...await createWebsiteAudience(`Flywheel: Purchasers 30d [${ts}]`, 'Purchase', 30) })
+    results.push({ type: 'website', ...await createWebsiteAudience(`Flywheel: Purchasers 90d [${ts}]`, 'Purchase', 90) })
+
+    // Lookalikes from purchasers (need the purchaser audience ID)
+    const purchaser90 = results.find(r => r.type === 'website' && r.id)
+    if (purchaser90) {
+      try {
+        results.push({ type: 'lookalike', ...await createLookalikeAudience(`Flywheel: LAL 1% Purchasers [${ts}]`, purchaser90.id, 'AU', 0.01) })
+      } catch (e) { results.push({ type: 'lookalike', error: e.message }) }
+      try {
+        results.push({ type: 'lookalike', ...await createLookalikeAudience(`Flywheel: LAL 2% Purchasers [${ts}]`, purchaser90.id, 'AU', 0.02) })
+      } catch (e) { results.push({ type: 'lookalike', error: e.message }) }
+    }
+  } catch (e) {
+    console.error('[Meta API] Audience creation error:', e.message)
+    results.push({ error: e.message })
+  }
+
+  return results
+}
+
 // ── Aggregated fetch ─────────────────────────────────────────────────────────
 
 export async function fetchFullPerformance(datePreset = 'last_7d') {
