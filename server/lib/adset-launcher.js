@@ -88,6 +88,7 @@ export async function getOrCreateTestingCampaign() {
     special_ad_categories: '[]',
     status: 'PAUSED', // Campaign starts paused
     buying_type: 'AUCTION',
+    is_adset_budget_sharing_enabled: 'false', // ABO: each ad set gets its own budget
   })
 
   console.log(`[Launcher] Created testing campaign: ${result.id}`)
@@ -246,11 +247,14 @@ export async function launchTestAdSet(params) {
 // ── Targeting Builder ─────────────────────────────────────────────────────────
 
 function buildTargeting(audienceType, customTargeting, customAudienceId) {
-  // Base: Australia, all placements
+  // Base: Australia, all placements, Advantage Audience OFF (clean test)
   const targeting = {
     geo_locations: {
       countries: ['AU'],
       location_types: ['home', 'recent'],
+    },
+    targeting_automation: {
+      advantage_audience: 0, // Disabled — we want clean audience test, not Meta expansion
     },
   }
 
