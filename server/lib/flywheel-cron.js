@@ -54,6 +54,9 @@ export async function metaSyncJob() {
   console.log('[Flywheel Cron] Starting Meta sync...')
   logFlywheelEvent('meta_sync_start', 'Pulling latest data from Meta Ads API')
 
+  // Throttle helper — wait between API calls to avoid Meta rate limits
+  const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+
   try {
     // 1. Fetch campaigns
     const campaigns = await fetchCampaigns()
@@ -72,9 +75,14 @@ export async function metaSyncJob() {
     const allAdSets = []
     const allAds = []
 
-    for (const camp of campaigns) {
+    for (let ci = 0; ci < campaigns.length; ci++) {
+      const camp = campaigns[ci]
       try {
+        // Throttle: wait 2s between campaigns to respect Meta rate limits
+        if (ci > 0) await wait(2000)
+
         const adSets = await fetchAdsetsForCampaign(camp.id)
+        console.log(`[Flywheel Cron] Campaign "${camp.name}": ${adSets.length} ad sets`)
         for (const as of adSets) {
           const audience = classifyAudience(as)
           allAdSets.push({
@@ -90,7 +98,10 @@ export async function metaSyncJob() {
           })
         }
 
+        await wait(1000) // Throttle between ad set and ad fetch
+
         const ads = await fetchAdsForCampaign(camp.id)
+        console.log(`[Flywheel Cron] Campaign "${camp.name}": ${ads.length} ads`)
         for (const ad of ads) {
           allAds.push({
             metaAdId: ad.id,
@@ -117,8 +128,11 @@ export async function metaSyncJob() {
     const activeAds = allAds.filter(a => a.status === 'ACTIVE')
     let snapshotCount = 0
 
-    for (const ad of activeAds) {
+    for (let ai = 0; ai < activeAds.length; ai++) {
+      const ad = activeAds[ai]
       try {
+        // Throttle: wait 500ms between ad insight fetches
+        if (ai > 0 && ai % 5 === 0) await wait(2000)
         const dailyInsights = await fetchAdInsightsByDay(ad.metaAdId, 7)
         for (const day of dailyInsights) {
           if (!day) continue
