@@ -78,8 +78,8 @@ export async function metaSyncJob() {
     for (let ci = 0; ci < campaigns.length; ci++) {
       const camp = campaigns[ci]
       try {
-        // Throttle: wait 2s between campaigns to respect Meta rate limits
-        if (ci > 0) await wait(2000)
+        // Throttle: wait 3s between campaigns to respect Meta rate limits
+        if (ci > 0) await wait(3000)
 
         const adSets = await fetchAdsetsForCampaign(camp.id)
         console.log(`[Flywheel Cron] Campaign "${camp.name}": ${adSets.length} ad sets`)
@@ -98,7 +98,7 @@ export async function metaSyncJob() {
           })
         }
 
-        await wait(1000) // Throttle between ad set and ad fetch
+        await wait(2000) // Throttle between ad set and ad fetch
 
         const ads = await fetchAdsForCampaign(camp.id)
         console.log(`[Flywheel Cron] Campaign "${camp.name}": ${ads.length} ads`)
@@ -131,8 +131,8 @@ export async function metaSyncJob() {
     for (let ai = 0; ai < activeAds.length; ai++) {
       const ad = activeAds[ai]
       try {
-        // Throttle: wait 500ms between ad insight fetches
-        if (ai > 0 && ai % 5 === 0) await wait(2000)
+        // Throttle: wait 2s every 3 ads to stay under Meta rate limits
+        if (ai > 0 && ai % 3 === 0) await wait(2000)
         const dailyInsights = await fetchAdInsightsByDay(ad.metaAdId, 7)
         for (const day of dailyInsights) {
           if (!day) continue

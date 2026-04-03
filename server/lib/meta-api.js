@@ -61,22 +61,38 @@ export async function fetchCampaigns() {
   const accountId = metaAccountId()
   const ids = griCampaignIds()
 
-  console.log(`[Meta] fetchCampaigns called. Account: ${accountId}, Campaign IDs: ${ids.length > 0 ? ids.join(',') : 'NONE (will use account fallback)'}, Token starts: ${metaToken().slice(0, 15)}...`)
+  console.log(`[Meta] fetchCampaigns called. Account: ${accountId}, Campaign IDs: ${ids.length}`)
 
   if (ids.length > 0) {
-    const results = []
-    for (const cid of ids) {
-      try {
-        const data = await metaGet(`/${cid}`, {
-          fields: 'id,name,status,daily_budget,lifetime_budget,objective,buying_type'
-        })
-        results.push(data)
-      } catch (e) {
-        console.error(`[Meta] Campaign ${cid} fetch error:`, e.message)
+    // Batch fetch: single API call using ?ids= parameter instead of N separate calls
+    try {
+      const url = new URL(`${BASE}/`)
+      url.searchParams.set('access_token', metaToken())
+      url.searchParams.set('ids', ids.join(','))
+      url.searchParams.set('fields', 'id,name,status,daily_budget,lifetime_budget,objective,buying_type')
+      const res = await fetch(url.toString())
+      const data = await res.json()
+      if (data.error) throw new Error(`Meta API: ${data.error.message}`)
+      // Batch returns { id1: {...}, id2: {...} } — convert to array
+      const results = Object.values(data)
+      console.log(`[Meta] fetchCampaigns batch: ${results.length} campaigns in 1 API call`)
+      return results
+    } catch (e) {
+      console.error(`[Meta] Batch campaign fetch failed, falling back to individual:`, e.message)
+      // Fallback to individual fetches
+      const results = []
+      for (const cid of ids) {
+        try {
+          const data = await metaGet(`/${cid}`, {
+            fields: 'id,name,status,daily_budget,lifetime_budget,objective,buying_type'
+          })
+          results.push(data)
+        } catch (err) {
+          console.error(`[Meta] Campaign ${cid} fetch error:`, err.message)
+        }
       }
+      return results
     }
-    console.log(`[Meta] fetchCampaigns returning ${results.length} campaigns`)
-    return results
   }
 
   // Fallback: fetch all campaigns from account
