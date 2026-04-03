@@ -15,6 +15,7 @@ const C = {
 }
 
 const API = '/api/flywheel'
+const GRI_ADS_FE = { profitableCPP: 38, breakevenCPP: 47.25, grossMarginPct: 0.45 }
 const RANGES = [
   { key: 'today', label: 'Today (Live)' },
   { key: '7d', label: '7 Days' },
@@ -59,6 +60,7 @@ export function AdsFlywheelTab() {
   const [analyseAdName, setAnalyseAdName] = useState('')
   const [analysing, setAnalysing] = useState(false)
   const [analysis, setAnalysis] = useState(null)
+  const [audiences, setAudiences] = useState(null)
 
   const load = useCallback(async () => {
     try {
@@ -69,7 +71,7 @@ export function AdsFlywheelTab() {
     setLoading(false)
   }, [range])
 
-  useEffect(() => { setLoading(true); load(); const i = setInterval(load, 60000); return () => clearInterval(i) }, [load])
+  useEffect(() => { setLoading(true); load(); loadAudiences(); const i = setInterval(load, 60000); return () => clearInterval(i) }, [load])
 
   // Action handlers
   async function resolveAlert(id) { await fetch(`${API}/alerts/${id}/resolve`, { method: 'POST' }); load() }
@@ -106,6 +108,81 @@ export function AdsFlywheelTab() {
     } catch (e) {
       setScaleResult({ ok: false, error: e.message })
     }
+  }
+
+  async function pauseAndReplace(adSetId) {
+    try {
+      setScaleResult({ ok: true, message: 'Creating fresh audiences and pausing saturated one...' })
+      const r = await fetch(`${API}/audiences/pause-and-replace`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adSetId }),
+      }).then(r => r.json())
+      setScaleResult(r.ok
+        ? { ok: true, message: `Paused & replaced! ${r.newAudiences?.length || 0} fresh audiences created. ${r.instruction}` }
+        : { ok: false, error: r.error }
+      )
+      load()
+    } catch (e) {
+      setScaleResult({ ok: false, error: e.message })
+    }
+  }
+
+  async function createAudienceFromTemplate(templateId) {
+    try {
+      setScaleResult({ ok: true, message: `Creating audience "${templateId}"...` })
+      const r = await fetch(`${API}/audiences/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ templateId }),
+      }).then(r => r.json())
+      setScaleResult(r.ok
+        ? { ok: true, message: `Audience "${r.audience?.name}" created on Meta! Attach it to an ad set to start testing.` }
+        : { ok: false, error: r.error }
+      )
+      loadAudiences()
+    } catch (e) {
+      setScaleResult({ ok: false, error: e.message })
+    }
+  }
+
+  async function killAudienceAction(templateId) {
+    try {
+      const r = await fetch(`${API}/audiences/kill`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ templateId }),
+      }).then(r => r.json())
+      setScaleResult(r.ok ? { ok: true, message: `Audience killed and ad set paused.` } : { ok: false, error: r.error })
+      loadAudiences()
+    } catch (e) { setScaleResult({ ok: false, error: e.message }) }
+  }
+
+  async function scaleAudienceAction(templateId) {
+    try {
+      const r = await fetch(`${API}/audiences/scale`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ templateId }),
+      }).then(r => r.json())
+      setScaleResult(r.ok ? { ok: true, message: `Audience scaled! Budget: $${r.previousBudget} → $${r.newBudget} (+15%)` } : { ok: false, error: r.error })
+      loadAudiences()
+    } catch (e) { setScaleResult({ ok: false, error: e.message }) }
+  }
+
+  async function loadAudiences() {
+    try {
+      const r = await fetch(`${API}/audiences`).then(r => r.json())
+      if (r.ok) setAudiences(r)
+    } catch (e) { /* silent */ }
+  }
+
+  async function evaluateAudiences() {
+    try {
+      const r = await fetch(`${API}/audiences/evaluate`, { method: 'POST' }).then(r => r.json())
+      if (r.ok) setScaleResult({ ok: true, message: `Evaluated ${r.results?.length || 0} audiences` })
+      loadAudiences()
+    } catch (e) { setScaleResult({ ok: false, error: e.message }) }
   }
 
   async function analyseCreative(name) {
@@ -282,8 +359,8 @@ export function AdsFlywheelTab() {
                                   )}
                                   {sa.action === 'REFRESH_AUDIENCE' && (
                                     <div style={{ textAlign: 'right' }}>
-                                      <button onClick={() => executeAction2('updateAdSetStatus', { adSetId: sa.entityId, status: 'PAUSED' })} style={btnStyle(C.yellow)}>Pause + Replace</button>
-                                      <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>Pause saturated audience, create fresh one</div>
+                                      <button onClick={() => pauseAndReplace(sa.entityId)} style={btnStyle(C.yellow)}>Pause + Replace</button>
+                                      <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>Pauses ad set + creates 3 fresh retargeting audiences on Meta</div>
                                     </div>
                                   )}
                                   {sa.action === 'REPLACE_CREATIVE' && (
@@ -348,9 +425,16 @@ export function AdsFlywheelTab() {
                         <ScaleInline target={scaleTarget} onScale={executeScale} onCancel={() => setScaleTarget(null)} scaling={scaling} />
                       ) : (
                         <div style={{ display: 'flex', gap: 3 }}>
-                          {cr.recommendation === 'SCALE' && <button onClick={() => setScaleTarget({ id: cr.adId, name: cr.name, budget: cr.spend / 7, roas: cr.roas7d })} style={btnStyle(C.green)}>Scale</button>}
-                          {cr.recommendation === 'KILL' && <button style={btnStyle(C.red)}>Pause</button>}
-                          <button onClick={() => analyseCreative(cr.name)} style={btnStyle(C.purple)}>AI</button>
+                          {(cr.recommendation === 'SCALE' || cr.recommendation === 'PROTECT') && (
+                            <button onClick={e => { e.stopPropagation(); setScaleTarget({ id: cr.adsetId || cr.adId, name: cr.name, budget: cr.spend / 7, roas: cr.roas7d }) }} style={btnStyle(C.green)}>Scale</button>
+                          )}
+                          {cr.recommendation === 'KILL' && (
+                            <button onClick={e => { e.stopPropagation(); executeAction2('updateAdStatus', { adId: cr.adId, status: 'PAUSED' }) }} style={btnStyle(C.red)}>Pause</button>
+                          )}
+                          {cr.recommendation === 'REPLACE' && (
+                            <button onClick={e => { e.stopPropagation(); executeAction2('updateAdStatus', { adId: cr.adId, status: 'PAUSED' }) }} style={btnStyle(C.pink)}>Pause</button>
+                          )}
+                          <button onClick={e => { e.stopPropagation(); analyseCreative(cr.name) }} style={btnStyle(C.purple)}>AI</button>
                         </div>
                       )}
                     </td>
@@ -384,6 +468,94 @@ export function AdsFlywheelTab() {
             ))}
           </div>
         )}
+      </div>
+
+      {/* ── 6b. Audience Manager ──────────────────────────────────────────── */}
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <h2 style={secTitle}>Audience Engine</h2>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button onClick={evaluateAudiences} style={btnStyle(C.blue)}>Evaluate All</button>
+            <button onClick={loadAudiences} style={btnStyle(C.muted)}>Refresh</button>
+          </div>
+        </div>
+
+        {/* Stats row */}
+        {audiences?.learnings && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 10 }}>
+            <div style={card}><div style={{ fontSize: 10, color: C.muted }}>Testing</div><div style={{ fontSize: 20, fontWeight: 700, color: C.blue }}>{audiences.learnings.testing}</div></div>
+            <div style={card}><div style={{ fontSize: 10, color: C.muted }}>Winners</div><div style={{ fontSize: 20, fontWeight: 700, color: C.green }}>{audiences.learnings.scaled}</div></div>
+            <div style={card}><div style={{ fontSize: 10, color: C.muted }}>Killed</div><div style={{ fontSize: 20, fontWeight: 700, color: C.red }}>{audiences.learnings.killed}</div></div>
+            <div style={card}><div style={{ fontSize: 10, color: C.muted }}>Win Rate</div><div style={{ fontSize: 20, fontWeight: 700, color: audiences.learnings.winRate >= 30 ? C.green : C.yellow }}>{audiences.learnings.winRate}%</div></div>
+            <div style={card}><div style={{ fontSize: 10, color: C.muted }}>Total Created</div><div style={{ fontSize: 20, fontWeight: 700, color: C.text }}>{audiences.learnings.total}</div></div>
+          </div>
+        )}
+
+        {/* Audience templates by tier */}
+        {['retargeting', 'lookalike', 'interest', 'geo'].map(tier => {
+          const tierTemplates = (audiences?.templates || []).filter(t => t.type === tier)
+          if (tierTemplates.length === 0) return null
+          const tierLabels = { retargeting: 'Retargeting (Highest ROAS)', lookalike: 'Lookalikes (Scale Fuel)', interest: 'Interest Targeting (Cold)', geo: 'Geo Targeting (State-Level)' }
+          const tierColors = { retargeting: C.green, lookalike: C.blue, interest: C.purple, geo: C.orange }
+          return (
+            <div key={tier} style={{ marginBottom: 10 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: tierColors[tier], marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{tierLabels[tier]}</div>
+              <div style={card}>
+                <table style={tbl}>
+                  <thead><tr>
+                    <th style={th}>Audience</th><th style={th}>Expected ROAS</th><th style={th}>Expected CPA</th>
+                    <th style={th}>Status</th><th style={th}>Days</th><th style={th}>Performance</th><th style={th}>Action</th>
+                  </tr></thead>
+                  <tbody>
+                    {tierTemplates.map((t, i) => {
+                      const statusColors = { not_created: C.muted, created: C.blue, testing: C.yellow, scaled: C.green, killed: C.red, seed: C.muted }
+                      return (
+                        <tr key={i}>
+                          <td style={td}>
+                            <div style={{ fontWeight: 600, fontSize: 13 }}>{t.name}</div>
+                            <div style={{ fontSize: 10, color: C.muted, maxWidth: 250 }}>{t.reason}</div>
+                          </td>
+                          <td style={{ ...td, color: C.green, fontWeight: 600 }}>{t.expectedRoas ? fmtX(t.expectedRoas) : '--'}</td>
+                          <td style={{ ...td, color: C.text }}>{t.expectedCpa ? fmt$(t.expectedCpa) : '--'}</td>
+                          <td style={td}><span style={badge(statusColors[t.status] || C.muted)}>{t.status.replace(/_/g, ' ')}</span></td>
+                          <td style={td}>{t.daysInTest > 0 ? `${t.daysInTest}d` : '--'}</td>
+                          <td style={td}>
+                            {t.performance ? (
+                              <div style={{ fontSize: 11 }}>
+                                <span style={{ color: t.performance.roas >= 2.22 ? C.green : C.red }}>{fmtX(t.performance.roas)}</span>
+                                <span style={{ color: C.muted }}> | CPA </span>
+                                <span style={{ color: t.performance.cpa <= 38 ? C.green : C.red }}>{fmt$(t.performance.cpa)}</span>
+                                <span style={{ color: C.muted }}> | {t.performance.totalPurchases}p</span>
+                              </div>
+                            ) : <span style={{ color: C.muted, fontSize: 11 }}>--</span>}
+                          </td>
+                          <td style={{ ...td, whiteSpace: 'nowrap' }}>
+                            {t.status === 'not_created' && (
+                              <button onClick={() => createAudienceFromTemplate(t.id)} style={btnStyle(tierColors[tier])}>Create</button>
+                            )}
+                            {t.status === 'testing' && t.daysInTest >= 3 && (
+                              <div style={{ display: 'flex', gap: 3 }}>
+                                {t.performance?.cpa > 0 && t.performance.cpa <= GRI_ADS_FE.profitableCPP && t.performance.totalPurchases >= 3 && (
+                                  <button onClick={() => scaleAudienceAction(t.id)} style={btnStyle(C.green)}>Scale</button>
+                                )}
+                                {(t.performance?.totalSpend > 100 && t.performance?.totalPurchases === 0) || (t.performance?.cpa > GRI_ADS_FE.breakevenCPP * 2) ? (
+                                  <button onClick={() => killAudienceAction(t.id)} style={btnStyle(C.red)}>Kill</button>
+                                ) : null}
+                              </div>
+                            )}
+                            {t.status === 'created' && <span style={{ color: C.muted, fontSize: 10 }}>Attach to ad set</span>}
+                            {t.status === 'scaled' && <span style={badge(C.green)}>Winner</span>}
+                            {t.status === 'killed' && <span style={badge(C.red)}>Dead</span>}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )
+        })}
       </div>
 
       {/* ── 7. Creative Analysis ───────────────────────────────────────────── */}

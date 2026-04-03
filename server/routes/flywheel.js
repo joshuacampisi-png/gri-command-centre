@@ -734,6 +734,98 @@ router.get('/opportunities', async (_req, res) => {
   }
 })
 
+// ── Audience Engine ────────────────────────────────────────────────────────
+
+router.get('/audiences', async (_req, res) => {
+  try {
+    const { getAudienceEngineSummary } = await import('../lib/audience-engine.js')
+    const summary = getAudienceEngineSummary()
+    res.json({ ok: true, ...summary })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+router.post('/audiences/create', async (req, res) => {
+  try {
+    const { templateId } = req.body
+    if (!templateId) return res.status(400).json({ ok: false, error: 'Missing templateId' })
+    const { createAudience } = await import('../lib/audience-engine.js')
+    const result = await createAudience(templateId)
+    res.json({ ok: true, audience: result })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+router.post('/audiences/test', async (req, res) => {
+  try {
+    const { templateId, adSetId } = req.body
+    if (!templateId || !adSetId) return res.status(400).json({ ok: false, error: 'Missing templateId or adSetId' })
+    const { markAudienceInTest } = await import('../lib/audience-engine.js')
+    const result = markAudienceInTest(templateId, adSetId)
+    res.json({ ok: true, audience: result })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+router.post('/audiences/evaluate', async (_req, res) => {
+  try {
+    const { evaluateAudiences } = await import('../lib/audience-engine.js')
+    const results = evaluateAudiences()
+    res.json({ ok: true, results })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+router.post('/audiences/kill', async (req, res) => {
+  try {
+    const { templateId } = req.body
+    if (!templateId) return res.status(400).json({ ok: false, error: 'Missing templateId' })
+    const { killAudience } = await import('../lib/audience-engine.js')
+    const result = await killAudience(templateId)
+    res.json({ ok: true, audience: result })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+router.post('/audiences/scale', async (req, res) => {
+  try {
+    const { templateId } = req.body
+    if (!templateId) return res.status(400).json({ ok: false, error: 'Missing templateId' })
+    const { scaleAudience } = await import('../lib/audience-engine.js')
+    const result = await scaleAudience(templateId)
+    res.json({ ok: true, ...result })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+router.post('/audiences/pause-and-replace', async (req, res) => {
+  try {
+    const { adSetId } = req.body
+    if (!adSetId) return res.status(400).json({ ok: false, error: 'Missing adSetId' })
+    const { pauseAndReplaceAudience } = await import('../lib/audience-engine.js')
+    const result = await pauseAndReplaceAudience(adSetId)
+    res.json({ ok: true, ...result })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+router.get('/audiences/learnings', async (_req, res) => {
+  try {
+    const { getAudienceLearnings } = await import('../lib/audience-engine.js')
+    const learnings = getAudienceLearnings()
+    res.json({ ok: true, ...learnings })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
 // ── Health check ────────────────────────────────────────────────────────────
 
 router.get('/health', (_req, res) => {
