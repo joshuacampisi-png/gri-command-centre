@@ -1,0 +1,215 @@
+{
+  "planName": "GRI Flywheel Data Collection and Decision Framework",
+  "createdAt": "2026-04-03",
+  "currentState": {
+    "dailyAdSpend": 78,
+    "estimatedMonthlySpend": 2340,
+    "activeCampaigns": 3,
+    "activeAds": 50,
+    "adsWithSpend": 47,
+    "purchasesThisWeek": 25,
+    "estimatedDailyOrders": 3.5,
+    "currentAov": 105,
+    "monthToDateRevenue": 4708.63,
+    "monthToDateOrders": 34,
+    "revenuePerAd": "Spread too thin across 50 ads at $78/day",
+    "metaSignalStrength": "WEAK — 50 ads splitting $78/day = $1.56/ad/day. Meta cannot optimise."
+  },
+  "phases": [
+    {
+      "phase": 1,
+      "name": "OBSERVATION ONLY — Do Not Touch Anything",
+      "duration": "Days 1 to 7 (this week)",
+      "dates": "3 April to 9 April 2026",
+      "purpose": "Let the webhook capture real purchase data. Build the attribution baseline. Do NOT make ad changes based on flywheel data yet.",
+      "minimumDataRequired": {
+        "shopifyOrders": 25,
+        "ordersWithUtmAttribution": 10,
+        "daysOfAdSnapshots": 7,
+        "reasonWhy": "Meta needs 7 days of consistent data to show reliable daily patterns. Fewer than 25 orders means any AOV calculation is noise."
+      },
+      "actions": [
+        "Monitor the flywheel log daily — are orders coming through the webhook?",
+        "Check UTM attribution rate — what percentage of orders have utm_source=facebook?",
+        "Do NOT pause, scale, or change any ads",
+        "Do NOT generate a creative brief yet (not enough data to be meaningful)",
+        "Log which products are selling and at what AOV manually if needed"
+      ],
+      "decisionGate": {
+        "canProceedWhen": "25+ orders captured via webhook AND 7+ days of ad snapshots stored",
+        "ifNotMet": "Extend Phase 1 by 3 days. If UTM attribution is below 30%, check Shopify theme is passing UTM params correctly."
+      },
+      "keyMetricToWatch": "UTM attribution rate. If orders are coming in but none have utm_source, the join between Meta and Shopify is broken and the whole flywheel is blind."
+    },
+    {
+      "phase": 2,
+      "name": "BASELINE WEEK — First Real Numbers",
+      "duration": "Days 8 to 14",
+      "dates": "10 April to 16 April 2026",
+      "purpose": "Establish baseline metrics that all future decisions will be measured against. This is your 'before' snapshot.",
+      "minimumDataRequired": {
+        "totalOrders": 50,
+        "attributedOrders": 20,
+        "adSnapshotDays": 14,
+        "reasonWhy": "50 orders gives a statistically useful AOV distribution. 14 days of ad data gives reliable CPA, ROAS, frequency baselines."
+      },
+      "actions": [
+        "Generate the first creative brief on Friday 11 April (2 weeks of data)",
+        "Run the AI decision engine for the first time — but REVIEW ONLY, do not approve any actions",
+        "Calculate baseline metrics and lock them in: baseline AOV, baseline CPA, baseline ROAS, baseline bundle rate",
+        "Identify the top 5 and bottom 5 ads by CPA (not ROAS — CPA is more reliable with low data)",
+        "Check frequency on every ad set — anything above 4 on cold is already fatiguing"
+      ],
+      "baselineMetricsToLock": [
+        "Blended CPA (should know within $5 accuracy)",
+        "Average AOV (should know within $15 accuracy)",
+        "Bundle rate (percentage of multi-item orders)",
+        "Top performing creative angle",
+        "Frequency by audience type",
+        "UTM attribution rate (what % of Shopify orders link to a Meta ad)"
+      ],
+      "decisionGate": {
+        "canProceedWhen": "50+ total orders AND baseline metrics locked in AND at least 3 ads have 10+ purchases each",
+        "ifNotMet": "Extend Phase 2. If after 14 days you still have fewer than 50 orders, the issue is spend level not data collection time."
+      }
+    },
+    {
+      "phase": 3,
+      "name": "FIRST KILL CYCLE — Remove the Bleed",
+      "duration": "Days 15 to 21",
+      "dates": "17 April to 23 April 2026",
+      "purpose": "Make the first data backed decisions. Kill underperformers. Consolidate spend into fewer, better ads.",
+      "minimumDataRequired": {
+        "perAdMinPurchases": 5,
+        "perAdMinSpend": "2x target CPA ($56 for blended)",
+        "reasonWhy": "An ad that has spent 2x your target CPA with zero purchases has had a fair trial. At $78/day across 50 ads, most ads will NEVER get enough spend to prove themselves. This is the core problem."
+      },
+      "criticalInsight": "You are running 50 ads on $78/day. That is $1.56 per ad per day. Meta CANNOT optimise an ad on $1.56/day. The algorithm needs $20 to $50/day per ad minimum to find the right people. Your first kill cycle is not about bad creatives — it is about consolidating spend into 8 to 10 ads maximum so each one gets $8 to $10/day.",
+      "actions": [
+        "Kill any ad with zero purchases after spending $56+ (2x blended CPA target)",
+        "Kill any ad with CPA above $70 (2.5x target) for 3+ days",
+        "Kill any ad set with frequency above 5 on cold audiences",
+        "Target: reduce from 50 active ads to 10 to 15 maximum",
+        "DO NOT increase budget yet — just consolidate",
+        "Approve the AI's kill recommendations if they match the data"
+      ],
+      "expectedOutcome": "Fewer ads getting more spend each. CPA should drop within 3 to 5 days as Meta's algorithm has more budget per ad to optimise with.",
+      "decisionGate": {
+        "canProceedWhen": "Active ads reduced to 15 or fewer AND remaining ads each getting $5+/day AND CPA trending down from baseline",
+        "ifNotMet": "Kill more aggressively. If CPA is not improving, the issue is creative quality not ad count."
+      }
+    },
+    {
+      "phase": 4,
+      "name": "AOV PUSH — Bundle Messaging Test",
+      "duration": "Days 22 to 35 (2 weeks)",
+      "dates": "24 April to 7 May 2026",
+      "purpose": "With clean campaign structure, test bundle-focused creative to push AOV toward $160.",
+      "minimumDataRequired": {
+        "ordersPerCreativeVariant": 15,
+        "totalOrders": 100,
+        "reasonWhy": "Testing bundle vs single product messaging needs 15+ purchases per variant to see if AOV difference is real or noise. At 3 to 4 orders/day this takes 2 weeks."
+      },
+      "actions": [
+        "Launch 3 to 4 new bundle focused creatives (from the AI brief)",
+        "A/B test: single product ads vs 'Complete Reveal Kit' bundle ads",
+        "Track AOV by creative angle — which angles drive $160+ orders?",
+        "Set free shipping threshold at $99 (20 to 40% above current $105 AOV is too close — test $89 first)",
+        "Test 'backup pack' messaging: 'What if the cannon doesn't fire?'",
+        "Monitor bundle rate weekly — target is 30% of orders being multi-item"
+      ],
+      "expectedOutcome": "AOV moves from $105 toward $130+. Bundle rate increases from current baseline. Specific creative angles identified that drive higher AOV.",
+      "decisionGate": {
+        "canProceedWhen": "AOV above $120 for 7 consecutive days AND bundle rate above 20% AND at least 2 creative angles proven",
+        "ifNotMet": "Review product page. If people click the bundle ad but buy single items, the issue is the product page not the ad."
+      }
+    },
+    {
+      "phase": 5,
+      "name": "SCALE — Increase Budget With Confidence",
+      "duration": "Days 36 to 60 (3.5 weeks)",
+      "dates": "8 May to 1 June 2026",
+      "purpose": "Scale winning ads and audiences with proven data behind every dollar increase.",
+      "minimumDataRequired": {
+        "purchasesPerWinningAdSet": 50,
+        "consecutiveDaysOnTarget": 5,
+        "reasonWhy": "Meta's learning phase requires approximately 50 conversion events per ad set per week. An ad set with 50+ purchases has exited learning and its performance is reliable."
+      },
+      "actions": [
+        "Increase budget 15% on ad sets that meet scale rules (ROAS above 3.0 for 5 days, frequency below 2.5)",
+        "Wait 3 days between each budget increase",
+        "Move from $78/day toward $120 to $150/day in 15% increments",
+        "Launch ASC campaign if not already running (needs $100/day minimum to work properly)",
+        "Retargeting should be 15 to 25% of total spend",
+        "Approve AI scale recommendations that match the data"
+      ],
+      "budgetScalingSchedule": {
+        "week1": "$78 to $90 (one 15% increase if rules met)",
+        "week2": "$90 to $103 (second increase if still on target)",
+        "week3": "$103 to $119 (third increase)",
+        "week4": "$119 to $137 (approaching ASC minimum viability)"
+      },
+      "expectedOutcome": "Daily spend doubles from $78 to $150 while maintaining CPA within target. ROAS above 3.33 (breakeven). Revenue scales proportionally.",
+      "decisionGate": {
+        "canProceedWhen": "Spending $150+/day with blended ROAS above 3.0 AND CPA within target AND AOV above $120",
+        "ifNotMet": "Scale back to last profitable spend level. Do not chase volume at the expense of profitability."
+      }
+    },
+    {
+      "phase": 6,
+      "name": "FLYWHEEL MATURITY — System Runs Itself",
+      "duration": "Day 60+ (ongoing)",
+      "dates": "June 2026 onward",
+      "purpose": "The flywheel is now self-sustaining. Every purchase feeds the next creative brief. Every kill rule fires before money is wasted. Josh operates in 15 minutes Mon/Wed/Fri.",
+      "systemBehaviour": [
+        "AI creative brief every Friday uses 60+ days of conversion data — briefs are now highly specific",
+        "Kill rules fire automatically with 60 days of baseline data for comparison",
+        "Scale rules have enough history to predict outcomes with 70%+ accuracy",
+        "AOV Intelligence tracks weekly trends with statistical confidence",
+        "Agent learning log has 20+ decision outcomes to calibrate future confidence scores",
+        "New creative testing runs in ABO while proven winners scale in CBO/ASC"
+      ]
+    }
+  ],
+  "statisticalMinimums": {
+    "perAdDecision": {
+      "minimumSpend": "2x target CPA ($56 for blended)",
+      "minimumDays": 3,
+      "minimumImpressions": 1000,
+      "why": "An ad needs to reach at least 1000 people before you can say its CTR or conversion rate is meaningful. At $10 CPM that costs $10. But CPA decisions need 2x the target spent — if it cannot convert after spending twice what a conversion should cost, it will not convert."
+    },
+    "perAdSetDecision": {
+      "minimumPurchases": 10,
+      "minimumDays": 7,
+      "why": "Meta's own learning phase requires ~50 events/week but that is aspirational. For GRI at current volume, 10 purchases over 7 days from a single ad set is enough to judge CPA reliability."
+    },
+    "perCampaignDecision": {
+      "minimumPurchases": 30,
+      "minimumDays": 14,
+      "why": "Campaign level ROAS needs 30+ attributed purchases to be trusted. Below that, a single $200 order can skew the entire ROAS number."
+    },
+    "aovDecision": {
+      "minimumOrders": 50,
+      "minimumDays": 14,
+      "why": "AOV is highly variable in gender reveal (one customer buys $40, next buys $200). You need 50+ orders before the average stabilises enough to detect a real shift vs random noise."
+    },
+    "creativeBriefQuality": {
+      "minimumAttributedOrders": 20,
+      "minimumActiveAngles": 3,
+      "why": "A brief written from 5 orders is a guess. A brief written from 20+ orders with 3+ creative angles to compare is a strategy."
+    }
+  },
+  "immediateProblem": {
+    "issue": "50 ads on $78/day = $1.56 per ad per day. Meta cannot optimise.",
+    "solution": "Phase 3 consolidation is the single most important thing. Cut to 10 to 15 ads. Get each ad $5 to $10/day minimum.",
+    "urgency": "Every day you run 50 ads on $78 is money being sprayed. This is why CPA looks high and ROAS looks low — budget is too fragmented for the algorithm to find buyers.",
+    "doNotDo": "Do NOT increase budget before consolidating. Adding money to 50 ads just sprays more. Consolidate first, then scale."
+  },
+  "flywheelRules": {
+    "neverDecideFrom1Day": "Any metric from a single day is noise. Minimum 3 days for kill rules, 5 days for scale rules, 14 days for strategic decisions.",
+    "neverDecideFromFewOrders": "5 orders is an anecdote. 20 orders is a signal. 50 orders is a pattern. 100 orders is a strategy.",
+    "alwaysCompareToPrevious": "Every metric must be compared to its own baseline, not to an arbitrary target. If your CPA was $30 last week and is $25 this week, that is progress even if target is $20.",
+    "respectLearningPhase": "After any change (budget, audience, creative), give Meta 3 to 5 days before judging the result. The algorithm is recalibrating.",
+    "failFast": "Test 8 to 10 creatives. Kill 80% in week 1. Double down on the 20% that show signal. Repeat."
+  }
+}

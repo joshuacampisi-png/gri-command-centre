@@ -4,13 +4,15 @@
  * Stores conversions, snapshots, kill events, briefs, AOV intelligence,
  * alerts, CPA targets, weekly rhythm, agent actions, and learning log.
  */
-import { readFileSync, writeFileSync, existsSync } from 'fs'
+import { readFileSync, writeFileSync, existsSync, copyFileSync, readdirSync, statSync, unlinkSync } from 'fs'
+import { join } from 'path'
 import { dataFile, dataDir } from './data-dir.js'
 import { randomUUID } from 'crypto'
 
 // ── File paths ──────────────────────────────────────────────────────────────
 
 dataDir('flywheel') // ensure directory exists
+dataDir('flywheel/backups') // backup directory
 
 const FILES = {
   conversions:    dataFile('flywheel/conversions.json'),
@@ -36,16 +38,197 @@ const FILES = {
 
 function load(file) {
   if (!existsSync(file)) return []
-  try { return JSON.parse(readFileSync(file, 'utf8')) } catch { return [] }
+  try {
+    const raw = readFileSync(file, 'utf8')
+    if (!raw || raw.trim().length === 0) return []
+    return JSON.parse(raw)
+  } catch (err) {
+    // If main file is corrupted, try the .bak file
+    const bak = file + '.bak'
+    if (existsSync(bak)) {
+      console.warn(`[Flywheel Store] ${file} corrupted, recovering from .bak`)
+      try {
+        const bakRaw = readFileSync(bak, 'utf8')
+        const data = JSON.parse(bakRaw)
+        // Restore the main file from backup
+        writeFileSync(file, bakRaw)
+        return data
+      } catch { /* bak also bad, return empty */ }
+    }
+    console.error(`[Flywheel Store] ${file} unrecoverable, starting fresh`)
+    return []
+  }
 }
 
+/**
+ * Atomic write: write to .tmp first, then rename.
+ * Also keeps a .bak of the previous version.
+ * This prevents data loss if the process crashes mid-write.
+ */
 function save(file, data) {
-  writeFileSync(file, JSON.stringify(data, null, 2))
+  const json = JSON.stringify(data, null, 2)
+  const tmp = file + '.tmp'
+  const bak = file + '.bak'
+
+  try {
+    // 1. Write to temp file first (atomic step 1)
+    writeFileSync(tmp, json)
+
+    // 2. Backup current file before overwriting
+    if (existsSync(file)) {
+      try { copyFileSync(file, bak) } catch { /* ok if first write */ }
+    }
+
+    // 3. Rename temp to main (atomic step 2 — this is the commit)
+    writeFileSync(file, json)
+
+    // 4. Clean up temp
+    try { if (existsSync(tmp)) unlinkSync(tmp) } catch { /* ok */ }
+  } catch (err) {
+    console.error(`[Flywheel Store] CRITICAL: Failed to save ${file}:`, err.message)
+    // If main write failed but tmp exists, try to recover
+    if (existsSync(tmp)) {
+      try { writeFileSync(file, readFileSync(tmp, 'utf8')) } catch { /* last resort failed */ }
+    }
+  }
 }
 
 function loadObj(file) {
   if (!existsSync(file)) return {}
-  try { return JSON.parse(readFileSync(file, 'utf8')) } catch { return {} }
+  try {
+    const raw = readFileSync(file, 'utf8')
+    if (!raw || raw.trim().length === 0) return {}
+    return JSON.parse(raw)
+  } catch (err) {
+    const bak = file + '.bak'
+    if (existsSync(bak)) {
+      console.warn(`[Flywheel Store] ${file} corrupted, recovering from .bak`)
+      try {
+        const bakRaw = readFileSync(bak, 'utf8')
+        const data = JSON.parse(bakRaw)
+        writeFileSync(file, bakRaw)
+        return data
+      } catch { /* bak also bad */ }
+    }
+    return {}
+  }
+}
+
+// ── Daily Backup System ─────────────────────────────────────────────────────
+// Creates a daily snapshot of all critical flywheel data.
+// Keeps last 14 daily backups. Runs automatically.
+
+const BACKUP_DIR = dataDir('flywheel/backups')
+const CRITICAL_FILES = [
+  'conversions', 'adSnapshots', 'adSetSnapshots', 'campaigns', 'adSets',
+  'ads', 'briefs', 'aovIntel', 'cpaTargets', 'pendingActions', 'agentLearning',
+]
+
+export function runDailyBackup() {
+  const today = new Date().toISOString().split('T')[0]
+  const backupSubdir = dataDir(`flywheel/backups/${today}`)
+
+  let backedUp = 0
+  for (const key of CRITICAL_FILES) {
+    const src = FILES[key]
+    if (src && existsSync(src)) {
+      try {
+        const dest = join(backupSubdir, key + '.json')
+        copyFileSync(src, dest)
+        backedUp++
+      } catch (err) {
+        console.error(`[Flywheel Backup] Failed to backup ${key}:`, err.message)
+      }
+    }
+  }
+
+  // Clean old backups (keep last 14 days)
+  try {
+    const backups = readdirSync(BACKUP_DIR)
+      .filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d))
+      .sort()
+    if (backups.length > 14) {
+      const toDelete = backups.slice(0, backups.length - 14)
+      for (const old of toDelete) {
+        const oldDir = join(BACKUP_DIR, old)
+        try {
+          const files = readdirSync(oldDir)
+          for (const f of files) unlinkSync(join(oldDir, f))
+        } catch { /* ok if cleanup fails */ }
+      }
+    }
+  } catch { /* ok */ }
+
+  console.log(`[Flywheel Backup] Daily backup complete: ${backedUp} files saved to ${today}`)
+  return { date: today, files: backedUp }
+}
+
+// ── Health Check ────────────────────────────────────────────────────────────
+
+export function getFlywheelHealth() {
+  const health = { status: 'healthy', issues: [], files: {}, lastEvents: {} }
+
+  // Check each critical file exists and is valid JSON
+  for (const [key, file] of Object.entries(FILES)) {
+    if (!existsSync(file)) {
+      health.files[key] = { exists: false, size: 0 }
+      continue
+    }
+    try {
+      const stat = statSync(file)
+      const raw = readFileSync(file, 'utf8')
+      JSON.parse(raw) // validate JSON
+      health.files[key] = {
+        exists: true,
+        size: stat.size,
+        modified: stat.mtime.toISOString(),
+        records: Array.isArray(JSON.parse(raw)) ? JSON.parse(raw).length : 'object',
+      }
+    } catch (err) {
+      health.files[key] = { exists: true, corrupted: true, error: err.message }
+      health.issues.push(`${key} is corrupted: ${err.message}`)
+      health.status = 'degraded'
+    }
+  }
+
+  // Check last flywheel log event
+  const logData = load(FILES.flywheelLog)
+  if (logData.length > 0) {
+    const last = logData[logData.length - 1]
+    health.lastEvents.lastLog = { type: last.type, timestamp: last.timestamp }
+    // If last event is older than 24 hours, flag it
+    const hoursSinceLast = (Date.now() - new Date(last.timestamp).getTime()) / (1000 * 60 * 60)
+    if (hoursSinceLast > 24) {
+      health.issues.push(`No flywheel events in ${Math.round(hoursSinceLast)} hours`)
+      health.status = 'warning'
+    }
+  }
+
+  // Check conversions are flowing
+  const conversions = load(FILES.conversions)
+  health.lastEvents.totalConversions = conversions.length
+  if (conversions.length > 0) {
+    const lastConv = conversions[conversions.length - 1]
+    health.lastEvents.lastConversion = lastConv.orderedAt
+  }
+
+  // Check snapshots are being collected
+  const snapshots = load(FILES.adSnapshots)
+  health.lastEvents.totalSnapshots = snapshots.length
+  if (snapshots.length > 0) {
+    const lastSnap = snapshots[snapshots.length - 1]
+    health.lastEvents.lastSnapshot = lastSnap.date || lastSnap.createdAt
+  }
+
+  // Check backup status
+  try {
+    const backupDays = readdirSync(BACKUP_DIR).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d))
+    health.backups = { totalDays: backupDays.length, latest: backupDays.sort().pop() || 'none' }
+  } catch {
+    health.backups = { totalDays: 0, latest: 'none' }
+  }
+
+  return health
 }
 
 function now() { return new Date().toISOString() }

@@ -18,6 +18,28 @@ import {
 import {
   generateCreativeBrief, runDecisionEngine, measureActionOutcomes
 } from './flywheel-intelligence.js'
+import { runDailyBackup, logFlywheelEvent as logEvent } from './flywheel-store.js'
+
+// ── Crash-safe wrapper ──────────────────────────────────────────────────────
+// Every cron job is wrapped so a single failure never kills the process.
+
+function safeRun(name, fn) {
+  return async () => {
+    const start = Date.now()
+    try {
+      console.log(`[Flywheel Cron] Starting: ${name}`)
+      await fn()
+      const ms = Date.now() - start
+      console.log(`[Flywheel Cron] Completed: ${name} (${ms}ms)`)
+    } catch (err) {
+      const ms = Date.now() - start
+      console.error(`[Flywheel Cron] FAILED: ${name} after ${ms}ms —`, err.message)
+      try {
+        logFlywheelEvent('cron_error', { job: name, error: err.message, duration: ms })
+      } catch { /* logging itself failed, nothing we can do */ }
+    }
+  }
+}
 
 // ── Meta Sync Job ───────────────────────────────────────────────────────────
 // Pulls all campaigns, ad sets, ads, and daily insights from Meta API.
@@ -220,56 +242,40 @@ export function startFlywheelCrons() {
   console.log('[Flywheel Cron] Starting flywheel scheduled jobs...')
 
   // Meta sync: every 6 hours (2am, 8am, 2pm, 8pm AEST)
-  cron.schedule('0 2,8,14,20 * * *', async () => {
-    console.log('[Flywheel Cron] Running scheduled Meta sync')
-    await metaSyncJob()
-  }, { timezone: 'Australia/Brisbane' })
+  cron.schedule('0 2,8,14,20 * * *', safeRun('meta-sync', metaSyncJob), { timezone: 'Australia/Brisbane' })
 
-  // Kill rule evaluation: daily at 6am AEST (also runs after each meta-sync)
-  cron.schedule('0 6 * * *', async () => {
-    console.log('[Flywheel Cron] Running daily kill rule evaluation')
-    await evaluateKillRules()
-  }, { timezone: 'Australia/Brisbane' })
+  // Kill rule evaluation: daily at 6am AEST
+  cron.schedule('0 6 * * *', safeRun('kill-rules', evaluateKillRules), { timezone: 'Australia/Brisbane' })
 
   // Scale rule evaluation: daily at 6:30am AEST
-  cron.schedule('30 6 * * *', async () => {
-    console.log('[Flywheel Cron] Running daily scale rule evaluation')
-    await evaluateScaleRules()
-  }, { timezone: 'Australia/Brisbane' })
+  cron.schedule('30 6 * * *', safeRun('scale-rules', evaluateScaleRules), { timezone: 'Australia/Brisbane' })
 
   // AOV intelligence: daily at 7am AEST
-  cron.schedule('0 7 * * *', async () => {
-    console.log('[Flywheel Cron] Running daily AOV intelligence')
-    calculateAovIntelligence()
-  }, { timezone: 'Australia/Brisbane' })
+  cron.schedule('0 7 * * *', safeRun('aov-intelligence', calculateAovIntelligence), { timezone: 'Australia/Brisbane' })
 
   // AI Decision Engine: every 6 hours (offset from meta-sync by 1 hour)
-  cron.schedule('0 3,9,15,21 * * *', async () => {
-    console.log('[Flywheel Cron] Running AI decision engine')
-    await runDecisionEngine()
-  }, { timezone: 'Australia/Brisbane' })
+  cron.schedule('0 3,9,15,21 * * *', safeRun('ai-decision-engine', runDecisionEngine), { timezone: 'Australia/Brisbane' })
 
   // Creative brief generation: every Friday at 5pm AEST
-  cron.schedule('0 17 * * 5', async () => {
-    console.log('[Flywheel Cron] Running Friday creative brief generation')
-    await generateCreativeBrief()
-  }, { timezone: 'Australia/Brisbane' })
+  cron.schedule('0 17 * * 5', safeRun('creative-brief', generateCreativeBrief), { timezone: 'Australia/Brisbane' })
 
   // Outcome measurement: daily at 10am AEST
-  cron.schedule('0 10 * * *', async () => {
-    console.log('[Flywheel Cron] Running outcome measurement')
-    await measureActionOutcomes()
-  }, { timezone: 'Australia/Brisbane' })
+  cron.schedule('0 10 * * *', safeRun('outcome-measurement', measureActionOutcomes), { timezone: 'Australia/Brisbane' })
+
+  // Daily backup: 1am AEST every day (before any other jobs run)
+  cron.schedule('0 1 * * *', safeRun('daily-backup', async () => {
+    runDailyBackup()
+  }), { timezone: 'Australia/Brisbane' })
 
   // Run initial meta sync on startup (delayed 30s to let server boot)
-  setTimeout(async () => {
-    try {
-      console.log('[Flywheel Cron] Running initial meta sync on startup')
-      await metaSyncJob()
-    } catch (err) {
-      console.error('[Flywheel Cron] Startup meta sync failed:', err.message)
-    }
-  }, 30000)
+  setTimeout(safeRun('startup-meta-sync', metaSyncJob), 30000)
 
-  console.log('[Flywheel Cron] All flywheel jobs scheduled')
+  // Run first backup immediately on startup
+  setTimeout(() => {
+    try { runDailyBackup() } catch (err) {
+      console.error('[Flywheel Cron] Startup backup failed:', err.message)
+    }
+  }, 5000)
+
+  console.log('[Flywheel Cron] All flywheel jobs scheduled (8 jobs + daily backup)')
 }

@@ -8,7 +8,7 @@ import {
   getWeeklyRhythm, markRhythmDay, getPendingActions, approveAction, rejectAction,
   markActionExecuted, getFlywheelLog, getAovIntel, getAgentLearning,
   getIndustryKnowledge, saveIndustryKnowledge, getLatestBrief, approveBrief,
-  getCampaigns, getAdSets, getAds,
+  getCampaigns, getAdSets, getAds, getFlywheelHealth, runDailyBackup,
 } from '../lib/flywheel-store.js'
 import {
   getFlywheelSummary, getCreativeLeaderboard, scoreCampaignHealth, calculateAovIntelligence, FLYWHEEL
@@ -284,6 +284,29 @@ router.get('/knowledge', (_req, res) => {
   try {
     const knowledge = getIndustryKnowledge()
     res.json({ ok: true, knowledge })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── Health check ────────────────────────────────────────────────────────────
+
+router.get('/health', (_req, res) => {
+  try {
+    const health = getFlywheelHealth()
+    const status = health.status === 'healthy' ? 200 : health.status === 'warning' ? 200 : 503
+    res.status(status).json({ ok: health.status !== 'degraded', ...health })
+  } catch (err) {
+    res.status(500).json({ ok: false, status: 'error', error: err.message })
+  }
+})
+
+// ── Manual backup trigger ───────────────────────────────────────────────────
+
+router.post('/backup', (_req, res) => {
+  try {
+    const result = runDailyBackup()
+    res.json({ ok: true, ...result })
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message })
   }
