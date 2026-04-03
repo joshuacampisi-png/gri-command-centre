@@ -826,6 +826,38 @@ router.get('/audiences/learnings', async (_req, res) => {
   }
 })
 
+// ── Ad Set Launcher ────────────────────────────────────────────────────────
+
+router.post('/launch/preview', async (req, res) => {
+  try {
+    const { previewLaunch } = await import('../lib/adset-launcher.js')
+    const preview = previewLaunch(req.body)
+    res.json({ ok: true, preview })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+router.post('/launch/execute', async (req, res) => {
+  try {
+    const { launchTestAdSet } = await import('../lib/adset-launcher.js')
+    const result = await launchTestAdSet(req.body)
+    res.json({ ok: true, launch: result })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+router.get('/launches', async (_req, res) => {
+  try {
+    const { getLaunches } = await import('../lib/adset-launcher.js')
+    const launches = getLaunches()
+    res.json({ ok: true, launches })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
 // ── Health check ────────────────────────────────────────────────────────────
 
 router.get('/health', (_req, res) => {

@@ -86,6 +86,7 @@ export function AdsFlywheelTab() {
   const [analysing, setAnalysing] = useState(false)
   const [analysis, setAnalysis] = useState(null)
   const [audiences, setAudiences] = useState(null)
+  const [launchPreview, setLaunchPreview] = useState(null)
   const [actionLoading, setActionLoading] = useState({}) // track per-button loading { [key]: true }
   const [creatingAudience, setCreatingAudience] = useState({}) // track per-template creating state
   const [expandedTemplate, setExpandedTemplate] = useState(null) // for interest/geo "View Config"
@@ -194,15 +195,56 @@ export function AdsFlywheelTab() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ templateId }),
       }).then(r => r.json())
-      setScaleResult(r.ok
-        ? { ok: true, message: `Audience "${r.audience?.name}" created on Meta! Attach it to an ad set to start testing.` }
-        : { ok: false, error: r.error }
-      )
+      if (r.ok) {
+        // For retargeting/lookalike, also launch the ad set
+        const template = (audiences?.templates || []).find(t => t.id === templateId)
+        if (template && (template.type === 'retargeting' || template.type === 'lookalike')) {
+          setScaleResult({ ok: true, message: `Audience created! Now launching test ad set ($10/day, PAUSED)...` })
+          try {
+            const launch = await fetch(`${API}/launch/execute`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                audienceName: template.name,
+                audienceType: template.type,
+                dailyBudget: 10,
+                customAudienceId: r.audience?.metaAudienceId,
+              }),
+            }).then(r => r.json())
+            setScaleResult(launch.ok
+              ? { ok: true, message: `"${template.name}" ready! Ad set created PAUSED in testing campaign ($10/day). Review in Meta Ads Manager and activate when ready.` }
+              : { ok: true, message: `Audience created on Meta but ad set launch failed: ${launch.error}. You can create the ad set manually.` }
+            )
+          } catch (launchErr) {
+            setScaleResult({ ok: true, message: `Audience created on Meta! Ad set auto-launch failed: ${launchErr.message}. Create the ad set manually.` })
+          }
+        } else {
+          setScaleResult({ ok: true, message: `Audience "${r.audience?.name}" created on Meta!` })
+        }
+      } else {
+        setScaleResult({ ok: false, error: r.error })
+      }
       loadAudiences()
     } catch (e) {
       setScaleResult({ ok: false, error: e.message })
     }
     setCreatingAudience(prev => ({ ...prev, [templateId]: false }))
+  }
+
+  async function previewAudienceLaunch(template) {
+    try {
+      const r = await fetch(`${API}/launch/preview`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          audienceName: template.name,
+          audienceType: template.type,
+          dailyBudget: 10,
+          customAudienceId: template.metaAudienceId,
+        }),
+      }).then(r => r.json())
+      if (r.ok) setLaunchPreview({ templateId: template.id, ...r.preview })
+    } catch (e) { setScaleResult({ ok: false, error: e.message }) }
   }
 
   async function killAudienceAction(templateId) {
@@ -637,7 +679,7 @@ export function AdsFlywheelTab() {
                                   onClick={e => { e.stopPropagation(); createAudienceFromTemplate(t.id) }}
                                   disabled={creatingAudience[t.id]}
                                   style={{ ...btnStyle(tierColors[tier]), minHeight: isMobile ? 44 : 'auto' }}
-                                >{creatingAudience[t.id] ? 'Creating...' : 'Create'}</button>
+                                >{creatingAudience[t.id] ? 'Creating...' : 'Create + Launch Test'}</button>
                               )}
                               {t.status === 'not_created' && !isCreatableTier && (
                                 <button
@@ -663,7 +705,12 @@ export function AdsFlywheelTab() {
                                   ) : null}
                                 </div>
                               )}
-                              {t.status === 'created' && <span style={{ color: C.muted, fontSize: 10 }}>Attach to ad set</span>}
+                              {t.status === 'created' && (
+                                <button
+                                  onClick={e => { e.stopPropagation(); previewAudienceLaunch(t) }}
+                                  style={{ ...btnStyle(C.green), minHeight: isMobile ? 44 : 'auto' }}
+                                >Launch Test</button>
+                              )}
                               {t.status === 'scaled' && <span style={badge(C.green)}>Winner</span>}
                               {t.status === 'killed' && <span style={badge(C.red)}>Dead</span>}
                             </td>
