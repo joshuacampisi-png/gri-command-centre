@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   ReferenceLine, Line, ComposedChart
@@ -30,6 +30,28 @@ function fmt$(n) {
 function fmtPct(n) { return n != null && !isNaN(n) ? n.toFixed(1) + '%' : '--' }
 function fmtX(n) { return n != null && !isNaN(n) ? n.toFixed(2) + 'x' : '--' }
 
+// ── Mobile hook ─────────────────────────────────────────────────────────────
+
+function useIsMobile() {
+  const [mobile, setMobile] = useState(window.innerWidth < 768)
+  useEffect(() => {
+    const handler = () => setMobile(window.innerWidth < 768)
+    window.addEventListener('resize', handler)
+    return () => window.removeEventListener('resize', handler)
+  }, [])
+  return mobile
+}
+
+function useIsTablet() {
+  const [tablet, setTablet] = useState(window.innerWidth >= 768 && window.innerWidth < 1024)
+  useEffect(() => {
+    const handler = () => setTablet(window.innerWidth >= 768 && window.innerWidth < 1024)
+    window.addEventListener('resize', handler)
+    return () => window.removeEventListener('resize', handler)
+  }, [])
+  return tablet
+}
+
 // ── Recommendation colours ──────────────────────────────────────────────────
 
 const REC_COLORS = {
@@ -46,6 +68,9 @@ const PRIORITY_COLORS = {
 // ── Main Component ──────────────────────────────────────────────────────────
 
 export function AdsFlywheelTab() {
+  const isMobile = useIsMobile()
+  const isTablet = useIsTablet()
+
   const [range, setRange] = useState('today')
   const [d, setD] = useState(null) // dashboard data
   const [loading, setLoading] = useState(true)
@@ -61,6 +86,19 @@ export function AdsFlywheelTab() {
   const [analysing, setAnalysing] = useState(false)
   const [analysis, setAnalysis] = useState(null)
   const [audiences, setAudiences] = useState(null)
+  const [actionLoading, setActionLoading] = useState({}) // track per-button loading { [key]: true }
+  const [creatingAudience, setCreatingAudience] = useState({}) // track per-template creating state
+  const [expandedTemplate, setExpandedTemplate] = useState(null) // for interest/geo "View Config"
+
+  // Auto-dismiss toast after 8 seconds
+  const toastTimerRef = useRef(null)
+  useEffect(() => {
+    if (scaleResult) {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
+      toastTimerRef.current = setTimeout(() => setScaleResult(null), 8000)
+    }
+    return () => { if (toastTimerRef.current) clearTimeout(toastTimerRef.current) }
+  }, [scaleResult])
 
   const load = useCallback(async () => {
     try {
@@ -71,13 +109,28 @@ export function AdsFlywheelTab() {
     setLoading(false)
   }, [range])
 
-  useEffect(() => { setLoading(true); load(); loadAudiences(); const i = setInterval(load, 60000); return () => clearInterval(i) }, [load])
+  const loadAudiences = useCallback(async () => {
+    try {
+      const r = await fetch(`${API}/audiences`).then(r => r.json())
+      if (r.ok) setAudiences(r)
+    } catch (e) { /* silent */ }
+  }, [])
+
+  // Load dashboard on mount + 60s interval; load audiences only on mount
+  useEffect(() => {
+    setLoading(true)
+    load()
+    loadAudiences()
+    const i = setInterval(load, 60000)
+    return () => clearInterval(i)
+  }, [load, loadAudiences])
 
   // Action handlers
   async function resolveAlert(id) { await fetch(`${API}/alerts/${id}/resolve`, { method: 'POST' }); load() }
   async function approveAction(id) { await fetch(`${API}/actions/${id}/approve`, { method: 'POST' }); load() }
   async function rejectAction(id) { await fetch(`${API}/actions/${id}/reject`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reason: '' }) }); load() }
   async function markDay(day) { await fetch(`${API}/rhythm/${day}/complete`, { method: 'POST' }); load() }
+
   async function triggerSync() { setSyncing(true); await fetch(`${API}/meta-sync/trigger`, { method: 'POST' }); setSyncing(false); load() }
   async function triggerBrief() { setGenerating(true); await fetch(`${API}/brief/generate`, { method: 'POST' }); setGenerating(false); load() }
   async function approveBrief(id) { await fetch(`${API}/brief/${id}/approve`, { method: 'POST' }); load() }
@@ -93,7 +146,8 @@ export function AdsFlywheelTab() {
     setScaling(false)
   }
 
-  async function executeAction2(method, params) {
+  async function executeAction2(method, params, loadingKey) {
+    if (loadingKey) setActionLoading(prev => ({ ...prev, [loadingKey]: true }))
     try {
       const r = await fetch(`${API}/execute-action`, {
         method: 'POST',
@@ -108,9 +162,11 @@ export function AdsFlywheelTab() {
     } catch (e) {
       setScaleResult({ ok: false, error: e.message })
     }
+    if (loadingKey) setActionLoading(prev => ({ ...prev, [loadingKey]: false }))
   }
 
-  async function pauseAndReplace(adSetId) {
+  async function pauseAndReplace(adSetId, loadingKey) {
+    if (loadingKey) setActionLoading(prev => ({ ...prev, [loadingKey]: true }))
     try {
       setScaleResult({ ok: true, message: 'Creating fresh audiences and pausing saturated one...' })
       const r = await fetch(`${API}/audiences/pause-and-replace`, {
@@ -126,9 +182,11 @@ export function AdsFlywheelTab() {
     } catch (e) {
       setScaleResult({ ok: false, error: e.message })
     }
+    if (loadingKey) setActionLoading(prev => ({ ...prev, [loadingKey]: false }))
   }
 
   async function createAudienceFromTemplate(templateId) {
+    setCreatingAudience(prev => ({ ...prev, [templateId]: true }))
     try {
       setScaleResult({ ok: true, message: `Creating audience "${templateId}"...` })
       const r = await fetch(`${API}/audiences/create`, {
@@ -144,9 +202,11 @@ export function AdsFlywheelTab() {
     } catch (e) {
       setScaleResult({ ok: false, error: e.message })
     }
+    setCreatingAudience(prev => ({ ...prev, [templateId]: false }))
   }
 
   async function killAudienceAction(templateId) {
+    setActionLoading(prev => ({ ...prev, [`kill-aud-${templateId}`]: true }))
     try {
       const r = await fetch(`${API}/audiences/kill`, {
         method: 'POST',
@@ -156,9 +216,11 @@ export function AdsFlywheelTab() {
       setScaleResult(r.ok ? { ok: true, message: `Audience killed and ad set paused.` } : { ok: false, error: r.error })
       loadAudiences()
     } catch (e) { setScaleResult({ ok: false, error: e.message }) }
+    setActionLoading(prev => ({ ...prev, [`kill-aud-${templateId}`]: false }))
   }
 
   async function scaleAudienceAction(templateId) {
+    setActionLoading(prev => ({ ...prev, [`scale-aud-${templateId}`]: true }))
     try {
       const r = await fetch(`${API}/audiences/scale`, {
         method: 'POST',
@@ -168,21 +230,17 @@ export function AdsFlywheelTab() {
       setScaleResult(r.ok ? { ok: true, message: `Audience scaled! Budget: $${r.previousBudget} → $${r.newBudget} (+15%)` } : { ok: false, error: r.error })
       loadAudiences()
     } catch (e) { setScaleResult({ ok: false, error: e.message }) }
-  }
-
-  async function loadAudiences() {
-    try {
-      const r = await fetch(`${API}/audiences`).then(r => r.json())
-      if (r.ok) setAudiences(r)
-    } catch (e) { /* silent */ }
+    setActionLoading(prev => ({ ...prev, [`scale-aud-${templateId}`]: false }))
   }
 
   async function evaluateAudiences() {
+    setActionLoading(prev => ({ ...prev, evalAudiences: true }))
     try {
       const r = await fetch(`${API}/audiences/evaluate`, { method: 'POST' }).then(r => r.json())
       if (r.ok) setScaleResult({ ok: true, message: `Evaluated ${r.results?.length || 0} audiences` })
       loadAudiences()
     } catch (e) { setScaleResult({ ok: false, error: e.message }) }
+    setActionLoading(prev => ({ ...prev, evalAudiences: false }))
   }
 
   async function analyseCreative(name) {
@@ -202,30 +260,31 @@ export function AdsFlywheelTab() {
   const dayOfWeek = today.getDay()
 
   return (
-    <div style={{ background: C.bg, color: C.text, padding: '20px 20px 40px', minHeight: '100vh', colorScheme: 'dark' }}>
+    <div style={{ background: C.bg, color: C.text, padding: isMobile ? '12px 10px 40px' : '20px 20px 40px', minHeight: '100vh', colorScheme: 'dark' }}>
 
       {/* ── 1. Header + Date Range ────────────────────────────────────────── */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+      <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'center', gap: isMobile ? 10 : 0, marginBottom: 16 }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: C.text }}>Ads Intelligence Flywheel</h1>
+          <h1 style={{ fontSize: isMobile ? 18 : 22, fontWeight: 700, margin: 0, color: C.text }}>Ads Intelligence Flywheel</h1>
           <p style={{ color: C.muted, margin: '2px 0 0', fontSize: 12 }}>Every purchase makes the next brief smarter</p>
         </div>
-        <div style={{ display: 'flex', gap: 6 }}>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           {RANGES.map(r => (
             <button key={r.key} onClick={() => setRange(r.key)} style={{
               background: range === r.key ? C.blue : C.card,
               color: range === r.key ? '#fff' : C.muted,
               border: `1px solid ${range === r.key ? C.blue : C.border}`,
-              borderRadius: 6, padding: '6px 14px', fontSize: 12, fontWeight: range === r.key ? 700 : 500, cursor: 'pointer',
+              borderRadius: 6, padding: isMobile ? '8px 14px' : '6px 14px', fontSize: 12, fontWeight: range === r.key ? 700 : 500, cursor: 'pointer',
+              minHeight: isMobile ? 44 : 'auto',
             }}>{r.label}</button>
           ))}
-          <button onClick={triggerSync} disabled={syncing} style={btnStyle(C.blue)}>{syncing ? 'Syncing...' : 'Sync Meta'}</button>
-          <button onClick={runEngine} style={btnStyle(C.purple)}>Run AI Engine</button>
+          <button onClick={triggerSync} disabled={syncing} style={{ ...btnStyle(C.blue), minHeight: isMobile ? 44 : 'auto' }}>{syncing ? 'Syncing...' : 'Sync Meta'}</button>
+          <button onClick={runEngine} style={{ ...btnStyle(C.purple), minHeight: isMobile ? 44 : 'auto' }}>Run AI Engine</button>
         </div>
       </div>
 
       {/* ── 2. Hero Metrics (6 cards) ─────────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 10, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : isTablet ? 'repeat(3, 1fr)' : 'repeat(6, 1fr)', gap: 10, marginBottom: 16 }}>
         <HeroCard label="Shopify Revenue" value={fmt$(h.shopifyRevenue)} sub={`${h.shopifyOrders || 0} orders`} color={C.text} />
         <HeroCard label="Meta Spend" value={fmt$(h.metaSpend)} sub={`${h.metaPurchases || 0} attributed`} color={C.text} />
         <HeroCard label="ROAS" value={fmtX(h.roas)} sub="Breakeven: 2.22x" color={h.roas >= 2.22 ? C.green : C.red} />
@@ -235,7 +294,7 @@ export function AdsFlywheelTab() {
       </div>
 
       {/* Profit + AMER row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 10, marginBottom: 16 }}>
         <HeroCard label="Gross Profit" value={fmt$(h.profit)} sub="Revenue x 45% margin minus spend" color={h.profit > 0 ? C.green : C.red} />
         <HeroCard label="AMER" value={h.amer != null ? h.amer.toFixed(0) + '%' : '--'} sub="Ad margin efficiency" color={h.amer > 0 ? C.green : C.red} />
         <HeroCard label="Bundle Rate" value={fmtPct(d?.aov?.bundleRate)} sub="Target: 30%+" color={(d?.aov?.bundleRate || 0) >= 30 ? C.green : C.yellow} />
@@ -246,8 +305,8 @@ export function AdsFlywheelTab() {
       {scaleResult && (
         <div style={{ ...card, marginBottom: 12, borderLeft: `3px solid ${scaleResult.ok ? C.green : C.red}` }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 13, color: C.text }}>{scaleResult.ok ? scaleResult.message : `Scale failed: ${scaleResult.error}`}</span>
-            <button onClick={() => setScaleResult(null)} style={{ ...btnSm, color: C.muted }}>Dismiss</button>
+            <span style={{ fontSize: 13, color: C.text }}>{scaleResult.ok ? scaleResult.message : `Action failed: ${scaleResult.error}`}</span>
+            <button onClick={() => setScaleResult(null)} style={{ ...btnSm, cursor: 'pointer', minHeight: isMobile ? 44 : 'auto' }}>Dismiss</button>
           </div>
         </div>
       )}
@@ -257,7 +316,7 @@ export function AdsFlywheelTab() {
         <div style={{ marginBottom: 16 }}>
           {d.pendingActions?.map(a => (
             <div key={a.id} style={{ ...card, borderLeft: `3px solid ${a.riskLevel === 'high' ? C.red : C.green}`, marginBottom: 6 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'flex-start', gap: isMobile ? 8 : 0 }}>
                 <div>
                   <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 2 }}>
                     <span style={badge(a.aiConfidence >= 7 ? C.green : C.yellow)}>Confidence {a.aiConfidence}/10</span>
@@ -266,8 +325,8 @@ export function AdsFlywheelTab() {
                   <p style={{ color: C.muted, fontSize: 12, margin: 0 }}>{a.actionSummary}</p>
                 </div>
                 <div style={{ display: 'flex', gap: 4 }}>
-                  <button onClick={() => approveAction(a.id)} style={btnStyle(C.green)}>Approve</button>
-                  <button onClick={() => rejectAction(a.id)} style={btnStyle(C.red)}>Reject</button>
+                  <button onClick={() => approveAction(a.id)} style={{ ...btnStyle(C.green), minHeight: isMobile ? 44 : 'auto' }}>Approve</button>
+                  <button onClick={() => rejectAction(a.id)} style={{ ...btnStyle(C.red), minHeight: isMobile ? 44 : 'auto' }}>Reject</button>
                 </div>
               </div>
             </div>
@@ -279,7 +338,7 @@ export function AdsFlywheelTab() {
                   <span style={badge(a.severity === 'critical' ? C.red : a.severity === 'warning' ? C.yellow : C.blue)}>{a.severity}</span>
                   <span style={{ fontSize: 13, color: C.text }}>{a.title}</span>
                 </div>
-                <button onClick={() => resolveAlert(a.id)} style={btnSm}>Resolve</button>
+                <button onClick={() => resolveAlert(a.id)} style={{ ...btnSm, cursor: 'pointer', minHeight: isMobile ? 44 : 'auto' }}>Resolve</button>
               </div>
             </div>
           ))}
@@ -289,7 +348,7 @@ export function AdsFlywheelTab() {
       {/* ── 4. Campaign Table (expandable with surgical actions) ────────────── */}
       <div style={{ marginBottom: 16 }}>
         <h2 style={secTitle}>Campaign Health</h2>
-        <div style={card}>
+        <div style={{ ...card, overflowX: 'auto' }}>
           <table style={tbl}>
             <thead><tr>
               <th style={th}></th><th style={th}>Campaign</th><th style={th}>Budget/day</th>
@@ -302,82 +361,103 @@ export function AdsFlywheelTab() {
                 const statusColor = { SCALE_READY: C.green, HEALTHY: C.blue, WATCH: C.yellow, KILL_SIGNAL: C.red, NO_DATA: C.muted }
                 const isExpanded = expandedCamp === i
                 const actionCount = (c.surgicalActions || []).length
-                return [
-                  <tr key={i} onClick={() => setExpandedCamp(isExpanded ? null : i)} style={{ cursor: 'pointer', background: isExpanded ? '#1C2333' : 'transparent' }}>
-                    <td style={td}><span style={{ color: C.muted }}>{isExpanded ? '▼' : '▶'}</span></td>
-                    <td style={{ ...td, fontWeight: 600 }}>{c.name}</td>
-                    <td style={td}>{fmt$(c.dailyBudget || c.budget)}</td>
-                    <td style={td}>{fmt$(m.spend)}</td>
-                    <td style={td}>{m.purchases || 0}</td>
-                    <td style={{ ...td, color: m.cpa <= 38 ? C.green : m.cpa <= 47.25 ? C.yellow : C.red }}>{m.cpa > 0 ? fmt$(m.cpa) : '--'}</td>
-                    <td style={{ ...td, color: m.frequency > 5 ? C.red : m.frequency > 3.5 ? C.yellow : C.text }}>{m.frequency?.toFixed(1) || '--'}</td>
-                    <td style={td}>{c.health?.score || '--'}</td>
-                    <td style={td}><span style={badge(statusColor[c.health?.status] || C.muted)}>{c.health?.status || '?'}</span></td>
-                    <td style={td}>{actionCount > 0 ? <span style={badge(C.pink)}>{actionCount} actions</span> : <span style={{ color: C.muted, fontSize: 11 }}>Hold</span>}</td>
-                  </tr>,
-                  isExpanded && (c.surgicalActions || []).length > 0 && (
-                    <tr key={`${i}-actions`} onClick={e => e.stopPropagation()}>
-                      <td colSpan={10} style={{ padding: 0, background: '#1C2333' }}>
-                        <div style={{ padding: '8px 16px 12px' }}>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 }}>Surgical Actions</div>
-                          {(c.surgicalActions || []).map((sa, j) => (
-                            <div key={j} style={{ ...card, borderLeft: `3px solid ${ACTION_COLORS[sa.action] || C.muted}`, marginBottom: 6, padding: '8px 12px' }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                <div>
-                                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 2 }}>
-                                    <span style={badge(PRIORITY_COLORS[sa.priority] || C.muted)}>{sa.priority}</span>
-                                    <span style={badge(ACTION_COLORS[sa.action] || C.muted)}>{sa.action.replace(/_/g, ' ')}</span>
-                                    <span style={{ fontWeight: 600, fontSize: 13, color: C.text }}>{sa.entityName}</span>
-                                  </div>
-                                  <p style={{ color: C.muted, fontSize: 12, margin: '2px 0 0' }}>{sa.reason}</p>
-                                  {sa.impact && <p style={{ color: C.green, fontSize: 12, margin: '2px 0 0' }}>{sa.impact}</p>}
-                                  {sa.revenueProjection && (
-                                    <div style={{ background: C.bg, borderRadius: 4, padding: '6px 8px', marginTop: 4, fontSize: 12 }}>
-                                      <span style={{ color: C.muted }}>Current: {fmt$(sa.revenueProjection.currentBudget)}/day</span>
-                                      <span style={{ color: C.text }}> → New: {fmt$(sa.revenueProjection.newBudget)}/day</span>
-                                      <br/>
-                                      <span style={{ color: C.green }}>Expected: +{fmt$(sa.revenueProjection.expectedRevenuePerDay)} revenue/day, +{fmt$(sa.revenueProjection.expectedProfitPerDay)} profit/day</span>
-                                      <span style={{ color: C.muted }}> (based on {sa.revenueProjection.basedOnRoas}x ROAS)</span>
-                                    </div>
-                                  )}
-                                </div>
-                                <div style={{ display: 'flex', gap: 4, flexShrink: 0, alignItems: 'flex-start' }} onClick={e => e.stopPropagation()}>
-                                  {sa.action === 'SCALE_BUDGET' && sa.execute && (
-                                    <ScaleButton entityId={sa.execute.params.adSetId} entityName={sa.entityName} currentBudget={sa.revenueProjection?.currentBudget} roas={sa.revenueProjection?.basedOnRoas} onScale={executeScale} scaling={scaling} />
-                                  )}
-                                  {sa.action === 'PAUSE' && (
-                                    <div style={{ textAlign: 'right' }}>
-                                      <button onClick={() => executeAction2('updateAdSetStatus', { adSetId: sa.entityId, status: 'PAUSED' })} style={btnStyle(C.red)}>Pause Ad Set</button>
-                                      <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>Stops all spend immediately</div>
-                                    </div>
-                                  )}
-                                  {sa.action === 'REDUCE_BUDGET' && (
-                                    <div style={{ textAlign: 'right' }}>
-                                      <button onClick={() => executeAction2('updateAdSetStatus', { adSetId: sa.entityId, status: 'PAUSED' })} style={btnStyle(C.red)}>Pause</button>
-                                      <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>Stops bleeding. Saves {sa.impact}</div>
-                                    </div>
-                                  )}
-                                  {sa.action === 'REFRESH_AUDIENCE' && (
-                                    <div style={{ textAlign: 'right' }}>
-                                      <button onClick={() => pauseAndReplace(sa.entityId)} style={btnStyle(C.yellow)}>Pause + Replace</button>
-                                      <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>Pauses ad set + creates 3 fresh retargeting audiences on Meta</div>
-                                    </div>
-                                  )}
-                                  {sa.action === 'REPLACE_CREATIVE' && (
-                                    <div style={{ textAlign: 'right' }}>
-                                      <button onClick={() => executeAction2('updateAdStatus', { adId: sa.entityId, status: 'PAUSED' })} style={btnStyle(C.pink)}>Pause Creative</button>
-                                      <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>Creative is dead. Launch replacement.</div>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </td>
+                return (
+                  <>
+                    <tr key={`camp-${i}`} onClick={() => setExpandedCamp(isExpanded ? null : i)} style={{ cursor: 'pointer', background: isExpanded ? '#1C2333' : 'transparent' }}>
+                      <td style={td}><span style={{ color: C.muted }}>{isExpanded ? '\u25BC' : '\u25B6'}</span></td>
+                      <td style={{ ...td, fontWeight: 600 }}>{c.name}</td>
+                      <td style={td}>{fmt$(c.dailyBudget || c.budget)}</td>
+                      <td style={td}>{fmt$(m.spend)}</td>
+                      <td style={td}>{m.purchases || 0}</td>
+                      <td style={{ ...td, color: m.cpa <= 38 ? C.green : m.cpa <= 47.25 ? C.yellow : C.red }}>{m.cpa > 0 ? fmt$(m.cpa) : '--'}</td>
+                      <td style={{ ...td, color: m.frequency > 5 ? C.red : m.frequency > 3.5 ? C.yellow : C.text }}>{m.frequency?.toFixed(1) || '--'}</td>
+                      <td style={td}>{c.health?.score || '--'}</td>
+                      <td style={td}><span style={badge(statusColor[c.health?.status] || C.muted)}>{c.health?.status || '?'}</span></td>
+                      <td style={td}>{actionCount > 0 ? <span style={badge(C.pink)}>{actionCount} actions</span> : <span style={{ color: C.muted, fontSize: 11 }}>Hold</span>}</td>
                     </tr>
-                  )
-                ]
+                    {isExpanded && (c.surgicalActions || []).length > 0 && (
+                      <tr key={`camp-${i}-actions`} onClick={e => e.stopPropagation()}>
+                        <td colSpan={10} style={{ padding: 0, background: '#1C2333' }}>
+                          <div style={{ padding: '8px 16px 12px' }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 }}>Surgical Actions</div>
+                            {(c.surgicalActions || []).map((sa, j) => {
+                              const saKey = `sa-${i}-${j}`
+                              return (
+                                <div key={j} style={{ ...card, borderLeft: `3px solid ${ACTION_COLORS[sa.action] || C.muted}`, marginBottom: 6, padding: '8px 12px' }}>
+                                  <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'flex-start', gap: isMobile ? 8 : 0 }}>
+                                    <div>
+                                      <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 2, flexWrap: 'wrap' }}>
+                                        <span style={badge(PRIORITY_COLORS[sa.priority] || C.muted)}>{sa.priority}</span>
+                                        <span style={badge(ACTION_COLORS[sa.action] || C.muted)}>{sa.action.replace(/_/g, ' ')}</span>
+                                        <span style={{ fontWeight: 600, fontSize: 13, color: C.text }}>{sa.entityName}</span>
+                                      </div>
+                                      <p style={{ color: C.muted, fontSize: 12, margin: '2px 0 0' }}>{sa.reason}</p>
+                                      {sa.impact && <p style={{ color: C.green, fontSize: 12, margin: '2px 0 0' }}>{sa.impact}</p>}
+                                      {sa.revenueProjection && (
+                                        <div style={{ background: C.bg, borderRadius: 4, padding: '6px 8px', marginTop: 4, fontSize: 12 }}>
+                                          <span style={{ color: C.muted }}>Current: {fmt$(sa.revenueProjection.currentBudget)}/day</span>
+                                          <span style={{ color: C.text }}> {'\u2192'} New: {fmt$(sa.revenueProjection.newBudget)}/day</span>
+                                          <br/>
+                                          <span style={{ color: C.green }}>Expected: +{fmt$(sa.revenueProjection.expectedRevenuePerDay)} revenue/day, +{fmt$(sa.revenueProjection.expectedProfitPerDay)} profit/day</span>
+                                          <span style={{ color: C.muted }}> (based on {sa.revenueProjection.basedOnRoas}x ROAS)</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div style={{ display: 'flex', gap: 4, flexShrink: 0, alignItems: 'flex-start' }} onClick={e => e.stopPropagation()}>
+                                      {sa.action === 'SCALE_BUDGET' && sa.execute && (
+                                        <ScaleButton entityId={sa.execute.params.adSetId} entityName={sa.entityName} currentBudget={sa.revenueProjection?.currentBudget} roas={sa.revenueProjection?.basedOnRoas} onScale={executeScale} scaling={scaling} isMobile={isMobile} />
+                                      )}
+                                      {sa.action === 'PAUSE' && (
+                                        <div style={{ textAlign: 'right' }}>
+                                          <button
+                                            onClick={e => { e.stopPropagation(); executeAction2('updateAdSetStatus', { adSetId: sa.entityId, status: 'PAUSED' }, saKey) }}
+                                            disabled={actionLoading[saKey]}
+                                            style={{ ...btnStyle(C.red), minHeight: isMobile ? 44 : 'auto' }}
+                                          >{actionLoading[saKey] ? '...' : 'Pause Ad Set'}</button>
+                                          <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>Stops all spend immediately</div>
+                                        </div>
+                                      )}
+                                      {sa.action === 'REDUCE_BUDGET' && (
+                                        <div style={{ textAlign: 'right' }}>
+                                          <button
+                                            onClick={e => { e.stopPropagation(); executeAction2('updateAdSetStatus', { adSetId: sa.entityId, status: 'PAUSED' }, saKey) }}
+                                            disabled={actionLoading[saKey]}
+                                            style={{ ...btnStyle(C.red), minHeight: isMobile ? 44 : 'auto' }}
+                                          >{actionLoading[saKey] ? '...' : 'Pause'}</button>
+                                          <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>Stops bleeding. Saves {sa.impact}</div>
+                                        </div>
+                                      )}
+                                      {sa.action === 'REFRESH_AUDIENCE' && (
+                                        <div style={{ textAlign: 'right' }}>
+                                          <button
+                                            onClick={e => { e.stopPropagation(); pauseAndReplace(sa.entityId, saKey) }}
+                                            disabled={actionLoading[saKey]}
+                                            style={{ ...btnStyle(C.yellow), minHeight: isMobile ? 44 : 'auto' }}
+                                          >{actionLoading[saKey] ? '...' : 'Pause + Replace'}</button>
+                                          <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>Pauses ad set + creates 3 fresh retargeting audiences on Meta</div>
+                                        </div>
+                                      )}
+                                      {sa.action === 'REPLACE_CREATIVE' && (
+                                        <div style={{ textAlign: 'right' }}>
+                                          <button
+                                            onClick={e => { e.stopPropagation(); executeAction2('updateAdStatus', { adId: sa.entityId, status: 'PAUSED' }, saKey) }}
+                                            disabled={actionLoading[saKey]}
+                                            style={{ ...btnStyle(C.pink), minHeight: isMobile ? 44 : 'auto' }}
+                                          >{actionLoading[saKey] ? '...' : 'Pause Creative'}</button>
+                                          <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>Creative is dead. Launch replacement.</div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </>
+                )
               })}
             </tbody>
           </table>
@@ -401,6 +481,11 @@ export function AdsFlywheelTab() {
               {(d?.creatives || []).map((cr, i) => {
                 const recColor = REC_COLORS[cr.recommendation] || C.muted
                 const rowBg = cr.recommendation === 'SCALE' ? '#3FB95008' : cr.recommendation === 'KILL' ? '#F8514908' : 'transparent'
+                // Use metaAdId falling back to adId for the ad identifier
+                const creativeAdId = cr.metaAdId || cr.adId
+                // For scaling, we need an ad SET id. Use adsetId or metaAdSetId; fall back to ad id only as last resort
+                const creativeAdSetId = cr.adsetId || cr.metaAdSetId || cr.adSetId
+                const crActionKey = `cr-${i}`
                 return (
                   <tr key={i} style={{ background: rowBg }}>
                     <td style={{ ...td, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={cr.name}>{cr.name}</td>
@@ -421,20 +506,34 @@ export function AdsFlywheelTab() {
                       )}
                     </td>
                     <td style={{ ...td, whiteSpace: 'nowrap' }}>
-                      {scaleTarget?.id === cr.adId ? (
-                        <ScaleInline target={scaleTarget} onScale={executeScale} onCancel={() => setScaleTarget(null)} scaling={scaling} />
+                      {scaleTarget?.id === (creativeAdSetId || creativeAdId) ? (
+                        <ScaleInline target={scaleTarget} onScale={executeScale} onCancel={() => setScaleTarget(null)} scaling={scaling} isMobile={isMobile} />
                       ) : (
                         <div style={{ display: 'flex', gap: 3 }}>
-                          {(cr.recommendation === 'SCALE' || cr.recommendation === 'PROTECT') && (
-                            <button onClick={e => { e.stopPropagation(); setScaleTarget({ id: cr.adsetId || cr.adId, name: cr.name, budget: cr.spend / 7, roas: cr.roas7d }) }} style={btnStyle(C.green)}>Scale</button>
+                          {(cr.recommendation === 'SCALE' || cr.recommendation === 'PROTECT') && creativeAdSetId && (
+                            <button
+                              onClick={e => { e.stopPropagation(); setScaleTarget({ id: creativeAdSetId, name: cr.name, budget: cr.spend / 7, roas: cr.roas7d }) }}
+                              style={{ ...btnStyle(C.green), minHeight: isMobile ? 44 : 'auto' }}
+                            >Scale</button>
+                          )}
+                          {(cr.recommendation === 'SCALE' || cr.recommendation === 'PROTECT') && !creativeAdSetId && (
+                            <span style={{ color: C.muted, fontSize: 10 }}>No ad set ID</span>
                           )}
                           {cr.recommendation === 'KILL' && (
-                            <button onClick={e => { e.stopPropagation(); executeAction2('updateAdStatus', { adId: cr.adId, status: 'PAUSED' }) }} style={btnStyle(C.red)}>Pause</button>
+                            <button
+                              onClick={e => { e.stopPropagation(); executeAction2('updateAdStatus', { adId: creativeAdId, status: 'PAUSED' }, `kill-${crActionKey}`) }}
+                              disabled={actionLoading[`kill-${crActionKey}`]}
+                              style={{ ...btnStyle(C.red), minHeight: isMobile ? 44 : 'auto' }}
+                            >{actionLoading[`kill-${crActionKey}`] ? '...' : 'Pause'}</button>
                           )}
                           {cr.recommendation === 'REPLACE' && (
-                            <button onClick={e => { e.stopPropagation(); executeAction2('updateAdStatus', { adId: cr.adId, status: 'PAUSED' }) }} style={btnStyle(C.pink)}>Pause</button>
+                            <button
+                              onClick={e => { e.stopPropagation(); executeAction2('updateAdStatus', { adId: creativeAdId, status: 'PAUSED' }, `replace-${crActionKey}`) }}
+                              disabled={actionLoading[`replace-${crActionKey}`]}
+                              style={{ ...btnStyle(C.pink), minHeight: isMobile ? 44 : 'auto' }}
+                            >{actionLoading[`replace-${crActionKey}`] ? '...' : 'Pause'}</button>
                           )}
-                          <button onClick={e => { e.stopPropagation(); analyseCreative(cr.name) }} style={btnStyle(C.purple)}>AI</button>
+                          <button onClick={e => { e.stopPropagation(); analyseCreative(cr.name) }} style={{ ...btnStyle(C.purple), minHeight: isMobile ? 44 : 'auto' }}>AI</button>
                         </div>
                       )}
                     </td>
@@ -455,10 +554,10 @@ export function AdsFlywheelTab() {
             <span style={{ color: C.muted, marginLeft: 8, fontSize: 12 }}>No gaps detected in current setup</span>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 8 }}>
             {(d?.opportunities || []).map((o, i) => (
               <div key={i} style={{ ...card, borderLeft: `3px solid ${o.priority === 'high' ? C.pink : C.blue}` }}>
-                <div style={{ display: 'flex', gap: 4, marginBottom: 4 }}>
+                <div style={{ display: 'flex', gap: 4, marginBottom: 4, flexWrap: 'wrap' }}>
                   <span style={badge(o.priority === 'high' ? C.pink : C.blue)}>{o.priority}</span>
                   <span style={badge(C.purple)}>{o.type.replace(/_/g, ' ')}</span>
                 </div>
@@ -472,17 +571,17 @@ export function AdsFlywheelTab() {
 
       {/* ── 6b. Audience Manager ──────────────────────────────────────────── */}
       <div style={{ marginBottom: 16 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'center', gap: isMobile ? 8 : 0, marginBottom: 8 }}>
           <h2 style={secTitle}>Audience Engine</h2>
           <div style={{ display: 'flex', gap: 4 }}>
-            <button onClick={evaluateAudiences} style={btnStyle(C.blue)}>Evaluate All</button>
-            <button onClick={loadAudiences} style={btnStyle(C.muted)}>Refresh</button>
+            <button onClick={evaluateAudiences} disabled={actionLoading.evalAudiences} style={{ ...btnStyle(C.blue), minHeight: isMobile ? 44 : 'auto' }}>{actionLoading.evalAudiences ? 'Evaluating...' : 'Evaluate All'}</button>
+            <button onClick={loadAudiences} style={{ ...btnStyle(C.muted), minHeight: isMobile ? 44 : 'auto' }}>Refresh</button>
           </div>
         </div>
 
         {/* Stats row */}
         {audiences?.learnings && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 10 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : isTablet ? 'repeat(3, 1fr)' : 'repeat(5, 1fr)', gap: 8, marginBottom: 10 }}>
             <div style={card}><div style={{ fontSize: 10, color: C.muted }}>Testing</div><div style={{ fontSize: 20, fontWeight: 700, color: C.blue }}>{audiences.learnings.testing}</div></div>
             <div style={card}><div style={{ fontSize: 10, color: C.muted }}>Winners</div><div style={{ fontSize: 20, fontWeight: 700, color: C.green }}>{audiences.learnings.scaled}</div></div>
             <div style={card}><div style={{ fontSize: 10, color: C.muted }}>Killed</div><div style={{ fontSize: 20, fontWeight: 700, color: C.red }}>{audiences.learnings.killed}</div></div>
@@ -497,10 +596,11 @@ export function AdsFlywheelTab() {
           if (tierTemplates.length === 0) return null
           const tierLabels = { retargeting: 'Retargeting (Highest ROAS)', lookalike: 'Lookalikes (Scale Fuel)', interest: 'Interest Targeting (Cold)', geo: 'Geo Targeting (State-Level)' }
           const tierColors = { retargeting: C.green, lookalike: C.blue, interest: C.purple, geo: C.orange }
+          const isCreatableTier = tier === 'retargeting' || tier === 'lookalike'
           return (
             <div key={tier} style={{ marginBottom: 10 }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: tierColors[tier], marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{tierLabels[tier]}</div>
-              <div style={card}>
+              <div style={{ ...card, overflowX: 'auto' }}>
                 <table style={tbl}>
                   <thead><tr>
                     <th style={th}>Audience</th><th style={th}>Expected ROAS</th><th style={th}>Expected CPA</th>
@@ -509,45 +609,85 @@ export function AdsFlywheelTab() {
                   <tbody>
                     {tierTemplates.map((t, i) => {
                       const statusColors = { not_created: C.muted, created: C.blue, testing: C.yellow, scaled: C.green, killed: C.red, seed: C.muted }
+                      const isConfigExpanded = expandedTemplate === t.id
                       return (
-                        <tr key={i}>
-                          <td style={td}>
-                            <div style={{ fontWeight: 600, fontSize: 13 }}>{t.name}</div>
-                            <div style={{ fontSize: 10, color: C.muted, maxWidth: 250 }}>{t.reason}</div>
-                          </td>
-                          <td style={{ ...td, color: C.green, fontWeight: 600 }}>{t.expectedRoas ? fmtX(t.expectedRoas) : '--'}</td>
-                          <td style={{ ...td, color: C.text }}>{t.expectedCpa ? fmt$(t.expectedCpa) : '--'}</td>
-                          <td style={td}><span style={badge(statusColors[t.status] || C.muted)}>{t.status.replace(/_/g, ' ')}</span></td>
-                          <td style={td}>{t.daysInTest > 0 ? `${t.daysInTest}d` : '--'}</td>
-                          <td style={td}>
-                            {t.performance ? (
-                              <div style={{ fontSize: 11 }}>
-                                <span style={{ color: t.performance.roas >= 2.22 ? C.green : C.red }}>{fmtX(t.performance.roas)}</span>
-                                <span style={{ color: C.muted }}> | CPA </span>
-                                <span style={{ color: t.performance.cpa <= 38 ? C.green : C.red }}>{fmt$(t.performance.cpa)}</span>
-                                <span style={{ color: C.muted }}> | {t.performance.totalPurchases}p</span>
-                              </div>
-                            ) : <span style={{ color: C.muted, fontSize: 11 }}>--</span>}
-                          </td>
-                          <td style={{ ...td, whiteSpace: 'nowrap' }}>
-                            {t.status === 'not_created' && (
-                              <button onClick={() => createAudienceFromTemplate(t.id)} style={btnStyle(tierColors[tier])}>Create</button>
-                            )}
-                            {t.status === 'testing' && t.daysInTest >= 3 && (
-                              <div style={{ display: 'flex', gap: 3 }}>
-                                {t.performance?.cpa > 0 && t.performance.cpa <= GRI_ADS_FE.profitableCPP && t.performance.totalPurchases >= 3 && (
-                                  <button onClick={() => scaleAudienceAction(t.id)} style={btnStyle(C.green)}>Scale</button>
-                                )}
-                                {(t.performance?.totalSpend > 100 && t.performance?.totalPurchases === 0) || (t.performance?.cpa > GRI_ADS_FE.breakevenCPP * 2) ? (
-                                  <button onClick={() => killAudienceAction(t.id)} style={btnStyle(C.red)}>Kill</button>
-                                ) : null}
-                              </div>
-                            )}
-                            {t.status === 'created' && <span style={{ color: C.muted, fontSize: 10 }}>Attach to ad set</span>}
-                            {t.status === 'scaled' && <span style={badge(C.green)}>Winner</span>}
-                            {t.status === 'killed' && <span style={badge(C.red)}>Dead</span>}
-                          </td>
-                        </tr>
+                        <>
+                          <tr key={`aud-${tier}-${i}`}>
+                            <td style={td}>
+                              <div style={{ fontWeight: 600, fontSize: 13 }}>{t.name}</div>
+                              <div style={{ fontSize: 10, color: C.muted, maxWidth: 250 }}>{t.reason}</div>
+                            </td>
+                            <td style={{ ...td, color: C.green, fontWeight: 600 }}>{t.expectedRoas ? fmtX(t.expectedRoas) : '--'}</td>
+                            <td style={{ ...td, color: C.text }}>{t.expectedCpa ? fmt$(t.expectedCpa) : '--'}</td>
+                            <td style={td}><span style={badge(statusColors[t.status] || C.muted)}>{t.status.replace(/_/g, ' ')}</span></td>
+                            <td style={td}>{t.daysInTest > 0 ? `${t.daysInTest}d` : '--'}</td>
+                            <td style={td}>
+                              {t.performance ? (
+                                <div style={{ fontSize: 11 }}>
+                                  <span style={{ color: t.performance.roas >= 2.22 ? C.green : C.red }}>{fmtX(t.performance.roas)}</span>
+                                  <span style={{ color: C.muted }}> | CPA </span>
+                                  <span style={{ color: t.performance.cpa <= 38 ? C.green : C.red }}>{fmt$(t.performance.cpa)}</span>
+                                  <span style={{ color: C.muted }}> | {t.performance.totalPurchases}p</span>
+                                </div>
+                              ) : <span style={{ color: C.muted, fontSize: 11 }}>--</span>}
+                            </td>
+                            <td style={{ ...td, whiteSpace: 'nowrap' }}>
+                              {t.status === 'not_created' && isCreatableTier && (
+                                <button
+                                  onClick={e => { e.stopPropagation(); createAudienceFromTemplate(t.id) }}
+                                  disabled={creatingAudience[t.id]}
+                                  style={{ ...btnStyle(tierColors[tier]), minHeight: isMobile ? 44 : 'auto' }}
+                                >{creatingAudience[t.id] ? 'Creating...' : 'Create'}</button>
+                              )}
+                              {t.status === 'not_created' && !isCreatableTier && (
+                                <button
+                                  onClick={e => { e.stopPropagation(); setExpandedTemplate(isConfigExpanded ? null : t.id) }}
+                                  style={{ ...btnStyle(tierColors[tier]), minHeight: isMobile ? 44 : 'auto' }}
+                                >{isConfigExpanded ? 'Hide Config' : 'View Config'}</button>
+                              )}
+                              {t.status === 'testing' && t.daysInTest >= 3 && (
+                                <div style={{ display: 'flex', gap: 3 }}>
+                                  {t.performance?.cpa > 0 && t.performance.cpa <= GRI_ADS_FE.profitableCPP && t.performance.totalPurchases >= 3 && (
+                                    <button
+                                      onClick={e => { e.stopPropagation(); scaleAudienceAction(t.id) }}
+                                      disabled={actionLoading[`scale-aud-${t.id}`]}
+                                      style={{ ...btnStyle(C.green), minHeight: isMobile ? 44 : 'auto' }}
+                                    >{actionLoading[`scale-aud-${t.id}`] ? '...' : 'Scale'}</button>
+                                  )}
+                                  {(t.performance?.totalSpend > 100 && t.performance?.totalPurchases === 0) || (t.performance?.cpa > GRI_ADS_FE.breakevenCPP * 2) ? (
+                                    <button
+                                      onClick={e => { e.stopPropagation(); killAudienceAction(t.id) }}
+                                      disabled={actionLoading[`kill-aud-${t.id}`]}
+                                      style={{ ...btnStyle(C.red), minHeight: isMobile ? 44 : 'auto' }}
+                                    >{actionLoading[`kill-aud-${t.id}`] ? '...' : 'Kill'}</button>
+                                  ) : null}
+                                </div>
+                              )}
+                              {t.status === 'created' && <span style={{ color: C.muted, fontSize: 10 }}>Attach to ad set</span>}
+                              {t.status === 'scaled' && <span style={badge(C.green)}>Winner</span>}
+                              {t.status === 'killed' && <span style={badge(C.red)}>Dead</span>}
+                            </td>
+                          </tr>
+                          {isConfigExpanded && (
+                            <tr key={`aud-config-${tier}-${i}`}>
+                              <td colSpan={7} style={{ padding: 0, background: '#1C2333' }}>
+                                <div style={{ padding: '10px 16px' }}>
+                                  <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 }}>Targeting Configuration</div>
+                                  <div style={{ background: C.bg, borderRadius: 6, padding: '8px 12px', fontSize: 12, color: C.text }}>
+                                    <div><span style={{ color: C.muted }}>Type:</span> {tier === 'interest' ? 'Interest Targeting' : 'Geo Targeting'}</div>
+                                    <div><span style={{ color: C.muted }}>Name:</span> {t.name}</div>
+                                    {t.interests && <div><span style={{ color: C.muted }}>Interests:</span> {Array.isArray(t.interests) ? t.interests.join(', ') : t.interests}</div>}
+                                    {t.geos && <div><span style={{ color: C.muted }}>Geos:</span> {Array.isArray(t.geos) ? t.geos.join(', ') : t.geos}</div>}
+                                    {t.targeting && <div><span style={{ color: C.muted }}>Targeting:</span> <pre style={{ margin: '4px 0 0', fontSize: 11, color: C.text, whiteSpace: 'pre-wrap' }}>{JSON.stringify(t.targeting, null, 2)}</pre></div>}
+                                    {t.ageRange && <div><span style={{ color: C.muted }}>Age:</span> {t.ageRange}</div>}
+                                    {t.gender && <div><span style={{ color: C.muted }}>Gender:</span> {t.gender}</div>}
+                                    <div style={{ marginTop: 4, fontSize: 11, color: C.muted }}>This is a targeting configuration template. Apply these settings manually when creating ad sets in Meta Ads Manager.</div>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </>
                       )
                     })}
                   </tbody>
@@ -562,17 +702,17 @@ export function AdsFlywheelTab() {
       <div style={{ marginBottom: 16 }}>
         <h2 style={secTitle}>Creative Analysis</h2>
         <div style={card}>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexDirection: isMobile ? 'column' : 'row' }}>
             <input type="text" value={analyseAdName} onChange={e => setAnalyseAdName(e.target.value)} placeholder="Paste ad name or describe the creative..."
-              style={{ flex: 1, background: C.bg, color: C.text, border: `1px solid ${C.border}`, borderRadius: 6, padding: '8px 12px', fontSize: 13 }} />
-            <button onClick={() => analyseCreative(analyseAdName)} disabled={analysing || !analyseAdName} style={btnStyle(C.purple)}>
+              style={{ flex: 1, background: C.bg, color: C.text, border: `1px solid ${C.border}`, borderRadius: 6, padding: '8px 12px', fontSize: 13, minHeight: isMobile ? 44 : 'auto' }} />
+            <button onClick={() => analyseCreative(analyseAdName)} disabled={analysing || !analyseAdName} style={{ ...btnStyle(C.purple), minHeight: isMobile ? 44 : 'auto' }}>
               {analysing ? 'Analysing...' : 'Analyse'}
             </button>
           </div>
           <p style={{ color: C.muted, fontSize: 11, margin: 0 }}>AI detects angle, recommends placement, writes copy, suggests campaign and ad set.</p>
           {analysis && !analysis.error && (
             <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 10, marginTop: 10 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 10 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 8, marginBottom: 10 }}>
                 <div><div style={{ fontSize: 10, color: C.muted }}>Angle</div><span style={badge(C.purple)}>{analysis.detectedAngle}</span></div>
                 <div><div style={{ fontSize: 10, color: C.muted }}>Format</div><span style={badge(C.blue)}>{analysis.detectedFormat}</span></div>
                 <div><div style={{ fontSize: 10, color: C.muted }}>AOV Potential</div><span style={badge(analysis.aovPotential === 'premium' ? C.green : C.yellow)}>{analysis.aovPotential}</span></div>
@@ -594,7 +734,7 @@ export function AdsFlywheelTab() {
       {/* ── 8. AOV Intelligence ─────────────────────────────────────────────── */}
       <div style={{ marginBottom: 16 }}>
         <h2 style={secTitle}>AOV Intelligence</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 10 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr', gap: 10 }}>
           <div style={card}>
             <h3 style={{ fontSize: 13, fontWeight: 600, margin: '0 0 8px', color: C.text }}>Daily AOV vs $160 Target</h3>
             {d?.aov?.dailyAvgAov?.length > 0 ? (
@@ -626,7 +766,7 @@ export function AdsFlywheelTab() {
       </div>
 
       {/* ── 9. Weekly Rhythm ────────────────────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 8, marginBottom: 16 }}>
         {[{ day: 'monday', label: 'Monday', task: 'Review + Kill Rules', d: 1 }, { day: 'wednesday', label: 'Wednesday', task: 'Creative Launch', d: 3 }, { day: 'friday', label: 'Friday', task: 'Brief Generation', d: 5 }].map(r => {
           const done = d?.rhythm?.[`${r.day}Done`]
           const isToday = dayOfWeek === r.d
@@ -634,7 +774,7 @@ export function AdsFlywheelTab() {
             <div key={r.day} style={{ ...card, borderTop: `3px solid ${done ? C.green : isToday ? C.blue : C.border}`, opacity: isToday || done ? 1 : 0.5 }}>
               <div style={{ fontSize: 11, color: C.muted }}>{r.label}</div>
               <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{r.task}</div>
-              {done ? <span style={badge(C.green)}>Done</span> : isToday ? <button onClick={() => markDay(r.day)} style={btnSm}>Mark Done</button> : null}
+              {done ? <span style={badge(C.green)}>Done</span> : isToday ? <button onClick={() => markDay(r.day)} style={{ ...btnSm, cursor: 'pointer', minHeight: isMobile ? 44 : 'auto' }}>Mark Done</button> : null}
             </div>
           )
         })}
@@ -646,16 +786,16 @@ export function AdsFlywheelTab() {
         <div style={card}>
           {d?.brief ? (
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+              <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', gap: isMobile ? 8 : 0, marginBottom: 8 }}>
                 <span style={{ fontWeight: 600, color: C.text }}>Week of {d.brief.weekOf}</span>
-                {d.brief.status === 'draft' && <button onClick={() => approveBrief(d.brief.id)} style={btnStyle(C.green)}>Approve Brief</button>}
+                {d.brief.status === 'draft' && <button onClick={() => approveBrief(d.brief.id)} style={{ ...btnStyle(C.green), minHeight: isMobile ? 44 : 'auto' }}>Approve Brief</button>}
               </div>
               <div style={{ whiteSpace: 'pre-wrap', fontSize: 12, lineHeight: 1.5, color: C.text, maxHeight: 300, overflow: 'auto' }}>{d.brief.fullBrief}</div>
             </div>
           ) : (
             <div style={{ textAlign: 'center', padding: 16 }}>
               <p style={{ color: C.muted, marginBottom: 8 }}>No brief generated yet</p>
-              <button onClick={triggerBrief} disabled={generating} style={btnStyle(C.pink)}>{generating ? 'Generating...' : 'Generate Brief'}</button>
+              <button onClick={triggerBrief} disabled={generating} style={{ ...btnStyle(C.pink), minHeight: isMobile ? 44 : 'auto' }}>{generating ? 'Generating...' : 'Generate Brief'}</button>
             </div>
           )}
         </div>
@@ -663,7 +803,7 @@ export function AdsFlywheelTab() {
 
       {/* ── 11. System Health (compact footer) ─────────────────────────────── */}
       {d?.health && (
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 11, color: C.muted, marginTop: 8 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 11, color: C.muted, marginTop: 8, flexWrap: 'wrap' }}>
           <span style={badge(d.health.status === 'healthy' ? C.green : C.yellow)}>{d.health.status}</span>
           <span>Backup: {d.health.backups?.latest || 'none'} ({d.health.backups?.totalDays || 0} days)</span>
           {d.health.issues?.length > 0 && <span style={{ color: C.yellow }}>{d.health.issues.length} issues</span>}
@@ -697,39 +837,39 @@ function FatigueBar({ score, status }) {
   )
 }
 
-function ScaleButton({ entityId, entityName, currentBudget, roas, onScale, scaling }) {
+function ScaleButton({ entityId, entityName, currentBudget, roas, onScale, scaling, isMobile }) {
   const [show, setShow] = useState(false)
   const [pct, setPct] = useState(15)
-  if (!show) return <button onClick={e => { e.stopPropagation(); setShow(true) }} style={btnStyle(C.green)}>Scale</button>
+  if (!show) return <button onClick={e => { e.stopPropagation(); setShow(true) }} style={{ ...btnStyle(C.green), minHeight: isMobile ? 44 : 'auto' }}>Scale</button>
   const extra = (currentBudget || 0) * (pct / 100)
   const expectedRev = extra * (roas || 3)
   const expectedProfit = (expectedRev * 0.45) - extra
   return (
-    <div style={{ background: C.bg, borderRadius: 6, padding: 8, minWidth: 220 }}>
+    <div style={{ background: C.bg, borderRadius: 6, padding: 8, minWidth: isMobile ? 180 : 220 }}>
       <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginBottom: 4 }}>
         <select value={pct} onChange={e => setPct(Number(e.target.value))} style={sel}>{[5, 8, 10, 12, 15, 18].map(p => <option key={p} value={p}>{p}%</option>)}</select>
-        <button onClick={() => onScale(entityId, pct)} disabled={scaling} style={btnStyle(C.green)}>{scaling ? '...' : 'Execute'}</button>
-        <button onClick={() => setShow(false)} style={{ ...btnSm, color: C.muted }}>X</button>
+        <button onClick={e => { e.stopPropagation(); onScale(entityId, pct) }} disabled={scaling} style={{ ...btnStyle(C.green), minHeight: isMobile ? 44 : 'auto' }}>{scaling ? '...' : 'Execute'}</button>
+        <button onClick={e => { e.stopPropagation(); setShow(false) }} style={{ ...btnSm, color: C.muted, cursor: 'pointer', minHeight: isMobile ? 44 : 'auto' }}>X</button>
       </div>
-      <div style={{ fontSize: 11, color: C.muted }}>Current: {fmt$(currentBudget)}/day → New: {fmt$((currentBudget || 0) * (1 + pct / 100))}/day</div>
+      <div style={{ fontSize: 11, color: C.muted }}>Current: {fmt$(currentBudget)}/day {'\u2192'} New: {fmt$((currentBudget || 0) * (1 + pct / 100))}/day</div>
       <div style={{ fontSize: 11, color: C.green }}>Expected: +{fmt$(expectedRev)} rev/day, +{fmt$(expectedProfit)} profit/day ({roas || 3}x ROAS)</div>
     </div>
   )
 }
 
-function ScaleInline({ target, onScale, onCancel, scaling }) {
+function ScaleInline({ target, onScale, onCancel, scaling, isMobile }) {
   const [pct, setPct] = useState(15)
   const extra = (target.budget || 0) * (pct / 100)
   const expectedRev = extra * (target.roas || 3)
   const expectedProfit = (expectedRev * 0.45) - extra
   return (
-    <div style={{ background: C.bg, borderRadius: 6, padding: 6, minWidth: 200 }}>
+    <div style={{ background: C.bg, borderRadius: 6, padding: 6, minWidth: isMobile ? 160 : 200 }}>
       <div style={{ display: 'flex', gap: 3, alignItems: 'center', marginBottom: 3 }}>
         <select value={pct} onChange={e => setPct(Number(e.target.value))} style={sel}>{[5, 8, 10, 12, 15, 18].map(p => <option key={p} value={p}>{p}%</option>)}</select>
-        <button onClick={() => onScale(target.id, pct)} disabled={scaling} style={btnStyle(C.green)}>{scaling ? '...' : 'Go'}</button>
-        <button onClick={onCancel} style={{ ...btnSm, color: C.muted }}>X</button>
+        <button onClick={e => { e.stopPropagation(); onScale(target.id, pct) }} disabled={scaling} style={{ ...btnStyle(C.green), minHeight: isMobile ? 44 : 'auto' }}>{scaling ? '...' : 'Go'}</button>
+        <button onClick={e => { e.stopPropagation(); onCancel() }} style={{ ...btnSm, color: C.muted, cursor: 'pointer', minHeight: isMobile ? 44 : 'auto' }}>X</button>
       </div>
-      <div style={{ fontSize: 10, color: C.muted }}>{fmt$(target.budget)}/day → {fmt$((target.budget || 0) * (1 + pct / 100))}/day</div>
+      <div style={{ fontSize: 10, color: C.muted }}>{fmt$(target.budget)}/day {'\u2192'} {fmt$((target.budget || 0) * (1 + pct / 100))}/day</div>
       <div style={{ fontSize: 10, color: C.green }}>+{fmt$(expectedRev)} rev, +{fmt$(expectedProfit)} profit ({(target.roas || 3).toFixed(1)}x)</div>
     </div>
   )
