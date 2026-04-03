@@ -42,31 +42,31 @@ const AUDIENCE_TEMPLATES = {
   // Tier 1: High-intent retargeting (best ROAS)
   retargeting: [
     {
-      id: 'atc_7d', name: 'Add to Cart 7 Days', type: 'website',
+      id: 'atc_7d', name: 'Add to Cart 7 Days', type: 'retargeting',
       event: 'AddToCart', retention: 7, priority: 1,
       expectedRoas: 6.0, expectedCpa: 15,
       reason: 'Hottest retargeting — cart abandoners within 7 days convert at 3x site average'
     },
     {
-      id: 'atc_14d', name: 'Add to Cart 14 Days', type: 'website',
+      id: 'atc_14d', name: 'Add to Cart 14 Days', type: 'retargeting',
       event: 'AddToCart', retention: 14, priority: 2,
       expectedRoas: 4.5, expectedCpa: 20,
       reason: 'Warm cart abandoners — slightly wider but still high intent'
     },
     {
-      id: 'vc_7d', name: 'View Content 7 Days', type: 'website',
+      id: 'vc_7d', name: 'View Content 7 Days', type: 'retargeting',
       event: 'ViewContent', retention: 7, priority: 3,
       expectedRoas: 3.5, expectedCpa: 25,
       reason: 'Product page viewers in last 7 days — interested but not yet committed'
     },
     {
-      id: 'visitors_14d', name: 'All Visitors 14 Days', type: 'website',
+      id: 'visitors_14d', name: 'All Visitors 14 Days', type: 'retargeting',
       event: 'PageView', retention: 14, priority: 4,
       expectedRoas: 3.0, expectedCpa: 28,
       reason: 'General site visitors — exclude purchasers for clean retargeting'
     },
     {
-      id: 'visitors_30d_no_purchase', name: 'Visitors 30d No Purchase', type: 'website',
+      id: 'visitors_30d_no_purchase', name: 'Visitors 30d No Purchase', type: 'retargeting',
       event: 'PageView', retention: 30,
       excludeEvent: 'Purchase', excludeRetentionDays: 30, priority: 5,
       expectedRoas: 2.5, expectedCpa: 32,
@@ -222,7 +222,7 @@ export async function createAudience(templateId) {
   const ts = new Date().toISOString().slice(0, 10).replace(/-/g, '')
   let metaResult
 
-  if (template.type === 'website') {
+  if (template.type === 'retargeting') {
     const opts = {}
     if (template.excludeEvent) {
       opts.excludeEvent = template.excludeEvent
