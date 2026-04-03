@@ -93,10 +93,19 @@ export function AdsFlywheelTab() {
 
   async function executeAction2(method, params) {
     try {
-      if (method === 'updateAdSetStatus') await fetch(`${API}/scale/${params.adSetId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ percentage: 0 }) })
-      // For pause actions, use the Meta API directly through the action approval flow
+      const r = await fetch(`${API}/execute-action`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ method, params }),
+      }).then(r => r.json())
+      setScaleResult(r.ok
+        ? { ok: true, message: `${method.replace(/([A-Z])/g, ' $1').trim()}: ${r.message || 'Done'}` }
+        : { ok: false, error: r.error }
+      )
       load()
-    } catch {}
+    } catch (e) {
+      setScaleResult({ ok: false, error: e.message })
+    }
   }
 
   async function analyseCreative(name) {
@@ -142,15 +151,15 @@ export function AdsFlywheelTab() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 10, marginBottom: 16 }}>
         <HeroCard label="Shopify Revenue" value={fmt$(h.shopifyRevenue)} sub={`${h.shopifyOrders || 0} orders`} color={C.text} />
         <HeroCard label="Meta Spend" value={fmt$(h.metaSpend)} sub={`${h.metaPurchases || 0} attributed`} color={C.text} />
-        <HeroCard label="ROAS" value={fmtX(h.roas)} sub="Target: 3.33x" color={h.roas >= 3.33 ? C.green : C.red} />
-        <HeroCard label="MER" value={fmtX(h.mer)} sub="Target: 4.0x" color={h.mer >= 4.0 ? C.green : h.mer >= 3.33 ? C.yellow : C.red} />
-        <HeroCard label="CPA" value={fmt$(h.cpa)} sub="Target: $26.00" color={h.cpa <= 26 ? C.green : h.cpa <= 31.5 ? C.yellow : C.red} />
+        <HeroCard label="ROAS" value={fmtX(h.roas)} sub="Breakeven: 2.22x" color={h.roas >= 2.22 ? C.green : C.red} />
+        <HeroCard label="MER" value={fmtX(h.mer)} sub="Target: 3.0x" color={h.mer >= 3.0 ? C.green : h.mer >= 2.22 ? C.yellow : C.red} />
+        <HeroCard label="CPA" value={fmt$(h.cpa)} sub="Target: $38 / Break: $47" color={h.cpa <= 38 ? C.green : h.cpa <= 47.25 ? C.yellow : C.red} />
         <HeroCard label="AOV" value={fmt$(h.aov)} sub="Target: $160" color={h.aov >= 160 ? C.green : h.aov >= 100 ? C.yellow : C.red} />
       </div>
 
       {/* Profit + AMER row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 16 }}>
-        <HeroCard label="Gross Profit" value={fmt$(h.profit)} sub="Revenue x 30% margin minus spend" color={h.profit > 0 ? C.green : C.red} />
+        <HeroCard label="Gross Profit" value={fmt$(h.profit)} sub="Revenue x 45% margin minus spend" color={h.profit > 0 ? C.green : C.red} />
         <HeroCard label="AMER" value={h.amer != null ? h.amer.toFixed(0) + '%' : '--'} sub="Ad margin efficiency" color={h.amer > 0 ? C.green : C.red} />
         <HeroCard label="Bundle Rate" value={fmtPct(d?.aov?.bundleRate)} sub="Target: 30%+" color={(d?.aov?.bundleRate || 0) >= 30 ? C.green : C.yellow} />
         <HeroCard label="Orders Today" value={range === 'today' ? (h.shopifyOrders || 0) : '--'} sub="From Shopify" color={C.text} />
@@ -223,14 +232,14 @@ export function AdsFlywheelTab() {
                     <td style={td}>{fmt$(c.dailyBudget || c.budget)}</td>
                     <td style={td}>{fmt$(m.spend)}</td>
                     <td style={td}>{m.purchases || 0}</td>
-                    <td style={{ ...td, color: m.cpa <= 26 ? C.green : m.cpa <= 31.5 ? C.yellow : C.red }}>{m.cpa > 0 ? fmt$(m.cpa) : '--'}</td>
+                    <td style={{ ...td, color: m.cpa <= 38 ? C.green : m.cpa <= 47.25 ? C.yellow : C.red }}>{m.cpa > 0 ? fmt$(m.cpa) : '--'}</td>
                     <td style={{ ...td, color: m.frequency > 5 ? C.red : m.frequency > 3.5 ? C.yellow : C.text }}>{m.frequency?.toFixed(1) || '--'}</td>
                     <td style={td}>{c.health?.score || '--'}</td>
                     <td style={td}><span style={badge(statusColor[c.health?.status] || C.muted)}>{c.health?.status || '?'}</span></td>
                     <td style={td}>{actionCount > 0 ? <span style={badge(C.pink)}>{actionCount} actions</span> : <span style={{ color: C.muted, fontSize: 11 }}>Hold</span>}</td>
                   </tr>,
                   isExpanded && (c.surgicalActions || []).length > 0 && (
-                    <tr key={`${i}-actions`}>
+                    <tr key={`${i}-actions`} onClick={e => e.stopPropagation()}>
                       <td colSpan={10} style={{ padding: 0, background: '#1C2333' }}>
                         <div style={{ padding: '8px 16px 12px' }}>
                           <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 }}>Surgical Actions</div>
@@ -255,12 +264,33 @@ export function AdsFlywheelTab() {
                                     </div>
                                   )}
                                 </div>
-                                <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                                <div style={{ display: 'flex', gap: 4, flexShrink: 0, alignItems: 'flex-start' }} onClick={e => e.stopPropagation()}>
                                   {sa.action === 'SCALE_BUDGET' && sa.execute && (
                                     <ScaleButton entityId={sa.execute.params.adSetId} entityName={sa.entityName} currentBudget={sa.revenueProjection?.currentBudget} roas={sa.revenueProjection?.basedOnRoas} onScale={executeScale} scaling={scaling} />
                                   )}
                                   {sa.action === 'PAUSE' && (
-                                    <button onClick={() => executeAction2(sa.execute?.method, sa.execute?.params)} style={btnStyle(C.red)}>Pause</button>
+                                    <div style={{ textAlign: 'right' }}>
+                                      <button onClick={() => executeAction2('updateAdSetStatus', { adSetId: sa.entityId, status: 'PAUSED' })} style={btnStyle(C.red)}>Pause Ad Set</button>
+                                      <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>Stops all spend immediately</div>
+                                    </div>
+                                  )}
+                                  {sa.action === 'REDUCE_BUDGET' && (
+                                    <div style={{ textAlign: 'right' }}>
+                                      <button onClick={() => executeAction2('updateAdSetStatus', { adSetId: sa.entityId, status: 'PAUSED' })} style={btnStyle(C.red)}>Pause</button>
+                                      <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>Stops bleeding. Saves {sa.impact}</div>
+                                    </div>
+                                  )}
+                                  {sa.action === 'REFRESH_AUDIENCE' && (
+                                    <div style={{ textAlign: 'right' }}>
+                                      <button onClick={() => executeAction2('updateAdSetStatus', { adSetId: sa.entityId, status: 'PAUSED' })} style={btnStyle(C.yellow)}>Pause + Replace</button>
+                                      <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>Pause saturated audience, create fresh one</div>
+                                    </div>
+                                  )}
+                                  {sa.action === 'REPLACE_CREATIVE' && (
+                                    <div style={{ textAlign: 'right' }}>
+                                      <button onClick={() => executeAction2('updateAdStatus', { adId: sa.entityId, status: 'PAUSED' })} style={btnStyle(C.pink)}>Pause Creative</button>
+                                      <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>Creative is dead. Launch replacement.</div>
+                                    </div>
                                   )}
                                 </div>
                               </div>
@@ -298,8 +328,8 @@ export function AdsFlywheelTab() {
                   <tr key={i} style={{ background: rowBg }}>
                     <td style={{ ...td, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={cr.name}>{cr.name}</td>
                     <td style={td}><span style={badge(C.purple)}>{cr.creativeAngle}</span></td>
-                    <td style={{ ...td, fontWeight: 600, color: cr.roas7d >= 3.33 ? C.green : cr.roas7d > 0 ? C.red : C.muted }}>{cr.roas7d > 0 ? fmtX(cr.roas7d) : '--'}</td>
-                    <td style={{ ...td, color: cr.cpa7d > 0 && cr.cpa7d <= 26 ? C.green : cr.cpa7d > 31.5 ? C.red : C.text }}>{cr.cpa7d > 0 ? fmt$(cr.cpa7d) : '--'}</td>
+                    <td style={{ ...td, fontWeight: 600, color: cr.roas7d >= 2.22 ? C.green : cr.roas7d > 0 ? C.red : C.muted }}>{cr.roas7d > 0 ? fmtX(cr.roas7d) : '--'}</td>
+                    <td style={{ ...td, color: cr.cpa7d > 0 && cr.cpa7d <= 38 ? C.green : cr.cpa7d > 47.25 ? C.red : C.text }}>{cr.cpa7d > 0 ? fmt$(cr.cpa7d) : '--'}</td>
                     <td style={td}>{fmt$(cr.spend)}</td>
                     <td style={td}>{cr.purchases}</td>
                     <td style={{ ...td, color: cr.frequency > 5 ? C.red : cr.frequency > 3.5 ? C.yellow : C.text }}>{cr.frequency}</td>
@@ -498,10 +528,10 @@ function FatigueBar({ score, status }) {
 function ScaleButton({ entityId, entityName, currentBudget, roas, onScale, scaling }) {
   const [show, setShow] = useState(false)
   const [pct, setPct] = useState(15)
-  if (!show) return <button onClick={() => setShow(true)} style={btnStyle(C.green)}>Scale</button>
+  if (!show) return <button onClick={e => { e.stopPropagation(); setShow(true) }} style={btnStyle(C.green)}>Scale</button>
   const extra = (currentBudget || 0) * (pct / 100)
   const expectedRev = extra * (roas || 3)
-  const expectedProfit = (expectedRev * 0.30) - extra
+  const expectedProfit = (expectedRev * 0.45) - extra
   return (
     <div style={{ background: C.bg, borderRadius: 6, padding: 8, minWidth: 220 }}>
       <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginBottom: 4 }}>
@@ -519,7 +549,7 @@ function ScaleInline({ target, onScale, onCancel, scaling }) {
   const [pct, setPct] = useState(15)
   const extra = (target.budget || 0) * (pct / 100)
   const expectedRev = extra * (target.roas || 3)
-  const expectedProfit = (expectedRev * 0.30) - extra
+  const expectedProfit = (expectedRev * 0.45) - extra
   return (
     <div style={{ background: C.bg, borderRadius: 6, padding: 6, minWidth: 200 }}>
       <div style={{ display: 'flex', gap: 3, alignItems: 'center', marginBottom: 3 }}>

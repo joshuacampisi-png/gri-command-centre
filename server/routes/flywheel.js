@@ -137,7 +137,7 @@ router.get('/dashboard', async (req, res) => {
       if (cr.roas7d >= 5.0 && freq < 3.5) {
         recommendation = 'SCALE'
         recommendationReason = `ROAS ${cr.roas7d}x with low frequency ${freq} — increase budget, this is printing money`
-      } else if (cr.roas7d >= GRI_ADS.breakevenROAS && freq < 5.0) {
+      } else if (cr.roas7d >= 2.22 && freq < 5.0) {
         recommendation = 'PROTECT'
         recommendationReason = `ROAS ${cr.roas7d}x is profitable — do not touch, let it run`
       } else if (fatigue.score < 25 || (cr.roas7d < 1.2 && cr.spend > 50)) {
@@ -461,6 +461,40 @@ router.get('/knowledge', (_req, res) => {
   try {
     const knowledge = getIndustryKnowledge()
     res.json({ ok: true, knowledge })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── Execute Action (pause/status change on ad sets and ads) ─────────────────
+
+router.post('/execute-action', async (req, res) => {
+  try {
+    const { method, params } = req.body
+    if (!method || !params) return res.status(400).json({ ok: false, error: 'Missing method or params' })
+
+    const { updateAdSetStatus: metaUpdateAdSetStatus, updateAdStatus: metaUpdateAdStatus, pauseAd: metaPauseAd } = await import('../lib/meta-api.js')
+    const { logFlywheelEvent } = await import('../lib/flywheel-store.js')
+
+    let result
+    switch (method) {
+      case 'updateAdSetStatus':
+        result = await metaUpdateAdSetStatus(params.adSetId, params.status)
+        logFlywheelEvent('action_executed', { method, adSetId: params.adSetId, status: params.status })
+        break
+      case 'updateAdStatus':
+        result = await metaUpdateAdStatus(params.adId, params.status)
+        logFlywheelEvent('action_executed', { method, adId: params.adId, status: params.status })
+        break
+      case 'pauseAd':
+        result = await metaPauseAd(params.adId)
+        logFlywheelEvent('action_executed', { method, adId: params.adId })
+        break
+      default:
+        return res.status(400).json({ ok: false, error: `Unknown method: ${method}` })
+    }
+
+    res.json({ ok: true, message: `${params.status || 'PAUSED'} applied successfully`, result })
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message })
   }

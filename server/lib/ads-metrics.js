@@ -6,13 +6,13 @@
 
 export const GRI_ADS = {
   aov: 105,
-  grossMarginPct: 0.30,
-  grossProfitPerOrder: 31.50,
-  breakevenCPP: 31.50,
-  profitableCPP: 26.00,
-  targetMER: 4.0,
-  scaleMER: 6.0,
-  breakevenROAS: 3.33,
+  grossMarginPct: 0.45,
+  grossProfitPerOrder: 47.25,
+  breakevenCPP: 47.25,
+  profitableCPP: 38.00,
+  targetMER: 3.0,
+  scaleMER: 5.0,
+  breakevenROAS: 2.22,
 }
 
 /**
