@@ -37,15 +37,23 @@ export function AdsFlywheelTab() {
   const [log, setLog] = useState([])
   const [targets, setTargets] = useState({})
   const [learning, setLearning] = useState([])
+  const [opportunities, setOpportunities] = useState([])
+  const [health, setHealth] = useState(null)
+  const [scaleAdSetId, setScaleAdSetId] = useState(null)
+  const [scalePct, setScalePct] = useState(15)
+  const [scaling, setScaling] = useState(false)
+  const [scaleResult, setScaleResult] = useState(null)
+  const [analyseAdName, setAnalyseAdName] = useState('')
+  const [analysing, setAnalysing] = useState(false)
+  const [analysis, setAnalysis] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [activeSection, setActiveSection] = useState('all')
   const [syncing, setSyncing] = useState(false)
   const [generating, setGenerating] = useState(false)
 
   const load = useCallback(async () => {
     try {
-      const [sumRes, alertRes, campRes, aovRes, crRes, brRes, convRes, actRes, logRes, tgtRes, learnRes] = await Promise.all([
+      const [sumRes, alertRes, campRes, aovRes, crRes, brRes, convRes, actRes, logRes, tgtRes, learnRes, oppRes, healthRes] = await Promise.all([
         fetch(`${API}/summary`).then(r => r.json()),
         fetch(`${API}/alerts`).then(r => r.json()),
         fetch(`${API}/campaigns`).then(r => r.json()),
@@ -57,6 +65,8 @@ export function AdsFlywheelTab() {
         fetch(`${API}/log?days=14`).then(r => r.json()),
         fetch(`${API}/targets`).then(r => r.json()),
         fetch(`${API}/learning`).then(r => r.json()),
+        fetch(`${API}/opportunities`).then(r => r.json()),
+        fetch(`${API}/health`).then(r => r.json()),
       ])
       if (sumRes.ok) { setSummary(sumRes.summary); setRhythm(sumRes.rhythm) }
       if (alertRes.ok) setAlerts(alertRes.alerts || [])
@@ -69,6 +79,8 @@ export function AdsFlywheelTab() {
       if (logRes.ok) setLog(logRes.log || [])
       if (tgtRes.ok) setTargets(tgtRes.targets || {})
       if (learnRes.ok) setLearning(learnRes.learning || [])
+      if (oppRes.ok) setOpportunities(oppRes.opportunities || [])
+      if (healthRes) setHealth(healthRes)
       setError('')
     } catch (e) { setError(e.message) }
     setLoading(false)
@@ -118,6 +130,35 @@ export function AdsFlywheelTab() {
   async function runEngine() {
     await fetch(`${API}/decision-engine/run`, { method: 'POST' })
     load()
+  }
+
+  async function scaleSpend(adSetId, pct) {
+    setScaling(true)
+    setScaleResult(null)
+    try {
+      const r = await fetch(`${API}/scale/${adSetId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ percentage: pct }),
+      }).then(r => r.json())
+      setScaleResult(r)
+      if (r.ok) { setScaleAdSetId(null); load() }
+    } catch (e) { setScaleResult({ ok: false, error: e.message }) }
+    setScaling(false)
+  }
+
+  async function analyseCreative(adName) {
+    setAnalysing(true)
+    setAnalysis(null)
+    try {
+      const r = await fetch(`${API}/analyse-creative`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adName }),
+      }).then(r => r.json())
+      setAnalysis(r.ok ? r.analysis : { error: r.error })
+    } catch (e) { setAnalysis({ error: e.message }) }
+    setAnalysing(false)
   }
 
   if (loading) return <div style={{ color: C.muted, padding: 40, textAlign: 'center' }}>Loading flywheel data...</div>
@@ -344,11 +385,12 @@ export function AdsFlywheelTab() {
                 <th style={thStyle}>Avg AOV</th>
                 <th style={thStyle}>Freq</th>
                 <th style={thStyle}>Status</th>
+                <th style={thStyle}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {creatives.length === 0 && (
-                <tr><td colSpan={10} style={{ ...tdStyle, textAlign: 'center', color: C.muted }}>No creative data yet. Sync Meta to populate.</td></tr>
+                <tr><td colSpan={11} style={{ ...tdStyle, textAlign: 'center', color: C.muted }}>No creative data yet. Sync Meta to populate.</td></tr>
               )}
               {creatives.map((cr, i) => {
                 const rowBg = i < 3 ? '#3FB95010' : cr.frequency > 5 ? '#F8514910' : 'transparent'
@@ -364,6 +406,22 @@ export function AdsFlywheelTab() {
                     <td style={{ ...tdStyle, color: cr.avgAov >= 160 ? C.green : cr.avgAov >= 100 ? C.yellow : C.text }}>{cr.avgAov > 0 ? fmt$(cr.avgAov) : '--'}</td>
                     <td style={{ ...tdStyle, color: cr.frequency > 5 ? C.red : cr.frequency > 3.5 ? C.yellow : C.text }}>{cr.frequency}</td>
                     <td style={tdStyle}><span style={badgeStyle(cr.status === 'winner' ? C.green : cr.status === 'fatigued' ? C.red : cr.status === 'watch' ? C.yellow : C.muted)}>{cr.status}</span></td>
+                    <td style={{ ...tdStyle, whiteSpace: 'nowrap' }}>
+                      {scaleAdSetId === cr.adId ? (
+                        <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                          <select value={scalePct} onChange={e => setScalePct(Number(e.target.value))} style={{ background: C.card, color: C.text, border: `1px solid ${C.border}`, borderRadius: 4, padding: '2px 4px', fontSize: 11 }}>
+                            {[5,8,10,12,15,18].map(p => <option key={p} value={p}>{p}%</option>)}
+                          </select>
+                          <button onClick={() => scaleSpend(cr.adId, scalePct)} disabled={scaling} style={btnStyle(C.green)}>{scaling ? '...' : 'Go'}</button>
+                          <button onClick={() => setScaleAdSetId(null)} style={{ ...btnSmall, color: C.muted }}>X</button>
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', gap: 4 }}>
+                          <button onClick={() => setScaleAdSetId(cr.adId)} style={btnStyle(C.green)} title="Scale this ad's budget">Scale</button>
+                          <button onClick={() => analyseCreative(cr.name)} style={btnStyle(C.purple)} title="AI analyse this creative">AI</button>
+                        </div>
+                      )}
+                    </td>
                   </tr>
                 )
               })}
@@ -406,6 +464,136 @@ export function AdsFlywheelTab() {
           )}
         </div>
       </div>
+
+      {/* Scale Result Toast */}
+      {scaleResult && (
+        <div style={{ ...cardStyle, marginBottom: 12, borderLeft: `3px solid ${scaleResult.ok ? C.green : C.red}` }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: 13 }}>{scaleResult.ok ? scaleResult.message : `Scale failed: ${scaleResult.error}`}</span>
+            <button onClick={() => setScaleResult(null)} style={{ ...btnSmall, color: C.muted }}>Dismiss</button>
+          </div>
+        </div>
+      )}
+
+      {/* Growth Opportunities */}
+      {opportunities.length > 0 && (
+        <div style={{ marginBottom: 20 }}>
+          <h2 style={sectionTitle}>Growth Opportunities ({opportunities.length})</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+            {opportunities.map((opp, i) => (
+              <div key={i} style={{ ...cardStyle, borderLeft: `3px solid ${opp.priority === 'high' ? C.pink : C.blue}` }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <span style={badgeStyle(opp.priority === 'high' ? C.pink : opp.priority === 'medium' ? C.blue : C.muted)}>{opp.priority}</span>
+                  <span style={badgeStyle(C.purple)}>{opp.type.replace(/_/g, ' ')}</span>
+                </div>
+                <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>{opp.title}</div>
+                <p style={{ color: C.muted, fontSize: 12, margin: 0, lineHeight: 1.5 }}>{opp.detail}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Creative Analysis Panel */}
+      <div style={{ marginBottom: 20 }}>
+        <h2 style={sectionTitle}>Creative Analysis</h2>
+        <div style={cardStyle}>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+            <input
+              type="text" value={analyseAdName} onChange={e => setAnalyseAdName(e.target.value)}
+              placeholder="Paste ad name or describe the creative..."
+              style={{ flex: 1, background: C.bg, color: C.text, border: `1px solid ${C.border}`, borderRadius: 6, padding: '8px 12px', fontSize: 13 }}
+            />
+            <button onClick={() => analyseCreative(analyseAdName)} disabled={analysing || !analyseAdName} style={btnStyle(C.purple)}>
+              {analysing ? 'Analysing...' : 'Analyse Creative'}
+            </button>
+          </div>
+          <p style={{ color: C.muted, fontSize: 11, margin: '0 0 8px' }}>
+            Enter an ad name or describe a new creative. The AI will detect the angle, recommend placement, write copy, and suggest which campaign/ad set it belongs in.
+          </p>
+          {analysis && !analysis.error && (
+            <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 12 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 12 }}>
+                <div>
+                  <div style={{ fontSize: 11, color: C.muted }}>Detected Angle</div>
+                  <span style={badgeStyle(C.purple)}>{analysis.detectedAngle}</span>
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: C.muted }}>Format</div>
+                  <span style={badgeStyle(C.blue)}>{analysis.detectedFormat}</span>
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: C.muted }}>AOV Potential</div>
+                  <span style={badgeStyle(analysis.aovPotential === 'premium' ? C.green : analysis.aovPotential === 'high' ? C.green : C.yellow)}>{analysis.aovPotential}</span>
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
+                <div>
+                  <div style={{ fontSize: 11, color: C.muted, marginBottom: 2 }}>Recommended Campaign</div>
+                  <div style={{ fontSize: 13, fontWeight: 600 }}>{analysis.recommendedCampaign}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: C.muted, marginBottom: 2 }}>Recommended Audience</div>
+                  <div style={{ fontSize: 13, fontWeight: 600 }}>{analysis.recommendedAudience}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: C.muted, marginBottom: 2 }}>Recommended Ad Set</div>
+                  <div style={{ fontSize: 13, fontWeight: 600 }}>{analysis.recommendedAdSet}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: C.muted, marginBottom: 2 }}>Starting Daily Spend</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: C.green }}>${analysis.recommendedDailySpend}</div>
+                </div>
+              </div>
+              <div style={{ fontSize: 11, color: C.muted, marginBottom: 2 }}>Target Persona</div>
+              <p style={{ fontSize: 13, margin: '0 0 8px' }}>{analysis.targetPersona}</p>
+              <div style={{ fontSize: 11, color: C.muted, marginBottom: 2 }}>Placement Reasoning</div>
+              <p style={{ fontSize: 13, margin: '0 0 8px' }}>{analysis.placementReasoning}</p>
+              {analysis.suggestedHookLine && (
+                <div style={{ background: C.bg, borderRadius: 6, padding: 10, marginBottom: 8 }}>
+                  <div style={{ fontSize: 11, color: C.muted, marginBottom: 2 }}>Suggested Hook</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: C.pink }}>{analysis.suggestedHookLine}</div>
+                </div>
+              )}
+              {analysis.suggestedBodyCopy && (
+                <div style={{ background: C.bg, borderRadius: 6, padding: 10, marginBottom: 8 }}>
+                  <div style={{ fontSize: 11, color: C.muted, marginBottom: 2 }}>Suggested Body Copy</div>
+                  <div style={{ fontSize: 13, whiteSpace: 'pre-wrap' }}>{analysis.suggestedBodyCopy}</div>
+                </div>
+              )}
+              {analysis.growthOpportunities && analysis.growthOpportunities.length > 0 && (
+                <div style={{ marginTop: 8 }}>
+                  <div style={{ fontSize: 11, color: C.muted, marginBottom: 4 }}>Growth Ideas</div>
+                  {analysis.growthOpportunities.map((g, i) => (
+                    <div key={i} style={{ fontSize: 12, color: C.text, padding: '2px 0' }}>+ {g}</div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          {analysis && analysis.error && (
+            <div style={{ color: C.red, fontSize: 12, marginTop: 8 }}>Error: {analysis.error}</div>
+          )}
+        </div>
+      </div>
+
+      {/* System Health */}
+      {health && (
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+            <h2 style={{ ...sectionTitle, margin: 0 }}>System Health</h2>
+            <span style={badgeStyle(health.status === 'healthy' ? C.green : health.status === 'warning' ? C.yellow : C.red)}>{health.status}</span>
+            {health.backups && <span style={{ fontSize: 11, color: C.muted }}>Last backup: {health.backups?.latest || 'none'} ({health.backups?.totalDays || 0} days stored)</span>}
+          </div>
+          {health.issues && health.issues.length > 0 && (
+            <div style={cardStyle}>
+              {health.issues.map((issue, i) => (
+                <div key={i} style={{ fontSize: 12, color: C.yellow, padding: '4px 0' }}>{issue}</div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Section 9: CPA Targets */}
       <div style={{ marginBottom: 20 }}>
