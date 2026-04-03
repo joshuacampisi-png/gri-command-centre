@@ -105,7 +105,8 @@ export async function metaSyncJob() {
           })
         }
       } catch (err) {
-        console.error(`[Flywheel Cron] Error fetching data for campaign ${camp.id}:`, err.message)
+        console.error(`[Flywheel Cron] Error fetching data for campaign ${camp.id} (${camp.name}):`, err.message, err.stack?.split('\n')[1])
+        logFlywheelEvent('sync_error', { campaignId: camp.id, campaignName: camp.name, error: err.message })
       }
     }
 
