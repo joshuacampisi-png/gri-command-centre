@@ -466,7 +466,7 @@ export function AdsFlywheelTab() {
       {/* AMER + Bundle row */}
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: 10, marginBottom: 16 }}>
         <HeroCard label="AMER" value={h.amer != null ? h.amer.toFixed(0) + '%' : '--'} sub="Ad margin efficiency" color={h.amer > 0 ? C.green : C.red} />
-        <HeroCard label="Bundle Rate" value={fmtPct(d?.aov?.bundleRate)} sub="Target: 30%+" color={(d?.aov?.bundleRate || 0) >= 30 ? C.green : C.yellow} />
+        <HeroCard label="Bundle Rate" value={h.bundleRateRange != null ? fmtPct(h.bundleRateRange) : '--'} sub={h.bundleOrdersRange != null ? `${h.bundleOrdersRange} of ${h.shopifyOrders} orders` : 'Target: 30%+'} color={h.bundleRateRange != null ? (h.bundleRateRange >= 30 ? C.green : C.yellow) : C.muted} />
         <HeroCard label="Orders Today" value={range === 'today' ? (h.shopifyOrders || 0) : '--'} sub="From Shopify" color={C.text} />
       </div>
 

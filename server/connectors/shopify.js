@@ -202,6 +202,7 @@ export async function getShopifyOrdersRange(fromDate, toDate, { includeOrderDeta
   )
 
   let revenue = 0, shipping = 0, orderCount = 0, protectionCount = 0, protectionRevenue = 0, productRevenue = 0
+  let bundleOrders = 0
   for (const order of validOrders) {
     // Use total_price minus any refunds to match Shopify's "Total sales" metric
     const total = parseFloat(order.total_price || 0)
@@ -224,9 +225,19 @@ export async function getShopifyOrdersRange(fromDate, toDate, { includeOrderDeta
     }
     // Product revenue = subtotal minus shipping protection line items
     productRevenue += subtotal - (hasProtection ? SHIPPING_PROTECTION_PRICE : 0)
+    // Bundle detection: order has 2+ distinct products (excluding shipping protection)
+    const productLineItems = (order.line_items || []).filter(
+      li => li.product_id !== SHIPPING_PROTECTION_PRODUCT_ID
+        && !(li.title || '').toLowerCase().includes('shipping protection')
+    )
+    const uniqueProducts = new Set(productLineItems.map(li => li.product_id))
+    if (uniqueProducts.size >= 2 || productLineItems.some(li => (li.quantity || 1) >= 2)) {
+      bundleOrders++
+    }
   }
 
-  const result = { ok: true, revenue, productRevenue, shipping, orders: orderCount, protectionCount, protectionRevenue, from: fromDate, to: toDate }
+  const bundleRate = orderCount > 0 ? Math.round((bundleOrders / orderCount) * 1000) / 10 : 0
+  const result = { ok: true, revenue, productRevenue, shipping, orders: orderCount, protectionCount, protectionRevenue, bundleOrders, bundleRate, from: fromDate, to: toDate }
 
   if (includeOrderDetails) {
     result.orderDetails = validOrders.map(o => ({

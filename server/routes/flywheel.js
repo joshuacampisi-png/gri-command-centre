@@ -282,6 +282,9 @@ router.get('/dashboard', async (req, res) => {
         newCustomersPerDay,
         firstOrderAov: firstOrderAov ? Math.round(firstOrderAov * 100) / 100 : null,
         newCustomerRevenue: Math.round(newCustomerRevenue * 100) / 100,
+        // Range-specific bundle rate from Shopify orders (not 30-day rolling)
+        bundleRateRange: shopifyData?.bundleRate ?? null,
+        bundleOrdersRange: shopifyData?.bundleOrders ?? null,
       },
       campaigns: enrichedCampaigns,
       creatives: enrichedCreatives,
