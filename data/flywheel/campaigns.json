@@ -1,0 +1,38 @@
+[
+  {
+    "metaCampaignId": "120233436381360711",
+    "name": "GRI - Local (TNT Hire)",
+    "status": "ACTIVE",
+    "objective": "OUTCOME_SALES",
+    "budget": 30,
+    "budgetType": "daily",
+    "dailyBudget": 30
+  },
+  {
+    "metaCampaignId": "120226215760060711",
+    "name": "GRI - Advantage+ Catalogue (Testing)",
+    "status": "ACTIVE",
+    "objective": "OUTCOME_SALES",
+    "budget": 0,
+    "budgetType": "lifetime",
+    "dailyBudget": 0
+  },
+  {
+    "metaCampaignId": "120216057846380711",
+    "name": "GRI  - AUS Wide [Broad Targeting]",
+    "status": "ACTIVE",
+    "objective": "OUTCOME_SALES",
+    "budget": 0,
+    "budgetType": "lifetime",
+    "dailyBudget": 0
+  },
+  {
+    "metaCampaignId": "120211361720620711",
+    "name": "GRI  - AUS Wide [Lookalike Targeting]",
+    "status": "PAUSED",
+    "objective": "OUTCOME_SALES",
+    "budget": 20,
+    "budgetType": "daily",
+    "dailyBudget": 20
+  }
+]

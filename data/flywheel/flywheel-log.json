@@ -1,0 +1,19 @@
+[
+  {
+    "id": "7c8d68f8-b4f3-4fb1-b7e3-b589b8eb4ed5",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-04-02T22:15:02.445Z"
+  },
+  {
+    "id": "b60f3d62-2f8c-47ff-8d68-8c452cabf3f2",
+    "type": "meta_sync_complete",
+    "detail": {
+      "campaigns": 4,
+      "adSets": 23,
+      "ads": 215,
+      "snapshots": 301
+    },
+    "timestamp": "2026-04-02T22:16:07.124Z"
+  }
+]

@@ -1,0 +1,1950 @@
+[
+  {
+    "metaAdSetId": "120233437263180711",
+    "campaignId": "120233436381360711",
+    "campaignName": "GRI - Local (TNT Hire)",
+    "name": "TNT Hire | Bris & GC | Interests",
+    "status": "ACTIVE",
+    "budget": 0,
+    "dailyBudget": 0,
+    "audience": "local_hire",
+    "targeting": {
+      "age_max": 65,
+      "age_min": 18,
+      "age_range": [
+        18,
+        65
+      ],
+      "flexible_spec": [
+        {
+          "interests": [
+            {
+              "id": "6003092932417",
+              "name": "Event management"
+            },
+            {
+              "id": "6003232518610",
+              "name": "Parenting"
+            },
+            {
+              "id": "6003321277514",
+              "name": "Baby shower"
+            },
+            {
+              "id": "6003476182657",
+              "name": "Family"
+            },
+            {
+              "id": "6003968120348",
+              "name": "Party planning"
+            },
+            {
+              "id": "6899296281873",
+              "name": "Special occasions and events"
+            }
+          ],
+          "family_statuses": [
+            {
+              "id": "6023005372383",
+              "name": "Parents (up to 12 months)"
+            }
+          ]
+        }
+      ],
+      "geo_locations": {
+        "cities": [
+          {
+            "country": "AU",
+            "distance_unit": "kilometer",
+            "key": "107683",
+            "name": "Brisbane",
+            "radius": 25,
+            "region": "Queensland",
+            "region_id": "133"
+          },
+          {
+            "country": "AU",
+            "distance_unit": "kilometer",
+            "key": "110074",
+            "name": "Gold Coast",
+            "radius": 25,
+            "region": "Queensland",
+            "region_id": "133"
+          }
+        ],
+        "custom_locations": [
+          {
+            "distance_unit": "kilometer",
+            "latitude": -28.378375,
+            "longitude": 153.511963,
+            "radius": 20,
+            "primary_city_id": 108852,
+            "region_id": 131,
+            "country": "AU"
+          },
+          {
+            "distance_unit": "kilometer",
+            "latitude": -28.65879,
+            "longitude": 153.586121,
+            "radius": 16,
+            "primary_city_id": 108018,
+            "region_id": 131,
+            "country": "AU"
+          }
+        ],
+        "location_types": [
+          "home",
+          "recent"
+        ]
+      },
+      "brand_safety_content_filter_levels": [
+        "FACEBOOK_RELAXED",
+        "AN_RELAXED"
+      ],
+      "targeting_automation": {
+        "advantage_audience": 1,
+        "individual_setting": {
+          "age": 1,
+          "gender": 1,
+          "geo": 1
+        }
+      }
+    }
+  },
+  {
+    "metaAdSetId": "120232497076730711",
+    "campaignId": "120226215760060711",
+    "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+    "name": "Advantage+ Remarketing Test - Bundles Only",
+    "status": "ACTIVE",
+    "budget": 15,
+    "dailyBudget": 15,
+    "audience": "asc",
+    "targeting": {
+      "age_max": 65,
+      "age_min": 18,
+      "flexible_spec": [
+        {
+          "custom_audiences": [
+            {
+              "id": "120211342677240711",
+              "name": "Website Visitors Last 30 Days (no purchase)"
+            }
+          ]
+        }
+      ],
+      "geo_locations": {
+        "countries": [
+          "AU"
+        ],
+        "location_types": [
+          "home",
+          "recent"
+        ]
+      },
+      "brand_safety_content_filter_levels": [
+        "FACEBOOK_RELAXED",
+        "AN_RELAXED"
+      ],
+      "targeting_relaxation_types": {
+        "lookalike": 0,
+        "custom_audience": 1
+      },
+      "targeting_automation": {
+        "advantage_audience": 0
+      }
+    }
+  },
+  {
+    "metaAdSetId": "120229419892020711",
+    "campaignId": "120226215760060711",
+    "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+    "name": "Advantage+ Lookalike 8% Test - Smoke Bombs Only",
+    "status": "PAUSED",
+    "budget": 5,
+    "dailyBudget": 5,
+    "audience": "lookalike",
+    "targeting": {
+      "age_max": 65,
+      "age_min": 18,
+      "age_range": [
+        18,
+        65
+      ],
+      "custom_audiences": [
+        {
+          "id": "120216968438510711",
+          "name": "Lookalike (AU, 8%) - Purchasers Last 90 Days"
+        }
+      ],
+      "geo_locations": {
+        "countries": [
+          "AU"
+        ],
+        "location_types": [
+          "home",
+          "recent"
+        ]
+      },
+      "brand_safety_content_filter_levels": [
+        "FACEBOOK_RELAXED",
+        "AN_RELAXED"
+      ],
+      "targeting_automation": {
+        "advantage_audience": 1,
+        "individual_setting": {
+          "age": 1,
+          "gender": 1
+        }
+      }
+    }
+  },
+  {
+    "metaAdSetId": "120227613425310711",
+    "campaignId": "120226215760060711",
+    "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+    "name": "Advantage+ Lookalike 8% Test - Balloon Kits Only",
+    "status": "PAUSED",
+    "budget": 5,
+    "dailyBudget": 5,
+    "audience": "lookalike",
+    "targeting": {
+      "age_max": 65,
+      "age_min": 18,
+      "age_range": [
+        18,
+        65
+      ],
+      "custom_audiences": [
+        {
+          "id": "120216968438510711",
+          "name": "Lookalike (AU, 8%) - Purchasers Last 90 Days"
+        }
+      ],
+      "geo_locations": {
+        "countries": [
+          "AU"
+        ],
+        "location_types": [
+          "home",
+          "recent"
+        ]
+      },
+      "brand_safety_content_filter_levels": [
+        "FACEBOOK_RELAXED",
+        "AN_RELAXED"
+      ],
+      "targeting_automation": {
+        "advantage_audience": 1,
+        "individual_setting": {
+          "age": 1,
+          "gender": 1
+        }
+      }
+    }
+  },
+  {
+    "metaAdSetId": "120227095577480711",
+    "campaignId": "120226215760060711",
+    "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+    "name": "Advantage+ Lookalike 8% Test - Cannons Only",
+    "status": "ACTIVE",
+    "budget": 20,
+    "dailyBudget": 20,
+    "audience": "lookalike",
+    "targeting": {
+      "age_max": 65,
+      "age_min": 18,
+      "age_range": [
+        18,
+        65
+      ],
+      "custom_audiences": [
+        {
+          "id": "120216968438510711",
+          "name": "Lookalike (AU, 8%) - Purchasers Last 90 Days"
+        }
+      ],
+      "geo_locations": {
+        "countries": [
+          "AU"
+        ],
+        "location_types": [
+          "home",
+          "recent"
+        ]
+      },
+      "brand_safety_content_filter_levels": [
+        "FACEBOOK_RELAXED",
+        "AN_RELAXED"
+      ],
+      "targeting_automation": {
+        "advantage_audience": 1,
+        "individual_setting": {
+          "age": 1,
+          "gender": 1
+        }
+      }
+    }
+  },
+  {
+    "metaAdSetId": "120226215760070711",
+    "campaignId": "120226215760060711",
+    "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+    "name": "Advantage+ Remarketing Test - All Products",
+    "status": "ACTIVE",
+    "budget": 20,
+    "dailyBudget": 20,
+    "audience": "asc",
+    "targeting": {
+      "age_max": 65,
+      "age_min": 18,
+      "flexible_spec": [
+        {
+          "custom_audiences": [
+            {
+              "id": "120211342677240711",
+              "name": "Website Visitors Last 30 Days (no purchase)"
+            },
+            {
+              "id": "120222294767020711",
+              "name": "Collection Page Viewers Last 60 Days (no purchase)"
+            }
+          ]
+        }
+      ],
+      "geo_locations": {
+        "countries": [
+          "AU"
+        ],
+        "location_types": [
+          "home",
+          "recent"
+        ]
+      },
+      "brand_safety_content_filter_levels": [
+        "FACEBOOK_RELAXED",
+        "AN_RELAXED"
+      ],
+      "targeting_relaxation_types": {
+        "lookalike": 0,
+        "custom_audience": 0
+      },
+      "targeting_automation": {
+        "advantage_audience": 0
+      }
+    }
+  },
+  {
+    "metaAdSetId": "120239528820360711",
+    "campaignId": "120216057846380711",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "name": "R6 | GRI | Broad ADV+ | AU | Mixed | ROAS | IG & FB",
+    "status": "ACTIVE",
+    "budget": 30,
+    "dailyBudget": 30,
+    "audience": "cold_broad",
+    "targeting": {
+      "age_max": 65,
+      "age_min": 18,
+      "age_range": [
+        18,
+        65
+      ],
+      "excluded_custom_audiences": [
+        {
+          "id": "120216968438510711",
+          "name": "Lookalike (AU, 8%) - Purchasers Last 90 Days"
+        },
+        {
+          "id": "120232822855410711",
+          "name": "Lookalike (2%) - Gender Reveal Ideas Pixel - Website using Purchase"
+        },
+        {
+          "id": "120234087856560711",
+          "name": "Web Visitors 30 Days (no excl)"
+        }
+      ],
+      "geo_locations": {
+        "countries": [
+          "AU"
+        ],
+        "location_types": [
+          "home",
+          "recent"
+        ]
+      },
+      "brand_safety_content_filter_levels": [
+        "FACEBOOK_RELAXED"
+      ],
+      "targeting_automation": {
+        "advantage_audience": 1,
+        "individual_setting": {
+          "age": 1,
+          "gender": 1
+        }
+      }
+    }
+  },
+  {
+    "metaAdSetId": "120232826358240711",
+    "campaignId": "120216057846380711",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "name": "R6 | GRI | BRIS & GC Locals - 2% Lookalikes | AU | Mixed | ROAS",
+    "status": "ACTIVE",
+    "budget": 10,
+    "dailyBudget": 10,
+    "audience": "lookalike",
+    "targeting": {
+      "age_max": 65,
+      "age_min": 18,
+      "age_range": [
+        18,
+        65
+      ],
+      "custom_audiences": [
+        {
+          "id": "120232822855410711",
+          "name": "Lookalike (2%) - Gender Reveal Ideas Pixel - Website using Purchase"
+        }
+      ],
+      "geo_locations": {
+        "cities": [
+          {
+            "country": "AU",
+            "distance_unit": "kilometer",
+            "key": "107683",
+            "name": "Brisbane",
+            "radius": 25,
+            "region": "Queensland",
+            "region_id": "133"
+          },
+          {
+            "country": "AU",
+            "distance_unit": "kilometer",
+            "key": "110074",
+            "name": "Gold Coast",
+            "radius": 40,
+            "region": "Queensland",
+            "region_id": "133"
+          }
+        ],
+        "location_types": [
+          "home",
+          "recent"
+        ]
+      },
+      "brand_safety_content_filter_levels": [
+        "FACEBOOK_RELAXED",
+        "AN_RELAXED"
+      ],
+      "targeting_automation": {
+        "advantage_audience": 1,
+        "individual_setting": {
+          "age": 1,
+          "gender": 1,
+          "geo": 1
+        }
+      }
+    }
+  },
+  {
+    "metaAdSetId": "120231756208970711",
+    "campaignId": "120216057846380711",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "name": "R6 | GRI | Viral Moments | AU | Mixed | ROAS",
+    "status": "ACTIVE",
+    "budget": 10,
+    "dailyBudget": 10,
+    "audience": "cold_broad",
+    "targeting": {
+      "age_max": 65,
+      "age_min": 18,
+      "age_range": [
+        18,
+        65
+      ],
+      "flexible_spec": [
+        {
+          "interests": [
+            {
+              "id": "6002976458521",
+              "name": "Celebrity News"
+            },
+            {
+              "id": "6002989756768",
+              "name": "Celebrity Gossip"
+            },
+            {
+              "id": "6003016637329",
+              "name": "Viral video"
+            },
+            {
+              "id": "6003061647182",
+              "name": "Internet celebrity"
+            },
+            {
+              "id": "6003199800465",
+              "name": "Popular culture"
+            },
+            {
+              "id": "6003231864010",
+              "name": "Photograph"
+            },
+            {
+              "id": "6003389626671",
+              "name": "Fad"
+            },
+            {
+              "id": "6003659729907",
+              "name": "Celebrity"
+            },
+            {
+              "id": "6003717038546",
+              "name": "Videography"
+            },
+            {
+              "id": "6003751277867",
+              "name": "Pinterest"
+            },
+            {
+              "id": "6004030160948",
+              "name": "Social media"
+            },
+            {
+              "id": "6012823531124",
+              "name": "BuzzFeed Entertainment"
+            },
+            {
+              "id": "959994364051663",
+              "name": "Influencers on Facebook"
+            }
+          ]
+        },
+        {
+          "interests": [
+            {
+              "id": "6003092932417",
+              "name": "Event management"
+            },
+            {
+              "id": "6003321277514",
+              "name": "Baby shower"
+            }
+          ]
+        }
+      ],
+      "geo_locations": {
+        "countries": [
+          "AU"
+        ],
+        "location_types": [
+          "home",
+          "recent"
+        ]
+      },
+      "brand_safety_content_filter_levels": [
+        "FACEBOOK_RELAXED",
+        "AN_RELAXED"
+      ],
+      "targeting_automation": {
+        "advantage_audience": 1,
+        "individual_setting": {
+          "age": 1,
+          "gender": 1
+        }
+      }
+    }
+  },
+  {
+    "metaAdSetId": "120231756128650711",
+    "campaignId": "120216057846380711",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "name": "R6 | GRI | Adrenaline Interest | AU | Mixed | ROAS",
+    "status": "ACTIVE",
+    "budget": 10,
+    "dailyBudget": 10,
+    "audience": "cold_broad",
+    "targeting": {
+      "age_max": 65,
+      "age_min": 18,
+      "age_range": [
+        18,
+        65
+      ],
+      "flexible_spec": [
+        {
+          "interests": [
+            {
+              "id": "6002971095994",
+              "name": "Action games"
+            },
+            {
+              "id": "6003051414416",
+              "name": "Extreme sport"
+            },
+            {
+              "id": "6003065885007",
+              "name": "Dirt Bikes"
+            },
+            {
+              "id": "6003137778617",
+              "name": "Adrenaline Junkies"
+            },
+            {
+              "id": "6003243604899",
+              "name": "Action movies"
+            },
+            {
+              "id": "6003253142511",
+              "name": "Action-adventure game"
+            },
+            {
+              "id": "6003334179351",
+              "name": "Adventure"
+            },
+            {
+              "id": "6003343412421",
+              "name": "Superhero film"
+            },
+            {
+              "id": "6003398200283",
+              "name": "Parachuting"
+            },
+            {
+              "id": "6003454637871",
+              "name": "Prankster"
+            },
+            {
+              "id": "6003607349618",
+              "name": "GoPro"
+            }
+          ],
+          "work_employers": [
+            {
+              "id": "114880288524612",
+              "name": "Skydiving"
+            }
+          ]
+        }
+      ],
+      "geo_locations": {
+        "countries": [
+          "AU"
+        ],
+        "location_types": [
+          "home",
+          "recent"
+        ]
+      },
+      "brand_safety_content_filter_levels": [
+        "FACEBOOK_RELAXED",
+        "AN_RELAXED"
+      ],
+      "targeting_automation": {
+        "advantage_audience": 1,
+        "individual_setting": {
+          "age": 1,
+          "gender": 1
+        }
+      }
+    }
+  },
+  {
+    "metaAdSetId": "120229935519130711",
+    "campaignId": "120216057846380711",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "name": "R6 | GRI | Party & Event Planning | AU | Mixed | ROAS",
+    "status": "ACTIVE",
+    "budget": 20,
+    "dailyBudget": 20,
+    "audience": "cold_broad",
+    "targeting": {
+      "age_max": 65,
+      "age_min": 18,
+      "age_range": [
+        18,
+        65
+      ],
+      "flexible_spec": [
+        {
+          "interests": [
+            {
+              "id": "6003019539929",
+              "name": "Gift"
+            },
+            {
+              "id": "6003070856229",
+              "name": "Games"
+            },
+            {
+              "id": "6003092932417",
+              "name": "Event management"
+            },
+            {
+              "id": "6003106645378",
+              "name": "Gift shop"
+            },
+            {
+              "id": "6003147868152",
+              "name": "Parties"
+            },
+            {
+              "id": "6003170720734",
+              "name": "Gift wrapping"
+            },
+            {
+              "id": "6003208313176",
+              "name": "Party game"
+            },
+            {
+              "id": "6003290131943",
+              "name": "Cake decorating"
+            },
+            {
+              "id": "6003305507369",
+              "name": "Cake"
+            },
+            {
+              "id": "6003329999577",
+              "name": "Chocolate cake"
+            },
+            {
+              "id": "6003968120348",
+              "name": "Party planning"
+            }
+          ],
+          "work_positions": [
+            {
+              "id": "103175993068816",
+              "name": "Event Planner/Coordinator"
+            },
+            {
+              "id": "108025739218690",
+              "name": "Party organizer"
+            },
+            {
+              "id": "791405154300689",
+              "name": "Party Planner"
+            }
+          ]
+        },
+        {
+          "interests": [
+            {
+              "id": "6003174968634",
+              "name": "Newlywed"
+            },
+            {
+              "id": "6003321277514",
+              "name": "Baby shower"
+            },
+            {
+              "id": "6003409392877",
+              "name": "Weddings"
+            },
+            {
+              "id": "6017487438515",
+              "name": "Babyshop"
+            }
+          ],
+          "behaviors": [
+            {
+              "id": "6071631541183",
+              "name": "Engaged Shoppers"
+            }
+          ],
+          "family_statuses": [
+            {
+              "id": "6023005372383",
+              "name": "Parents (up to 12 months)"
+            }
+          ]
+        }
+      ],
+      "geo_locations": {
+        "countries": [
+          "AU"
+        ],
+        "location_types": [
+          "home",
+          "recent"
+        ]
+      },
+      "brand_safety_content_filter_levels": [
+        "FACEBOOK_RELAXED",
+        "AN_RELAXED"
+      ],
+      "targeting_automation": {
+        "advantage_audience": 1,
+        "individual_setting": {
+          "age": 1,
+          "gender": 1
+        }
+      }
+    }
+  },
+  {
+    "metaAdSetId": "120229551711380711",
+    "campaignId": "120216057846380711",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "name": "R6 | GRI | Brazilian Audiences | AU | Mixed | ROAS",
+    "status": "ACTIVE",
+    "budget": 20,
+    "dailyBudget": 20,
+    "audience": "cold_broad",
+    "targeting": {
+      "age_max": 65,
+      "age_min": 18,
+      "age_range": [
+        18,
+        65
+      ],
+      "flexible_spec": [
+        {
+          "interests": [
+            {
+              "id": "6002933742373",
+              "name": "Music of Brazil"
+            },
+            {
+              "id": "6003003434573",
+              "name": "Latin American music"
+            },
+            {
+              "id": "6003041581773",
+              "name": "South America"
+            },
+            {
+              "id": "6003102988840",
+              "name": "Latin American cuisine"
+            },
+            {
+              "id": "6003107902433",
+              "name": "Association football (Soccer)"
+            },
+            {
+              "id": "6003142268166",
+              "name": "Latin dance"
+            },
+            {
+              "id": "6003175194449",
+              "name": "FIFA World Cup"
+            },
+            {
+              "id": "6003196574924",
+              "name": "Brazil"
+            },
+            {
+              "id": "6003218188776",
+              "name": "Brazil national football team"
+            },
+            {
+              "id": "6003302709853",
+              "name": "Samba"
+            },
+            {
+              "id": "6003306191253",
+              "name": "Premier League"
+            },
+            {
+              "id": "6003460935625",
+              "name": "Brazilian cuisine"
+            },
+            {
+              "id": "6013004584342",
+              "name": "Música popular brasileira"
+            },
+            {
+              "id": "6772976978537",
+              "name": "Portuguese-language TV channels"
+            }
+          ],
+          "behaviors": [
+            {
+              "id": "6019564340583",
+              "name": " Lived in Brazil (Formerly Expats - Brazil)"
+            }
+          ]
+        },
+        {
+          "interests": [
+            {
+              "id": "6003321277514",
+              "name": "Baby shower"
+            },
+            {
+              "id": "6017487438515",
+              "name": "Babyshop"
+            }
+          ],
+          "behaviors": [
+            {
+              "id": "6071631541183",
+              "name": "Engaged Shoppers"
+            }
+          ],
+          "family_statuses": [
+            {
+              "id": "6023005372383",
+              "name": "Parents (up to 12 months)"
+            }
+          ]
+        }
+      ],
+      "geo_locations": {
+        "countries": [
+          "AU"
+        ],
+        "location_types": [
+          "home",
+          "recent"
+        ]
+      },
+      "brand_safety_content_filter_levels": [
+        "FACEBOOK_RELAXED",
+        "AN_RELAXED"
+      ],
+      "targeting_automation": {
+        "advantage_audience": 0,
+        "individual_setting": {
+          "age": 1,
+          "gender": 1
+        }
+      }
+    }
+  },
+  {
+    "metaAdSetId": "120228655445220711",
+    "campaignId": "120216057846380711",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "name": "Targeting Test | Indian Audiences (AU Wide)",
+    "status": "PAUSED",
+    "budget": 5,
+    "dailyBudget": 5,
+    "audience": "cold_broad",
+    "targeting": {
+      "age_max": 65,
+      "age_min": 18,
+      "age_range": [
+        18,
+        65
+      ],
+      "flexible_spec": [
+        {
+          "interests": [
+            {
+              "id": "6003077509339",
+              "name": "Culture of India"
+            },
+            {
+              "id": "6003133351739",
+              "name": "Hindi"
+            },
+            {
+              "id": "6003157824284",
+              "name": "Bollywood movies"
+            },
+            {
+              "id": "6003179454214",
+              "name": "Telugu language"
+            },
+            {
+              "id": "6003228043699",
+              "name": "India national cricket team"
+            },
+            {
+              "id": "6003306084421",
+              "name": "Yoga"
+            },
+            {
+              "id": "6003347621074",
+              "name": "Punjabi cuisine"
+            },
+            {
+              "id": "6003468780719",
+              "name": "Tamil language"
+            },
+            {
+              "id": "6003494675627",
+              "name": "Indian cuisine"
+            },
+            {
+              "id": "6847213804871",
+              "name": "Indian Premier League teams"
+            }
+          ],
+          "behaviors": [
+            {
+              "id": "6016916298983",
+              "name": "Lived in India (Formerly Expats - India)"
+            }
+          ]
+        },
+        {
+          "interests": [
+            {
+              "id": "6003321277514",
+              "name": "Baby shower"
+            },
+            {
+              "id": "6017487438515",
+              "name": "Babyshop"
+            }
+          ],
+          "behaviors": [
+            {
+              "id": "6071631541183",
+              "name": "Engaged Shoppers"
+            }
+          ],
+          "family_statuses": [
+            {
+              "id": "6023005372383",
+              "name": "Parents (up to 12 months)"
+            }
+          ]
+        }
+      ],
+      "geo_locations": {
+        "countries": [
+          "AU"
+        ],
+        "location_types": [
+          "home",
+          "recent"
+        ]
+      },
+      "brand_safety_content_filter_levels": [
+        "FACEBOOK_RELAXED",
+        "AN_RELAXED"
+      ],
+      "targeting_automation": {
+        "advantage_audience": 0,
+        "individual_setting": {
+          "age": 1,
+          "gender": 1
+        }
+      }
+    }
+  },
+  {
+    "metaAdSetId": "120217609712350711",
+    "campaignId": "120216057846380711",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "name": "Targeting Test | Luxury Shoppers (AU Wide)",
+    "status": "PAUSED",
+    "budget": 25,
+    "dailyBudget": 25,
+    "audience": "cold_broad",
+    "targeting": {
+      "age_max": 45,
+      "age_min": 18,
+      "flexible_spec": [
+        {
+          "interests": [
+            {
+              "id": "6002893385022",
+              "name": "Luxury Watches"
+            },
+            {
+              "id": "6003011087019",
+              "name": "Luxury Travel"
+            },
+            {
+              "id": "6003132627317",
+              "name": "Luxury"
+            },
+            {
+              "id": "6003150149836",
+              "name": "Luxury Bags"
+            },
+            {
+              "id": "6003715005316",
+              "name": "Luxury yacht"
+            },
+            {
+              "id": "6003739371891",
+              "name": "Designer clothing"
+            },
+            {
+              "id": "6004048615096",
+              "name": "Luxury vehicle"
+            },
+            {
+              "id": "6007828099136",
+              "name": "Luxury goods"
+            }
+          ]
+        },
+        {
+          "interests": [
+            {
+              "id": "6003346592981",
+              "name": "Online shopping"
+            }
+          ],
+          "behaviors": [
+            {
+              "id": "6071631541183",
+              "name": "Engaged Shoppers"
+            }
+          ]
+        },
+        {
+          "interests": [
+            {
+              "id": "6003166877528",
+              "name": "New baby"
+            },
+            {
+              "id": "6003321277514",
+              "name": "Baby shower"
+            }
+          ]
+        }
+      ],
+      "geo_locations": {
+        "countries": [
+          "AU"
+        ],
+        "location_types": [
+          "home",
+          "recent"
+        ]
+      },
+      "brand_safety_content_filter_levels": [
+        "FACEBOOK_RELAXED",
+        "AN_RELAXED"
+      ],
+      "targeting_automation": {
+        "advantage_audience": 0
+      },
+      "publisher_platforms": [
+        "facebook",
+        "instagram",
+        "audience_network"
+      ],
+      "facebook_positions": [
+        "feed",
+        "biz_disco_feed",
+        "facebook_reels",
+        "facebook_reels_overlay",
+        "profile_feed",
+        "video_feeds",
+        "instream_video",
+        "marketplace",
+        "story",
+        "search"
+      ],
+      "instagram_positions": [
+        "stream",
+        "story",
+        "explore",
+        "reels",
+        "explore_home",
+        "profile_feed"
+      ],
+      "device_platforms": [
+        "mobile",
+        "desktop"
+      ],
+      "audience_network_positions": [
+        "classic",
+        "rewarded_video"
+      ]
+    }
+  },
+  {
+    "metaAdSetId": "120217608287840711",
+    "campaignId": "120216057846380711",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "name": "Targeting Test | Wedding Content (AU Wide)",
+    "status": "PAUSED",
+    "budget": 1.55,
+    "dailyBudget": 1.55,
+    "audience": "cold_broad",
+    "targeting": {
+      "age_max": 45,
+      "age_min": 18,
+      "flexible_spec": [
+        {
+          "interests": [
+            {
+              "id": "6002884645822",
+              "name": "Wedding cake"
+            },
+            {
+              "id": "6003028599807",
+              "name": "Bride"
+            },
+            {
+              "id": "6003029412207",
+              "name": "Wedding reception"
+            },
+            {
+              "id": "6003069898229",
+              "name": "Wedding planning"
+            },
+            {
+              "id": "6003259559557",
+              "name": "Wedding videography"
+            },
+            {
+              "id": "6003349071605",
+              "name": "Wedding photography"
+            },
+            {
+              "id": "6003360603580",
+              "name": "Engagement"
+            },
+            {
+              "id": "6003402319418",
+              "name": "Wedding dress"
+            },
+            {
+              "id": "6003409392877",
+              "name": "Weddings"
+            },
+            {
+              "id": "6003494619027",
+              "name": "Wedding ring"
+            },
+            {
+              "id": "6014738374811",
+              "name": "Bride and Groom"
+            },
+            {
+              "id": "6774858830325",
+              "name": "Wedding websites and blogs"
+            },
+            {
+              "id": "6836096590166",
+              "name": "Bridal shop"
+            }
+          ],
+          "relationship_statuses": [
+            4
+          ]
+        }
+      ],
+      "geo_locations": {
+        "countries": [
+          "AU"
+        ],
+        "location_types": [
+          "home",
+          "recent"
+        ]
+      },
+      "brand_safety_content_filter_levels": [
+        "FACEBOOK_RELAXED",
+        "AN_RELAXED"
+      ],
+      "targeting_automation": {
+        "advantage_audience": 0
+      },
+      "publisher_platforms": [
+        "facebook",
+        "instagram",
+        "audience_network"
+      ],
+      "facebook_positions": [
+        "feed",
+        "biz_disco_feed",
+        "facebook_reels",
+        "facebook_reels_overlay",
+        "profile_feed",
+        "video_feeds",
+        "instream_video",
+        "marketplace",
+        "story",
+        "search"
+      ],
+      "instagram_positions": [
+        "stream",
+        "story",
+        "explore",
+        "reels",
+        "explore_home",
+        "profile_feed"
+      ],
+      "device_platforms": [
+        "mobile",
+        "desktop"
+      ],
+      "audience_network_positions": [
+        "classic",
+        "rewarded_video"
+      ]
+    }
+  },
+  {
+    "metaAdSetId": "120216057846540711",
+    "campaignId": "120216057846380711",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "name": "R6 | GRI | Parents & Baby Interest Group | AU | Mixed | ROAS",
+    "status": "ACTIVE",
+    "budget": 20,
+    "dailyBudget": 20,
+    "audience": "cold_broad",
+    "targeting": {
+      "age_max": 65,
+      "age_min": 18,
+      "flexible_spec": [
+        {
+          "interests": [
+            {
+              "id": "6003092932417",
+              "name": "Event management"
+            },
+            {
+              "id": "6003107607142",
+              "name": "Parenthood"
+            },
+            {
+              "id": "6003174968634",
+              "name": "Newlywed"
+            },
+            {
+              "id": "6003268182136",
+              "name": "TV reality shows"
+            },
+            {
+              "id": "6003346592981",
+              "name": "Online shopping"
+            },
+            {
+              "id": "6003347574074",
+              "name": "Portrait photography"
+            },
+            {
+              "id": "6003476182657",
+              "name": "Family"
+            },
+            {
+              "id": "6870914321430",
+              "name": "Baby equipment"
+            }
+          ],
+          "family_statuses": [
+            {
+              "id": "6002714398372",
+              "name": "Parents (All)"
+            }
+          ]
+        },
+        {
+          "interests": [
+            {
+              "id": "6003166877528",
+              "name": "New baby"
+            },
+            {
+              "id": "6003321277514",
+              "name": "Baby shower"
+            },
+            {
+              "id": "6017487438515",
+              "name": "Babyshop"
+            }
+          ]
+        }
+      ],
+      "geo_locations": {
+        "countries": [
+          "AU"
+        ],
+        "location_types": [
+          "home",
+          "recent"
+        ]
+      },
+      "brand_safety_content_filter_levels": [
+        "FACEBOOK_STANDARD",
+        "AN_STANDARD"
+      ],
+      "targeting_relaxation_types": {
+        "lookalike": 0,
+        "custom_audience": 0
+      },
+      "targeting_automation": {
+        "advantage_audience": 0,
+        "individual_setting": {
+          "geo": 0
+        }
+      },
+      "publisher_platforms": [
+        "facebook",
+        "instagram"
+      ],
+      "facebook_positions": [
+        "feed",
+        "biz_disco_feed",
+        "facebook_reels",
+        "facebook_reels_overlay",
+        "profile_feed",
+        "video_feeds",
+        "instream_video",
+        "story",
+        "search"
+      ],
+      "instagram_positions": [
+        "stream",
+        "story",
+        "explore",
+        "reels",
+        "explore_home",
+        "profile_feed"
+      ],
+      "device_platforms": [
+        "mobile",
+        "desktop"
+      ]
+    }
+  },
+  {
+    "metaAdSetId": "120233058233080711",
+    "campaignId": "120211361720620711",
+    "campaignName": "GRI  - AUS Wide [Lookalike Targeting]",
+    "name": "R6 | Lookalike Purchases (2%) | Excl Bris & GC",
+    "status": "ACTIVE",
+    "budget": 0,
+    "dailyBudget": 0,
+    "audience": "lookalike",
+    "targeting": {
+      "age_max": 65,
+      "age_min": 18,
+      "custom_audiences": [
+        {
+          "id": "120232822855410711",
+          "name": "Lookalike (2%) - Gender Reveal Ideas Pixel - Website using Purchase"
+        }
+      ],
+      "excluded_geo_locations": {
+        "cities": [
+          {
+            "country": "AU",
+            "distance_unit": "kilometer",
+            "key": "107683",
+            "name": "Brisbane",
+            "radius": 40,
+            "region": "Queensland",
+            "region_id": "133"
+          },
+          {
+            "country": "AU",
+            "distance_unit": "kilometer",
+            "key": "110074",
+            "name": "Gold Coast",
+            "radius": 40,
+            "region": "Queensland",
+            "region_id": "133"
+          }
+        ],
+        "location_types": [
+          "home",
+          "recent"
+        ]
+      },
+      "geo_locations": {
+        "countries": [
+          "AU"
+        ],
+        "location_types": [
+          "home",
+          "recent"
+        ]
+      },
+      "brand_safety_content_filter_levels": [
+        "FACEBOOK_STANDARD",
+        "AN_STANDARD"
+      ],
+      "targeting_relaxation_types": {
+        "lookalike": 0,
+        "custom_audience": 0
+      },
+      "targeting_automation": {
+        "advantage_audience": 0,
+        "individual_setting": {
+          "geo": 0
+        }
+      },
+      "publisher_platforms": [
+        "facebook",
+        "instagram"
+      ],
+      "facebook_positions": [
+        "feed",
+        "biz_disco_feed",
+        "facebook_reels",
+        "facebook_reels_overlay",
+        "profile_feed",
+        "instream_video",
+        "story",
+        "search"
+      ],
+      "instagram_positions": [
+        "stream",
+        "story",
+        "reels",
+        "explore_home",
+        "profile_feed"
+      ],
+      "device_platforms": [
+        "mobile",
+        "desktop"
+      ]
+    }
+  },
+  {
+    "metaAdSetId": "120224271806980711",
+    "campaignId": "120211361720620711",
+    "campaignName": "GRI  - AUS Wide [Lookalike Targeting]",
+    "name": "(D) Test - Lookalike Purchasers Last 90 Days (8%)",
+    "status": "PAUSED",
+    "budget": 0,
+    "dailyBudget": 0,
+    "audience": "lookalike",
+    "targeting": {
+      "age_max": 65,
+      "age_min": 18,
+      "custom_audiences": [
+        {
+          "id": "120216968438510711",
+          "name": "Lookalike (AU, 8%) - Purchasers Last 90 Days"
+        }
+      ],
+      "geo_locations": {
+        "countries": [
+          "AU"
+        ],
+        "location_types": [
+          "home",
+          "recent"
+        ]
+      },
+      "brand_safety_content_filter_levels": [
+        "FACEBOOK_STANDARD",
+        "AN_STANDARD"
+      ],
+      "targeting_relaxation_types": {
+        "lookalike": 0,
+        "custom_audience": 0
+      },
+      "targeting_automation": {
+        "advantage_audience": 0,
+        "individual_setting": {
+          "geo": 0
+        }
+      },
+      "publisher_platforms": [
+        "facebook",
+        "instagram",
+        "audience_network"
+      ],
+      "facebook_positions": [
+        "feed",
+        "biz_disco_feed",
+        "facebook_reels",
+        "facebook_reels_overlay",
+        "profile_feed",
+        "video_feeds",
+        "instream_video",
+        "marketplace",
+        "story",
+        "search"
+      ],
+      "instagram_positions": [
+        "stream",
+        "story",
+        "explore",
+        "reels",
+        "explore_home",
+        "profile_feed"
+      ],
+      "device_platforms": [
+        "mobile",
+        "desktop"
+      ],
+      "audience_network_positions": [
+        "classic",
+        "rewarded_video"
+      ]
+    }
+  },
+  {
+    "metaAdSetId": "120224271544690711",
+    "campaignId": "120211361720620711",
+    "campaignName": "GRI  - AUS Wide [Lookalike Targeting]",
+    "name": "(C) Test - Lookalike Purchasers Last 90 Days (8%)",
+    "status": "PAUSED",
+    "budget": 0,
+    "dailyBudget": 0,
+    "audience": "lookalike",
+    "targeting": {
+      "age_max": 65,
+      "age_min": 18,
+      "custom_audiences": [
+        {
+          "id": "120216968438510711",
+          "name": "Lookalike (AU, 8%) - Purchasers Last 90 Days"
+        }
+      ],
+      "geo_locations": {
+        "countries": [
+          "AU"
+        ],
+        "location_types": [
+          "home",
+          "recent"
+        ]
+      },
+      "brand_safety_content_filter_levels": [
+        "FACEBOOK_STANDARD",
+        "AN_STANDARD"
+      ],
+      "targeting_relaxation_types": {
+        "lookalike": 0,
+        "custom_audience": 0
+      },
+      "targeting_automation": {
+        "advantage_audience": 0,
+        "individual_setting": {
+          "geo": 0
+        }
+      },
+      "publisher_platforms": [
+        "facebook",
+        "instagram",
+        "audience_network"
+      ],
+      "facebook_positions": [
+        "feed",
+        "biz_disco_feed",
+        "facebook_reels",
+        "facebook_reels_overlay",
+        "profile_feed",
+        "video_feeds",
+        "instream_video",
+        "marketplace",
+        "story",
+        "search"
+      ],
+      "instagram_positions": [
+        "stream",
+        "story",
+        "explore",
+        "reels",
+        "explore_home",
+        "profile_feed"
+      ],
+      "device_platforms": [
+        "mobile",
+        "desktop"
+      ],
+      "audience_network_positions": [
+        "classic",
+        "rewarded_video"
+      ]
+    }
+  },
+  {
+    "metaAdSetId": "120221380304870711",
+    "campaignId": "120211361720620711",
+    "campaignName": "GRI  - AUS Wide [Lookalike Targeting]",
+    "name": "(A) Test - Lookalike Purchasers Last 90 Days (8%)",
+    "status": "PAUSED",
+    "budget": 0,
+    "dailyBudget": 0,
+    "audience": "lookalike",
+    "targeting": {
+      "age_max": 65,
+      "age_min": 18,
+      "custom_audiences": [
+        {
+          "id": "120216968438510711",
+          "name": "Lookalike (AU, 8%) - Purchasers Last 90 Days"
+        }
+      ],
+      "geo_locations": {
+        "countries": [
+          "AU"
+        ],
+        "location_types": [
+          "home",
+          "recent"
+        ]
+      },
+      "brand_safety_content_filter_levels": [
+        "FACEBOOK_STANDARD",
+        "AN_STANDARD"
+      ],
+      "targeting_relaxation_types": {
+        "lookalike": 0,
+        "custom_audience": 0
+      },
+      "targeting_automation": {
+        "advantage_audience": 0,
+        "individual_setting": {
+          "geo": 0
+        }
+      },
+      "publisher_platforms": [
+        "facebook",
+        "instagram",
+        "audience_network"
+      ],
+      "facebook_positions": [
+        "feed",
+        "biz_disco_feed",
+        "facebook_reels",
+        "facebook_reels_overlay",
+        "profile_feed",
+        "video_feeds",
+        "instream_video",
+        "marketplace",
+        "story",
+        "search"
+      ],
+      "instagram_positions": [
+        "stream",
+        "story",
+        "explore",
+        "reels",
+        "explore_home",
+        "profile_feed"
+      ],
+      "device_platforms": [
+        "mobile",
+        "desktop"
+      ],
+      "audience_network_positions": [
+        "classic",
+        "rewarded_video"
+      ]
+    }
+  },
+  {
+    "metaAdSetId": "120221371875830711",
+    "campaignId": "120211361720620711",
+    "campaignName": "GRI  - AUS Wide [Lookalike Targeting]",
+    "name": "(B) Test - Lookalike Purchasers Last 90 Days (8%)",
+    "status": "PAUSED",
+    "budget": 0,
+    "dailyBudget": 0,
+    "audience": "lookalike",
+    "targeting": {
+      "age_max": 65,
+      "age_min": 18,
+      "custom_audiences": [
+        {
+          "id": "120216968438510711",
+          "name": "Lookalike (AU, 8%) - Purchasers Last 90 Days"
+        }
+      ],
+      "geo_locations": {
+        "countries": [
+          "AU"
+        ],
+        "location_types": [
+          "home",
+          "recent"
+        ]
+      },
+      "brand_safety_content_filter_levels": [
+        "FACEBOOK_STANDARD",
+        "AN_STANDARD"
+      ],
+      "targeting_relaxation_types": {
+        "lookalike": 0,
+        "custom_audience": 0
+      },
+      "targeting_automation": {
+        "advantage_audience": 0,
+        "individual_setting": {
+          "geo": 0
+        }
+      },
+      "publisher_platforms": [
+        "facebook",
+        "instagram",
+        "audience_network"
+      ],
+      "facebook_positions": [
+        "feed",
+        "biz_disco_feed",
+        "facebook_reels",
+        "facebook_reels_overlay",
+        "profile_feed",
+        "video_feeds",
+        "instream_video",
+        "marketplace",
+        "story",
+        "search"
+      ],
+      "instagram_positions": [
+        "stream",
+        "story",
+        "explore",
+        "reels",
+        "explore_home",
+        "profile_feed"
+      ],
+      "device_platforms": [
+        "mobile",
+        "desktop"
+      ],
+      "audience_network_positions": [
+        "classic",
+        "rewarded_video"
+      ]
+    }
+  },
+  {
+    "metaAdSetId": "120216968427670711",
+    "campaignId": "120211361720620711",
+    "campaignName": "GRI  - AUS Wide [Lookalike Targeting]",
+    "name": "Lookalike Purchasers Last 90 Days (8%)",
+    "status": "ACTIVE",
+    "budget": 0,
+    "dailyBudget": 0,
+    "audience": "lookalike",
+    "targeting": {
+      "age_max": 65,
+      "age_min": 18,
+      "custom_audiences": [
+        {
+          "id": "120216968438510711",
+          "name": "Lookalike (AU, 8%) - Purchasers Last 90 Days"
+        }
+      ],
+      "geo_locations": {
+        "countries": [
+          "AU"
+        ],
+        "location_types": [
+          "home",
+          "recent"
+        ]
+      },
+      "brand_safety_content_filter_levels": [
+        "FACEBOOK_STANDARD",
+        "AN_STANDARD"
+      ],
+      "targeting_relaxation_types": {
+        "lookalike": 1,
+        "custom_audience": 0
+      },
+      "targeting_automation": {
+        "advantage_audience": 0,
+        "individual_setting": {
+          "geo": 0
+        }
+      },
+      "publisher_platforms": [
+        "facebook",
+        "instagram"
+      ],
+      "facebook_positions": [
+        "feed",
+        "biz_disco_feed",
+        "facebook_reels",
+        "facebook_reels_overlay",
+        "profile_feed",
+        "video_feeds",
+        "instream_video",
+        "story",
+        "search"
+      ],
+      "instagram_positions": [
+        "stream",
+        "story",
+        "explore",
+        "reels",
+        "explore_home",
+        "profile_feed"
+      ],
+      "device_platforms": [
+        "mobile",
+        "desktop"
+      ]
+    }
+  },
+  {
+    "metaAdSetId": "120211361720610711",
+    "campaignId": "120211361720620711",
+    "campaignName": "GRI  - AUS Wide [Lookalike Targeting]",
+    "name": "Lookalike Web Visitors Last 30 Days (8%)",
+    "status": "PAUSED",
+    "budget": 0,
+    "dailyBudget": 0,
+    "audience": "lookalike",
+    "targeting": {
+      "age_max": 65,
+      "age_min": 18,
+      "custom_audiences": [
+        {
+          "id": "120211361728740711",
+          "name": "Lookalike (AU, 8%) - All Web Visitors Last 30 Days"
+        }
+      ],
+      "geo_locations": {
+        "countries": [
+          "AU"
+        ],
+        "location_types": [
+          "home",
+          "recent"
+        ]
+      },
+      "brand_safety_content_filter_levels": [
+        "FACEBOOK_STANDARD",
+        "AN_STANDARD"
+      ],
+      "targeting_relaxation_types": {
+        "lookalike": 0,
+        "custom_audience": 0
+      },
+      "targeting_automation": {
+        "advantage_audience": 0,
+        "individual_setting": {
+          "geo": 0
+        }
+      },
+      "publisher_platforms": [
+        "facebook",
+        "instagram",
+        "audience_network"
+      ],
+      "facebook_positions": [
+        "feed",
+        "biz_disco_feed",
+        "facebook_reels",
+        "facebook_reels_overlay",
+        "profile_feed",
+        "video_feeds",
+        "instream_video",
+        "marketplace",
+        "story",
+        "search"
+      ],
+      "instagram_positions": [
+        "stream",
+        "story",
+        "explore",
+        "reels",
+        "explore_home",
+        "profile_feed"
+      ],
+      "device_platforms": [
+        "mobile",
+        "desktop"
+      ],
+      "audience_network_positions": [
+        "classic",
+        "rewarded_video"
+      ]
+    }
+  }
+]

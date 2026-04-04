@@ -176,8 +176,15 @@ router.post('/upload', upload.single('video'), (req, res) => {
 router.get('/download/:filename', (req, res) => {
   const filename = req.params.filename.replace(/[^a-zA-Z0-9._-]/g, '')
   const filePath = join(VIDEO_DIR, filename)
-  if (!existsSync(filePath)) return res.status(404).json({ error: 'File not found' })
-  res.download(filePath, filename)
+  // Also check public/calendar-videos fallback
+  const fallbackPath = join(process.cwd(), 'public', 'calendar-videos', filename)
+  if (existsSync(filePath)) {
+    return res.download(filePath, filename)
+  }
+  if (existsSync(fallbackPath)) {
+    return res.download(fallbackPath, filename)
+  }
+  res.status(404).json({ error: 'File not found', checked: [VIDEO_DIR, join(process.cwd(), 'public', 'calendar-videos')] })
 })
 
 // Delete video
