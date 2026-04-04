@@ -5,14 +5,19 @@
  */
 
 export const GRI_ADS = {
-  aov: 105,
-  grossMarginPct: 0.45,
-  grossProfitPerOrder: 47.25,
-  breakevenCPP: 47.25,
-  profitableCPP: 38.00,
-  targetMER: 3.0,
-  scaleMER: 5.0,
-  breakevenROAS: 2.22,
+  aov: 126.86,
+  grossMarginPct: 0.272,
+  grossProfitPerOrder: 34.52,
+  ncac: 34.52,
+  mediaNcac: 29.29,
+  breakevenCPP: 34.52,
+  profitableCPP: 29.29,
+  targetMER: 4.0,
+  scaleMER: 6.0,
+  breakevenROAS: 3.67,
+  dailyMetaSpend: 210,
+  dailyGoogleSpend: 200,
+  monthlyAgency: 2200,
 }
 
 /**

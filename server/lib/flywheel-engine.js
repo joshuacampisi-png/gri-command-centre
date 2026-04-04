@@ -51,8 +51,8 @@ export const FLYWHEEL = {
   META_SYNC_INTERVAL_HOURS: 6,
 
   // GRI business metrics
-  GROSS_MARGIN_PCT: 0.45,
-  CURRENT_AOV: 105,
+  GROSS_MARGIN_PCT: 0.272,
+  CURRENT_AOV: 126.86,
 }
 
 // ── Product Categorisation ──────────────────────────────────────────────────

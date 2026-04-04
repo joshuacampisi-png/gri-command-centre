@@ -7,14 +7,19 @@ import {
 // ── Business Constants ──────────────────────────────────────────────────────
 
 const GRI = {
-  aov: 105,
-  grossMargin: 0.30,
-  grossProfit: 31.50,
-  breakevenCPP: 31.50,
-  targetCPP: 26.00,
-  breakevenROAS: 3.33,
+  aov: 126.86,
+  grossMargin: 0.272,
+  grossProfit: 34.52,
+  ncac: 34.52,
+  mediaNcac: 29.29,
+  breakevenCPP: 34.52,
+  targetCPP: 29.29,
+  breakevenROAS: 3.67,
   targetMER: 4.0,
   scaleMER: 6.0,
+  dailyMetaSpend: 210,
+  dailyGoogleSpend: 200,
+  monthlyAgency: 2200,
 }
 
 const API = '/api/ads'
@@ -228,10 +233,10 @@ function BudgetEditor({ currentBudget, entityId, entityType, onSave, onCancel })
 function MetricDefinitions({ onClose }) {
   const definitions = [
     { term: 'MER (Marketing Efficiency Ratio)', desc: 'Total Shopify revenue divided by total ad spend across all channels. Unlike Meta ROAS, MER captures the true blended return including organic uplift from ads. Target: 4.0x+ for GRI.' },
-    { term: 'True CAC (Customer Acquisition Cost)', desc: 'Total ad spend divided by total Shopify orders. This is the real cost to acquire each customer, not the inflated Meta-reported figure. Target: under $26.00.' },
+    { term: 'nCAC (New Customer Acquisition Cost)', desc: 'Total marketing spend (Meta + Google + agency) divided by new Shopify customers. Baseline: $34.52 fully loaded, $29.29 media only. If nCAC exceeds $34.52, you are losing money on acquisition. 94% of GRI customers are first-time buyers.' },
     { term: 'AMER (Advertising Margin Efficiency Ratio)', desc: 'Percentage of ad spend recovered as gross profit: ((Orders x Gross Profit) - Ad Spend) / Ad Spend x 100. Above 0% means ads are profitable. Target: 50%+.' },
-    { term: 'CPP (Cost Per Purchase)', desc: 'Ad spend divided by number of purchases for a specific campaign or ad. Breakeven is $31.50 (matches gross profit per order). Target: under $26.00.' },
-    { term: 'True Contribution', desc: 'Net profit contribution of a campaign: (Purchases x $31.50 gross profit) minus total spend. Positive means the campaign is profitable.' },
+    { term: 'CPP (Cost Per Purchase)', desc: 'Ad spend divided by number of purchases for a specific campaign or ad. Breakeven is $34.52 (matches nCAC baseline). Target: under $29.29 (media nCAC). Meta overcounts by ~3x so cross-reference with Shopify.' },
+    { term: 'True Contribution', desc: 'Net profit contribution of a campaign: (Purchases x $34.52 gross profit) minus total spend. Positive means the campaign is profitable.' },
     { term: 'Learning Limited', desc: 'Meta ad set status meaning the ad set is not getting enough conversions (typically < 50/week) to optimise effectively. Needs higher budget or broader targeting.' },
     { term: 'Frequency', desc: 'Average number of times each person has seen your ad. Above 2.5 often signals creative fatigue - audience has seen it too many times.' },
     { term: 'Meta ROAS', desc: 'Return on ad spend as reported by Meta. Often inflated due to attribution modelling. Shown greyed out as a reference only - use MER for real decisions.' },
@@ -375,16 +380,16 @@ function TruthMetrics({ truth, loading }) {
         <div className="ads-dark-truth-target">Target: {GRI.targetMER}x</div>
       </div>
 
-      {/* True CAC */}
+      {/* nCAC */}
       <div className="ads-dark-truth-card">
-        <div className="ads-dark-truth-label">True CAC</div>
+        <div className="ads-dark-truth-label">nCAC</div>
         <div className="ads-dark-truth-value" style={{ color: cacColour(trueCac) }}>
           {trueCac != null ? fmtCurrency(trueCac) : '--'}
         </div>
         <div className="ads-dark-truth-sub">
-          {trueCac < GRI.targetCPP ? 'Below target' : trueCac <= GRI.breakevenCPP ? 'Approaching limit' : 'Above breakeven'}
+          {trueCac < GRI.targetCPP ? 'Below media nCAC' : trueCac <= GRI.breakevenCPP ? 'At baseline' : 'Above breakeven'}
         </div>
-        <div className="ads-dark-truth-target">Target: &lt;{fmtCurrency(GRI.targetCPP)}</div>
+        <div className="ads-dark-truth-target">Breakeven: {fmtCurrency(GRI.ncac)} | Media: {fmtCurrency(GRI.mediaNcac)}</div>
       </div>
 
       {/* AMER */}
