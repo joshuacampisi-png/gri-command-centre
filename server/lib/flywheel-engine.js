@@ -45,13 +45,13 @@ export const FLYWHEEL = {
   ROAS_TARGET_COLD: 3.0,
   ROAS_TARGET_RETARGETING: 5.0,
   ROAS_TARGET_ASC: 3.5,
-  ROAS_TARGET_BLENDED: 2.22, // breakeven at 45% margin
+  ROAS_TARGET_BLENDED: 2.50, // breakeven at 40% margin
 
   // Meta API rate safety
   META_SYNC_INTERVAL_HOURS: 6,
 
   // GRI business metrics
-  GROSS_MARGIN_PCT: 0.272,
+  GROSS_MARGIN_PCT: 0.40,
   CURRENT_AOV: 126.86,
 }
 

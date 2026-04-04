@@ -15,7 +15,7 @@ const C = {
 }
 
 const API = '/api/flywheel'
-const GRI_ADS_FE = { profitableCPP: 38, breakevenCPP: 47.25, grossMarginPct: 0.45 }
+const GRI_ADS_FE = { profitableCPP: 43.13, breakevenCPP: 50.74, grossMarginPct: 0.40 }
 const RANGES = [
   { key: 'today', label: 'Today (Live)' },
   { key: '7d', label: '7 Days' },
@@ -444,10 +444,10 @@ export function AdsFlywheelTab() {
 
       {/* ── Key Metrics Row ───────────────────────────────────────────────── */}
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : isTablet ? 'repeat(3, 1fr)' : 'repeat(6, 1fr)', gap: 10, marginBottom: 10 }}>
-        <HeroCard label="nCAC" value={h.ncac != null ? fmt$(h.ncac) : '--'} sub={h.newCustomerCount ? `${h.newCustomerCount} new customers` : 'No customer data'} color={h.ncac != null ? (h.ncac <= 34.52 ? C.green : h.ncac <= 47.25 ? C.yellow : C.red) : C.muted} />
-        <HeroCard label="MER" value={fmtX(h.mer)} sub="Target: 3.0x" color={h.mer >= 3.0 ? C.green : h.mer >= 2.22 ? C.yellow : C.red} />
-        <HeroCard label="Meta ROAS" value={fmtX(h.roas)} sub="Channel proxy only" color={h.roas >= 2.22 ? C.green : C.red} icon={<MetaLogo />} />
-        <HeroCard label="CPA" value={fmt$(h.cpa)} sub="All orders (not nCAC)" color={h.cpa <= 38 ? C.green : h.cpa <= 47.25 ? C.yellow : C.red} />
+        <HeroCard label="nCAC" value={h.ncac != null ? fmt$(h.ncac) : '--'} sub={h.newCustomerCount ? `${h.newCustomerCount} new customers` : 'No customer data'} color={h.ncac != null ? (h.ncac <= 50.74 ? C.green : h.ncac <= 65 ? C.yellow : C.red) : C.muted} />
+        <HeroCard label="MER" value={fmtX(h.mer)} sub="Target: 3.0x" color={h.mer >= 3.0 ? C.green : h.mer >= 2.50 ? C.yellow : C.red} />
+        <HeroCard label="Meta ROAS" value={fmtX(h.roas)} sub="Channel proxy only" color={h.roas >= 2.50 ? C.green : C.red} icon={<MetaLogo />} />
+        <HeroCard label="CPA" value={fmt$(h.cpa)} sub="All orders (not nCAC)" color={h.cpa <= 43.13 ? C.green : h.cpa <= 50.74 ? C.yellow : C.red} />
         <HeroCard label="AOV" value={fmt$(h.aov)} sub="Target: $160" color={h.aov >= 160 ? C.green : h.aov >= 100 ? C.yellow : C.red} />
         <HeroCard label="Gross Profit" value={fmt$(h.profit)} sub="After all ad spend" color={h.profit > 0 ? C.green : C.red} />
       </div>
@@ -457,6 +457,40 @@ export function AdsFlywheelTab() {
         <HeroCard label="AMER" value={h.amer != null ? h.amer.toFixed(0) + '%' : '--'} sub="Ad margin efficiency" color={h.amer > 0 ? C.green : C.red} />
         <HeroCard label="Bundle Rate" value={fmtPct(d?.aov?.bundleRate)} sub="Target: 30%+" color={(d?.aov?.bundleRate || 0) >= 30 ? C.green : C.yellow} />
         <HeroCard label="Orders Today" value={range === 'today' ? (h.shopifyOrders || 0) : '--'} sub="From Shopify" color={C.text} />
+      </div>
+
+      {/* ── nCAC Framework Metrics ──────────────────────────────────────────── */}
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: C.muted, textTransform: 'uppercase' }}>nCAC Framework</span>
+          <span style={{ flex: 1, height: 1, background: C.border }} />
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 10 }}>
+          <HeroCard
+            label="CM$"
+            value={h.cm != null ? fmt$(h.cm) : '--'}
+            sub="Layer 1 scoreboard"
+            color={h.cm != null ? (h.cm > 0 ? C.green : C.red) : C.muted}
+          />
+          <HeroCard
+            label="FOV/CAC"
+            value={h.fovCac != null ? fmtX(h.fovCac) : '--'}
+            sub="First-order profit vs cost"
+            color={h.fovCac != null ? (h.fovCac >= 3.0 ? C.green : h.fovCac >= 1.0 ? C.yellow : C.red) : C.muted}
+          />
+          <HeroCard
+            label="aMER"
+            value={h.acquisitionMer != null ? fmtX(h.acquisitionMer) : '--'}
+            sub="New customer efficiency"
+            color={h.acquisitionMer != null ? (h.acquisitionMer >= 5.0 ? C.green : h.acquisitionMer >= 2.0 ? C.yellow : C.red) : C.muted}
+          />
+          <HeroCard
+            label="New Cust/Day"
+            value={h.newCustomersPerDay != null ? h.newCustomersPerDay.toFixed(1) : '--'}
+            sub="Growth velocity"
+            color={h.newCustomersPerDay != null ? (h.newCustomersPerDay >= 5 ? C.green : h.newCustomersPerDay >= 2 ? C.yellow : C.red) : C.muted}
+          />
+        </div>
       </div>
 
       {/* ── Scale Result Toast ─────────────────────────────────────────────── */}
@@ -527,7 +561,7 @@ export function AdsFlywheelTab() {
                       <td style={td}>{fmt$(c.dailyBudget || c.budget)}</td>
                       <td style={td}>{fmt$(m.spend)}</td>
                       <td style={td}>{m.purchases || 0}</td>
-                      <td style={{ ...td, color: m.cpa <= 38 ? C.green : m.cpa <= 47.25 ? C.yellow : C.red }}>{m.cpa > 0 ? fmt$(m.cpa) : '--'}</td>
+                      <td style={{ ...td, color: m.cpa <= 43.13 ? C.green : m.cpa <= 50.74 ? C.yellow : C.red }}>{m.cpa > 0 ? fmt$(m.cpa) : '--'}</td>
                       <td style={{ ...td, color: m.frequency > 5 ? C.red : m.frequency > 3.5 ? C.yellow : C.text }}>{m.frequency?.toFixed(1) || '--'}</td>
                       <td style={td}>{c.health?.score || '--'}</td>
                       <td style={td}><span style={badge(statusColor[c.health?.status] || C.muted)}>{c.health?.status || '?'}</span></td>
@@ -649,7 +683,7 @@ export function AdsFlywheelTab() {
                     <td style={{ ...td, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={cr.name}>{cr.name}</td>
                     <td style={td}><span style={badge(C.purple)}>{cr.creativeAngle}</span></td>
                     <td style={{ ...td, fontWeight: 600, color: cr.roas7d >= 2.22 ? C.green : cr.roas7d > 0 ? C.red : C.muted }}>{cr.roas7d > 0 ? fmtX(cr.roas7d) : '--'}</td>
-                    <td style={{ ...td, color: cr.cpa7d > 0 && cr.cpa7d <= 38 ? C.green : cr.cpa7d > 47.25 ? C.red : C.text }}>{cr.cpa7d > 0 ? fmt$(cr.cpa7d) : '--'}</td>
+                    <td style={{ ...td, color: cr.cpa7d > 0 && cr.cpa7d <= 43.13 ? C.green : cr.cpa7d > 50.74 ? C.red : C.text }}>{cr.cpa7d > 0 ? fmt$(cr.cpa7d) : '--'}</td>
                     <td style={td}>{fmt$(cr.spend)}</td>
                     <td style={td}>{cr.purchases}</td>
                     <td style={{ ...td, color: cr.frequency > 5 ? C.red : cr.frequency > 3.5 ? C.yellow : C.text }}>{cr.frequency}</td>
@@ -1023,7 +1057,7 @@ function ScaleButton({ entityId, entityName, currentBudget, roas, onScale, scali
   if (!show) return <button onClick={e => { e.stopPropagation(); setShow(true) }} style={{ ...btnStyle(C.green), minHeight: isMobile ? 44 : 'auto' }}>Scale</button>
   const extra = (currentBudget || 0) * (pct / 100)
   const expectedRev = extra * (roas || 3)
-  const expectedProfit = (expectedRev * 0.45) - extra
+  const expectedProfit = (expectedRev * 0.40) - extra
   return (
     <div style={{ background: C.bg, borderRadius: 6, padding: 8, minWidth: isMobile ? 180 : 220 }}>
       <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginBottom: 4 }}>
@@ -1041,7 +1075,7 @@ function ScaleInline({ target, onScale, onCancel, scaling, isMobile }) {
   const [pct, setPct] = useState(15)
   const extra = (target.budget || 0) * (pct / 100)
   const expectedRev = extra * (target.roas || 3)
-  const expectedProfit = (expectedRev * 0.45) - extra
+  const expectedProfit = (expectedRev * 0.40) - extra
   return (
     <div style={{ background: C.bg, borderRadius: 6, padding: 6, minWidth: isMobile ? 160 : 200 }}>
       <div style={{ display: 'flex', gap: 3, alignItems: 'center', marginBottom: 3 }}>

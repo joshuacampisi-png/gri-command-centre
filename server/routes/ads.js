@@ -1047,8 +1047,8 @@ router.post('/recommendation', async (req, res) => {
     const prompt = `You are the world's most successful DTC e-commerce operator. Think like a billionaire — ruthless about data, zero tolerance for wasted spend.
 
 BRAND: Gender Reveal Ideas (genderrevealideas.com.au)
-BUSINESS MODEL: One-time purchase (94% new customers), AOV $${shopifyAov} AUD, 27.2% gross margin
-nCAC Baseline: $34.52 (fully loaded) | Media nCAC: $29.29 | Breakeven ROAS: 3.67x | Target MER: 4x+
+BUSINESS MODEL: One-time purchase (94% new customers), AOV $${shopifyAov} AUD, 40% gross margin
+nCAC Baseline: $50.74 (fully loaded) | Media nCAC: $43.13 | Breakeven ROAS: 2.50x | Target MER: 4x+
 Monthly spend: Meta $6,300 + Google $6,000 + Agency $2,200 = $14,500
 IMPORTANT: Meta overcounts conversions by ~3x. Cross-reference with Shopify orders for truth.
 
@@ -1059,7 +1059,7 @@ SHOPIFY DATA: Revenue $${shopifyRev.toFixed(2)}, Orders ${shopifyOrders}, AOV $$
 DATE RANGE: ${dateRange || '7d'}
 
 Give verdict, reasoning, and specific action. No hedging. Reference specific numbers.
-If CPP > $34.52 on > $300 spend, flag as above nCAC breakeven.
+If CPP > $50.74 on > $300 spend, flag as above nCAC breakeven.
 If CPP > $50, recommend pausing immediately.
 If frequency > 4, flag creative fatigue.
 
@@ -1147,8 +1147,8 @@ router.post('/account-recommendation', async (req, res) => {
     const prompt = `You are the world's most successful DTC e-commerce operator. Think like a billionaire — ruthless about data, zero tolerance for wasted spend.
 
 BRAND: Gender Reveal Ideas (genderrevealideas.com.au)
-BUSINESS MODEL: One-time purchase (94% new customers), AOV $126.86 AUD, 27.2% gross margin
-nCAC Baseline: $34.52 (fully loaded) | Media nCAC: $29.29 | Breakeven ROAS: 3.67x | Target MER: 4x+
+BUSINESS MODEL: One-time purchase (94% new customers), AOV $126.86 AUD, 40% gross margin
+nCAC Baseline: $50.74 (fully loaded) | Media nCAC: $43.13 | Breakeven ROAS: 2.50x | Target MER: 4x+
 IMPORTANT: Meta overcounts conversions by ~3x. Always cross-reference with Shopify.
 
 LAST 7 DAYS ACCOUNT SUMMARY:

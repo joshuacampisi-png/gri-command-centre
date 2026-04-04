@@ -23,7 +23,7 @@ import {
   updateAdSetBudget, updateCampaignBudget, fetchAdsetsForCampaign, fetchAccountInsights
 } from '../lib/meta-api.js'
 import { getShopifyTodayOrders, getShopifyOrdersRange } from '../connectors/shopify.js'
-import { GRI_ADS, calculateMER, calculateTrueCAC, calculateAMER, calculateNCAC } from '../lib/ads-metrics.js'
+import { GRI_ADS, calculateMER, calculateTrueCAC, calculateAMER, calculateNCAC, calculateFOVCAC, calculateCM, calculateCostOfDelivery, calculateAcquisitionMER } from '../lib/ads-metrics.js'
 import { getGoogleSpend } from '../lib/google-ads-spend.js'
 import { getIndex, classifyOrders } from '../lib/customer-index.js'
 import { calculateFatigueScore } from '../lib/fatigue-engine.js'
@@ -105,6 +105,12 @@ router.get('/dashboard', async (req, res) => {
     // nCAC — new customer acquisition cost using customer index
     let ncac = null
     let newCustomerCount = 0
+    let fovCac = null
+    let cm = null
+    let acquisitionMer = null
+    let newCustomersPerDay = null
+    let firstOrderAov = null
+    let newCustomerRevenue = 0
     try {
       const customerIndex = getIndex()
       const orderDetails = shopifyData?.orderDetails || []
@@ -114,8 +120,25 @@ router.get('/dashboard', async (req, res) => {
           customerIndex, gFromStr, gToStr
         )
         newCustomerCount = classified.newCustomers
+        newCustomerRevenue = classified.newCustomerRevenue || 0
+        firstOrderAov = classified.firstOrderAov || 0
         ncac = calculateNCAC(totalSpend, newCustomerCount)
+
+        // nCAC Framework metrics
+        if (ncac > 0 && firstOrderAov > 0) {
+          fovCac = calculateFOVCAC(firstOrderAov, GRI_ADS.grossMarginPct, ncac)
+        }
+        if (newCustomerRevenue > 0 && totalSpend > 0) {
+          acquisitionMer = calculateAcquisitionMER(newCustomerRevenue, totalSpend)
+        }
+        if (days > 0 && newCustomerCount > 0) {
+          newCustomersPerDay = Math.round((newCustomerCount / days) * 10) / 10
+        }
       }
+      // CM$ — Contribution Margin (Layer 1 scoreboard)
+      const shipping = shopifyData?.shipping || 0
+      const costOfDelivery = calculateCostOfDelivery(shopifyRevenue, shipping, shopifyOrders, GRI_ADS.grossMarginPct)
+      cm = calculateCM(shopifyRevenue, costOfDelivery, totalSpend)
     } catch (e) {
       console.warn('[Flywheel] nCAC calculation skipped:', e.message)
     }
@@ -252,6 +275,13 @@ router.get('/dashboard', async (req, res) => {
         ncac: ncac != null ? Math.round(ncac * 100) / 100 : null, newCustomerCount,
         aov: Math.round(aov * 100) / 100, amer: Math.round(amer * 100) / 100,
         profit: Math.round(profit * 100) / 100,
+        // nCAC Framework metrics
+        fovCac: fovCac != null ? Math.round(fovCac * 100) / 100 : null,
+        cm: cm != null ? Math.round(cm * 100) / 100 : null,
+        acquisitionMer: acquisitionMer != null ? Math.round(acquisitionMer * 100) / 100 : null,
+        newCustomersPerDay,
+        firstOrderAov: firstOrderAov ? Math.round(firstOrderAov * 100) / 100 : null,
+        newCustomerRevenue: Math.round(newCustomerRevenue * 100) / 100,
       },
       campaigns: enrichedCampaigns,
       creatives: enrichedCreatives,
