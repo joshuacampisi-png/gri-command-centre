@@ -53,6 +53,13 @@ import {
   prepareFatigueMetrics,
   STATUS_COLORS
 } from '../lib/fatigue-engine.js'
+import {
+  verifySecret,
+  recordGoogleSpend,
+  getGoogleSpend,
+  getLatestGoogleDate,
+  getAllGoogleSpend,
+} from '../lib/google-ads-spend.js'
 import { callClaude } from '../lib/claude-guard.js'
 import { sendAdsDailyReport } from '../lib/ads-telegram-report.js'
 import { sendAdsDaily } from '../lib/ads-daily-report.js'
@@ -705,7 +712,11 @@ router.get('/profitability-metrics', async (req, res) => {
       getShopifyOrdersRange(prevFromStr, prevToStr, { includeOrderDetails: true }),
     ])
 
-    const totalSpend = metaInsights?.spend || 0
+    // Combine Meta + Google spend for real total
+    const metaSpend = metaInsights?.spend || 0
+    const googleSpendData = getGoogleSpend(fromStr, toStr)
+    const googleSpend = googleSpendData.totalSpend || 0
+    const totalSpend = metaSpend + googleSpend
     const shopifyRevenue = shopifyData?.ok ? shopifyData.revenue : 0
     const shopifyOrders = shopifyData?.ok ? shopifyData.orders : 0
     const shopifyShipping = shopifyData?.ok ? shopifyData.shipping : 0
@@ -778,6 +789,9 @@ router.get('/profitability-metrics', async (req, res) => {
         layer2: {
           revenue: Math.round(shopifyRevenue * 100) / 100,
           adSpend: Math.round(totalSpend * 100) / 100,
+          metaSpend: Math.round(metaSpend * 100) / 100,
+          googleSpend: Math.round(googleSpend * 100) / 100,
+          googleHasData: googleSpendData.hasData,
           mer: Math.round(mer * 100) / 100,
           aov: Math.round(shopifyAov * 100) / 100,
           orders: shopifyOrders,
@@ -812,6 +826,52 @@ router.get('/profitability-metrics', async (req, res) => {
     })
   } catch (err) {
     console.error('[Ads] Profitability metrics error:', err.message)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── POST /api/ads/google-spend/webhook ──────────────────────────────────────
+// Receives daily spend data from Google Ads Scripts. No auth required (uses secret).
+
+router.post('/google-spend/webhook', (req, res) => {
+  try {
+    const { secret, days } = req.body
+
+    if (!verifySecret(secret)) {
+      console.warn('[GoogleAds] Webhook: invalid secret')
+      return res.status(403).json({ ok: false, error: 'Invalid secret' })
+    }
+
+    if (!Array.isArray(days) || days.length === 0) {
+      return res.status(400).json({ ok: false, error: 'No data provided' })
+    }
+
+    const updated = recordGoogleSpend(days)
+    console.log(`[GoogleAds] Webhook received: ${updated} days of spend data`)
+
+    res.json({ ok: true, updated })
+  } catch (err) {
+    console.error('[GoogleAds] Webhook error:', err.message)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── GET /api/ads/google-spend ───────────────────────────────────────────────
+// Returns stored Google Ads spend data for a date range.
+
+router.get('/google-spend', (req, res) => {
+  try {
+    const { from, to } = req.query
+    if (from && to) {
+      const data = getGoogleSpend(from, to)
+      return res.json({ ok: true, ...data })
+    }
+
+    // No range = return all + latest date
+    const all = getAllGoogleSpend()
+    const latestDate = getLatestGoogleDate()
+    res.json({ ok: true, latestDate, entries: Object.keys(all).length, data: all })
+  } catch (err) {
     res.status(500).json({ ok: false, error: err.message })
   }
 })

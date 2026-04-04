@@ -164,7 +164,10 @@ router.get('/health-check', async (_req, res) => {
       if (shopifyRange.ok && shopifyRange.orderDetails) {
         const index = getIndex()
         const { newCustomers, returningOrders, newCustomerRevenue } = classifyOrders(shopifyRange.orderDetails, index, from, to)
-        const totalSpend = perfData.totals?.spend || 0
+        const metaSpend = perfData.totals?.spend || 0
+        const { getGoogleSpend } = await import('../lib/google-ads-spend.js')
+        const gSpend = getGoogleSpend(from, to)
+        const totalSpend = metaSpend + (gSpend.totalSpend || 0)
         const ncac = calculateNCAC(totalSpend, newCustomers)
         const stats = getCustomerStats(index, from, to)
         const fovCac = calculateFOVCAC(stats.avgFirstOrderAov || shopifyRange.revenue / shopifyRange.orders, GRI_ADS.grossMargin, ncac)

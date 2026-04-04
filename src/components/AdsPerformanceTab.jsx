@@ -443,6 +443,15 @@ function ProfitabilityDashboard({ profitability, loading }) {
             {fmtCurrency(layer2.adSpend)}
           </div>
           <div className="ads-dark-truth-sub">{fmtCurrency(dailyAvgSpend)}/day avg</div>
+          {layer2.googleHasData ? (
+            <div className="ads-dark-truth-target">
+              Meta {fmtCurrency(layer2.metaSpend)} + Google {fmtCurrency(layer2.googleSpend)}
+            </div>
+          ) : (
+            <div className="ads-dark-truth-target" style={{ color: COLOURS.yellow }}>
+              Meta only — Google not connected
+            </div>
+          )}
         </div>
 
         <div className="ads-dark-truth-card">
