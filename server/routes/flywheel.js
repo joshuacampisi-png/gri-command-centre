@@ -42,22 +42,27 @@ router.get('/dashboard', async (req, res) => {
     const days = daysMap[range] || 1
 
     // Parallel fetch: Shopify revenue + Meta insights + all store data
-    const [shopifyData, metaData] = await Promise.all([
+    const [shopifyData, shopifyTodayData, metaData] = await Promise.all([
       (async () => {
         try {
-          if (range === 'today') return await getShopifyTodayOrders()
           const to = new Date()
           const from = new Date()
           from.setDate(from.getDate() - days)
           // AEST dates
           const aestNow = new Date(to.getTime() + 10 * 3600000)
-          const aestFrom = new Date(from.getTime() + 10 * 3600000)
+          const aestFrom = range === 'today' ? aestNow : new Date(from.getTime() + 10 * 3600000)
           return await getShopifyOrdersRange(
             aestFrom.toISOString().slice(0, 10),
             aestNow.toISOString().slice(0, 10),
             { includeOrderDetails: true }
           )
         } catch (e) { return { ok: false, revenue: 0, orders: 0, error: e.message } }
+      })(),
+      (async () => {
+        try {
+          if (range === 'today') return await getShopifyTodayOrders()
+          return null
+        } catch (e) { return null }
       })(),
       (async () => {
         try { return await fetchAccountInsights(metaPreset) }
