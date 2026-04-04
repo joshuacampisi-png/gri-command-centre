@@ -325,25 +325,135 @@ export function AdsFlywheelTab() {
         </div>
       </div>
 
-      {/* ── 2. Hero Metrics ───────────────────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : isTablet ? 'repeat(3, 1fr)' : 'repeat(4, 1fr)', gap: 10, marginBottom: 10 }}>
-        <HeroCard label="Shopify Revenue" value={fmt$(h.shopifyRevenue)} sub={`${h.shopifyOrders || 0} orders`} color={C.text} />
-        <HeroCard label="Meta Spend" value={fmt$(h.metaSpend)} sub={`${h.metaPurchases || 0} attributed`} color={C.pink} icon={<MetaLogo />} />
-        <HeroCard label="Google Spend" value={fmt$(h.googleSpend)} sub={h.googleHasData ? 'Synced via webhook' : 'Not connected'} color={h.googleHasData ? C.blue : C.muted} icon={<GoogleLogo />} />
-        <HeroCard label="Total Ad Spend" value={fmt$(h.totalSpend)} sub={h.googleHasData ? 'Meta + Google combined' : 'Meta only'} color={C.text} />
+      {/* ── 2. Revenue + Spend Cards ─────────────────────────────────────── */}
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10, marginBottom: 10 }}>
+
+        {/* Revenue Attribution Card */}
+        {(() => {
+          const total = h.shopifyRevenue || 0
+          const meta = h.metaRevenue || 0
+          const google = h.googleRevenue || 0
+          const organic = h.organicRevenue || 0
+          const metaPct = total > 0 ? (meta / total * 100) : 0
+          const googlePct = total > 0 ? (google / total * 100) : 0
+          const organicPct = total > 0 ? (organic / total * 100) : 0
+          return (
+            <div style={{ ...card, padding: isMobile ? 14 : 18 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
+                <div style={{ fontSize: 11, color: C.muted, textTransform: 'uppercase', letterSpacing: 0.5 }}>Revenue Attribution</div>
+                <div style={{ fontSize: 10, color: C.muted }}>{h.shopifyOrders || 0} orders</div>
+              </div>
+              <div style={{ fontSize: 28, fontWeight: 700, color: C.text, marginBottom: 14 }}>{fmt$(total)}</div>
+
+              {/* Stacked bar */}
+              <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', marginBottom: 14, background: C.bg }}>
+                {metaPct > 0 && <div style={{ width: `${metaPct}%`, background: '#1877F2', transition: 'width 0.5s' }} />}
+                {googlePct > 0 && <div style={{ width: `${googlePct}%`, background: '#4285F4', transition: 'width 0.5s' }} />}
+                {organicPct > 0 && <div style={{ width: `${organicPct}%`, background: C.green, transition: 'width 0.5s' }} />}
+              </div>
+
+              {/* Breakdown rows */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ width: 8, height: 8, borderRadius: 2, background: '#1877F2', flexShrink: 0 }} />
+                    <MetaLogo />
+                    <span style={{ fontSize: 12, color: C.text }}>Meta</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{fmt$(meta)}</span>
+                    <span style={{ fontSize: 11, color: C.muted, minWidth: 36, textAlign: 'right' }}>{metaPct.toFixed(0)}%</span>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ width: 8, height: 8, borderRadius: 2, background: '#4285F4', flexShrink: 0 }} />
+                    <GoogleLogo />
+                    <span style={{ fontSize: 12, color: C.text }}>Google</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{fmt$(google)}</span>
+                    <span style={{ fontSize: 11, color: C.muted, minWidth: 36, textAlign: 'right' }}>{googlePct.toFixed(0)}%</span>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: C.green, flexShrink: 0 }} />
+                    <span style={{ fontSize: 12, color: C.text, marginLeft: 22 }}>Organic / Direct</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: C.green }}>{fmt$(organic)}</span>
+                    <span style={{ fontSize: 11, color: C.muted, minWidth: 36, textAlign: 'right' }}>{organicPct.toFixed(0)}%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+        })()}
+
+        {/* Ad Spend Card */}
+        {(() => {
+          const total = h.totalSpend || 0
+          const meta = h.metaSpend || 0
+          const google = h.googleSpend || 0
+          const metaPct = total > 0 ? (meta / total * 100) : 0
+          const googlePct = total > 0 ? (google / total * 100) : 0
+          return (
+            <div style={{ ...card, padding: isMobile ? 14 : 18 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
+                <div style={{ fontSize: 11, color: C.muted, textTransform: 'uppercase', letterSpacing: 0.5 }}>Ad Spend</div>
+                <div style={{ fontSize: 10, color: h.googleHasData ? C.green : C.yellow }}>{h.googleHasData ? 'Both channels active' : 'Meta only'}</div>
+              </div>
+              <div style={{ fontSize: 28, fontWeight: 700, color: C.text, marginBottom: 14 }}>{fmt$(total)}</div>
+
+              {/* Stacked bar */}
+              <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', marginBottom: 14, background: C.bg }}>
+                {metaPct > 0 && <div style={{ width: `${metaPct}%`, background: C.pink, transition: 'width 0.5s' }} />}
+                {googlePct > 0 && <div style={{ width: `${googlePct}%`, background: '#FBBC05', transition: 'width 0.5s' }} />}
+              </div>
+
+              {/* Breakdown rows */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ width: 8, height: 8, borderRadius: 2, background: C.pink, flexShrink: 0 }} />
+                    <MetaLogo />
+                    <span style={{ fontSize: 12, color: C.text }}>Meta</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{fmt$(meta)}</span>
+                    <span style={{ fontSize: 11, color: C.muted, minWidth: 36, textAlign: 'right' }}>{metaPct.toFixed(0)}%</span>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ width: 8, height: 8, borderRadius: 2, background: '#FBBC05', flexShrink: 0 }} />
+                    <GoogleLogo />
+                    <span style={{ fontSize: 12, color: C.text }}>Google</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{fmt$(google)}</span>
+                    <span style={{ fontSize: 11, color: C.muted, minWidth: 36, textAlign: 'right' }}>{googlePct.toFixed(0)}%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+        })()}
       </div>
 
+      {/* ── Key Metrics Row ───────────────────────────────────────────────── */}
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : isTablet ? 'repeat(3, 1fr)' : 'repeat(6, 1fr)', gap: 10, marginBottom: 10 }}>
         <HeroCard label="nCAC" value={h.ncac != null ? fmt$(h.ncac) : '--'} sub={h.newCustomerCount ? `${h.newCustomerCount} new customers` : 'No customer data'} color={h.ncac != null ? (h.ncac <= 34.52 ? C.green : h.ncac <= 47.25 ? C.yellow : C.red) : C.muted} />
         <HeroCard label="MER" value={fmtX(h.mer)} sub="Target: 3.0x" color={h.mer >= 3.0 ? C.green : h.mer >= 2.22 ? C.yellow : C.red} />
         <HeroCard label="Meta ROAS" value={fmtX(h.roas)} sub="Channel proxy only" color={h.roas >= 2.22 ? C.green : C.red} icon={<MetaLogo />} />
         <HeroCard label="CPA" value={fmt$(h.cpa)} sub="All orders (not nCAC)" color={h.cpa <= 38 ? C.green : h.cpa <= 47.25 ? C.yellow : C.red} />
         <HeroCard label="AOV" value={fmt$(h.aov)} sub="Target: $160" color={h.aov >= 160 ? C.green : h.aov >= 100 ? C.yellow : C.red} />
-        <HeroCard label="Gross Profit" value={fmt$(h.profit)} sub="Revenue x margin minus total spend" color={h.profit > 0 ? C.green : C.red} />
+        <HeroCard label="Gross Profit" value={fmt$(h.profit)} sub="After all ad spend" color={h.profit > 0 ? C.green : C.red} />
       </div>
 
       {/* AMER + Bundle row */}
-      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 10, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: 10, marginBottom: 16 }}>
         <HeroCard label="AMER" value={h.amer != null ? h.amer.toFixed(0) + '%' : '--'} sub="Ad margin efficiency" color={h.amer > 0 ? C.green : C.red} />
         <HeroCard label="Bundle Rate" value={fmtPct(d?.aov?.bundleRate)} sub="Target: 30%+" color={(d?.aov?.bundleRate || 0) >= 30 ? C.green : C.yellow} />
         <HeroCard label="Orders Today" value={range === 'today' ? (h.shopifyOrders || 0) : '--'} sub="From Shopify" color={C.text} />

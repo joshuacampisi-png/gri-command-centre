@@ -115,6 +115,12 @@ router.get('/dashboard', async (req, res) => {
       console.warn('[Flywheel] nCAC calculation skipped:', e.message)
     }
 
+    // Revenue attribution breakdown
+    const metaRevenue = metaData.purchaseValue || 0
+    const googleRevenue = googleSpendData.totalConversionValue || 0
+    const paidRevenue = metaRevenue + googleRevenue
+    const organicRevenue = Math.max(0, shopifyRevenue - paidRevenue)
+
     // Store data (instant reads)
     const campaigns = getCampaigns()
     const adSetsAll = getAdSets()
@@ -225,7 +231,23 @@ router.get('/dashboard', async (req, res) => {
 
     res.json({
       ok: true, range,
-      hero: { shopifyRevenue: Math.round(shopifyRevenue * 100) / 100, shopifyOrders, metaSpend: Math.round(metaSpend * 100) / 100, googleSpend: Math.round(googleSpend * 100) / 100, totalSpend: Math.round(totalSpend * 100) / 100, googleHasData: googleSpendData.hasData, metaPurchases, roas: Math.round(roas * 100) / 100, mer: Math.round(mer * 100) / 100, cpa: Math.round(cpa * 100) / 100, ncac: ncac != null ? Math.round(ncac * 100) / 100 : null, newCustomerCount, aov: Math.round(aov * 100) / 100, amer: Math.round(amer * 100) / 100, profit: Math.round(profit * 100) / 100 },
+      hero: {
+        shopifyRevenue: Math.round(shopifyRevenue * 100) / 100, shopifyOrders,
+        metaSpend: Math.round(metaSpend * 100) / 100,
+        googleSpend: Math.round(googleSpend * 100) / 100,
+        totalSpend: Math.round(totalSpend * 100) / 100,
+        googleHasData: googleSpendData.hasData, metaPurchases,
+        // Revenue attribution
+        metaRevenue: Math.round(metaRevenue * 100) / 100,
+        googleRevenue: Math.round(googleRevenue * 100) / 100,
+        organicRevenue: Math.round(organicRevenue * 100) / 100,
+        // Metrics
+        roas: Math.round(roas * 100) / 100, mer: Math.round(mer * 100) / 100,
+        cpa: Math.round(cpa * 100) / 100,
+        ncac: ncac != null ? Math.round(ncac * 100) / 100 : null, newCustomerCount,
+        aov: Math.round(aov * 100) / 100, amer: Math.round(amer * 100) / 100,
+        profit: Math.round(profit * 100) / 100,
+      },
       campaigns: enrichedCampaigns,
       creatives: enrichedCreatives,
       alerts, pendingActions, opportunities,

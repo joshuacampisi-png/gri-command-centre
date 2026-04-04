@@ -64,6 +64,7 @@ export function recordGoogleSpend(days) {
       spend: parseFloat(day.spend) || 0,
       clicks: parseInt(day.clicks) || 0,
       conversions: parseFloat(day.conversions) || 0,
+      conversionValue: parseFloat(day.conversionValue) || 0,
       impressions: parseInt(day.impressions) || 0,
       updatedAt: new Date().toISOString(),
     }
@@ -85,6 +86,7 @@ export function getGoogleSpend(fromDate, toDate) {
   let totalSpend = 0
   let totalClicks = 0
   let totalConversions = 0
+  let totalConversionValue = 0
   let totalImpressions = 0
   const dailyBreakdown = []
   let days = 0
@@ -102,6 +104,7 @@ export function getGoogleSpend(fromDate, toDate) {
       totalSpend += entry.spend
       totalClicks += entry.clicks
       totalConversions += entry.conversions
+      totalConversionValue += entry.conversionValue || 0
       totalImpressions += entry.impressions
       dailyBreakdown.push({ date: dateStr, ...entry })
       days++
@@ -114,6 +117,7 @@ export function getGoogleSpend(fromDate, toDate) {
     totalSpend: Math.round(totalSpend * 100) / 100,
     totalClicks,
     totalConversions,
+    totalConversionValue: Math.round(totalConversionValue * 100) / 100,
     totalImpressions,
     days,
     dailyBreakdown,
