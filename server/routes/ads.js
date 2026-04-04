@@ -575,12 +575,12 @@ router.get('/truth-metrics', async (req, res) => {
     // For "today": just today. For Xd ranges: match Meta's last_Xd = X days ending yesterday.
     // This ensures Shopify revenue window aligns exactly with Meta spend window.
     let fromStr, toStr
+    const daysMap = { 'today': 1, '7d': 7, '14d': 14, '30d': 30, 'last_7d': 7, 'last_14d': 14, 'last_30d': 30 }
+    const days = daysMap[dateRange] || 7
     if (dateRange === 'today') {
       fromStr = todayStr
       toStr = todayStr
     } else {
-      const daysMap = { '7d': 7, '14d': 14, '30d': 30, 'last_7d': 7, 'last_14d': 14, 'last_30d': 30 }
-      const days = daysMap[dateRange] || 7
       // Meta last_7d = 7 days ending yesterday, so Shopify should match
       const yesterday = new Date(aestNow)
       yesterday.setDate(yesterday.getDate() - 1)
