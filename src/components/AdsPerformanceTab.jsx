@@ -1566,21 +1566,22 @@ export default function AdsPerformanceTab() {
     try {
       const res = await fetch(`${API}/profitability-metrics?dateRange=${range || dateRange}`)
       const json = await res.json()
-      if (json.ok) {
-        setProfitability(json)
+      if (json.ok && json.profitability) {
+        const p = json.profitability
+        setProfitability(p)
         // Framework alerts
         const frameworkAlerts = []
-        if (json.layer1?.cm < 0) {
-          frameworkAlerts.push({ severity: 'CRITICAL', message: `CM$ is negative (${fmtCurrency(json.layer1.cm)}). You are losing money. Fix before scaling.` })
+        if (p.layer1?.cm < 0) {
+          frameworkAlerts.push({ severity: 'CRITICAL', message: `CM$ is negative (${fmtCurrency(p.layer1.cm)}). You are losing money. Fix before scaling.` })
         }
-        if (json.layer3?.fovCacStatus === 'red') {
-          frameworkAlerts.push({ severity: 'CRITICAL', message: `FOV/CAC is ${json.layer3.fovCac?.toFixed(2)}x — underwater on first order. nCAC is too high or AOV too low.` })
+        if (p.layer3?.fovCacStatus === 'red') {
+          frameworkAlerts.push({ severity: 'CRITICAL', message: `FOV/CAC is ${p.layer3.fovCac?.toFixed(2)}x — underwater on first order. nCAC is too high or AOV too low.` })
         }
-        if (json.layer3?.ncacStatus === 'red') {
-          frameworkAlerts.push({ severity: 'HIGH', message: `nCAC is ${fmtCurrency(json.layer3.ncac)} — 2x above baseline. Acquisition cost is critical.` })
+        if (p.layer3?.ncacStatus === 'red') {
+          frameworkAlerts.push({ severity: 'HIGH', message: `nCAC is ${fmtCurrency(p.layer3.ncac)} — 2x above baseline. Acquisition cost is critical.` })
         }
-        if (json.layer3?.newCustWowChange < -20) {
-          frameworkAlerts.push({ severity: 'HIGH', message: `New customers down ${Math.abs(json.layer3.newCustWowChange)}% WoW. Acquisition stall detected.` })
+        if (p.layer3?.newCustWowChange < -20) {
+          frameworkAlerts.push({ severity: 'HIGH', message: `New customers down ${Math.abs(p.layer3.newCustWowChange)}% WoW. Acquisition stall detected.` })
         }
         if (frameworkAlerts.length > 0) {
           setAlerts(prev => [...frameworkAlerts, ...prev])
