@@ -21,6 +21,8 @@ export const GRI_ADS = {
   // Payment processing (Shopify Payments standard)
   paymentProcessingRate: 0.026,
   paymentProcessingFixed: 0.30,
+  // Shipping cost per order (GRI pays $4.50, customer pays the rest)
+  shippingCostPerOrder: 4.50,
   // Framework thresholds
   fovCacGreen: 3.0,
   fovCacAmber: 1.0,
@@ -90,7 +92,10 @@ export function calculateCM(netSales, costOfDelivery, adSpend) {
 export function calculateCostOfDelivery(revenue, shipping, orderCount, grossMarginPct = GRI_ADS.grossMarginPct) {
   const cogs = revenue * (1 - grossMarginPct)
   const paymentFees = (revenue * GRI_ADS.paymentProcessingRate) + (orderCount * GRI_ADS.paymentProcessingFixed)
-  return cogs + shipping + paymentFees
+  // Use actual shipping cost ($4.50/order) not Shopify's total shipping field
+  // which includes what the customer pays
+  const actualShipping = orderCount * GRI_ADS.shippingCostPerOrder
+  return cogs + actualShipping + paymentFees
 }
 
 /**
