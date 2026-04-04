@@ -325,19 +325,25 @@ export function AdsFlywheelTab() {
         </div>
       </div>
 
-      {/* ── 2. Hero Metrics (6 cards) ─────────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : isTablet ? 'repeat(3, 1fr)' : 'repeat(6, 1fr)', gap: 10, marginBottom: 16 }}>
+      {/* ── 2. Hero Metrics ───────────────────────────────────────────────── */}
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : isTablet ? 'repeat(3, 1fr)' : 'repeat(4, 1fr)', gap: 10, marginBottom: 10 }}>
         <HeroCard label="Shopify Revenue" value={fmt$(h.shopifyRevenue)} sub={`${h.shopifyOrders || 0} orders`} color={C.text} />
-        <HeroCard label="Meta Spend" value={fmt$(h.metaSpend)} sub={`${h.metaPurchases || 0} attributed`} color={C.text} />
-        <HeroCard label="ROAS" value={fmtX(h.roas)} sub="Breakeven: 2.22x" color={h.roas >= 2.22 ? C.green : C.red} />
-        <HeroCard label="MER" value={fmtX(h.mer)} sub="Target: 3.0x" color={h.mer >= 3.0 ? C.green : h.mer >= 2.22 ? C.yellow : C.red} />
-        <HeroCard label="CPA" value={fmt$(h.cpa)} sub="Target: $38 / Break: $47" color={h.cpa <= 38 ? C.green : h.cpa <= 47.25 ? C.yellow : C.red} />
-        <HeroCard label="AOV" value={fmt$(h.aov)} sub="Target: $160" color={h.aov >= 160 ? C.green : h.aov >= 100 ? C.yellow : C.red} />
+        <HeroCard label="Meta Spend" value={fmt$(h.metaSpend)} sub={`${h.metaPurchases || 0} attributed`} color={C.pink} icon={<MetaLogo />} />
+        <HeroCard label="Google Spend" value={fmt$(h.googleSpend)} sub={h.googleHasData ? 'Synced via webhook' : 'Not connected'} color={h.googleHasData ? C.blue : C.muted} icon={<GoogleLogo />} />
+        <HeroCard label="Total Ad Spend" value={fmt$(h.totalSpend)} sub={h.googleHasData ? 'Meta + Google combined' : 'Meta only'} color={C.text} />
       </div>
 
-      {/* Profit + AMER row */}
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : isTablet ? 'repeat(3, 1fr)' : 'repeat(6, 1fr)', gap: 10, marginBottom: 10 }}>
+        <HeroCard label="nCAC" value={h.ncac != null ? fmt$(h.ncac) : '--'} sub={h.newCustomerCount ? `${h.newCustomerCount} new customers` : 'No customer data'} color={h.ncac != null ? (h.ncac <= 34.52 ? C.green : h.ncac <= 47.25 ? C.yellow : C.red) : C.muted} />
+        <HeroCard label="MER" value={fmtX(h.mer)} sub="Target: 3.0x" color={h.mer >= 3.0 ? C.green : h.mer >= 2.22 ? C.yellow : C.red} />
+        <HeroCard label="Meta ROAS" value={fmtX(h.roas)} sub="Channel proxy only" color={h.roas >= 2.22 ? C.green : C.red} icon={<MetaLogo />} />
+        <HeroCard label="CPA" value={fmt$(h.cpa)} sub="All orders (not nCAC)" color={h.cpa <= 38 ? C.green : h.cpa <= 47.25 ? C.yellow : C.red} />
+        <HeroCard label="AOV" value={fmt$(h.aov)} sub="Target: $160" color={h.aov >= 160 ? C.green : h.aov >= 100 ? C.yellow : C.red} />
+        <HeroCard label="Gross Profit" value={fmt$(h.profit)} sub="Revenue x margin minus total spend" color={h.profit > 0 ? C.green : C.red} />
+      </div>
+
+      {/* AMER + Bundle row */}
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 10, marginBottom: 16 }}>
-        <HeroCard label="Gross Profit" value={fmt$(h.profit)} sub="Revenue x 45% margin minus spend" color={h.profit > 0 ? C.green : C.red} />
         <HeroCard label="AMER" value={h.amer != null ? h.amer.toFixed(0) + '%' : '--'} sub="Ad margin efficiency" color={h.amer > 0 ? C.green : C.red} />
         <HeroCard label="Bundle Rate" value={fmtPct(d?.aov?.bundleRate)} sub="Target: 30%+" color={(d?.aov?.bundleRate || 0) >= 30 ? C.green : C.yellow} />
         <HeroCard label="Orders Today" value={range === 'today' ? (h.shopifyOrders || 0) : '--'} sub="From Shopify" color={C.text} />
@@ -862,10 +868,27 @@ export function AdsFlywheelTab() {
 
 // ── Subcomponents ───────────────────────────────────────────────────────────
 
-function HeroCard({ label, value, sub, color }) {
+const MetaLogo = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+    <path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879v-6.988h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z" fill="#1877F2"/>
+  </svg>
+)
+
+const GoogleLogo = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+  </svg>
+)
+
+function HeroCard({ label, value, sub, color, icon }) {
   return (
     <div style={card}>
-      <div style={{ fontSize: 11, color: C.muted, marginBottom: 2 }}>{label}</div>
+      <div style={{ fontSize: 11, color: C.muted, marginBottom: 2, display: 'flex', alignItems: 'center', gap: 5 }}>
+        {icon}{label}
+      </div>
       <div style={{ fontSize: 22, fontWeight: 700, color: color || C.text, lineHeight: 1.1 }}>{value}</div>
       <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>{sub}</div>
     </div>

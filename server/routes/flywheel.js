@@ -23,7 +23,9 @@ import {
   updateAdSetBudget, updateCampaignBudget, fetchAdsetsForCampaign, fetchAccountInsights
 } from '../lib/meta-api.js'
 import { getShopifyTodayOrders, getShopifyOrdersRange } from '../connectors/shopify.js'
-import { GRI_ADS, calculateMER, calculateTrueCAC, calculateAMER } from '../lib/ads-metrics.js'
+import { GRI_ADS, calculateMER, calculateTrueCAC, calculateAMER, calculateNCAC } from '../lib/ads-metrics.js'
+import { getGoogleSpend } from '../lib/google-ads-spend.js'
+import { getIndex, classifyOrders } from '../lib/customer-index.js'
 import { calculateFatigueScore } from '../lib/fatigue-engine.js'
 import { processShopifyOrder, verifyShopifyHmac } from '../lib/flywheel-webhook.js'
 
@@ -52,7 +54,8 @@ router.get('/dashboard', async (req, res) => {
           const aestFrom = new Date(from.getTime() + 10 * 3600000)
           return await getShopifyOrdersRange(
             aestFrom.toISOString().slice(0, 10),
-            aestNow.toISOString().slice(0, 10)
+            aestNow.toISOString().slice(0, 10),
+            { includeOrderDetails: true }
           )
         } catch (e) { return { ok: false, revenue: 0, orders: 0, error: e.message } }
       })(),
@@ -67,13 +70,50 @@ router.get('/dashboard', async (req, res) => {
     const metaSpend = metaData.spend || 0
     const metaPurchases = metaData.purchases || 0
 
-    // Hero metrics
+    // Google Ads spend
+    const aestNow2 = new Date(new Date().toLocaleString('en-US', { timeZone: 'Australia/Brisbane' }))
+    const todayStr2 = aestNow2.toISOString().slice(0, 10)
+    let gFromStr, gToStr
+    if (range === 'today') {
+      gFromStr = todayStr2
+      gToStr = todayStr2
+    } else {
+      const gTo = new Date(aestNow2)
+      gTo.setDate(gTo.getDate() - 1)
+      gToStr = gTo.toISOString().slice(0, 10)
+      const gFrom = new Date(gTo)
+      gFrom.setDate(gFrom.getDate() - (days - 1))
+      gFromStr = gFrom.toISOString().slice(0, 10)
+    }
+    const googleSpendData = getGoogleSpend(gFromStr, gToStr)
+    const googleSpend = googleSpendData.totalSpend || 0
+    const totalSpend = metaSpend + googleSpend
+
+    // Hero metrics (using total spend for MER, profit, nCAC)
     const roas = metaSpend > 0 ? shopifyRevenue / metaSpend : 0
-    const mer = calculateMER(shopifyRevenue, metaSpend)
-    const cpa = shopifyOrders > 0 ? metaSpend / shopifyOrders : 0
+    const mer = calculateMER(shopifyRevenue, totalSpend)
+    const cpa = shopifyOrders > 0 ? totalSpend / shopifyOrders : 0
     const aov = shopifyOrders > 0 ? shopifyRevenue / shopifyOrders : 0
-    const amer = calculateAMER(shopifyRevenue, metaSpend)
-    const profit = (shopifyRevenue * GRI_ADS.grossMarginPct) - metaSpend
+    const amer = calculateAMER(shopifyRevenue, totalSpend)
+    const profit = (shopifyRevenue * GRI_ADS.grossMarginPct) - totalSpend
+
+    // nCAC — new customer acquisition cost using customer index
+    let ncac = null
+    let newCustomerCount = 0
+    try {
+      const customerIndex = getIndex()
+      const orderDetails = shopifyData?.orderDetails || []
+      if (orderDetails.length > 0) {
+        const classified = classifyOrders(
+          orderDetails.map(o => ({ ...o, total_price: o.aov, created_at: o.createdAt, contact_email: o.email })),
+          customerIndex, gFromStr, gToStr
+        )
+        newCustomerCount = classified.newCustomers
+        ncac = calculateNCAC(totalSpend, newCustomerCount)
+      }
+    } catch (e) {
+      console.warn('[Flywheel] nCAC calculation skipped:', e.message)
+    }
 
     // Store data (instant reads)
     const campaigns = getCampaigns()
@@ -185,7 +225,7 @@ router.get('/dashboard', async (req, res) => {
 
     res.json({
       ok: true, range,
-      hero: { shopifyRevenue: Math.round(shopifyRevenue * 100) / 100, shopifyOrders, metaSpend: Math.round(metaSpend * 100) / 100, metaPurchases, roas: Math.round(roas * 100) / 100, mer: Math.round(mer * 100) / 100, cpa: Math.round(cpa * 100) / 100, aov: Math.round(aov * 100) / 100, amer: Math.round(amer * 100) / 100, profit: Math.round(profit * 100) / 100 },
+      hero: { shopifyRevenue: Math.round(shopifyRevenue * 100) / 100, shopifyOrders, metaSpend: Math.round(metaSpend * 100) / 100, googleSpend: Math.round(googleSpend * 100) / 100, totalSpend: Math.round(totalSpend * 100) / 100, googleHasData: googleSpendData.hasData, metaPurchases, roas: Math.round(roas * 100) / 100, mer: Math.round(mer * 100) / 100, cpa: Math.round(cpa * 100) / 100, ncac: ncac != null ? Math.round(ncac * 100) / 100 : null, newCustomerCount, aov: Math.round(aov * 100) / 100, amer: Math.round(amer * 100) / 100, profit: Math.round(profit * 100) / 100 },
       campaigns: enrichedCampaigns,
       creatives: enrichedCreatives,
       alerts, pendingActions, opportunities,
