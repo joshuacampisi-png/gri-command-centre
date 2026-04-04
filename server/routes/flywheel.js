@@ -137,7 +137,7 @@ router.get('/dashboard', async (req, res) => {
       }
       // CM$ — Contribution Margin (Layer 1 scoreboard)
       const shipping = shopifyData?.shipping || 0
-      const costOfDelivery = calculateCostOfDelivery(shopifyRevenue, shipping, shopifyOrders, GRI_ADS.grossMarginPct)
+      const costOfDelivery = calculateCostOfDelivery(shopifyRevenue, shipping, shopifyOrders, GRI_ADS.grossMarginPct, days)
       cm = calculateCM(shopifyRevenue, costOfDelivery, totalSpend)
     } catch (e) {
       console.warn('[Flywheel] nCAC calculation skipped:', e.message)

@@ -23,6 +23,8 @@ export const GRI_ADS = {
   paymentProcessingFixed: 0.30,
   // Shipping cost per order (GRI pays $4.50, customer pays the rest)
   shippingCostPerOrder: 4.50,
+  // Monthly tax obligation (GST/BAS)
+  monthlyTax: 1000,
   // Framework thresholds
   fovCacGreen: 3.0,
   fovCacAmber: 1.0,
@@ -89,13 +91,14 @@ export function calculateCM(netSales, costOfDelivery, adSpend) {
  * CoD = COGS + Shipping + Payment Processing.
  * COGS estimated via (1 - grossMarginPct) * revenue.
  */
-export function calculateCostOfDelivery(revenue, shipping, orderCount, grossMarginPct = GRI_ADS.grossMarginPct) {
+export function calculateCostOfDelivery(revenue, shipping, orderCount, grossMarginPct = GRI_ADS.grossMarginPct, days = 30) {
   const cogs = revenue * (1 - grossMarginPct)
   const paymentFees = (revenue * GRI_ADS.paymentProcessingRate) + (orderCount * GRI_ADS.paymentProcessingFixed)
   // Use actual shipping cost ($4.50/order) not Shopify's total shipping field
-  // which includes what the customer pays
   const actualShipping = orderCount * GRI_ADS.shippingCostPerOrder
-  return cogs + actualShipping + paymentFees
+  // Tax obligation pro-rated by days in range
+  const tax = (GRI_ADS.monthlyTax / 30) * days
+  return cogs + actualShipping + paymentFees + tax
 }
 
 /**
