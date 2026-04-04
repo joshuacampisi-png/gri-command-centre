@@ -348,7 +348,7 @@ export function AdsFlywheelTab() {
               {/* Stacked bar */}
               <div style={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', marginBottom: 14, background: C.bg }}>
                 {metaPct > 0 && <div style={{ width: `${metaPct}%`, background: '#1877F2', transition: 'width 0.5s' }} />}
-                {googlePct > 0 && <div style={{ width: `${googlePct}%`, background: '#4285F4', transition: 'width 0.5s' }} />}
+                {googlePct > 0 && <div style={{ width: `${googlePct}%`, background: '#FBBC05', transition: 'width 0.5s' }} />}
                 {organicPct > 0 && <div style={{ width: `${organicPct}%`, background: C.green, transition: 'width 0.5s' }} />}
               </div>
 
@@ -367,7 +367,7 @@ export function AdsFlywheelTab() {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ width: 8, height: 8, borderRadius: 2, background: '#4285F4', flexShrink: 0 }} />
+                    <div style={{ width: 8, height: 8, borderRadius: 2, background: '#FBBC05', flexShrink: 0 }} />
                     <GoogleLogo />
                     <span style={{ fontSize: 12, color: C.text }}>Google</span>
                   </div>
