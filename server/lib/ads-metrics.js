@@ -98,8 +98,7 @@ export function calculateCostOfDelivery(revenue, shipping, orderCount, grossMarg
   const actualShipping = orderCount * GRI_ADS.shippingCostPerOrder
   // Fixed monthly costs pro-rated by days in range
   const tax = (GRI_ADS.monthlyTax / 30) * days
-  const agency = (GRI_ADS.monthlyAgency / 30) * days
-  return cogs + actualShipping + paymentFees + tax + agency
+  return cogs + actualShipping + paymentFees + tax
 }
 
 /**
