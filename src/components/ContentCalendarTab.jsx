@@ -56,6 +56,12 @@ async function deleteVideo(url) {
   await fetch(`${API}/video/${filename}`, { method: 'DELETE' }).catch(() => {})
 }
 
+function downloadUrl(videoUrl) {
+  if (!videoUrl) return videoUrl
+  const filename = videoUrl.split('/').pop()
+  return `${API}/download/${filename}`
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function getWeekDays(offset = 0) {
@@ -258,7 +264,7 @@ function EntryDrawer({ entry, isNew, onSave, onDelete, onClose }) {
                   {form.videoUrl && (
                     <>
                       <button className="cc-play-btn" onClick={e => { e.stopPropagation(); setVideoPreview(form.videoUrl) }}>{form.mediaType === 'video' ? '\u25B6 Preview' : '\uD83D\uDD0D View'}</button>
-                      <a className="cc-play-btn" href={form.videoUrl} download={form.videoName || true} onClick={e => e.stopPropagation()} style={{ textDecoration: 'none' }}>&#11015; Download</a>
+                      <a className="cc-play-btn" href={downloadUrl(form.videoUrl)} download={form.videoName || true} onClick={e => e.stopPropagation()} style={{ textDecoration: 'none' }}>&#11015; Download</a>
                     </>
                   )}
                 </div>
@@ -313,7 +319,7 @@ function EntryCard({ entry, onClick, onDragStart }) {
         {(entry.hook || entry.caption) && <div className="cc-card-hook">{entry.hook || entry.caption}</div>}
         <div className="cc-card-top">
           <span className="cc-status-pill" style={{ background: STATUS_COLORS[entry.status] + '22', color: STATUS_COLORS[entry.status], border: `1px solid ${STATUS_COLORS[entry.status]}44` }}>{entry.status}</span>
-          {entry.videoUrl && <a className="cc-card-dl" href={entry.videoUrl} download onClick={e => e.stopPropagation()}>&#11015; Download</a>}
+          {entry.videoUrl && <a className="cc-card-dl" href={downloadUrl(entry.videoUrl)} download onClick={e => e.stopPropagation()}>&#11015; Download</a>}
         </div>
       </div>
     </div>
@@ -573,7 +579,7 @@ function ListView({ entries, onClickEntry, onBulkAction, onUpdateEntry, onReorde
                 <td><span className="cc-status-pill" style={{ background: STATUS_COLORS[e.status] + '22', color: STATUS_COLORS[e.status], border: `1px solid ${STATUS_COLORS[e.status]}44` }}>{e.status}</span></td>
                 <td onClick={ev => ev.stopPropagation()}>
                   {e.thumbnail ? <img src={e.thumbnail} className="cc-list-thumb" alt="" /> : '—'}
-                  {e.videoUrl && <a className="cc-dl-link" href={e.videoUrl} download>⬇</a>}
+                  {e.videoUrl && <a className="cc-dl-link" href={downloadUrl(e.videoUrl)} download>⬇</a>}
                 </td>
                 <td onClick={ev => ev.stopPropagation()}>
                   <textarea

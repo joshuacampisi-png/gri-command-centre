@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { readFileSync, writeFileSync, existsSync, unlinkSync, readdirSync, copyFileSync } from 'fs'
+import { join } from 'path'
 import multer from 'multer'
 import { dataFile, dataDir } from '../lib/data-dir.js'
 
@@ -169,6 +170,14 @@ router.post('/upload', upload.single('video'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No valid media file' })
   const isImage = req.file.mimetype.startsWith('image/')
   res.json({ url: `/calendar-videos/${req.file.filename}`, filename: req.file.filename, size: req.file.size, type: isImage ? 'image' : 'video' })
+})
+
+// Download media file (serves from data volume so SPA catch-all doesn't intercept)
+router.get('/download/:filename', (req, res) => {
+  const filename = req.params.filename.replace(/[^a-zA-Z0-9._-]/g, '')
+  const filePath = join(VIDEO_DIR, filename)
+  if (!existsSync(filePath)) return res.status(404).json({ error: 'File not found' })
+  res.download(filePath, filename)
 })
 
 // Delete video
