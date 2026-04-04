@@ -96,9 +96,10 @@ export function calculateCostOfDelivery(revenue, shipping, orderCount, grossMarg
   const paymentFees = (revenue * GRI_ADS.paymentProcessingRate) + (orderCount * GRI_ADS.paymentProcessingFixed)
   // Use actual shipping cost ($4.50/order) not Shopify's total shipping field
   const actualShipping = orderCount * GRI_ADS.shippingCostPerOrder
-  // Tax obligation pro-rated by days in range
+  // Fixed monthly costs pro-rated by days in range
   const tax = (GRI_ADS.monthlyTax / 30) * days
-  return cogs + actualShipping + paymentFees + tax
+  const agency = (GRI_ADS.monthlyAgency / 30) * days
+  return cogs + actualShipping + paymentFees + tax + agency
 }
 
 /**
