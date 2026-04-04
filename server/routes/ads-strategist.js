@@ -9,6 +9,9 @@ import { calculateFatigueScore, prepareFatigueMetrics } from '../lib/fatigue-eng
 import { callClaude } from '../lib/claude-guard.js'
 import { dataFile } from '../lib/data-dir.js'
 import { fetchShopifyOrders, formatShopifySalesForPrompt } from '../lib/shopify-sales.js'
+import { getShopifyOrdersRange } from '../connectors/shopify.js'
+import { getIndex, classifyOrders, getCustomerStats } from '../lib/customer-index.js'
+import { calculateNCAC, calculateFOVCAC, calculateCM, calculateCostOfDelivery, calculateAcquisitionMER, GRI_ADS } from '../lib/ads-metrics.js'
 
 const router = Router()
 const HEALTH_LOG_FILE = dataFile('ads-health-log.json')
@@ -151,6 +154,39 @@ router.get('/health-check', async (_req, res) => {
       .filter(c => c.status === 'ACTIVE' && c.dailyBudget)
       .reduce((sum, c) => sum + c.dailyBudget, 0)
 
+    // Build profitability context (nCAC framework)
+    let profitabilityContext = ''
+    try {
+      const now = new Date()
+      const to = now.toISOString().slice(0, 10)
+      const from = new Date(now - 7 * 86400000).toISOString().slice(0, 10)
+      const shopifyRange = await getShopifyOrdersRange(from, to, { includeOrderDetails: true })
+      if (shopifyRange.ok && shopifyRange.orderDetails) {
+        const index = getIndex()
+        const { newCustomers, returningOrders, newCustomerRevenue } = classifyOrders(shopifyRange.orderDetails, index)
+        const totalSpend = perfData.totals?.spend || 0
+        const ncac = calculateNCAC(totalSpend, newCustomers)
+        const stats = getCustomerStats(index, from, to)
+        const fovCac = calculateFOVCAC(stats.avgFirstOrderAov || shopifyRange.revenue / shopifyRange.orders, GRI_ADS.grossMargin, ncac)
+        const costOfDelivery = calculateCostOfDelivery(shopifyRange.revenue, shopifyRange.shipping, shopifyRange.orders, GRI_ADS.grossMargin)
+        const cm = calculateCM(shopifyRange.revenue, costOfDelivery, totalSpend)
+        const amer = calculateAcquisitionMER(newCustomerRevenue, totalSpend)
+        profitabilityContext = `
+PROFITABILITY METRICS (nCAC Framework - 7 day):
+- CM$ (Contribution Margin): $${cm.toFixed(2)} ${cm > 0 ? '(POSITIVE - profitable)' : '(NEGATIVE - losing money)'}
+- nCAC (New Customer Acquisition Cost): $${ncac.toFixed(2)} (${newCustomers} new customers)
+- FOV/CAC: ${fovCac.toFixed(2)}x ${fovCac >= 3 ? '(strong first-order profit)' : fovCac >= 1 ? '(marginal)' : '(UNDERWATER - losing money on first order)'}
+- aMER (Acquisition MER): ${amer.toFixed(2)}x (new customer revenue / total ad spend)
+- Repeat Rate: ${shopifyRange.orders > 0 ? ((returningOrders / shopifyRange.orders) * 100).toFixed(1) : 0}%
+- New Customer Revenue: $${newCustomerRevenue.toFixed(2)}
+
+IMPORTANT FRAMEWORK RULE: Always evaluate profitability in this order: CM$ first (is the business profitable?), then nCAC (is acquisition cost sustainable?), then FOV/CAC (is the first order profitable?). Channel metrics (Meta ROAS, CPA) are proxies only.
+`
+      }
+    } catch (e) {
+      console.error('[Health Check] Profitability context error:', e.message)
+    }
+
     const prompt = `You are a senior Meta Ads media buyer acting as Josh's trusted marketing advisor. Josh runs Gender Reveal Ideas (genderrevealideas.com.au), an Australian DTC e-commerce business selling smoke bombs, confetti cannons, powder extinguishers, balloon boxes, and TNT cannons to expectant parents aged 22-40 (predominantly female, Australia-wide).
 
 Josh is NOT a marketer. He is a hands-on business owner who manages his own Meta Ads account. Talk to him like a trusted friend who happens to be brilliant at media buying. Explain everything in plain English. Be honest about problems but always constructive. Never be vague. Always reference specific ad names, campaign names, and actual numbers.
@@ -166,7 +202,7 @@ IMPORTANT: Below is REAL Shopify order data (all channels, not just Meta). This 
 ${shopifyContext}
 
 Blended ROAS (total Shopify revenue / Meta ad spend) = ${shopify7d && perfData.totals.spend > 0 ? (shopify7d.totalRevenue / perfData.totals.spend).toFixed(2) + 'x' : 'N/A'}
-
+${profitabilityContext}
 CRITICAL ATTRIBUTION AND STRUCTURAL RULES:
 These rules are non-negotiable. Every recommendation must pass these checks before being included.
 

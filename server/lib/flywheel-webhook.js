@@ -8,6 +8,7 @@ import {
   upsertConversion, getConversionByOrderId, logFlywheelEvent
 } from './flywheel-store.js'
 import { categoriseProduct, detectBundle, calculateAovIntelligence } from './flywheel-engine.js'
+import { indexOrderRealtime } from './customer-index.js'
 import { getAds } from './flywheel-store.js'
 
 // ── HMAC Verification ───────────────────────────────────────────────────────
@@ -142,7 +143,9 @@ export function processShopifyOrder(order) {
       creativeAngle: creativeAngle || 'unknown',
     })
 
-    console.log(`[Flywheel] Processed order ${orderId}: AOV $${aov}, ${products.length} items, bundle=${bundleDetected}, source=${utms.utmSource || 'direct'}`)
+    // Index customer for new-vs-returning classification (nCAC framework)
+    const isNewCustomer = indexOrderRealtime(order)
+    console.log(`[Flywheel] Processed order ${orderId}: AOV $${aov}, ${products.length} items, bundle=${bundleDetected}, source=${utms.utmSource || 'direct'}, newCustomer=${isNewCustomer}`)
 
     // Recalculate AOV intelligence asynchronously
     setTimeout(() => {

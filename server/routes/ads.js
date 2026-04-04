@@ -23,13 +23,31 @@ import {
   GRI_ADS,
   calculateMER,
   calculateTrueCAC,
+  calculateCPA,
+  calculateNCAC,
+  calculateFOVCAC,
+  calculateCM,
+  calculateCostOfDelivery,
+  calculateAcquisitionMER,
   calculateAMER,
   calculateNPOAS,
   calculateCampaignHealth,
   generateAlerts,
   calculateScalePath,
-  generateSurgicalActions
+  generateSurgicalActions,
+  getNcacThresholds,
+  getNcacStatus,
+  getFovCacStatus,
+  getCmStatus,
+  getAcquisitionMerStatus,
+  getNewCustomerTrendStatus,
 } from '../lib/ads-metrics.js'
+import {
+  getIndex,
+  classifyOrders,
+  bootstrapIndex as bootstrapCustomerIndex,
+  getCustomerStats,
+} from '../lib/customer-index.js'
 import {
   calculateFatigueScore,
   prepareFatigueMetrics,
@@ -632,6 +650,210 @@ router.get('/truth-metrics', async (req, res) => {
     })
   } catch (err) {
     console.error('[Ads] Truth metrics error:', err.message)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── GET /api/ads/profitability-metrics ──────────────────────────────────────
+// The nCAC & LTGP framework endpoint. Returns 4-layer profitability hierarchy.
+// Layer 1: CM$ (scoreboard). Layer 2: Business. Layer 3: Customer. Layer 4: Channel.
+
+router.get('/profitability-metrics', async (req, res) => {
+  try {
+    if (!isMetaConfigured()) {
+      return res.json({ ok: false, error: 'Meta API not configured' })
+    }
+
+    const dateRange = req.query.dateRange || '7d'
+
+    // AEST date
+    const aestNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Australia/Brisbane' }))
+    const todayStr = aestNow.toISOString().slice(0, 10)
+
+    let fromStr, toStr
+    const daysMap = { 'today': 1, '7d': 7, '14d': 14, '30d': 30, 'last_7d': 7, 'last_14d': 14, 'last_30d': 30 }
+    const days = daysMap[dateRange] || 7
+    if (dateRange === 'today') {
+      fromStr = todayStr
+      toStr = todayStr
+    } else {
+      const yesterday = new Date(aestNow)
+      yesterday.setDate(yesterday.getDate() - 1)
+      toStr = yesterday.toISOString().slice(0, 10)
+      const fromDate = new Date(yesterday)
+      fromDate.setDate(fromDate.getDate() - (days - 1))
+      fromStr = fromDate.toISOString().slice(0, 10)
+    }
+
+    // Previous period for comparison (same length, immediately before)
+    const prevToDate = new Date(fromStr + 'T00:00:00+10:00')
+    prevToDate.setDate(prevToDate.getDate() - 1)
+    const prevToStr = prevToDate.toISOString().slice(0, 10)
+    const prevFromDate = new Date(prevToDate)
+    prevFromDate.setDate(prevFromDate.getDate() - (days - 1))
+    const prevFromStr = prevFromDate.toISOString().slice(0, 10)
+
+    const presetMap = { 'today': 'today', '7d': 'last_7d', '14d': 'last_14d', '30d': 'last_30d' }
+    const preset = presetMap[dateRange] || 'last_7d'
+
+    console.log(`[Profitability] dateRange=${dateRange}, window: ${fromStr} to ${toStr}, prev: ${prevFromStr} to ${prevToStr}`)
+
+    // Fetch Meta spend + Shopify orders (with details) + previous period in parallel
+    const [metaInsights, shopifyData, prevShopifyData] = await Promise.all([
+      fetchAccountInsights(preset),
+      getShopifyOrdersRange(fromStr, toStr, { includeOrderDetails: true }),
+      getShopifyOrdersRange(prevFromStr, prevToStr, { includeOrderDetails: true }),
+    ])
+
+    const totalSpend = metaInsights?.spend || 0
+    const shopifyRevenue = shopifyData?.ok ? shopifyData.revenue : 0
+    const shopifyOrders = shopifyData?.ok ? shopifyData.orders : 0
+    const shopifyShipping = shopifyData?.ok ? shopifyData.shipping : 0
+    const shopifyAov = shopifyOrders > 0 ? shopifyRevenue / shopifyOrders : 0
+
+    // Load customer index and classify orders
+    const customerIndex = getIndex()
+    const orderDetails = shopifyData?.orderDetails || []
+    const prevOrderDetails = prevShopifyData?.orderDetails || []
+
+    // Classify current period orders
+    const current = classifyOrders(
+      orderDetails.map(o => ({ ...o, total_price: o.aov, created_at: o.createdAt, contact_email: o.email })),
+      customerIndex
+    )
+
+    // Classify previous period for WoW comparison
+    const prev = classifyOrders(
+      prevOrderDetails.map(o => ({ ...o, total_price: o.aov, created_at: o.createdAt, contact_email: o.email })),
+      customerIndex
+    )
+
+    // ── Layer 1: Scoreboard (CM$) ──
+    const costOfDelivery = calculateCostOfDelivery(shopifyRevenue, shopifyShipping, shopifyOrders)
+    const cm = calculateCM(shopifyRevenue, costOfDelivery, totalSpend)
+    const prevCostOfDelivery = calculateCostOfDelivery(
+      prevShopifyData?.revenue || 0, prevShopifyData?.shipping || 0, prevShopifyData?.orders || 0
+    )
+    const prevCm = calculateCM(prevShopifyData?.revenue || 0, prevCostOfDelivery, totalSpend)
+    const cmStatus = getCmStatus(cm, prevCm)
+
+    // ── Layer 2: Business Metrics ──
+    const mer = calculateMER(shopifyRevenue, totalSpend)
+
+    // ── Layer 3: Customer Metrics ──
+    const ncac = calculateNCAC(totalSpend, current.newCustomers)
+    const ncacThresholds = getNcacThresholds(GRI_ADS.ncac) // TODO: replace with 90-day rolling avg once we have history
+    const ncacStatus = getNcacStatus(ncac, ncacThresholds)
+
+    const fovCac = calculateFOVCAC(current.firstOrderAov, GRI_ADS.grossMarginPct, ncac)
+    const fovCacStatus = getFovCacStatus(fovCac)
+
+    const amer = calculateAcquisitionMER(current.newCustomerRevenue, totalSpend)
+    const amerStatus = getAcquisitionMerStatus(amer)
+
+    const repeatRate = shopifyOrders > 0 ? current.returningCustomers / shopifyOrders : 0
+
+    // New customer WoW trend
+    const newCustWowChange = prev.newCustomers > 0
+      ? ((current.newCustomers - prev.newCustomers) / prev.newCustomers) * 100
+      : 0
+    const newCustStatus = getNewCustomerTrendStatus(newCustWowChange)
+
+    // ── Layer 4: Channel Proxies ──
+    const metaRoas = metaInsights?.roas || 0
+    const metaCpa = metaInsights?.purchases > 0 ? totalSpend / metaInsights.purchases : 0
+
+    // CM trend
+    const cmTrend = prevCm !== 0 ? ((cm - prevCm) / Math.abs(prevCm)) * 100 : 0
+
+    res.json({
+      ok: true,
+      profitability: {
+        layer1: {
+          cm: Math.round(cm * 100) / 100,
+          cmStatus,
+          cmTrend: Math.round(cmTrend * 10) / 10,
+          costOfDelivery: Math.round(costOfDelivery * 100) / 100,
+        },
+        layer2: {
+          revenue: Math.round(shopifyRevenue * 100) / 100,
+          adSpend: Math.round(totalSpend * 100) / 100,
+          mer: Math.round(mer * 100) / 100,
+          aov: Math.round(shopifyAov * 100) / 100,
+          orders: shopifyOrders,
+        },
+        layer3: {
+          ncac: Math.round(ncac * 100) / 100,
+          ncacStatus,
+          ncacThresholds,
+          fovCac: Math.round(fovCac * 100) / 100,
+          fovCacStatus,
+          firstOrderAov: Math.round(current.firstOrderAov * 100) / 100,
+          amer: Math.round(amer * 100) / 100,
+          amerStatus,
+          newCustomers: current.newCustomers,
+          returningCustomers: current.returningCustomers,
+          unknownOrders: current.unknownOrders,
+          newCustomerRevenue: Math.round(current.newCustomerRevenue * 100) / 100,
+          newCustWowChange: Math.round(newCustWowChange * 10) / 10,
+          newCustStatus,
+          repeatRate: Math.round(repeatRate * 1000) / 10, // percentage
+        },
+        layer4: {
+          metaRoas: Math.round(metaRoas * 100) / 100,
+          metaCpa: Math.round(metaCpa * 100) / 100,
+          metaPurchases: metaInsights?.purchases || 0,
+        },
+        dateRange,
+        days,
+        from: fromStr,
+        to: toStr,
+      }
+    })
+  } catch (err) {
+    console.error('[Ads] Profitability metrics error:', err.message)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── POST /api/ads/bootstrap-customer-index ─────────────────────────────────
+// One-time (idempotent) endpoint to build the customer index from historical orders.
+
+router.post('/bootstrap-customer-index', async (req, res) => {
+  try {
+    const aestNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Australia/Brisbane' }))
+    const todayStr = aestNow.toISOString().slice(0, 10)
+
+    // Fetch max available history (60 days)
+    const fromDate = new Date(aestNow)
+    fromDate.setDate(fromDate.getDate() - 60)
+    const fromStr = fromDate.toISOString().slice(0, 10)
+
+    console.log(`[Bootstrap] Fetching orders from ${fromStr} to ${todayStr}`)
+
+    const shopifyData = await getShopifyOrdersRange(fromStr, todayStr, { includeOrderDetails: true })
+    if (!shopifyData?.ok || !shopifyData.orderDetails) {
+      return res.json({ ok: false, error: 'Failed to fetch Shopify orders' })
+    }
+
+    // Sort by date ascending (oldest first) so first purchases are correctly identified
+    const orders = shopifyData.orderDetails
+      .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+      .map(o => ({
+        id: o.id,
+        contact_email: o.email,
+        total_price: o.aov,
+        created_at: o.createdAt,
+        name: o.name,
+      }))
+
+    console.log(`[Bootstrap] Processing ${orders.length} orders...`)
+    const result = bootstrapCustomerIndex(orders)
+    console.log(`[Bootstrap] Complete:`, result)
+
+    res.json({ ok: true, ...result })
+  } catch (err) {
+    console.error('[Ads] Bootstrap customer index error:', err.message)
     res.status(500).json({ ok: false, error: err.message })
   }
 })

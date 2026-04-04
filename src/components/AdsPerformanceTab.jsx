@@ -20,6 +20,11 @@ const GRI = {
   dailyMetaSpend: 210,
   dailyGoogleSpend: 200,
   monthlyAgency: 2200,
+  // Framework thresholds
+  fovCacGreen: 3.0,
+  fovCacAmber: 1.0,
+  amerGreen: 5.0,
+  amerAmber: 2.0,
 }
 
 const API = '/api/ads'
@@ -112,6 +117,48 @@ function amerColour(amer) {
   if (amer > 50) return COLOURS.green
   if (amer >= 0) return COLOURS.yellow
   return COLOURS.red
+}
+
+// ── Framework colour functions ──
+
+function ncacColour(ncac, thresholds) {
+  if (ncac == null || isNaN(ncac)) return COLOURS.muted
+  if (!thresholds) return cacColour(ncac) // fallback
+  if (ncac <= thresholds.green) return COLOURS.green
+  if (ncac <= thresholds.amber) return COLOURS.yellow
+  return COLOURS.red
+}
+
+function fovCacColour(ratio) {
+  if (ratio == null || isNaN(ratio)) return COLOURS.muted
+  if (ratio >= GRI.fovCacGreen) return COLOURS.green
+  if (ratio >= GRI.fovCacAmber) return COLOURS.yellow
+  return COLOURS.red
+}
+
+function cmColour(cm) {
+  if (cm == null || isNaN(cm)) return COLOURS.muted
+  if (cm > 0) return COLOURS.green
+  return COLOURS.red
+}
+
+function acquisitionMerColour(amer) {
+  if (amer == null || isNaN(amer)) return COLOURS.muted
+  if (amer >= GRI.amerGreen) return COLOURS.green
+  if (amer >= GRI.amerAmber) return COLOURS.yellow
+  return COLOURS.red
+}
+
+function newCustColour(wowChange) {
+  if (wowChange == null || isNaN(wowChange)) return COLOURS.muted
+  if (wowChange >= 0) return COLOURS.green
+  if (wowChange > -10) return COLOURS.yellow
+  return COLOURS.red
+}
+
+function statusLabel(status) {
+  const map = { green: 'Healthy', amber: 'Warning', red: 'Critical' }
+  return map[status] || status
 }
 
 function deltaInfo(current, previous, invert = false) {
@@ -232,14 +279,14 @@ function BudgetEditor({ currentBudget, entityId, entityType, onSave, onCancel })
 
 function MetricDefinitions({ onClose }) {
   const definitions = [
+    { term: 'CM$ (Contribution Margin)', desc: 'Revenue minus cost of goods, shipping, payment fees, and total ad spend. THE scoreboard metric. If CM$ is negative, nothing else matters until you fix it. This is Layer 1.' },
     { term: 'MER (Marketing Efficiency Ratio)', desc: 'Total Shopify revenue divided by total ad spend across all channels. Unlike Meta ROAS, MER captures the true blended return including organic uplift from ads. Target: 4.0x+ for GRI.' },
-    { term: 'nCAC (New Customer Acquisition Cost)', desc: 'Total marketing spend (Meta + Google + agency) divided by new Shopify customers. Baseline: $34.52 fully loaded, $29.29 media only. If nCAC exceeds $34.52, you are losing money on acquisition. 94% of GRI customers are first-time buyers.' },
-    { term: 'AMER (Advertising Margin Efficiency Ratio)', desc: 'Percentage of ad spend recovered as gross profit: ((Orders x Gross Profit) - Ad Spend) / Ad Spend x 100. Above 0% means ads are profitable. Target: 50%+.' },
-    { term: 'CPP (Cost Per Purchase)', desc: 'Ad spend divided by number of purchases for a specific campaign or ad. Breakeven is $34.52 (matches nCAC baseline). Target: under $29.29 (media nCAC). Meta overcounts by ~3x so cross-reference with Shopify.' },
-    { term: 'True Contribution', desc: 'Net profit contribution of a campaign: (Purchases x $34.52 gross profit) minus total spend. Positive means the campaign is profitable.' },
-    { term: 'Learning Limited', desc: 'Meta ad set status meaning the ad set is not getting enough conversions (typically < 50/week) to optimise effectively. Needs higher budget or broader targeting.' },
-    { term: 'Frequency', desc: 'Average number of times each person has seen your ad. Above 2.5 often signals creative fatigue - audience has seen it too many times.' },
-    { term: 'Meta ROAS', desc: 'Return on ad spend as reported by Meta. Often inflated due to attribution modelling. Shown greyed out as a reference only - use MER for real decisions.' },
+    { term: 'nCAC (New Customer Acquisition Cost)', desc: 'Total ad spend divided by NEW customers only (not total orders). Uses email-based customer classification from Shopify. Green = below 90-day average, amber = 45% above, red = 2x above. This is the real acquisition cost.' },
+    { term: 'FOV/CAC (First Order Value / CAC)', desc: 'First order profitability: (First Order AOV x Gross Margin) / nCAC. Green = 3.0x+ (strong first-order profit), amber = 1.0-3.0x (marginal), red = below 1.0x (underwater on first order).' },
+    { term: 'aMER (Acquisition MER)', desc: 'New customer revenue divided by total ad spend. Isolates how efficiently ads acquire NEW revenue vs. retaining existing. Green = 5x+, amber = 2-5x, red = below 2x.' },
+    { term: 'LTGP:nCAC (Lifetime Gross Profit / nCAC)', desc: 'Cumulative gross profit per customer over their lifetime divided by nCAC. Phase 3 metric, needs 30+ days of cohort data. The ultimate measure of sustainable growth.' },
+    { term: 'Repeat Rate', desc: 'Percentage of orders from returning customers. Higher repeat rate means more organic revenue and lower effective acquisition cost.' },
+    { term: 'Meta ROAS / CPA', desc: 'Channel-reported metrics. Layer 4 proxies shown collapsed by default. Use for relative comparison between campaigns only, never for business decisions. Meta overcounts by ~3x.' },
   ]
 
   return (
@@ -339,9 +386,12 @@ function AlertBar({ alerts, onDismiss, onAction }) {
   )
 }
 
-// ── Truth Metrics (5 KPI cards) ─────────────────────────────────────────────
+// ── Profitability Dashboard (4-Layer Hierarchy) ───────────────────────────
+// Layer 1: CM$ (Scoreboard) → Layer 2: Business → Layer 3: Customer → Layer 4: Channel
 
-function TruthMetrics({ truth, loading }) {
+function ProfitabilityDashboard({ profitability, loading }) {
+  const [showLayer4, setShowLayer4] = useState(false)
+
   if (loading) {
     return (
       <div className="ads-dark-truth-grid">
@@ -355,79 +405,165 @@ function TruthMetrics({ truth, loading }) {
     )
   }
 
-  if (!truth) return null
+  if (!profitability) return null
 
-  const mer = truth.mer
-  const trueCac = truth.trueCac
-  const amer = truth.amer
-  const totalSpend = truth.totalSpend
-  const revenue = truth.shopifyRevenue
-  const orders = truth.shopifyOrders
-  const days = truth.days || 7
-  const dailyAvgSpend = totalSpend && days ? totalSpend / days : 0
+  const { layer1, layer2, layer3, layer4, days } = profitability
+  const dailyAvgSpend = layer2.adSpend && days ? layer2.adSpend / days : 0
 
   return (
-    <div className="ads-dark-truth-grid">
-      {/* MER */}
-      <div className="ads-dark-truth-card">
-        <div className="ads-dark-truth-label">MER</div>
-        <div className="ads-dark-truth-value" style={{ color: merColour(mer) }}>
-          {mer != null ? mer.toFixed(2) + 'x' : '--'}
+    <div className="ads-profitability-dashboard">
+      {/* ─── LAYER 1: SCOREBOARD ─── */}
+      <div className={`ads-dark-cm-scoreboard ads-dark-cm-${layer1.cmStatus}`}>
+        <div className="ads-dark-cm-header">
+          <span className="ads-dark-cm-label">CONTRIBUTION MARGIN</span>
+          <span className="ads-dark-cm-badge">{statusLabel(layer1.cmStatus).toUpperCase()}</span>
         </div>
-        <div className="ads-dark-truth-sub">
-          {mer >= GRI.targetMER ? 'Above target' : mer >= GRI.breakevenROAS ? 'Above breakeven' : 'Below breakeven'}
-        </div>
-        <div className="ads-dark-truth-target">Target: {GRI.targetMER}x</div>
-      </div>
-
-      {/* nCAC */}
-      <div className="ads-dark-truth-card">
-        <div className="ads-dark-truth-label">nCAC</div>
-        <div className="ads-dark-truth-value" style={{ color: cacColour(trueCac) }}>
-          {trueCac != null ? fmtCurrency(trueCac) : '--'}
-        </div>
-        <div className="ads-dark-truth-sub">
-          {trueCac < GRI.targetCPP ? 'Below media nCAC' : trueCac <= GRI.breakevenCPP ? 'At baseline' : 'Above breakeven'}
-        </div>
-        <div className="ads-dark-truth-target">Breakeven: {fmtCurrency(GRI.ncac)} | Media: {fmtCurrency(GRI.mediaNcac)}</div>
-      </div>
-
-      {/* AMER */}
-      <div className="ads-dark-truth-card">
-        <div className="ads-dark-truth-label">AMER%</div>
-        <div className="ads-dark-truth-value" style={{ color: amerColour(amer) }}>
-          {amer != null ? amer.toFixed(1) + '%' : '--'}
-        </div>
-        <div className="ads-dark-truth-sub">
-          {amer > 50 ? 'Strong margin' : amer >= 0 ? 'Marginal' : 'Losing money'}
-        </div>
-        <div className="ads-dark-truth-target">Target: &gt;50%</div>
-      </div>
-
-      {/* Total Ad Spend */}
-      <div className="ads-dark-truth-card">
-        <div className="ads-dark-truth-label">Total Ad Spend</div>
-        <div className="ads-dark-truth-value" style={{ color: COLOURS.text }}>
-          {fmtCurrency(totalSpend)}
-        </div>
-        <div className="ads-dark-truth-sub">
-          {fmtCurrency(dailyAvgSpend)}/day avg
+        <div className="ads-dark-cm-value">{fmtCurrency(layer1.cm)}</div>
+        <div className="ads-dark-cm-sub">
+          {layer1.cm < 0
+            ? 'CM is negative. Fix this before looking at anything else.'
+            : layer1.cmTrend > 0 ? `+${layer1.cmTrend}% vs prev period` : `${layer1.cmTrend}% vs prev period`}
         </div>
       </div>
 
-      {/* Shopify Revenue */}
-      <div className="ads-dark-truth-card">
-        <div className="ads-dark-truth-label">Shopify Revenue</div>
-        <div className="ads-dark-truth-value" style={{ color: COLOURS.green }}>
-          {fmtCurrency(revenue)}
+      {/* ─── LAYER 2: BUSINESS METRICS ─── */}
+      <div className="ads-dark-layer-label">BUSINESS</div>
+      <div className="ads-dark-truth-grid ads-dark-truth-grid-4">
+        <div className="ads-dark-truth-card">
+          <div className="ads-dark-truth-label">Revenue</div>
+          <div className="ads-dark-truth-value" style={{ color: COLOURS.green }}>
+            {fmtCurrency(layer2.revenue)}
+          </div>
+          <div className="ads-dark-truth-sub">{fmtInt(layer2.orders)} orders</div>
         </div>
-        <div className="ads-dark-truth-sub">
-          {orders != null ? fmtInt(orders) + ' orders' : '--'}
+
+        <div className="ads-dark-truth-card">
+          <div className="ads-dark-truth-label">Ad Spend</div>
+          <div className="ads-dark-truth-value" style={{ color: COLOURS.text }}>
+            {fmtCurrency(layer2.adSpend)}
+          </div>
+          <div className="ads-dark-truth-sub">{fmtCurrency(dailyAvgSpend)}/day avg</div>
         </div>
-        {truth.shopifyAov && (
-          <div className="ads-dark-truth-target">AOV: {fmtCurrency(truth.shopifyAov)}</div>
-        )}
+
+        <div className="ads-dark-truth-card">
+          <div className="ads-dark-truth-label">MER</div>
+          <div className="ads-dark-truth-value" style={{ color: merColour(layer2.mer) }}>
+            {layer2.mer != null ? layer2.mer.toFixed(2) + 'x' : '--'}
+          </div>
+          <div className="ads-dark-truth-sub">
+            {layer2.mer >= GRI.targetMER ? 'Above target' : layer2.mer >= GRI.breakevenROAS ? 'Above breakeven' : 'Below breakeven'}
+          </div>
+          <div className="ads-dark-truth-target">Target: {GRI.targetMER}x</div>
+        </div>
+
+        <div className="ads-dark-truth-card">
+          <div className="ads-dark-truth-label">AOV</div>
+          <div className="ads-dark-truth-value" style={{ color: COLOURS.text }}>
+            {fmtCurrency(layer2.aov)}
+          </div>
+          <div className="ads-dark-truth-sub">Blended average</div>
+        </div>
       </div>
+
+      {/* ─── LAYER 3: CUSTOMER METRICS ─── */}
+      <div className="ads-dark-layer-label">CUSTOMER ACQUISITION</div>
+      <div className="ads-dark-truth-grid ads-dark-truth-grid-6">
+        <div className="ads-dark-truth-card">
+          <div className="ads-dark-truth-label">nCAC</div>
+          <div className="ads-dark-truth-value" style={{ color: ncacColour(layer3.ncac, layer3.ncacThresholds) }}>
+            {layer3.ncac ? fmtCurrency(layer3.ncac) : '--'}
+          </div>
+          <div className="ads-dark-truth-sub" style={{ color: ncacColour(layer3.ncac, layer3.ncacThresholds) }}>
+            {layer3.ncacStatus === 'green' ? 'Below baseline' : layer3.ncacStatus === 'amber' ? 'Above baseline' : 'Critical'}
+          </div>
+          <div className="ads-dark-truth-target">
+            Baseline: {fmtCurrency(layer3.ncacThresholds?.green)}
+          </div>
+        </div>
+
+        <div className="ads-dark-truth-card">
+          <div className="ads-dark-truth-label">FOV/CAC</div>
+          <div className="ads-dark-truth-value" style={{ color: fovCacColour(layer3.fovCac) }}>
+            {layer3.fovCac ? layer3.fovCac.toFixed(2) + 'x' : '--'}
+          </div>
+          <div className="ads-dark-truth-sub" style={{ color: fovCacColour(layer3.fovCac) }}>
+            {layer3.fovCac >= GRI.fovCacGreen ? 'First order profitable' : layer3.fovCac >= GRI.fovCacAmber ? 'Marginal' : 'Underwater'}
+          </div>
+          <div className="ads-dark-truth-target">
+            1st AOV: {fmtCurrency(layer3.firstOrderAov)}
+          </div>
+        </div>
+
+        <div className="ads-dark-truth-card" style={{ opacity: 0.4 }}>
+          <div className="ads-dark-truth-label">LTGP:nCAC</div>
+          <div className="ads-dark-truth-value" style={{ color: COLOURS.muted }}>--</div>
+          <div className="ads-dark-truth-sub">Phase 3</div>
+          <div className="ads-dark-truth-target">Needs 30d+ data</div>
+        </div>
+
+        <div className="ads-dark-truth-card">
+          <div className="ads-dark-truth-label">Repeat Rate</div>
+          <div className="ads-dark-truth-value" style={{ color: COLOURS.text }}>
+            {layer3.repeatRate != null ? layer3.repeatRate.toFixed(1) + '%' : '--'}
+          </div>
+          <div className="ads-dark-truth-sub">
+            {layer3.returningCustomers} returning
+          </div>
+        </div>
+
+        <div className="ads-dark-truth-card">
+          <div className="ads-dark-truth-label">aMER</div>
+          <div className="ads-dark-truth-value" style={{ color: acquisitionMerColour(layer3.amer) }}>
+            {layer3.amer ? layer3.amer.toFixed(2) + 'x' : '--'}
+          </div>
+          <div className="ads-dark-truth-sub" style={{ color: acquisitionMerColour(layer3.amer) }}>
+            {layer3.amerStatus === 'green' ? 'Strong acquisition' : layer3.amerStatus === 'amber' ? 'Moderate' : 'Weak acquisition'}
+          </div>
+          <div className="ads-dark-truth-target">Target: &gt;{GRI.amerGreen}x</div>
+        </div>
+
+        <div className="ads-dark-truth-card">
+          <div className="ads-dark-truth-label">New Customers</div>
+          <div className="ads-dark-truth-value" style={{ color: newCustColour(layer3.newCustWowChange) }}>
+            {layer3.newCustomers != null ? fmtInt(layer3.newCustomers) : '--'}
+          </div>
+          <div className="ads-dark-truth-sub" style={{ color: newCustColour(layer3.newCustWowChange) }}>
+            {layer3.newCustWowChange > 0 ? '+' : ''}{layer3.newCustWowChange}% WoW
+          </div>
+          <div className="ads-dark-truth-target">
+            {fmtCurrency(layer3.newCustomerRevenue)} revenue
+          </div>
+        </div>
+      </div>
+
+      {/* ─── LAYER 4: CHANNEL PROXIES ─── */}
+      <div
+        className="ads-dark-layer-label ads-dark-layer-label-toggle"
+        onClick={() => setShowLayer4(!showLayer4)}
+        style={{ cursor: 'pointer', opacity: 0.5 }}
+      >
+        CHANNEL PROXIES {showLayer4 ? '▾' : '▸'}
+        <span style={{ fontSize: 10, marginLeft: 8, fontWeight: 400 }}>for relative comparison only</span>
+      </div>
+      {showLayer4 && (
+        <div className="ads-dark-truth-grid" style={{ opacity: 0.5 }}>
+          <div className="ads-dark-truth-card">
+            <div className="ads-dark-truth-label">Meta ROAS</div>
+            <div className="ads-dark-truth-value" style={{ color: COLOURS.muted }}>
+              {layer4.metaRoas ? layer4.metaRoas.toFixed(2) + 'x' : '--'}
+            </div>
+            <div className="ads-dark-truth-sub">{layer4.metaPurchases} Meta claims</div>
+          </div>
+
+          <div className="ads-dark-truth-card">
+            <div className="ads-dark-truth-label">Meta CPA</div>
+            <div className="ads-dark-truth-value" style={{ color: COLOURS.muted }}>
+              {layer4.metaCpa ? fmtCurrency(layer4.metaCpa) : '--'}
+            </div>
+            <div className="ads-dark-truth-sub">Proxy — not nCAC</div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -1342,6 +1478,10 @@ export default function AdsPerformanceTab() {
   const [truth, setTruth] = useState(null)
   const [truthLoading, setTruthLoading] = useState(true)
 
+  // Profitability dashboard (nCAC framework)
+  const [profitability, setProfitability] = useState(null)
+  const [profLoading, setProfLoading] = useState(true)
+
   // Daily breakdown
   const [breakdown, setBreakdown] = useState([])
   const [breakdownLoading, setBreakdownLoading] = useState(true)
@@ -1421,6 +1561,37 @@ export default function AdsPerformanceTab() {
     setTruthLoading(false)
   }, [dateRange])
 
+  const fetchProfitability = useCallback(async (range) => {
+    setProfLoading(true)
+    try {
+      const res = await fetch(`${API}/profitability-metrics?dateRange=${range || dateRange}`)
+      const json = await res.json()
+      if (json.ok) {
+        setProfitability(json)
+        // Framework alerts
+        const frameworkAlerts = []
+        if (json.layer1?.cm < 0) {
+          frameworkAlerts.push({ severity: 'CRITICAL', message: `CM$ is negative (${fmtCurrency(json.layer1.cm)}). You are losing money. Fix before scaling.` })
+        }
+        if (json.layer3?.fovCacStatus === 'red') {
+          frameworkAlerts.push({ severity: 'CRITICAL', message: `FOV/CAC is ${json.layer3.fovCac?.toFixed(2)}x — underwater on first order. nCAC is too high or AOV too low.` })
+        }
+        if (json.layer3?.ncacStatus === 'red') {
+          frameworkAlerts.push({ severity: 'HIGH', message: `nCAC is ${fmtCurrency(json.layer3.ncac)} — 2x above baseline. Acquisition cost is critical.` })
+        }
+        if (json.layer3?.newCustWowChange < -20) {
+          frameworkAlerts.push({ severity: 'HIGH', message: `New customers down ${Math.abs(json.layer3.newCustWowChange)}% WoW. Acquisition stall detected.` })
+        }
+        if (frameworkAlerts.length > 0) {
+          setAlerts(prev => [...frameworkAlerts, ...prev])
+        }
+      }
+    } catch (err) {
+      console.error('Profitability metrics error:', err)
+    }
+    setProfLoading(false)
+  }, [dateRange])
+
   const fetchBreakdown = useCallback(async () => {
     setBreakdownLoading(true)
     try {
@@ -1497,6 +1668,7 @@ export default function AdsPerformanceTab() {
   useEffect(() => {
     fetchPerformance()
     fetchTruth()
+    fetchProfitability()
     fetchBreakdown()
   }, [dateRange])
 
@@ -1519,16 +1691,18 @@ export default function AdsPerformanceTab() {
     const iv = setInterval(() => {
       fetchPerformance()
       fetchTruth()
+      fetchProfitability()
     }, 5 * 60 * 1000)
     return () => clearInterval(iv)
-  }, [fetchPerformance, fetchTruth])
+  }, [fetchPerformance, fetchTruth, fetchProfitability])
 
   const refreshAll = useCallback(() => {
     fetchPerformance()
     fetchTruth()
+    fetchProfitability()
     fetchBreakdown()
     fetchScalePath()
-  }, [fetchPerformance, fetchTruth, fetchBreakdown, fetchScalePath])
+  }, [fetchPerformance, fetchTruth, fetchProfitability, fetchBreakdown, fetchScalePath])
 
   // ── Derived Data ──────────────────────────────────────────────────────────
 
@@ -1571,8 +1745,8 @@ export default function AdsPerformanceTab() {
         onDismiss={(idx) => setAlerts(prev => prev.filter((_, i) => i !== idx))}
       />
 
-      {/* Truth Metrics */}
-      <TruthMetrics truth={truth} loading={truthLoading} />
+      {/* Profitability Dashboard (nCAC Framework) */}
+      <ProfitabilityDashboard profitability={profitability} loading={profLoading} />
 
       {/* Spend vs Revenue Chart */}
       <SpendChart breakdown={breakdown} loading={breakdownLoading} />

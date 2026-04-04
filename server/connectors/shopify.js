@@ -156,7 +156,7 @@ async function fetchOrdersChunk(fromISO, toISO) {
 /**
  * Fetch orders for a date range from Shopify REST API — chunked by month for reliability
  */
-export async function getShopifyOrdersRange(fromDate, toDate) {
+export async function getShopifyOrdersRange(fromDate, toDate, { includeOrderDetails = false } = {}) {
   const token = await effectiveAdminToken()
   if (!env.shopify.storeDomain || !token) {
     return { ok: false, error: 'Missing Shopify credentials' }
@@ -226,7 +226,19 @@ export async function getShopifyOrdersRange(fromDate, toDate) {
     productRevenue += subtotal - (hasProtection ? SHIPPING_PROTECTION_PRICE : 0)
   }
 
-  return { ok: true, revenue, productRevenue, shipping, orders: orderCount, protectionCount, protectionRevenue, from: fromDate, to: toDate }
+  const result = { ok: true, revenue, productRevenue, shipping, orders: orderCount, protectionCount, protectionRevenue, from: fromDate, to: toDate }
+
+  if (includeOrderDetails) {
+    result.orderDetails = validOrders.map(o => ({
+      id: o.id,
+      email: (o.contact_email || o.email || '').toLowerCase().trim(),
+      aov: parseFloat(o.total_price) || 0,
+      createdAt: o.created_at,
+      name: o.name,
+    }))
+  }
+
+  return result
 }
 
 export async function getShopifySnapshot() {

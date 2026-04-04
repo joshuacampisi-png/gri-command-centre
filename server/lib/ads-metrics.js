@@ -18,6 +18,16 @@ export const GRI_ADS = {
   dailyMetaSpend: 210,
   dailyGoogleSpend: 200,
   monthlyAgency: 2200,
+  // Payment processing (Shopify Payments standard)
+  paymentProcessingRate: 0.026,
+  paymentProcessingFixed: 0.30,
+  // Framework thresholds
+  fovCacGreen: 3.0,
+  fovCacAmber: 1.0,
+  ltgpGreen: 5.0,
+  ltgpAmber: 3.0,
+  amerGreen: 5.0,
+  amerAmber: 2.0,
 }
 
 /**
@@ -30,18 +40,74 @@ export function calculateMER(shopifyRevenue, totalAdSpend) {
 }
 
 /**
- * True Customer Acquisition Cost = Meta Spend / Shopify Orders
- * Uses actual Shopify order count, not Meta-attributed purchases.
+ * Cost Per Acquisition = Ad Spend / Total Orders (all customers).
+ * NOTE: This is CPA, NOT nCAC. It includes returning customers.
+ * Kept for backward compatibility. Use calculateNCAC for new-customer-only cost.
  */
-export function calculateTrueCAC(totalAdSpend, totalOrders) {
+export function calculateCPA(totalAdSpend, totalOrders) {
   if (!totalOrders || totalOrders <= 0) return 0
   return totalAdSpend / totalOrders
 }
+// Backward compat alias
+export const calculateTrueCAC = calculateCPA
 
 /**
- * Adjusted Marketing Efficiency Ratio
+ * nCAC (New Customer Acquisition Cost) = Ad Spend / New Customers ONLY.
+ * The real cost to acquire a genuinely new customer.
+ * Framework Priority 1.
+ */
+export function calculateNCAC(totalAdSpend, newCustomerCount) {
+  if (!newCustomerCount || newCustomerCount <= 0) return 0
+  return totalAdSpend / newCustomerCount
+}
+
+/**
+ * FOV/CAC (First Order Value / Customer Acquisition Cost).
+ * Does the first order generate enough gross profit to cover acquisition?
+ * > 1.0 = first order pays for itself. < 1.0 = must return to break even.
+ * Framework Priority 2.
+ */
+export function calculateFOVCAC(firstOrderAov, grossMarginPct, ncac) {
+  if (!ncac || ncac <= 0) return 0
+  return (firstOrderAov * grossMarginPct) / ncac
+}
+
+/**
+ * CM$ (Contribution Margin — Dollar Amount).
+ * THE scoreboard metric. If negative, nothing else matters.
+ * CM$ = Net Sales - Cost of Delivery - Ad Spend.
+ * Framework Priority 4 (but Layer 1 in the hierarchy — always shown first).
+ */
+export function calculateCM(netSales, costOfDelivery, adSpend) {
+  return netSales - costOfDelivery - adSpend
+}
+
+/**
+ * Calculate Cost of Delivery from revenue + order count.
+ * CoD = COGS + Shipping + Payment Processing.
+ * COGS estimated via (1 - grossMarginPct) * revenue.
+ */
+export function calculateCostOfDelivery(revenue, shipping, orderCount, grossMarginPct = GRI_ADS.grossMarginPct) {
+  const cogs = revenue * (1 - grossMarginPct)
+  const paymentFees = (revenue * GRI_ADS.paymentProcessingRate) + (orderCount * GRI_ADS.paymentProcessingFixed)
+  return cogs + shipping + paymentFees
+}
+
+/**
+ * aMER (Acquisition Marketing Efficiency Ratio) = New Customer Revenue / Total Ad Spend.
+ * Isolates new customer signal. If aMER << MER, ads are mostly re-converting existing customers.
+ * Framework Priority 5.
+ */
+export function calculateAcquisitionMER(newCustomerRevenue, totalAdSpend) {
+  if (!totalAdSpend || totalAdSpend <= 0) return 0
+  return newCustomerRevenue / totalAdSpend
+}
+
+/**
+ * Adjusted Marketing Efficiency Ratio (legacy).
  * AMER = (Gross Profit - Ad Spend) / Ad Spend * 100
  * Positive = profitable. Negative = losing money.
+ * NOTE: This is the old AMER%, NOT the framework's aMER.
  */
 export function calculateAMER(shopifyRevenue, totalAdSpend, grossMarginPct = 0.30) {
   if (!totalAdSpend || totalAdSpend <= 0) return 0
@@ -56,6 +122,50 @@ export function calculateAMER(shopifyRevenue, totalAdSpend, grossMarginPct = 0.3
 export function calculateNPOAS(shopifyRevenue, totalAdSpend, grossMarginPct = 0.30) {
   if (!totalAdSpend || totalAdSpend <= 0) return 0
   return (shopifyRevenue * grossMarginPct - totalAdSpend) / totalAdSpend
+}
+
+// ── Framework Threshold Functions ──────────────────────────────────────────
+
+/**
+ * Calculate nCAC thresholds from 90-day historical average.
+ * Green = below avg, Amber = 45% above avg, Red = 2x avg.
+ */
+export function getNcacThresholds(historicalAvg) {
+  if (!historicalAvg || historicalAvg <= 0) {
+    // Fallback to current baseline if no history
+    return { green: GRI_ADS.ncac, amber: GRI_ADS.ncac * 1.45, red: GRI_ADS.ncac * 2.0 }
+  }
+  return { green: historicalAvg, amber: historicalAvg * 1.45, red: historicalAvg * 2.0 }
+}
+
+export function getNcacStatus(ncac, thresholds) {
+  if (ncac <= thresholds.green) return 'green'
+  if (ncac <= thresholds.amber) return 'amber'
+  return 'red'
+}
+
+export function getFovCacStatus(fovCac) {
+  if (fovCac >= GRI_ADS.fovCacGreen) return 'green'
+  if (fovCac >= GRI_ADS.fovCacAmber) return 'amber'
+  return 'red'
+}
+
+export function getCmStatus(cm, prevCm = null) {
+  if (cm < 0) return 'red'
+  if (prevCm !== null && cm < prevCm) return 'amber'
+  return 'green'
+}
+
+export function getAcquisitionMerStatus(amer) {
+  if (amer >= GRI_ADS.amerGreen) return 'green'
+  if (amer >= GRI_ADS.amerAmber) return 'amber'
+  return 'red'
+}
+
+export function getNewCustomerTrendStatus(wowChangePct) {
+  if (wowChangePct >= 0) return 'green'
+  if (wowChangePct > -10) return 'amber'
+  return 'red'
 }
 
 /**
