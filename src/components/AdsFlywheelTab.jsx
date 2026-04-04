@@ -446,7 +446,18 @@ export function AdsFlywheelTab() {
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : isTablet ? 'repeat(3, 1fr)' : 'repeat(6, 1fr)', gap: 10, marginBottom: 10 }}>
         <HeroCard label="nCAC" value={h.ncac != null ? fmt$(h.ncac) : '--'} sub={h.newCustomerCount ? `${h.newCustomerCount} new customers` : 'No customer data'} color={h.ncac != null ? (h.ncac <= 50.74 ? C.green : h.ncac <= 65 ? C.yellow : C.red) : C.muted} />
         <HeroCard label="MER" value={fmtX(h.mer)} sub="Target: 3.0x" color={h.mer >= 3.0 ? C.green : h.mer >= 2.50 ? C.yellow : C.red} />
-        <HeroCard label="Meta ROAS" value={fmtX(h.roas)} sub="Channel proxy only" color={h.roas >= 2.50 ? C.green : C.red} icon={<MetaLogo />} />
+        <div style={card}>
+          <div style={{ fontSize: 11, color: C.muted, marginBottom: 2 }}>Channel ROAS</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+            <MetaLogo />
+            <span style={{ fontSize: 20, fontWeight: 700, color: h.roas >= 2.50 ? C.green : C.red }}>{fmtX(h.roas)}</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <GoogleLogo />
+            <span style={{ fontSize: 20, fontWeight: 700, color: h.googleSpend > 0 ? ((h.googleRevenue || 0) / h.googleSpend >= 2.50 ? C.green : C.red) : C.muted }}>{h.googleSpend > 0 ? fmtX((h.googleRevenue || 0) / h.googleSpend) : '--'}</span>
+          </div>
+          <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>Layer 4 — channel proxy</div>
+        </div>
         <HeroCard label="CPA" value={fmt$(h.cpa)} sub="All orders (not nCAC)" color={h.cpa <= 43.13 ? C.green : h.cpa <= 50.74 ? C.yellow : C.red} />
         <HeroCard label="AOV" value={fmt$(h.aov)} sub="Target: $160" color={h.aov >= 160 ? C.green : h.aov >= 100 ? C.yellow : C.red} />
         <HeroCard label="Gross Profit" value={fmt$(h.profit)} sub="After all ad spend" color={h.profit > 0 ? C.green : C.red} />
