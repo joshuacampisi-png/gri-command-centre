@@ -459,7 +459,7 @@ export function AdsFlywheelTab() {
           <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>Layer 4 — channel proxy</div>
         </div>
         <HeroCard label="CPA" value={fmt$(h.cpa)} sub="All orders (not nCAC)" color={h.cpa <= 43.13 ? C.green : h.cpa <= 50.74 ? C.yellow : C.red} />
-        <HeroCard label="AOV" value={fmt$(h.aov)} sub="Target: $160" color={h.aov >= 160 ? C.green : h.aov >= 100 ? C.yellow : C.red} />
+        <HeroCard label="AOV" value={fmt$(h.aov)} sub="Target: $130" color={h.aov >= 130 ? C.green : h.aov >= 100 ? C.yellow : C.red} />
         <HeroCard label="Gross Profit" value={fmt$(h.profit)} sub="After all ad spend" color={h.profit > 0 ? C.green : C.red} />
       </div>
 

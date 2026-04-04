@@ -69,7 +69,7 @@ Blended metrics:
 - Gap to target: $${aovIntel?.gapToTarget || (FLYWHEEL.AOV_TARGET - summary.avgAov7d).toFixed(2)}
 - Bundle rate: ${aovIntel?.bundleRate || summary.bundleRate7d}%
 - Single item rate: ${aovIntel?.singleItemRate || 0}%
-- Orders above $160: ${aovIntel?.aovOver160 || 0}
+- Orders above $130: ${aovIntel?.aovOver160 || 0}
 
 Top 3 creatives by ROAS:
 ${top3ByRoas.map((a, i) => `${i + 1}. "${a.name}" (${a.creativeAngle}) — ROAS ${a.roas7d}, CPA $${a.cpa7d}, AOV $${a.avgAov}, Thumbstop ${a.thumbstopPct}%`).join('\n')}
@@ -203,7 +203,7 @@ AOV Intelligence:
 - Average AOV: $${aovIntel?.avgAov || 0}
 - Bundle rate: ${aovIntel?.bundleRate || 0}%
 - Top angle for AOV: ${aovIntel?.topAngleForAov || 'unknown'}
-- Orders above $160: ${aovIntel?.aovOver160 || 0}
+- Orders above $130: ${aovIntel?.aovOver160 || 0}
 
 KEY BUSINESS CONTEXT:
 - This is a one time purchase (OTP) business. No returning customers. Every acquisition must count.

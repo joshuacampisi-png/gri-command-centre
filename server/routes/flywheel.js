@@ -716,7 +716,7 @@ Top 3 performers: ${winners.slice(0, 3).map(w => `${w.name} (${w.creativeAngle},
 
 Audience distribution: ${JSON.stringify(audiencePerf)}
 
-AOV data: Average $${aovIntel?.avgAov || 0}, Bundle rate ${aovIntel?.bundleRate || 0}%, Target $160
+AOV data: Average $${aovIntel?.avgAov || 0}, Bundle rate ${aovIntel?.bundleRate || 0}%, Target $130
 Total conversions last 14 days: ${conversions.length}
 `
 

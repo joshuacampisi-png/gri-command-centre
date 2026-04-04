@@ -33,7 +33,7 @@ export const FLYWHEEL = {
   BUDGET_SCALE_DAYS_BETWEEN: 3,
 
   // AOV targets
-  AOV_TARGET: 160,
+  AOV_TARGET: 130,
   BUNDLE_RATE_MIN: 0.30,
 
   // Creative metrics benchmarks
