@@ -163,7 +163,7 @@ router.get('/health-check', async (_req, res) => {
       const shopifyRange = await getShopifyOrdersRange(from, to, { includeOrderDetails: true })
       if (shopifyRange.ok && shopifyRange.orderDetails) {
         const index = getIndex()
-        const { newCustomers, returningOrders, newCustomerRevenue } = classifyOrders(shopifyRange.orderDetails, index)
+        const { newCustomers, returningOrders, newCustomerRevenue } = classifyOrders(shopifyRange.orderDetails, index, from, to)
         const totalSpend = perfData.totals?.spend || 0
         const ncac = calculateNCAC(totalSpend, newCustomers)
         const stats = getCustomerStats(index, from, to)

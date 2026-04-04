@@ -719,13 +719,13 @@ router.get('/profitability-metrics', async (req, res) => {
     // Classify current period orders
     const current = classifyOrders(
       orderDetails.map(o => ({ ...o, total_price: o.aov, created_at: o.createdAt, contact_email: o.email })),
-      customerIndex
+      customerIndex, fromStr, toStr
     )
 
     // Classify previous period for WoW comparison
     const prev = classifyOrders(
       prevOrderDetails.map(o => ({ ...o, total_price: o.aov, created_at: o.createdAt, contact_email: o.email })),
-      customerIndex
+      customerIndex, prevFromStr, prevToStr
     )
 
     // ── Layer 1: Scoreboard (CM$) ──

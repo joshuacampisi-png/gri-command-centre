@@ -269,7 +269,7 @@ export function getCustomerStats(index, fromDate, toDate) {
  * Returns per-order classification plus aggregated counts.
  * Does NOT modify the index.
  */
-export function classifyOrders(orders, index) {
+export function classifyOrders(orders, index, fromDate, toDate) {
   let newCount = 0
   let returningCount = 0
   let unknownCount = 0
@@ -282,15 +282,12 @@ export function classifyOrders(orders, index) {
   const seenInBatch = new Set()
 
   for (const order of orders) {
-    const result = classifyOrder(order, index)
-    const aov = parseFloat(order.total_price) || 0
+    const email = extractEmail(order)
+    if (!email) { unknownCount++; continue }
 
-    if (result.unknown) {
-      unknownCount++
-      continue
-    }
+    const hash = hashEmail(email)
+    const aov = parseFloat(order.aov || order.total_price) || 0
 
-    const hash = result.hash
     // If we already saw this email in this batch, it's a repeat within the period
     if (seenInBatch.has(hash)) {
       returningCount++
@@ -298,15 +295,27 @@ export function classifyOrders(orders, index) {
       continue
     }
 
-    if (result.isNew) {
+    seenInBatch.add(hash)
+    const existing = index[hash]
+
+    // Determine if this customer is "new" within the query period:
+    // If they exist in the index and their firstOrderDate falls within [fromDate, toDate],
+    // they are a new customer for this period. If no dates provided, fall back to
+    // whether they exist in the index at all.
+    let isNew = false
+    if (!existing) {
+      isNew = true
+    } else if (fromDate && existing.firstOrderDate) {
+      isNew = existing.firstOrderDate >= fromDate && (!toDate || existing.firstOrderDate <= toDate + 'T23:59:59')
+    }
+
+    if (isNew) {
       newCount++
       newRevenue += aov
       firstOrderAovSum += aov
-      seenInBatch.add(hash)
     } else {
       returningCount++
       returningRevenue += aov
-      seenInBatch.add(hash)
     }
   }
 
