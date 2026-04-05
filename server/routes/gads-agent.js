@@ -4,7 +4,7 @@
  */
 import { Router } from 'express'
 import {
-  getRecommendations, getRecommendationById, updateRecommendation,
+  getRecommendations, getRecommendationById, updateRecommendation, addRecommendation,
   getLatestBriefing, getBriefings, getAuditLog, getConfig, updateConfig,
   getStoreHealth, logAudit, isDryRun,
 } from '../lib/gads-agent-store.js'
