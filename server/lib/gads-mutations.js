@@ -78,6 +78,96 @@ export async function enableKeyword(adGroupId, criterionId) {
   return { ok: true, dryRun: false, action: 'ENABLE_KEYWORD', adGroupId, criterionId, raw: res }
 }
 
+/**
+ * Pause a batch of keywords in a single update call. Payload items:
+ *   [{ adGroupId, criterionId }, ...]
+ * Returns a per-item result array — partial failures are returned rather
+ * than throwing, so a bulk hygiene card can still log what succeeded.
+ */
+export async function pauseKeywordBatch(items) {
+  if (!Array.isArray(items) || items.length === 0) {
+    throw new Error('pauseKeywordBatch: items array required')
+  }
+  if (isDryRun()) return dryLog('PAUSE_KEYWORD_BATCH', { count: items.length, items })
+  const customer = getGadsCustomer()
+  const ops = items.map(it => ({
+    resource_name: adGroupCriterionResource(it.adGroupId, it.criterionId),
+    status: 'PAUSED',
+  }))
+  try {
+    const res = await customer.adGroupCriteria.update(ops)
+    return { ok: true, dryRun: false, action: 'PAUSE_KEYWORD_BATCH', count: items.length, items, raw: res }
+  } catch (err) {
+    // Google Ads returns partial failures in err.errors when partial_failure flag is set;
+    // without that flag any failure is a full rollback. Return the error surface for audit.
+    return {
+      ok: false,
+      dryRun: false,
+      action: 'PAUSE_KEYWORD_BATCH',
+      count: items.length,
+      items,
+      error: err?.errors?.[0]?.message || err?.message || String(err),
+    }
+  }
+}
+
+/**
+ * Add a batch of new positive keywords to ad groups. Payload items:
+ *   [{ adGroupId, text, matchType: 'EXACT'|'PHRASE'|'BROAD', cpcBidAud? }, ...]
+ * cpcBidAud is optional; if omitted the ad group default bidding applies.
+ * Returns per-item result with created resource_names for audit/revert.
+ */
+export async function addKeywordBatch(items) {
+  if (!Array.isArray(items) || items.length === 0) {
+    throw new Error('addKeywordBatch: items array required')
+  }
+  // normalise match type to uppercase string
+  const norm = items.map(it => {
+    if (!it.adGroupId || !it.text) {
+      throw new Error('addKeywordBatch: each item needs adGroupId and text')
+    }
+    return {
+      adGroupId: String(it.adGroupId),
+      text: it.text,
+      matchType: String(it.matchType || 'PHRASE').toUpperCase(),
+      cpcBidAud: it.cpcBidAud || null,
+    }
+  })
+  if (isDryRun()) return dryLog('ADD_KEYWORD_BATCH', { count: norm.length, items: norm })
+  const customer = getGadsCustomer()
+  const ops = norm.map(it => {
+    const op = {
+      ad_group: `customers/${cust()}/adGroups/${it.adGroupId}`,
+      status: 'ENABLED',
+      keyword: { text: it.text, match_type: it.matchType },
+    }
+    if (it.cpcBidAud) op.cpc_bid_micros = dollarsToMicros(it.cpcBidAud)
+    return op
+  })
+  try {
+    const res = await customer.adGroupCriteria.create(ops)
+    const resourceNames = (res?.results || []).map(r => r.resource_name)
+    return {
+      ok: true,
+      dryRun: false,
+      action: 'ADD_KEYWORD_BATCH',
+      count: norm.length,
+      items: norm,
+      resourceNames,
+      raw: res,
+    }
+  } catch (err) {
+    return {
+      ok: false,
+      dryRun: false,
+      action: 'ADD_KEYWORD_BATCH',
+      count: norm.length,
+      items: norm,
+      error: err?.errors?.[0]?.message || err?.message || String(err),
+    }
+  }
+}
+
 export async function updateKeywordBid(adGroupId, criterionId, newBidAud) {
   const newBidMicros = dollarsToMicros(newBidAud)
   if (isDryRun()) return dryLog('UPDATE_BID', { adGroupId, criterionId, newBidAud, newBidMicros })

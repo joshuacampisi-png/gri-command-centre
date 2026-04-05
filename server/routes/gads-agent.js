@@ -14,6 +14,7 @@ import {
 import {
   pauseCampaign, pauseKeyword, addCampaignNegativeKeyword, updateKeywordBid,
   addNegativeToSharedList,
+  pauseKeywordBatch, addKeywordBatch,
 } from '../lib/gads-mutations.js'
 import { dollarsToMicros, microsToDollars, pingGads, isGadsConfigured } from '../lib/gads-client.js'
 import { runFullScan } from '../lib/gads-agent-engine.js'
@@ -369,6 +370,36 @@ router.post('/approve', async (req, res) => {
         executionResult = await pauseKeyword(proposed.adGroupId, proposed.criterionId)
         break
 
+      case 'PAUSE_KEYWORD_BATCH':
+        executionResult = await pauseKeywordBatch(proposed.items || [])
+        break
+
+      case 'ADD_KEYWORD_BATCH':
+        executionResult = await addKeywordBatch(proposed.items || [])
+        break
+
+      case 'CANNONS_HYGIENE': {
+        // Composite action: pause dead + add replacements in one approval.
+        // Runs pause first, then add, so a failing add does not leave the
+        // campaign without the dead keywords still active.
+        const pauseItems = proposed.pauseItems || []
+        const addItems = proposed.addItems || []
+        const pauseRes = pauseItems.length > 0
+          ? await pauseKeywordBatch(pauseItems)
+          : { ok: true, skipped: 'no pause items' }
+        const addRes = addItems.length > 0
+          ? await addKeywordBatch(addItems)
+          : { ok: true, skipped: 'no add items' }
+        executionResult = {
+          ok: (pauseRes.ok !== false) && (addRes.ok !== false),
+          dryRun: pauseRes.dryRun || addRes.dryRun,
+          action: 'CANNONS_HYGIENE',
+          pauseResult: pauseRes,
+          addResult: addRes,
+        }
+        break
+      }
+
       case 'ADD_NEGATIVE_KEYWORD': {
         // Smart routing: try to add to the correct shared negative list first.
         // Falls back to campaign-level with a warning if no shared list matches.
@@ -491,6 +522,9 @@ function buildConfirmation({ rec, proposed, executionResult, recordedAt, accurac
     PAUSE_CAMPAIGN:       { label: 'Pause campaign',              detail: `Pausing "${rec.entityName}" — stops all spend on this campaign until re-enabled.` },
     ENABLE_CAMPAIGN:      { label: 'Re-enable campaign',          detail: `Re-enabling "${rec.entityName}".` },
     PAUSE_KEYWORD:        { label: 'Pause keyword',               detail: `Pausing keyword "${rec.entityName}" — stops it from triggering ad impressions.` },
+    PAUSE_KEYWORD_BATCH:  { label: 'Pause keywords (batch)',      detail: `Pausing ${(proposed.items || []).length} keywords in a single update.` },
+    ADD_KEYWORD_BATCH:    { label: 'Add keywords (batch)',        detail: `Adding ${(proposed.items || []).length} new keywords to their ad groups.` },
+    CANNONS_HYGIENE:      { label: 'Campaign keyword hygiene',    detail: `Pausing ${(proposed.pauseItems || []).length} dead keywords and adding ${(proposed.addItems || []).length} replacements in one operation.` },
     ENABLE_KEYWORD:       { label: 'Re-enable keyword',           detail: `Re-enabling keyword "${rec.entityName}".` },
     ADD_NEGATIVE_KEYWORD: { label: 'Add negative keyword',        detail: `Blocking "${rec.entityName}" so it never triggers ads again. Routed ${executionResult?.routedTo === 'shared_list' ? `to shared list "${executionResult?.listName}" (propagates across subscribing campaigns)` : 'at campaign level'}.` },
     INCREASE_BID:         { label: 'Increase keyword bid',        detail: `Raising CPC bid by ${Math.round(((proposed.multiplier || 1.25) - 1) * 100)}% to capture more of the available inventory.` },
@@ -540,6 +574,38 @@ function buildConfirmation({ rec, proposed, executionResult, recordedAt, accurac
 }
 
 // ── Dismiss ─────────────────────────────────────────────────────────────────
+
+// ── POST /recommendations/insert ───────────────────────────────────────────
+// Insert a pre-built recommendation card directly into the queue. Used by
+// CLI tools and the new pre-flight-enforced card generator to push cards
+// that have been constructed with live API data + the 5-question checklist.
+// The card is stored as status=pending and will appear in the UI on next fetch.
+//
+// Body: { card: { issueTitle, whatToFix, whyItShouldChange, severity,
+//                 category, priority, projectedDollarImpact,
+//                 projectedImpactDirection, currentValue, proposedChange,
+//                 entityType, entityId, entityName, fingerprint, campaignContext,
+//                 preflight, dataFetchedAt } }
+router.post('/recommendations/insert', (req, res) => {
+  try {
+    const card = req.body?.card
+    if (!card) return res.status(400).json({ ok: false, error: 'card required' })
+    if (!card.issueTitle) return res.status(400).json({ ok: false, error: 'card.issueTitle required' })
+    if (!card.proposedChange?.action) return res.status(400).json({ ok: false, error: 'card.proposedChange.action required' })
+    // Fold preflight + dataFetchedAt into campaignContext so they persist on the record
+    const context = {
+      ...(card.campaignContext || {}),
+      preflight: card.preflight || null,
+      dataFetchedAt: card.dataFetchedAt || new Date().toISOString(),
+    }
+    const inserted = addRecommendation({ ...card, campaignContext: context })
+    logAudit('inserted', { source: 'api/recommendations/insert' }, inserted.id, 'system')
+    res.json({ ok: true, recommendation: inserted })
+  } catch (err) {
+    console.error('[gads-agent] insert error:', err)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
 
 router.post('/dismiss', (req, res) => {
   try {
