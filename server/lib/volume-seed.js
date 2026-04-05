@@ -6,12 +6,11 @@
  * THE PROBLEM
  * ----------
  * `server/lib/data-dir.js` prefers `RAILWAY_VOLUME_MOUNT_PATH` over the
- * committed `data/` folder on Railway. That is normally correct — the volume
- * survives deploys and captures real-time webhook writes. But any NEW data
- * file we commit into `data/` (e.g. a freshly-bootstrapped customer index)
- * lands inside the container image at `/app/data/...` and is NEVER copied
- * into the volume, so the server silently runs with an empty / near-empty
- * baseline until something re-populates the volume file by other means.
+ * committed `data/` folder on Railway. On GRI's Railway service the volume
+ * is mounted AT `/app/data/` — which means the Docker image's own
+ * `/app/data/` (containing any files we committed in the repo's `data/`
+ * folder) is COMPLETELY SHADOWED by the volume mount at runtime. The
+ * committed baseline files never exist on the live filesystem.
  *
  * On 2026-04-05 this bit us: the committed customer-index.json had 864
  * entries, Railway's volume had 12, the dashboard reported CM$ -$10,976 RED
@@ -19,17 +18,29 @@
  *
  * THE FIX
  * -------
- * On every server boot, for each whitelisted file:
- *   - If the volume copy is missing → copy the committed file in
- *   - If the volume copy is strictly SMALLER than the committed file →
- *     copy the committed file in (volume has been reset or never seeded)
- *   - If the volume copy is equal or larger → keep it (it has grown via
- *     webhooks beyond the baseline we shipped — don't clobber)
+ * Baseline files live in `seed-data/` at the repo root — OUTSIDE the volume
+ * mount path, so they remain accessible inside the container at
+ * `/app/seed-data/...` even when the volume shadows `/app/data/`.
+ *
+ * On every server boot, for each whitelisted file, copy from
+ * `seed-data/<file>` → `<volume>/<file>` when:
+ *   - The volume copy is missing, OR
+ *   - The volume copy is strictly SMALLER than the seed copy (volume has
+ *     been reset, partially restored, or never seeded).
+ * If the volume copy is equal or larger, keep it — webhooks have grown it
+ * beyond the baseline we shipped and we must not clobber them.
  *
  * Size-based heuristic is deliberately simple and safe:
- *   - It never deletes
- *   - It only overwrites when the volume has LESS data than the baseline
+ *   - Never deletes
+ *   - Only overwrites when the volume has LESS data than the baseline
  *   - Any webhooks received after seeding will still be appended
+ *
+ * HOW TO SHIP A NEW BASELINE
+ * --------------------------
+ *   1. cp data/<file> seed-data/<file>
+ *   2. commit + push
+ *   3. Railway redeploys, boot seed detects volume < seed, overwrites.
+ *      (Or hit POST /api/ads/force-seed-file to apply without restart.)
  *
  * LOCAL DEV
  * ---------
@@ -52,25 +63,30 @@ export function seedVolumeFromRepo() {
     return { ok: true, skipped: 'no-volume-env', note: 'local dev — nothing to seed' }
   }
 
-  const repoDataRoot = join(process.cwd(), 'data')
-  if (!existsSync(repoDataRoot)) {
-    console.warn('[VolumeSeed] Repo data root missing:', repoDataRoot)
-    return { ok: false, skipped: 'no-repo-data', repoDataRoot }
+  const seedRoot = join(process.cwd(), 'seed-data')
+  if (!existsSync(seedRoot)) {
+    console.warn('[VolumeSeed] seed-data/ root missing:', seedRoot)
+    return { ok: false, skipped: 'no-seed-data', seedRoot }
   }
 
-  console.log(`[VolumeSeed] Volume=${volumeRoot}  Repo=${repoDataRoot}`)
+  if (seedRoot === volumeRoot) {
+    console.warn('[VolumeSeed] seedRoot === volumeRoot — seed would be a no-op against itself')
+    return { ok: false, skipped: 'seed-equals-volume', seedRoot, volumeRoot }
+  }
+
+  console.log(`[VolumeSeed] Volume=${volumeRoot}  Seed=${seedRoot}`)
   const results = []
 
   for (const relPath of SEED_WHITELIST) {
-    const repoPath = join(repoDataRoot, relPath)
+    const seedPath = join(seedRoot, relPath)
     const volumePath = join(volumeRoot, relPath)
 
-    if (!existsSync(repoPath)) {
-      results.push({ file: relPath, action: 'skipped', reason: 'repo-missing' })
+    if (!existsSync(seedPath)) {
+      results.push({ file: relPath, action: 'skipped', reason: 'seed-missing' })
       continue
     }
 
-    const repoStat = statSync(repoPath)
+    const repoStat = statSync(seedPath)
     let action = 'copied'
     let reason = 'volume-missing'
 
@@ -91,7 +107,7 @@ export function seedVolumeFromRepo() {
 
     try {
       mkdirSync(dirname(volumePath), { recursive: true })
-      copyFileSync(repoPath, volumePath)
+      copyFileSync(seedPath, volumePath)
       results.push({ file: relPath, action, reason, size: repoStat.size })
     } catch (err) {
       results.push({ file: relPath, action: 'error', error: err.message })
@@ -103,7 +119,7 @@ export function seedVolumeFromRepo() {
     console.log(`[VolumeSeed] ${tag} ${r.file}  ${r.action}  ${r.reason || ''}${r.size ? ` (${r.size}b)` : ''}`)
   }
 
-  return { ok: true, volumeRoot, repoDataRoot, results }
+  return { ok: true, volumeRoot, seedRoot, results }
 }
 
 /**
@@ -122,18 +138,18 @@ export function forceSeedFile(relPath) {
     return { ok: false, error: 'RAILWAY_VOLUME_MOUNT_PATH not set — nothing to seed into' }
   }
 
-  const repoPath = join(process.cwd(), 'data', relPath)
+  const seedPath = join(process.cwd(), 'seed-data', relPath)
   const volumePath = join(volumeRoot, relPath)
 
-  if (!existsSync(repoPath)) {
-    return { ok: false, error: `Repo file missing: ${repoPath}` }
+  if (!existsSync(seedPath)) {
+    return { ok: false, error: `Seed file missing: ${seedPath}` }
   }
 
   try {
     mkdirSync(dirname(volumePath), { recursive: true })
-    copyFileSync(repoPath, volumePath)
+    copyFileSync(seedPath, volumePath)
     const size = statSync(volumePath).size
-    console.log(`[VolumeSeed] Force-seeded ${relPath} (${size}b)`)
+    console.log(`[VolumeSeed] Force-seeded ${relPath} from seed-data/ (${size}b)`)
     return { ok: true, file: relPath, size }
   } catch (err) {
     return { ok: false, error: err.message }
