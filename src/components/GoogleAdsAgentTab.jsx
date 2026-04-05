@@ -154,6 +154,30 @@ export function GoogleAdsAgentTab() {
     }
   }
 
+  async function triggerRegenerate() {
+    if (!confirm(
+      `Regenerate all pending findings with the latest agent logic?\n\n` +
+      `This will dismiss every current pending recommendation (audit trail preserved) ` +
+      `and run a fresh scan so the cards are rebuilt through the current prompts, ` +
+      `forecast module, and rules engine. Use this after an agent logic update.\n\n` +
+      `Continue?`
+    )) return
+    setIsScanning(true)
+    try {
+      const res = await fetch(`${API}/recommendations/regenerate`, { method: 'POST' }).then(x => x.json())
+      if (res.ok) {
+        showToast('ok', `Regenerated — invalidated ${res.invalidated} old cards, scan produced ${res.scan?.newRecommendations || 0} fresh cards.`)
+        await fetchAll()
+      } else {
+        showToast('error', res.error || 'Regenerate failed')
+      }
+    } catch (err) {
+      showToast('error', err.message)
+    } finally {
+      setIsScanning(false)
+    }
+  }
+
   async function approve(id) {
     try {
       const res = await fetch(`${API}/approve`, {
@@ -389,14 +413,24 @@ export function GoogleAdsAgentTab() {
               <div className="gads-potential-sub">across {headlineRecs.length} finding{headlineRecs.length === 1 ? '' : 's'} · under review</div>
             </div>
           )}
-          <button
-            className="gads-scan-btn"
-            onClick={triggerScan}
-            disabled={isScanning || !status?.configured}
-          >
-            <span className="gads-scan-btn-icon">{isScanning ? '◐' : '⟳'}</span>
-            <span>{isScanning ? 'Scanning account...' : 'Run Scan'}</span>
-          </button>
+          <div className="gads-scan-group">
+            <button
+              className="gads-scan-btn"
+              onClick={triggerScan}
+              disabled={isScanning || !status?.configured}
+            >
+              <span className="gads-scan-btn-icon">{isScanning ? '◐' : '⟳'}</span>
+              <span>{isScanning ? 'Scanning account...' : 'Run Scan'}</span>
+            </button>
+            <button
+              className="gads-regen-btn"
+              onClick={triggerRegenerate}
+              disabled={isScanning || !status?.configured}
+              title="Dismiss every current pending card and rebuild them through the latest agent logic (new prompts, new forecast module, new rules). Use after an agent update."
+            >
+              Regenerate with latest logic
+            </button>
+          </div>
         </div>
       </header>
 
@@ -1775,6 +1809,39 @@ const styleSheet = `
 
 .gads-scan-btn:disabled {
   opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.gads-scan-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.gads-regen-btn {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 7px 14px;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-strong);
+  cursor: pointer;
+  transition: all 180ms ease;
+}
+
+.gads-regen-btn:hover:not(:disabled) {
+  border-color: var(--g-yellow);
+  color: var(--g-yellow);
+  background: rgba(251,188,4,0.06);
+}
+
+.gads-regen-btn:disabled {
+  opacity: 0.4;
   cursor: not-allowed;
 }
 

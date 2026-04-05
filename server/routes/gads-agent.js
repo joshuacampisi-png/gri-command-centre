@@ -111,6 +111,59 @@ router.post('/scan', async (_req, res) => {
   }
 })
 
+// ── Regenerate findings with the latest agent logic ────────────────────────
+//
+// When the AI prompts, forecast module, or rules engine are updated, the
+// existing pending recommendations in the store still carry the output of
+// the OLD logic. The dedup fingerprint system blocks them from being
+// recreated on a normal scan because their fingerprints already exist as
+// pending. This endpoint breaks that loop:
+//
+//   1. All currently-pending recommendations are marked "dismissed" with
+//      reason "regenerated_after_logic_update" (so the audit trail shows
+//      why they disappeared).
+//   2. A fresh scan runs. Because the old fingerprints are now in dismissed
+//      status (not pending/completed), getExistingActiveFingerprints() no
+//      longer blocks them, and the rules engine rebuilds them through the
+//      current prompts/forecast/rules.
+//
+// This is the correct way to force a regeneration. Do not delete records —
+// dismissing preserves the audit history.
+
+router.post('/recommendations/regenerate', async (_req, res) => {
+  try {
+    const existing = getRecommendations('pending') || []
+    const now = new Date().toISOString()
+    let invalidated = 0
+    for (const rec of existing) {
+      updateRecommendation(rec.id, {
+        status: 'dismissed',
+        dismissedAt: now,
+        dismissReason: 'regenerated_after_logic_update',
+      })
+      invalidated++
+    }
+    logAudit('recommendations_regenerated', {
+      invalidatedCount: invalidated,
+      reason: 'user_triggered_regenerate',
+    }, null, 'user')
+
+    const scan = await runAgentScanJob()
+
+    res.json({
+      ok: true,
+      invalidated,
+      scan: {
+        findings: scan.findings || 0,
+        newRecommendations: scan.newRecommendations || 0,
+      },
+    })
+  } catch (err) {
+    console.error('[GadsAgent] regenerate error:', err)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
 // ── Approve (execute the proposed change) ───────────────────────────────────
 
 router.post('/approve', async (req, res) => {
