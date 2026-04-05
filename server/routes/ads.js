@@ -48,6 +48,7 @@ import {
   bootstrapIndex as bootstrapCustomerIndex,
   getCustomerStats,
 } from '../lib/customer-index.js'
+import { seedVolumeFromRepo, forceSeedFile, getSeedWhitelist } from '../lib/volume-seed.js'
 import {
   calculateFatigueScore,
   prepareFatigueMetrics,
@@ -914,6 +915,44 @@ router.post('/bootstrap-customer-index', async (req, res) => {
     res.json({ ok: true, ...result })
   } catch (err) {
     console.error('[Ads] Bootstrap customer index error:', err.message)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── POST /api/ads/reseed-volume ─────────────────────────────────────────────
+// Re-runs the whitelisted volume seed pass. Same size-comparison heuristic as
+// boot-time: only overwrites volume files that are smaller than the committed
+// repo baseline. Safe to call anytime. Returns per-file results.
+router.post('/reseed-volume', async (req, res) => {
+  try {
+    const result = seedVolumeFromRepo()
+    res.json(result)
+  } catch (err) {
+    console.error('[Ads] Reseed volume error:', err.message)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── POST /api/ads/force-seed-file ───────────────────────────────────────────
+// Force-overwrite a specific whitelisted volume file from the committed repo
+// copy, bypassing the size heuristic. Use when you've pushed a new committed
+// baseline and want it applied immediately without waiting for a container
+// restart. Body: { file: 'flywheel/customer-index.json' }
+router.post('/force-seed-file', async (req, res) => {
+  try {
+    const file = req.body?.file
+    if (!file) {
+      return res.status(400).json({
+        ok: false,
+        error: 'file required',
+        whitelist: getSeedWhitelist(),
+      })
+    }
+    const result = forceSeedFile(file)
+    if (!result.ok) return res.status(400).json(result)
+    res.json(result)
+  } catch (err) {
+    console.error('[Ads] Force seed file error:', err.message)
     res.status(500).json({ ok: false, error: err.message })
   }
 })

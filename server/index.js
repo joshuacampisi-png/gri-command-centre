@@ -49,6 +49,17 @@ import gadsAgentRoutes from './routes/gads-agent.js'
 import { startGadsAgentCrons } from './lib/gads-agent-cron.js'
 import { startIGReplyBotCron } from './lib/ig-reply-bot/cron.js'
 import { startTNTPaymentPoller } from './lib/tnt-payment-poller.js'
+import { seedVolumeFromRepo } from './lib/volume-seed.js'
+
+// ── VOLUME SEED ──
+// Must run BEFORE any route or lib reads data files so Railway's persistent
+// volume gets populated from the committed baseline on first boot (or after a
+// volume reset). No-op on local dev. See server/lib/volume-seed.js for why.
+try {
+  seedVolumeFromRepo()
+} catch (err) {
+  console.error('[VolumeSeed] Failed (non-fatal):', err.message)
+}
 
 // ── PABLO CRASH RECOVERY — Rule 5 ──
 const JOSH_CHAT = '8040702286'
