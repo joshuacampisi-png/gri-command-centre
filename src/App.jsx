@@ -14,8 +14,9 @@ import AdsPerformanceTab from './components/AdsPerformanceTab'
 import InstagramScheduler from './components/InstagramScheduler'
 import IGReplyBotTab from './components/IGReplyBotTab'
 import { AdsFlywheelTab } from './components/AdsFlywheelTab'
+import { GoogleAdsAgentTab } from './components/GoogleAdsAgentTab'
 
-const NAV = ['Overview', 'Tasks', 'Completed', 'Keywords', 'Competitors', 'Trends', 'Blog Writer', 'Instagram', 'IG Bot', 'Ads Flywheel', 'Ads Testing', 'Ads Performance', 'TNT Hire', 'Returns']
+const NAV = ['Overview', 'Tasks', 'Completed', 'Keywords', 'Competitors', 'Trends', 'Blog Writer', 'Instagram', 'IG Bot', 'Ads Flywheel', 'Google Ads Agent', 'Ads Testing', 'Ads Performance', 'TNT Hire', 'Returns']
 
 const COMPANIES = {
   GRI:     { name: 'Gender Reveal Ideas', description: 'Gender reveal party supplies',          accent: '#ef4444' },
@@ -2898,7 +2899,7 @@ export default function App() {
   const integ   = data?.integrations || {}
   const profile = COMPANIES[company] || COMPANIES.GRI
 
-  const navIcons = { Overview:'◉', Tasks:'☑', Completed:'✅', Keywords:'📈', Competitors:'⚔', Trends:'📊', 'Blog Writer':'✍', Instagram:'📸', 'IG Bot':'🤖', 'Ads Flywheel':'🔄', 'Ads Testing':'📅', 'Ads Performance':'📊', 'TNT Hire':'💥', Returns:'↩', Themes:'◈', 'Theme Editor':'✏', Settings:'⚙' }
+  const navIcons = { Overview:'◉', Tasks:'☑', Completed:'✅', Keywords:'📈', Competitors:'⚔', Trends:'📊', 'Blog Writer':'✍', Instagram:'📸', 'IG Bot':'🤖', 'Ads Flywheel':'🔄', 'Google Ads Agent':'🎯', 'Ads Testing':'📅', 'Ads Performance':'📊', 'TNT Hire':'💥', Returns:'↩', Themes:'◈', 'Theme Editor':'✏', Settings:'⚙' }
 
   const goEditor = theme => { setEditorTheme(theme); setActive('Theme Editor') }
 
@@ -2951,6 +2952,7 @@ export default function App() {
             {active==='IG Bot'     && <IGReplyBotTab />}
             {active==='Ads Testing' && <ContentCalendarTab />}
             {active==='Ads Flywheel' && <AdsFlywheelTab />}
+            {active==='Google Ads Agent' && <GoogleAdsAgentTab />}
             {active==='Ads Performance' && <AdsPerformanceTab />}
             {active==='TNT Hire'    && <TNTDashboard />}
             {active==='Returns'     && <ReturnsTab />}

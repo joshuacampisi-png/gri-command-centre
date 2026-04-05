@@ -45,6 +45,8 @@ import metaConnectRoutes, { loadSavedMetaTokens } from './routes/meta-connect.js
 import igReplyBotRoutes from './routes/ig-reply-bot.js'
 import flywheelRoutes from './routes/flywheel.js'
 import { startFlywheelCrons } from './lib/flywheel-cron.js'
+import gadsAgentRoutes from './routes/gads-agent.js'
+import { startGadsAgentCrons } from './lib/gads-agent-cron.js'
 import { startIGReplyBotCron } from './lib/ig-reply-bot/cron.js'
 import { startTNTPaymentPoller } from './lib/tnt-payment-poller.js'
 
@@ -185,6 +187,7 @@ app.use('/api/instagram', instagramSchedulerRoutes)
 app.use('/api/meta', metaConnectRoutes)
 app.use('/api/ig-reply-bot', igReplyBotRoutes)
 app.use('/api/flywheel', flywheelRoutes)
+app.use('/api/gads-agent', gadsAgentRoutes)
 
 // ── Admin: disk usage + cleanup ──────────────────────────────────────────────
 import { readdirSync, statSync, unlinkSync as _unlinkSync, readFileSync as _readFileSync } from 'fs'
@@ -437,6 +440,9 @@ const server = app.listen(env.port, '0.0.0.0', () => {
 
   // Ads Intelligence Flywheel — Meta sync, kill/scale rules, AOV, AI briefs
   startFlywheelCrons()
+
+  // Google Ads Agent — smart cadence scans, daily briefing, auto-revert
+  startGadsAgentCrons()
 
   console.log('✅ Server running — auto Telegram messages: DISABLED')
   console.log('🔒 Crash recovery: ACTIVE')
