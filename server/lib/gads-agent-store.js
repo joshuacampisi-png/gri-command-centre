@@ -163,6 +163,7 @@ export function getRecommendations(status = null) {
   const all = loadArr(FILES.recommendations)
   if (!status) return all
   if (status === 'pending') return all.filter(r => r.status === 'pending')
+  if (status === 'needs-review') return all.filter(r => r.status === 'needs-review')
   if (status === 'active')  return all.filter(r => r.status === 'pending' || r.status === 'completed')
   return all.filter(r => r.status === status)
 }
@@ -175,7 +176,7 @@ export function addRecommendation(rec) {
   const all = loadArr(FILES.recommendations)
   const record = {
     id: randomUUID(),
-    status: 'pending',
+    status: rec.status || 'pending', // 'pending' (default), 'needs-review' (preflight failed)
     priority: rec.priority || 999,
     severity: rec.severity || 'medium',
     category: rec.category,

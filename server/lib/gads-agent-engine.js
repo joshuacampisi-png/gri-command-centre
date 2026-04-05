@@ -26,6 +26,8 @@ import {
   getCampaignById,
 } from './gads-agent-context.js'
 import { buildForecast, findingAddsNetSpend } from './gads-agent-forecast.js'
+import { getCampaignContextLive } from './gads-live.js'
+import { runPreflight } from './gads-preflight.js'
 import { getFrameworkMetrics } from './gads-agent-framework-metrics.js'
 import {
   recordFrameworkSnapshot,
@@ -587,15 +589,45 @@ export async function runFullScan() {
     ] : []),
   ]
 
-  // Context filter + forecast build + week-1 redistribute filter.
-  // Order:
+  // ── Context filter + preflight + forecast ──────────────────────────────
+  //
+  // v2 pipeline (2026-04-05):
   //   1. Context gate (enabled campaigns only, auto-bid guards, protection)
-  //   2. Attach campaign context
-  //   3. Build forecast object with real fixed math
-  //   4. Week-1 filter: block anything that adds net spend
+  //   2. Attach campaign context from auto-discovery (fast, cached)
+  //   3. Build forecast with real fixed math
+  //   4. Week-1 redistribute filter
+  //   5. Enrich with LIVE campaign context from gads-live.js (async, TTL-cached)
+  //   6. Run 5-question preflight validator (gads-preflight.js)
+  //      - 'ship' → status:pending (goes to Josh's queue)
+  //      - 'needs-review' or 'block' → status:needs-review (visible but not approvable)
+  //
+  // Preflight runs on ALL findings (not just reallocation). Live context
+  // is fetched per unique campaignId with TTL cache so repeated queries
+  // for the same campaign don't hit the API again.
+
   const findings = []
+  const needsReviewFindings = []
   let suppressedCount = 0
   const suppressionReasons = {}
+
+  // Collect unique campaign IDs for batch live context fetch
+  const campaignIds = new Set()
+  for (const f of rawFindings) {
+    const cid = f.rawData?.campaignId || (f.entityType === 'campaign' ? f.entityId : null)
+    if (cid) campaignIds.add(cid)
+  }
+
+  // Fetch live context for all campaigns in parallel (TTL-cached, ~2s first time)
+  const liveContexts = new Map()
+  await Promise.all([...campaignIds].map(async cid => {
+    try {
+      const ctx = await getCampaignContextLive(cid, 30)
+      liveContexts.set(cid, ctx)
+    } catch (err) {
+      console.warn(`[GadsEngine] Live context fetch failed for campaign ${cid}:`, err.message)
+    }
+  }))
+
   for (const f of rawFindings) {
     const check = evaluateFindingAgainstContext(f)
     if (!check.allowed) {
@@ -604,29 +636,8 @@ export async function runFullScan() {
       continue
     }
 
-    // Pre-flight gate for reallocation findings (5-question rule).
-    // Must run AFTER context filter (so campaignContext is not yet attached)
-    // but before the finding enters the active queue.
-    if (f.issueKey === 'budget_reallocation') {
-      const preflight = preflightReallocation(f, cfg)
-      if (!preflight.pass) {
-        suppressedCount++
-        const reason = `preflight_reallocation: failed ${preflight.failures.length} of 5 pre-flight questions`
-        suppressionReasons[reason] = (suppressionReasons[reason] || 0) + 1
-        try {
-          logAudit('preflight_suppressed', {
-            issueTitle: f.issueTitle,
-            failures: preflight.failures,
-            reason: 'Reallocation card failed pre-flight gate. See feedback_gads_recommendation_preflight.md for the 5-question rule.',
-          }, null, 'agent')
-        } catch { /* ok */ }
-        continue
-      }
-    }
-
-    // Attach campaign context
-    const cid = f.rawData?.campaignId ||
-      (f.entityType === 'campaign' ? f.entityId : null)
+    // Attach campaign context from auto-discovery (fast, always available)
+    const cid = f.rawData?.campaignId || (f.entityType === 'campaign' ? f.entityId : null)
     if (cid && auto) {
       const camp = getCampaignById(cid)
       if (camp) {
@@ -657,7 +668,27 @@ export async function runFullScan() {
       continue
     }
 
-    findings.push(f)
+    // ── 5-question preflight (v2) ─────────────────────────────────────────
+    // Runs on ALL findings, not just reallocation. Uses live campaign context
+    // from gads-live.js (fetched in parallel above) for TOF classification,
+    // branded/generic split, and data freshness verification.
+    const liveCtx = cid ? liveContexts.get(cid) : null
+    const dataFetchedAt = liveCtx?.fetchedAt || null
+    const preflight = runPreflight(f, liveCtx, dataFetchedAt)
+    f.preflight = preflight
+
+    if (preflight.verdict === 'ship') {
+      findings.push(f)
+    } else {
+      // Card goes to needs-review: visible to Josh with the full preflight
+      // reasoning trail but NOT auto-approvable until the failing questions
+      // are resolved (either by enriching data or by Josh's manual override).
+      f.preflightVerdict = preflight.verdict
+      f.preflightFailures = Object.entries(preflight.questions)
+        .filter(([, q]) => q.verdict !== 'pass')
+        .map(([key, q]) => ({ question: key, verdict: q.verdict, reason: q.reason || q.analysis?.slice(0, 200) }))
+      needsReviewFindings.push(f)
+    }
   }
 
   if (suppressedCount > 0) {
@@ -683,10 +714,23 @@ export async function runFullScan() {
     return bImpact - aImpact
   })
 
-  // Framework metrics were computed up front so the rules engine could use
-  // them — just return the already-computed object here.
+  // Log needs-review count if any
+  if (needsReviewFindings.length > 0) {
+    try {
+      logAudit('preflight_needs_review', {
+        count: needsReviewFindings.length,
+        byVerdict: needsReviewFindings.reduce((acc, f) => {
+          acc[f.preflightVerdict] = (acc[f.preflightVerdict] || 0) + 1
+          return acc
+        }, {}),
+        titles: needsReviewFindings.slice(0, 10).map(f => f.issueTitle),
+      }, null, 'agent')
+    } catch { /* ok */ }
+  }
+
   return {
     findings,
+    needsReviewFindings,
     counts: {
       campaigns: campaigns.length,
       keywords: keywords.length,
@@ -695,6 +739,7 @@ export async function runFullScan() {
       zeroImpressionKeywords: zeroKws.length,
       shoppingProducts: shoppingProducts.length,
       findings: findings.length,
+      needsReview: needsReviewFindings.length,
     },
     summary: buildAccountSummary(campaigns, cfg),
     frameworkMetrics,

@@ -79,13 +79,36 @@ export async function runAgentScanJob() {
     }, saved.id, 'agent')
   }
 
+  // Store needs-review findings (preflight failed or needs data)
+  const needsReview = (scan.needsReviewFindings || []).filter(f => !existingFingerprints.has(f.fingerprint))
+  for (const f of needsReview) {
+    const saved = addRecommendation({
+      ...f,
+      status: 'needs-review',
+      campaignContext: {
+        ...(f.campaignContext || {}),
+        preflight: f.preflight,
+        preflightVerdict: f.preflightVerdict,
+        preflightFailures: f.preflightFailures,
+        dataFetchedAt: f.preflight?.ranAt || new Date().toISOString(),
+      },
+    })
+    logAudit('recommendation_needs_review', {
+      title: saved.issueTitle,
+      category: saved.category,
+      verdict: f.preflightVerdict,
+      failures: f.preflightFailures?.length || 0,
+    }, saved.id, 'agent')
+  }
+
   logAudit('scan_completed', {
     findings: scan.findings.length,
     newRecommendations: recs.length,
+    needsReview: needsReview.length,
     counts: scan.counts,
   }, null, 'agent')
 
-  return { findings: scan.findings.length, newRecommendations: recs.length, counts: scan.counts }
+  return { findings: scan.findings.length, newRecommendations: recs.length, needsReview: needsReview.length, counts: scan.counts }
 }
 
 export async function runDailyBriefingJob() {

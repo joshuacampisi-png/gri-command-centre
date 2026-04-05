@@ -419,6 +419,12 @@ export async function buildRecommendationsFromFindings(findings, framework = nul
       currentValue: finding.rawData,
       proposedChange: buildProposedChange(finding),
       fingerprint: finding.fingerprint,
+      // v2: attach live context + preflight for UI freshness + audit trail
+      campaignContext: {
+        ...(finding.campaignContext || {}),
+        preflight: finding.preflight || null,
+        dataFetchedAt: finding.preflight?.ranAt || new Date().toISOString(),
+      },
     })
   }
 

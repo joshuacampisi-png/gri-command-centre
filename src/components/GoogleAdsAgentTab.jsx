@@ -93,6 +93,7 @@ export function GoogleAdsAgentTab() {
   const [activeTab, setActiveTab]   = useState('findings')
   const [status, setStatus]         = useState(null)
   const [recs, setRecs]             = useState([])
+  const [needsReview, setNeedsReview] = useState([]) // preflight-blocked cards
   const [briefing, setBriefing]     = useState(null)
   const [audit, setAudit]           = useState([])
   const [config, setConfig]         = useState(null)
@@ -112,9 +113,10 @@ export function GoogleAdsAgentTab() {
 
   const fetchAll = useCallback(async () => {
     try {
-      const [s, r, b, a, cfg, sm, ctx, fw, cp] = await Promise.all([
+      const [s, r, nr, b, a, cfg, sm, ctx, fw, cp] = await Promise.all([
         fetch(`${API}/status`).then(x => x.json()).catch(() => ({})),
         fetch(`${API}/recommendations?status=pending`).then(x => x.json()).catch(() => ({})),
+        fetch(`${API}/recommendations?status=needs-review`).then(x => x.json()).catch(() => ({})),
         fetch(`${API}/briefing`).then(x => x.json()).catch(() => ({})),
         fetch(`${API}/audit?limit=100`).then(x => x.json()).catch(() => ({})),
         fetch(`${API}/config`).then(x => x.json()).catch(() => ({})),
@@ -125,6 +127,7 @@ export function GoogleAdsAgentTab() {
       ])
       if (s?.ok) setStatus(s)
       if (r?.ok) setRecs(r.recommendations || [])
+      if (nr?.ok) setNeedsReview(nr.recommendations || [])
       if (b?.ok) setBriefing(b.briefing)
       if (a?.ok) setAudit(a.events || [])
       if (cfg?.ok) setConfig(cfg.config)
@@ -370,6 +373,7 @@ export function GoogleAdsAgentTab() {
 
   const TABS = [
     { key: 'findings',  label: 'Findings', count: headlineRecs.length + (zeroImpressionGroup ? 1 : 0) },
+    { key: 'needs-review', label: 'Needs Review', count: needsReview.length },
     { key: 'campaigns', label: 'Campaigns', count: campaigns?.campaigns?.length || 0 },
     { key: 'briefing',  label: 'Briefing' },
     { key: 'audit',     label: 'Audit' },
@@ -546,6 +550,9 @@ export function GoogleAdsAgentTab() {
             getRecProtection={getRecProtection}
             zeroImpressionGroup={zeroImpressionGroup}
           />
+        )}
+        {activeTab === 'needs-review' && (
+          <NeedsReviewPanel items={needsReview} onDismiss={dismiss} />
         )}
         {activeTab === 'campaigns' && (
           <CampaignsPanel campaigns={campaigns} targetRoas={summary?.targetRoas} breakevenCppAud={summary?.breakevenCppAud} />
@@ -1265,6 +1272,16 @@ function RecommendationCard({ rec, index, onApprove, onDismiss, dryRun, campaign
 
       <CampaignContextRow campaign={campaign} />
 
+      {/* Data freshness + preflight badge */}
+      {rec.campaignContext?.dataFetchedAt && (
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, opacity: 0.4, margin: '2px 0 6px', display: 'flex', gap: 12, alignItems: 'center' }}>
+          <span>data pulled {fmtRelative(rec.campaignContext.dataFetchedAt)}</span>
+          {rec.campaignContext?.preflight?.allPassed && (
+            <span style={{ color: '#34A853', opacity: 1 }}>pre-flight {rec.campaignContext.preflight.passCount}/5 passed</span>
+          )}
+        </div>
+      )}
+
       <div className="gads-card-body">
         <div className="gads-pillar">
           <div className="gads-pillar-label">What the agent thinks</div>
@@ -1486,6 +1503,71 @@ const CHANNEL_LABELS = {
 
 function channelMeta(key) {
   return CHANNEL_LABELS[key] || { label: key || 'Unknown', colour: '#8b8f9c', icon: '◆' }
+}
+
+// ── Needs Review panel ────────────────────────────────────────────────────
+// Cards that failed the 5-question preflight. Visible for transparency but
+// NOT approvable — Josh can dismiss them or wait for the engine to auto-enrich.
+
+function NeedsReviewPanel({ items, onDismiss }) {
+  if (!items.length) {
+    return (
+      <div className="gads-empty-state">
+        <p style={{ opacity: 0.6, fontFamily: 'var(--font-mono)', fontSize: 13 }}>
+          No cards in needs-review. All findings passed the 5-question pre-flight.
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="gads-actions-list">
+      <div style={{ padding: '16px 0 8px', fontFamily: 'var(--font-mono)', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.5 }}>
+        {items.length} card{items.length !== 1 ? 's' : ''} blocked by pre-flight
+      </div>
+      {items.map(rec => {
+        const pf = rec.campaignContext?.preflight || {}
+        const failures = rec.campaignContext?.preflightFailures || []
+        const fetchedAt = rec.campaignContext?.dataFetchedAt
+        return (
+          <article key={rec.id} className="gads-card" style={{ borderLeftColor: '#EA4335' }}>
+            <div className="gads-card-header">
+              <div className="gads-card-badges">
+                <span className="gads-badge" style={{ background: '#EA4335', color: '#fff' }}>NEEDS REVIEW</span>
+                <span className="gads-badge">{rec.severity}</span>
+              </div>
+            </div>
+            <h3 className="gads-card-title">{rec.issueTitle}</h3>
+            {rec.entityName && (
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.5, margin: '4px 0 12px' }}>
+                {rec.entityName}
+              </div>
+            )}
+            {fetchedAt && (
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, opacity: 0.4, marginBottom: 8 }}>
+                data pulled {new Date(fetchedAt).toLocaleString('en-AU', { timeZone: 'Australia/Brisbane' })} AEST
+              </div>
+            )}
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.5, marginBottom: 6 }}>
+                Pre-flight failures
+              </div>
+              {failures.map((f, i) => (
+                <div key={i} style={{ fontSize: 13, marginBottom: 6, padding: '6px 10px', background: 'rgba(234,67,53,0.08)', borderRadius: 6, borderLeft: '3px solid #EA4335' }}>
+                  <strong style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>{f.question?.replace(/_/g, ' ')?.toUpperCase()}</strong>
+                  <span style={{ marginLeft: 8, opacity: 0.4, fontSize: 11 }}>{f.verdict}</span>
+                  <div style={{ marginTop: 3, opacity: 0.7, fontSize: 12 }}>{f.reason}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button className="gads-btn-secondary" onClick={() => onDismiss(rec.id)}>Dismiss</button>
+            </div>
+          </article>
+        )
+      })}
+    </div>
+  )
 }
 
 function CampaignsPanel({ campaigns, targetRoas = 3.0, breakevenCppAud = 49.35 }) {
