@@ -116,6 +116,12 @@ const DEFAULT_CONFIG = {
   accuracyCheckDays:        7,
   accuracyMaterialisedPct:  0.40, // if actual >= 40% of projected, keep. Otherwise revert.
 
+  // Week-1 redistribute constraint (2026-04-05):
+  // Josh doesn't want to add any new spend in week 1 — only redistribute
+  // existing spend to the best positions. When true, the engine suppresses
+  // any finding whose forecast shows net_spend_change > 0.
+  redistributeModeOnly: true,
+
   // Scan cadence (handled by cron, here for visibility)
   activeHoursStart: 6,
   activeHoursEnd:   22,
@@ -185,6 +191,8 @@ export function addRecommendation(rec) {
     entityType: rec.entityType || '',
     entityId: rec.entityId || '',
     entityName: rec.entityName || '',
+    forecast: rec.forecast || null, // fixed forecast math: current/projected/delta/assumptions/confidence
+    campaignContext: rec.campaignContext || null,
     fingerprint: rec.fingerprint || '', // for dedup
     createdAt: now(),
     approvedAt: null,

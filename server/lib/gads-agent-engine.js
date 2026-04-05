@@ -25,6 +25,7 @@ import {
   getTargetRoasForCampaign,
   getCampaignById,
 } from './gads-agent-context.js'
+import { buildForecast, findingAddsNetSpend } from './gads-agent-forecast.js'
 
 const SEVERITY_ORDER = { critical: 0, high: 1, medium: 2, low: 3 }
 
@@ -295,8 +296,12 @@ export async function runFullScan() {
     ...checkShoppingProducts(shoppingProducts, cfg),
   ]
 
-  // Context filter: evaluate every finding against auto-discovered context
-  // + declared rules. Suppressed findings never reach the AI layer.
+  // Context filter + forecast build + week-1 redistribute filter.
+  // Order:
+  //   1. Context gate (enabled campaigns only, auto-bid guards, protection)
+  //   2. Attach campaign context
+  //   3. Build forecast object with real fixed math
+  //   4. Week-1 filter: block anything that adds net spend
   const findings = []
   let suppressedCount = 0
   const suppressionReasons = {}
@@ -307,7 +312,8 @@ export async function runFullScan() {
       suppressionReasons[check.reason] = (suppressionReasons[check.reason] || 0) + 1
       continue
     }
-    // Attach campaign context to the finding so the AI layer can reason with it
+
+    // Attach campaign context
     const cid = f.rawData?.campaignId ||
       (f.entityType === 'campaign' ? f.entityId : null)
     if (cid && auto) {
@@ -324,11 +330,22 @@ export async function runFullScan() {
           optimizationScore: camp.optimizationScore,
           dailyBudgetAud: camp.budgetAud,
         }
-        // Per-campaign target ROAS override beats the blanket config default
         const campTargetRoas = getTargetRoasForCampaign(camp.id)
         if (campTargetRoas) f.effectiveTargetRoas = campTargetRoas
       }
     }
+
+    // Build the forecast — real math, no hand-wavy projections
+    f.forecast = buildForecast(f)
+
+    // Week-1 redistribute constraint: suppress anything that adds net spend
+    if (cfg.redistributeModeOnly && findingAddsNetSpend(f)) {
+      suppressedCount++
+      const reason = `redistribute-mode: blocks findings that add net spend (+${f.forecast.netSpendChangeAud?.toFixed(2)}/mo)`
+      suppressionReasons[reason] = (suppressionReasons[reason] || 0) + 1
+      continue
+    }
+
     findings.push(f)
   }
 

@@ -558,6 +558,9 @@ function ActionsPanel({
 
   return (
     <div>
+      {/* Cumulative tally — the "if you approve all N" big-picture view */}
+      <CumulativeTally recs={recs} dryRun={dryRun} />
+
       {/* Filter bar */}
       <div className="gads-filterbar">
         <div className="gads-chips">
@@ -685,6 +688,177 @@ function CampaignContextRow({ campaign }) {
   )
 }
 
+// Forecast panel — rendered on every card below the pillars.
+// Shows the real fixed math: current state, projected state, delta, formula,
+// assumptions, and confidence. Transparent so Josh can verify every number.
+function ForecastPanel({ forecast }) {
+  if (!forecast) return null
+  const [expanded, setExpanded] = useState(false)
+
+  const deltaSpend   = forecast.monthly?.spendChangeAud || 0
+  const deltaRev     = forecast.monthly?.revenueChangeAud || 0
+  const deltaProfit  = forecast.monthly?.netProfitChangeAud || 0
+  const netSpend     = forecast.netSpendChangeAud || 0
+
+  const profitColour = deltaProfit > 0 ? G.green : deltaProfit < 0 ? G.red : '#8b8f9c'
+  const spendColour  = netSpend > 0 ? G.red : netSpend < 0 ? G.green : '#8b8f9c'
+
+  const confColours = { high: G.green, medium: G.yellow, low: '#8b8f9c' }
+
+  return (
+    <div className="gads-forecast">
+      <div className="gads-forecast-head" onClick={() => setExpanded(!expanded)}>
+        <div className="gads-forecast-label">
+          <span className="gads-forecast-icon">∑</span>
+          Forecast math
+        </div>
+        <div className="gads-forecast-stats">
+          <div className="gads-forecast-stat">
+            <div className="gads-forecast-stat-lbl">Net spend/mo</div>
+            <div className="gads-forecast-stat-val mono" style={{ color: spendColour }}>
+              {fmtAud(netSpend)}
+            </div>
+          </div>
+          <div className="gads-forecast-stat">
+            <div className="gads-forecast-stat-lbl">Revenue Δ/mo</div>
+            <div className="gads-forecast-stat-val mono" style={{ color: deltaRev >= 0 ? G.green : G.red }}>
+              {deltaRev > 0 ? '+' : ''}{fmtAud(deltaRev)}
+            </div>
+          </div>
+          <div className="gads-forecast-stat">
+            <div className="gads-forecast-stat-lbl">Net profit Δ/mo</div>
+            <div className="gads-forecast-stat-val mono" style={{ color: profitColour }}>
+              {deltaProfit > 0 ? '+' : ''}{fmtAud(deltaProfit)}
+            </div>
+          </div>
+          <div className="gads-forecast-stat">
+            <div className="gads-forecast-stat-lbl">Confidence</div>
+            <div className="gads-forecast-stat-val" style={{ color: confColours[forecast.confidence] || '#8b8f9c', fontWeight: 700, fontSize: 12, textTransform: 'uppercase' }}>
+              {forecast.confidence}
+            </div>
+          </div>
+          <span className={`gads-chevron ${expanded ? 'open' : ''}`}>▾</span>
+        </div>
+      </div>
+
+      {expanded && (
+        <div className="gads-forecast-body">
+          <div className="gads-forecast-formula">{forecast.formula}</div>
+
+          <div className="gads-forecast-table">
+            <div className="gads-forecast-table-head">Detail</div>
+            <div className="gads-forecast-table-row">
+              <div className="gads-forecast-table-lbl">Current (last {forecast.currentState?.period || '30d'})</div>
+              <div className="gads-forecast-table-val">
+                Spend {fmtAud(forecast.currentState?.spendAud, 2)} · Rev {fmtAud(forecast.currentState?.revenueAud, 2)} · ROAS {forecast.currentState?.roas?.toFixed(2)}×
+              </div>
+            </div>
+            <div className="gads-forecast-table-row">
+              <div className="gads-forecast-table-lbl">Projected after change</div>
+              <div className="gads-forecast-table-val">
+                Spend {fmtAud(forecast.projectedState?.spendAud, 2)} · Rev {fmtAud(forecast.projectedState?.revenueAud, 2)} · ROAS {forecast.projectedState?.roas?.toFixed(2)}×
+              </div>
+            </div>
+            <div className="gads-forecast-table-row">
+              <div className="gads-forecast-table-lbl">Delta (monthly)</div>
+              <div className="gads-forecast-table-val">
+                Spend {fmtAud(deltaSpend)} · Revenue {deltaRev > 0 ? '+' : ''}{fmtAud(deltaRev)} · Net profit {deltaProfit > 0 ? '+' : ''}{fmtAud(deltaProfit)}
+              </div>
+            </div>
+          </div>
+
+          {forecast.assumptions && forecast.assumptions.length > 0 && (
+            <div className="gads-forecast-assumptions">
+              <div className="gads-forecast-assumptions-label">Assumptions</div>
+              <ul className="gads-forecast-assumptions-list">
+                {forecast.assumptions.map((a, i) => <li key={i}>{a}</li>)}
+              </ul>
+            </div>
+          )}
+
+          {forecast.confidenceReason && (
+            <div className="gads-forecast-confidence">
+              <div className="gads-forecast-assumptions-label">Confidence note</div>
+              <div className="gads-forecast-confidence-text">{forecast.confidenceReason}</div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Cumulative tally — "if you approve every pending headline finding,
+// here's the combined impact". Sits at the top of the Findings tab
+// so Josh sees the big-picture effect before clicking any individual card.
+function CumulativeTally({ recs, dryRun }) {
+  const tally = useMemo(() => {
+    const t = {
+      count: 0,
+      spendChangeAud: 0,
+      revenueChangeAud: 0,
+      netProfitChangeAud: 0,
+      maxSpendIncrease: 0,
+    }
+    for (const r of recs) {
+      const f = r.forecast
+      if (!f) continue
+      t.count++
+      t.spendChangeAud    += f.monthly?.spendChangeAud    || 0
+      t.revenueChangeAud  += f.monthly?.revenueChangeAud  || 0
+      t.netProfitChangeAud += f.monthly?.netProfitChangeAud || 0
+      if ((f.netSpendChangeAud || 0) > t.maxSpendIncrease) {
+        t.maxSpendIncrease = f.netSpendChangeAud
+      }
+    }
+    return t
+  }, [recs])
+
+  if (tally.count === 0) return null
+
+  const spendDir = tally.spendChangeAud < -1 ? 'save' : tally.spendChangeAud > 1 ? 'add' : 'neutral'
+  const spendColour = spendDir === 'save' ? G.green : spendDir === 'add' ? G.red : '#8b8f9c'
+
+  return (
+    <div className="gads-tally">
+      <div className="gads-tally-head">
+        <div>
+          <div className="gads-tally-eyebrow">If you approve all {tally.count} pending findings</div>
+          <div className="gads-tally-title">Combined monthly impact</div>
+        </div>
+        {dryRun && <span className="gads-tally-chip">Dry-run projection</span>}
+      </div>
+      <div className="gads-tally-grid">
+        <div className="gads-tally-metric">
+          <div className="gads-tally-lbl">Net spend change</div>
+          <div className="gads-tally-val mono" style={{ color: spendColour }}>
+            {tally.spendChangeAud > 0 ? '+' : ''}{fmtAud(tally.spendChangeAud)}
+          </div>
+          <div className="gads-tally-sub">
+            {spendDir === 'save' && `${fmtAud(Math.abs(tally.spendChangeAud))} recovered`}
+            {spendDir === 'add'  && `${fmtAud(tally.spendChangeAud)} added — week-1 flag should block`}
+            {spendDir === 'neutral' && 'zero-sum reallocation'}
+          </div>
+        </div>
+        <div className="gads-tally-metric">
+          <div className="gads-tally-lbl">Revenue lift</div>
+          <div className="gads-tally-val mono" style={{ color: tally.revenueChangeAud >= 0 ? G.green : G.red }}>
+            {tally.revenueChangeAud > 0 ? '+' : ''}{fmtAud(tally.revenueChangeAud)}
+          </div>
+          <div className="gads-tally-sub">from reallocation to higher-ROAS positions</div>
+        </div>
+        <div className="gads-tally-metric">
+          <div className="gads-tally-lbl">Net profit Δ (47% margin)</div>
+          <div className="gads-tally-val mono" style={{ color: tally.netProfitChangeAud >= 0 ? G.green : G.red, fontSize: 32 }}>
+            {tally.netProfitChangeAud > 0 ? '+' : ''}{fmtAud(tally.netProfitChangeAud)}
+          </div>
+          <div className="gads-tally-sub">real bottom line if every forecast holds</div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function ProtectionBadge({ protection }) {
   if (protection === 'execute_freely') return null
   const config = {
@@ -774,6 +948,8 @@ function RecommendationCard({ rec, index, onApprove, onDismiss, dryRun, campaign
           <div className="gads-pillar-text muted">{rec.whyItShouldChange}</div>
         </div>
       </div>
+
+      <ForecastPanel forecast={rec.forecast} />
 
       <div className={`gads-expand ${expanded ? 'open' : ''}`}>
         <div className="gads-expand-inner">
@@ -1929,6 +2105,276 @@ const styleSheet = `
 .gads-protection-glyph {
   font-size: 11px;
   line-height: 1;
+}
+
+/* ── Forecast panel (inside card) ──────────────────────────────────────── */
+
+.gads-forecast {
+  margin-top: 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.015);
+}
+
+.gads-forecast-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  cursor: pointer;
+  gap: 12px;
+  flex-wrap: wrap;
+  transition: background 160ms ease;
+}
+
+.gads-forecast-head:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+.gads-forecast-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gads-forecast-icon {
+  font-family: var(--font-display);
+  font-size: 16px;
+  color: var(--g-blue);
+  line-height: 1;
+}
+
+.gads-forecast-stats {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex-wrap: wrap;
+}
+
+.gads-forecast-stat {
+  min-width: 72px;
+}
+
+.gads-forecast-stat-lbl {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 2px;
+}
+
+.gads-forecast-stat-val {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.gads-forecast-stat-val.mono {
+  font-family: var(--font-mono);
+}
+
+.gads-forecast-body {
+  padding: 0 16px 16px 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.gads-forecast-formula {
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: rgba(66,133,244,0.06);
+  border: 1px solid rgba(66,133,244,0.2);
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--text-soft);
+}
+
+.gads-forecast-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.gads-forecast-table-head {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding: 8px 14px;
+  background: rgba(255,255,255,0.02);
+  border-bottom: 1px solid var(--border);
+}
+
+.gads-forecast-table-row {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+
+.gads-forecast-table-row:last-child {
+  border-bottom: none;
+}
+
+.gads-forecast-table-lbl {
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.gads-forecast-table-val {
+  color: var(--text-soft);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+
+.gads-forecast-assumptions,
+.gads-forecast-confidence {
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.gads-forecast-assumptions-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.gads-forecast-assumptions-list {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text-soft);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.gads-forecast-assumptions-list li {
+  margin-bottom: 3px;
+}
+
+.gads-forecast-confidence-text {
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-soft);
+  font-style: italic;
+}
+
+/* ── Cumulative tally (top of findings tab) ────────────────────────────── */
+
+.gads-tally {
+  margin-bottom: 22px;
+  padding: 22px 26px;
+  background:
+    linear-gradient(135deg, rgba(52,168,83,0.08), rgba(66,133,244,0.04) 50%, transparent 80%),
+    var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
+  position: relative;
+  overflow: hidden;
+}
+
+.gads-tally-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.gads-tally-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.gads-tally-title {
+  font-family: var(--font-display);
+  font-variation-settings: 'opsz' 96;
+  font-weight: 500;
+  font-size: 24px;
+  letter-spacing: -0.015em;
+  color: var(--text);
+}
+
+.gads-tally-chip {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: rgba(251,188,4,0.12);
+  color: var(--g-yellow);
+  border: 1px solid rgba(251,188,4,0.3);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.gads-tally-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px;
+}
+
+.gads-tally-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gads-tally-lbl {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.gads-tally-val {
+  font-family: var(--font-display);
+  font-variation-settings: 'opsz' 144;
+  font-weight: 500;
+  font-size: 26px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.gads-tally-val.mono {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.gads-tally-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  line-height: 1.4;
 }
 
 /* ── Discovery-mode note (inside card) ─────────────────────────────────── */
