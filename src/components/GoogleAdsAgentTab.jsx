@@ -27,12 +27,13 @@ const SEVERITY = {
 
 // Category → Google colour mapping
 const CATEGORY = {
-  spend:    { colour: G.red,    label: 'Spend',    icon: '$' },
-  keyword:  { colour: G.blue,   label: 'Keyword',  icon: 'Kw' },
-  bid:      { colour: G.green,  label: 'Bid',      icon: '↑' },
-  quality:  { colour: G.yellow, label: 'Quality',  icon: '★' },
-  merchant: { colour: G.violet, label: 'Merchant', icon: '⎘' },
-  revert:   { colour: G.red,    label: 'Revert',   icon: '↺' },
+  spend:     { colour: G.red,    label: 'Spend',     icon: '$' },
+  keyword:   { colour: G.blue,   label: 'Keyword',   icon: 'Kw' },
+  bid:       { colour: G.green,  label: 'Bid',       icon: '↑' },
+  quality:   { colour: G.yellow, label: 'Quality',   icon: '★' },
+  merchant:  { colour: G.violet, label: 'Merchant',  icon: '⎘' },
+  framework: { colour: G.violet, label: 'Framework', icon: 'Fw' },
+  revert:    { colour: G.red,    label: 'Revert',    icon: '↺' },
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -98,6 +99,7 @@ export function GoogleAdsAgentTab() {
   const [summary, setSummary]       = useState(null)
   const [context, setContext]       = useState(null)
   const [framework, setFramework]   = useState(null) // Layer 1 CM$ + Layer 3 customer metrics
+  const [campaigns, setCampaigns]   = useState(null) // per-campaign breakdown: { campaigns, totals, channelTotals }
   const [isScanning, setIsScanning] = useState(false)
   const [toast, setToast]           = useState(null)
   const [confirmation, setConfirmation] = useState(null) // post-approval modal payload
@@ -110,7 +112,7 @@ export function GoogleAdsAgentTab() {
 
   const fetchAll = useCallback(async () => {
     try {
-      const [s, r, b, a, cfg, sm, ctx, fw] = await Promise.all([
+      const [s, r, b, a, cfg, sm, ctx, fw, cp] = await Promise.all([
         fetch(`${API}/status`).then(x => x.json()).catch(() => ({})),
         fetch(`${API}/recommendations?status=pending`).then(x => x.json()).catch(() => ({})),
         fetch(`${API}/briefing`).then(x => x.json()).catch(() => ({})),
@@ -119,6 +121,7 @@ export function GoogleAdsAgentTab() {
         fetch(`${API}/account-summary`).then(x => x.json()).catch(() => null),
         fetch(`${API}/context`).then(x => x.json()).catch(() => null),
         fetch(`${API}/framework-metrics?days=30`).then(x => x.json()).catch(() => null),
+        fetch(`${API}/campaigns?days=30`).then(x => x.json()).catch(() => null),
       ])
       if (s?.ok) setStatus(s)
       if (r?.ok) setRecs(r.recommendations || [])
@@ -128,6 +131,7 @@ export function GoogleAdsAgentTab() {
       if (sm?.ok) setSummary(sm.summary)
       if (ctx?.ok) setContext(ctx.context)
       if (fw?.ok) setFramework(fw.metrics)
+      if (cp?.ok) setCampaigns({ campaigns: cp.campaigns || [], totals: cp.totals || null, channelTotals: cp.channelTotals || [], window: cp.window })
     } catch (err) {
       showToast('error', err.message)
     }
@@ -365,10 +369,11 @@ export function GoogleAdsAgentTab() {
   }, [headlineRecs])
 
   const TABS = [
-    { key: 'findings', label: 'Findings', count: headlineRecs.length + (zeroImpressionGroup ? 1 : 0) },
-    { key: 'briefing', label: 'Briefing' },
-    { key: 'audit',    label: 'Audit' },
-    { key: 'settings', label: 'Thresholds' },
+    { key: 'findings',  label: 'Findings', count: headlineRecs.length + (zeroImpressionGroup ? 1 : 0) },
+    { key: 'campaigns', label: 'Campaigns', count: campaigns?.campaigns?.length || 0 },
+    { key: 'briefing',  label: 'Briefing' },
+    { key: 'audit',     label: 'Audit' },
+    { key: 'settings',  label: 'Thresholds' },
   ]
 
   return (
@@ -542,6 +547,9 @@ export function GoogleAdsAgentTab() {
             zeroImpressionGroup={zeroImpressionGroup}
           />
         )}
+        {activeTab === 'campaigns' && (
+          <CampaignsPanel campaigns={campaigns} targetRoas={summary?.targetRoas} breakevenCppAud={summary?.breakevenCppAud} />
+        )}
         {activeTab === 'briefing' && (
           <BriefingPanel briefing={briefing} onGenerate={generateBriefing} />
         )}
@@ -610,12 +618,13 @@ function ActionsPanel({
   ]
 
   const catChips = [
-    { key: 'all',      label: 'All categories', colour: '#8b8f9c' },
-    { key: 'spend',    label: 'Spend',          colour: G.red },
-    { key: 'keyword',  label: 'Keyword',        colour: G.blue },
-    { key: 'bid',      label: 'Bid',            colour: G.green },
-    { key: 'quality',  label: 'Quality',        colour: G.yellow },
-    { key: 'merchant', label: 'Merchant',       colour: G.violet },
+    { key: 'all',       label: 'All categories', colour: '#8b8f9c' },
+    { key: 'framework', label: 'Framework',      colour: G.violet },
+    { key: 'spend',     label: 'Spend',          colour: G.red },
+    { key: 'keyword',   label: 'Keyword',        colour: G.blue },
+    { key: 'bid',       label: 'Bid',            colour: G.green },
+    { key: 'quality',   label: 'Quality',        colour: G.yellow },
+    { key: 'merchant',  label: 'Merchant',       colour: G.violet },
   ]
 
   return (
@@ -1452,6 +1461,231 @@ function GroupedKeywordCard({ group, campaign, protection, dryRun, onApproveChil
         </div>
       )}
     </article>
+  )
+}
+
+/* ── Campaigns panel ─────────────────────────────────────────────────────
+ * Every ENABLED campaign in the account, grouped by channel type, sorted by
+ * spend, with ROAS / CPA / daily budget / utilisation laid out clearly.
+ * Channel rollup strip at the top, sortable detail table below.
+ * Data source: GET /api/gads-agent/campaigns?days=30 */
+
+const CHANNEL_LABELS = {
+  SEARCH:            { label: 'Search',           colour: G.blue,   icon: '🔍' },
+  SHOPPING:          { label: 'Shopping',         colour: G.green,  icon: '🛒' },
+  PERFORMANCE_MAX:   { label: 'Performance Max',  colour: G.violet, icon: '⚡' },
+  DISPLAY:           { label: 'Display',          colour: G.yellow, icon: '◩' },
+  VIDEO:             { label: 'Video',            colour: G.red,    icon: '▶' },
+  DEMAND_GEN:        { label: 'Demand Gen',       colour: G.violet, icon: '◈' },
+  DISCOVERY:         { label: 'Discovery',        colour: G.violet, icon: '◈' },
+  LOCAL:             { label: 'Local',            colour: G.green,  icon: '📍' },
+  SMART:             { label: 'Smart',            colour: G.blue,   icon: '✦' },
+  HOTEL:             { label: 'Hotel',            colour: G.yellow, icon: '🏨' },
+  UNKNOWN:           { label: 'Unknown',          colour: '#8b8f9c', icon: '?' },
+}
+
+function channelMeta(key) {
+  return CHANNEL_LABELS[key] || { label: key || 'Unknown', colour: '#8b8f9c', icon: '◆' }
+}
+
+function CampaignsPanel({ campaigns, targetRoas = 3.0, breakevenCppAud = 49.35 }) {
+  const [sortBy, setSortBy] = useState('spend')
+  const [sortDir, setSortDir] = useState('desc')
+  const [filterChannel, setFilterChannel] = useState('all')
+
+  if (!campaigns || !campaigns.campaigns || campaigns.campaigns.length === 0) {
+    return (
+      <div className="gads-empty">
+        <div className="gads-empty-mark">⌁</div>
+        <div className="gads-empty-title">Loading campaign data…</div>
+        <div className="gads-empty-sub">Pulling live spend, conversions, ROAS and budget allocation from the Google Ads API.</div>
+      </div>
+    )
+  }
+
+  const { campaigns: rows, totals, channelTotals, window } = campaigns
+  const days = window?.days || 30
+
+  function handleSort(key) {
+    if (sortBy === key) {
+      setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortBy(key)
+      setSortDir(key === 'name' ? 'asc' : 'desc')
+    }
+  }
+
+  const filtered = filterChannel === 'all'
+    ? rows
+    : rows.filter(c => c.channelType === filterChannel)
+
+  const sorted = [...filtered].sort((a, b) => {
+    const dir = sortDir === 'asc' ? 1 : -1
+    const av = a[sortBy]
+    const bv = b[sortBy]
+    if (typeof av === 'string') return dir * av.localeCompare(bv)
+    return dir * ((av || 0) - (bv || 0))
+  })
+
+  function roasColour(r) {
+    if (!r) return '#8b8f9c'
+    if (r >= targetRoas) return G.green
+    if (r >= targetRoas * 0.7) return G.yellow
+    return G.red
+  }
+  function cpaColour(cpa) {
+    if (!cpa) return '#8b8f9c'
+    if (cpa <= breakevenCppAud * 0.85) return G.green
+    if (cpa <= breakevenCppAud) return G.yellow
+    return G.red
+  }
+  function utilColour(u) {
+    if (u == null) return '#8b8f9c'
+    if (u >= 90) return G.red         // budget-capped
+    if (u >= 60) return G.green       // healthy
+    if (u >= 30) return G.yellow      // under-utilised
+    return G.red                       // chronically under
+  }
+
+  const SortHeader = ({ k, label, align = 'right' }) => (
+    <th className={`gads-camp-th ${align === 'right' ? 'right' : ''}`}>
+      <button
+        className={`gads-camp-sort ${sortBy === k ? 'active' : ''}`}
+        onClick={() => handleSort(k)}
+      >
+        {label}
+        {sortBy === k && <span className="gads-camp-sort-arrow">{sortDir === 'asc' ? '▲' : '▼'}</span>}
+      </button>
+    </th>
+  )
+
+  return (
+    <div className="gads-camp-root">
+      {/* Channel rollup strip — one card per channel type */}
+      <div className="gads-camp-channels">
+        <button
+          className={`gads-camp-channel-card ${filterChannel === 'all' ? 'active' : ''}`}
+          onClick={() => setFilterChannel('all')}
+          style={filterChannel === 'all' ? { borderColor: G.blue } : undefined}
+        >
+          <div className="gads-camp-channel-head">
+            <span className="gads-camp-channel-icon">◎</span>
+            <span className="gads-camp-channel-label">All channels</span>
+            <span className="gads-camp-channel-count">{totals?.campaignCount || 0}</span>
+          </div>
+          <div className="gads-camp-channel-spend">{fmtAud(totals?.spendAud || 0)}</div>
+          <div className="gads-camp-channel-meta">
+            <span>ROAS <strong style={{ color: roasColour(totals?.roas) }}>{(totals?.roas || 0).toFixed(2)}×</strong></span>
+            <span>CPA <strong style={{ color: cpaColour(totals?.cpa) }}>{fmtAud(totals?.cpa || 0, 2)}</strong></span>
+          </div>
+          <div className="gads-camp-channel-budget">
+            Daily budget total {fmtAud(totals?.dailyBudgetAud || 0)}
+          </div>
+        </button>
+        {channelTotals.map(ch => {
+          const meta = channelMeta(ch.channelType)
+          const active = filterChannel === ch.channelType
+          return (
+            <button
+              key={ch.channelType}
+              className={`gads-camp-channel-card ${active ? 'active' : ''}`}
+              onClick={() => setFilterChannel(active ? 'all' : ch.channelType)}
+              style={active ? { borderColor: meta.colour } : undefined}
+            >
+              <div className="gads-camp-channel-head">
+                <span className="gads-camp-channel-icon" style={{ color: meta.colour }}>{meta.icon}</span>
+                <span className="gads-camp-channel-label">{meta.label}</span>
+                <span className="gads-camp-channel-count">{ch.count}</span>
+              </div>
+              <div className="gads-camp-channel-spend">{fmtAud(ch.spendAud)}</div>
+              <div className="gads-camp-channel-meta">
+                <span>ROAS <strong style={{ color: roasColour(ch.roas) }}>{(ch.roas || 0).toFixed(2)}×</strong></span>
+                <span>CPA <strong style={{ color: cpaColour(ch.cpa) }}>{fmtAud(ch.cpa || 0, 2)}</strong></span>
+              </div>
+              <div className="gads-camp-channel-budget">
+                Daily {fmtAud(ch.dailyBudgetAud)}
+              </div>
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Detail table */}
+      <div className="gads-camp-table-wrap">
+        <div className="gads-camp-table-head">
+          <div className="gads-camp-title">Every campaign currently spending</div>
+          <div className="gads-camp-sub">
+            {sorted.length} campaign{sorted.length === 1 ? '' : 's'} · last {days} days · sorted by {sortBy} ({sortDir})
+          </div>
+        </div>
+        <div className="gads-camp-table-scroll">
+          <table className="gads-camp-table">
+            <thead>
+              <tr>
+                <SortHeader k="name" label="Campaign" align="left" />
+                <SortHeader k="channelType" label="Channel" align="left" />
+                <SortHeader k="dailyBudgetAud" label="Daily budget" />
+                <SortHeader k="spendAud" label={`Spend (${days}d)`} />
+                <SortHeader k="utilisationPct" label="Budget used" />
+                <SortHeader k="conversions" label="Conv" />
+                <SortHeader k="conversionsValueAud" label="Conv value" />
+                <SortHeader k="roas" label="ROAS" />
+                <SortHeader k="cpa" label="CPA" />
+                <SortHeader k="convRate" label="Conv %" />
+                <SortHeader k="ctr" label="CTR" />
+                <SortHeader k="avgCpc" label="CPC" />
+              </tr>
+            </thead>
+            <tbody>
+              {sorted.map(c => {
+                const meta = channelMeta(c.channelType)
+                return (
+                  <tr key={c.campaignId}>
+                    <td className="gads-camp-name" title={c.name}>{c.name}</td>
+                    <td>
+                      <span className="gads-camp-chan-pill" style={{ color: meta.colour, borderColor: `${meta.colour}55`, background: `${meta.colour}14` }}>
+                        <span className="gads-camp-chan-icon">{meta.icon}</span>
+                        {meta.label}
+                      </span>
+                    </td>
+                    <td className="right mono">{fmtAud(c.dailyBudgetAud)}</td>
+                    <td className="right mono"><strong>{fmtAud(c.spendAud)}</strong></td>
+                    <td className="right mono" style={{ color: utilColour(c.utilisationPct) }}>
+                      {c.utilisationPct != null ? `${c.utilisationPct.toFixed(0)}%` : '—'}
+                    </td>
+                    <td className="right mono">{c.conversions.toFixed(1)}</td>
+                    <td className="right mono">{fmtAud(c.conversionsValueAud)}</td>
+                    <td className="right mono" style={{ color: roasColour(c.roas) }}><strong>{(c.roas || 0).toFixed(2)}×</strong></td>
+                    <td className="right mono" style={{ color: cpaColour(c.cpa) }}>{c.cpa ? fmtAud(c.cpa, 2) : '—'}</td>
+                    <td className="right mono">{(c.convRate || 0).toFixed(2)}%</td>
+                    <td className="right mono">{(c.ctr || 0).toFixed(2)}%</td>
+                    <td className="right mono">{fmtAud(c.avgCpc || 0, 2)}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+            <tfoot>
+              <tr className="gads-camp-totals">
+                <td colSpan={2}><strong>Account total ({totals?.campaignCount || 0} campaigns)</strong></td>
+                <td className="right mono"><strong>{fmtAud(totals?.dailyBudgetAud || 0)}</strong></td>
+                <td className="right mono"><strong>{fmtAud(totals?.spendAud || 0)}</strong></td>
+                <td className="right mono">—</td>
+                <td className="right mono"><strong>{(totals?.conversions || 0).toFixed(1)}</strong></td>
+                <td className="right mono"><strong>{fmtAud(totals?.conversionsValueAud || 0)}</strong></td>
+                <td className="right mono" style={{ color: roasColour(totals?.roas) }}><strong>{(totals?.roas || 0).toFixed(2)}×</strong></td>
+                <td className="right mono" style={{ color: cpaColour(totals?.cpa) }}><strong>{totals?.cpa ? fmtAud(totals.cpa, 2) : '—'}</strong></td>
+                <td colSpan={3} className="right">—</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <div className="gads-camp-legend">
+          <span><span className="dot" style={{ background: G.green }} /> ROAS ≥ target ({targetRoas}×) · CPA ≤ 85% of breakeven</span>
+          <span><span className="dot" style={{ background: G.yellow }} /> Amber zone</span>
+          <span><span className="dot" style={{ background: G.red }} /> Below target / over breakeven / budget-capped</span>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -3748,6 +3982,202 @@ const styleSheet = `
 @keyframes gads-toast-in {
   from { opacity: 0; transform: translateY(-8px) scale(0.96); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Campaigns panel ────────────────────────────────────────────────────── */
+
+.gads-camp-root {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  animation: gads-fade-up 360ms both;
+}
+
+.gads-camp-channels {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 14px;
+}
+
+.gads-camp-channel-card {
+  background: rgba(20, 22, 28, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 16px 18px;
+  text-align: left;
+  color: #e8eaed;
+  cursor: pointer;
+  transition: border-color 160ms ease, transform 160ms ease, background 160ms ease;
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+}
+.gads-camp-channel-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.gads-camp-channel-card.active {
+  background: rgba(66, 133, 244, 0.08);
+}
+
+.gads-camp-channel-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.gads-camp-channel-icon { font-size: 16px; }
+.gads-camp-channel-label {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #9aa0a6;
+}
+.gads-camp-channel-count {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #c8cbd0;
+}
+.gads-camp-channel-spend {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 6px;
+}
+.gads-camp-channel-meta {
+  display: flex;
+  gap: 14px;
+  font-size: 12px;
+  color: #9aa0a6;
+  margin-bottom: 6px;
+}
+.gads-camp-channel-meta strong { font-family: 'JetBrains Mono', monospace; }
+.gads-camp-channel-budget {
+  font-size: 11px;
+  color: #6a6f7a;
+}
+
+.gads-camp-table-wrap {
+  background: rgba(20, 22, 28, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 20px 4px 16px;
+  overflow: hidden;
+}
+.gads-camp-table-head {
+  padding: 0 20px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.gads-camp-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+}
+.gads-camp-sub {
+  font-size: 12px;
+  color: #9aa0a6;
+  margin-top: 4px;
+}
+.gads-camp-table-scroll {
+  overflow-x: auto;
+  margin-top: 10px;
+}
+.gads-camp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  color: #e8eaed;
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+}
+.gads-camp-table th,
+.gads-camp-table td {
+  padding: 10px 12px;
+  white-space: nowrap;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+.gads-camp-table th.gads-camp-th {
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #9aa0a6;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.02);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.gads-camp-th.right { text-align: right; }
+.gads-camp-th.right .gads-camp-sort { justify-content: flex-end; }
+.gads-camp-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  color: inherit;
+  font: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+.gads-camp-sort:hover { color: #fff; }
+.gads-camp-sort.active { color: #fff; }
+.gads-camp-sort-arrow { font-size: 9px; }
+
+.gads-camp-table td.right { text-align: right; }
+.gads-camp-table td.mono { font-family: 'JetBrains Mono', monospace; }
+.gads-camp-table tbody tr:hover { background: rgba(255, 255, 255, 0.03); }
+
+.gads-camp-name {
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+.gads-camp-chan-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.gads-camp-chan-icon { font-size: 11px; }
+
+.gads-camp-totals td {
+  border-top: 2px solid rgba(255, 255, 255, 0.12);
+  padding-top: 14px;
+  padding-bottom: 14px;
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.gads-camp-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  padding: 14px 20px 4px;
+  font-size: 11px;
+  color: #9aa0a6;
+}
+.gads-camp-legend .dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
 }
 
 /* ── Responsive ─────────────────────────────────────────────────────────── */

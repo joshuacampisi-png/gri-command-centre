@@ -70,6 +70,12 @@ function classifyDirection(finding) {
       return 'structural_cleanup'
     case 'disapproved_ad':
       return 'quality_fix'
+    case 'framework_ncac_spike':
+    case 'framework_fov_cac_below_one':
+    case 'framework_fov_cac_pause_gate':
+    case 'framework_sponge_alert':
+    case 'framework_cm_negative':
+      return 'framework_alert'
     default:
       return 'unknown'
   }
@@ -80,6 +86,7 @@ const LEGAL_RECOMMENDATIONS_BY_DIRECTION = {
   overperformance:  'Increase bids, scale budget, add lookalike audiences, or apply Smart Bidding Exploration to capture incremental volume. NEVER suggest pausing or cutting — this entity is already winning.',
   structural_cleanup: 'Remove dead weight that consumes no budget. Do not frame this as a money opportunity — the value is account hygiene, not direct dollar impact.',
   quality_fix: 'Fix the specific quality/compliance issue (disapproval, low QS) via ad rewrites, landing page improvements, or ad relevance work. Do not suggest bidding changes as the primary fix.',
+  framework_alert: 'Account-level framework warning. This is a diagnostic flag, not an executable action — the narrative should explain what broke at Layer 1 or Layer 3, which campaigns are the likely suspects based on portfolio mix, and what Josh should investigate manually. Do NOT propose a specific campaign mutation — these alerts drive investigation, not automation.',
   unknown: 'Be conservative. Recommend manual review.',
 }
 
@@ -94,7 +101,29 @@ const LEGAL_RECOMMENDATIONS_BY_DIRECTION = {
 //   3. Numeric claims constrained to provided data only
 //   4. Dollar impact framed as contribution margin, not gross revenue
 
-async function writeCardCopy(finding, bestPractice, impact, direction, cfg) {
+// Render a compact framework snapshot block for Claude prompts. Returns null
+// if the framework metrics object is missing or carries an error flag.
+function renderFrameworkBlock(framework) {
+  if (!framework || framework.error) return null
+  const cm = framework.layer1?.cm
+  const ncac = framework.layer3?.ncac
+  const fovCac = framework.layer3?.fovCac
+  const aMer = framework.layer3?.aMer
+  const newCount = framework.layer3?.newCustomerCount
+  const windowDays = framework.window?.days || 30
+  const lines = [
+    `FRAMEWORK METRICS (computed from customer-index + ads-metrics, ${windowDays}d window)`,
+    cm?.value != null ? `  Layer 1 CM$ (new-customer): $${cm.value.toFixed(2)} AUD (${cm.status || 'n/a'})` : null,
+    ncac?.value != null ? `  nCAC: $${ncac.value.toFixed(2)} vs 90d baseline $${(ncac.historicalAvg || 0).toFixed(2)} (${ncac.status || 'n/a'})` : null,
+    fovCac?.value != null ? `  FOV/CAC: ${fovCac.value.toFixed(2)}× (${fovCac.status || 'n/a'}) — PAUSE gate if <1.0x for 3+ days` : null,
+    aMer?.value != null ? `  aMER: ${aMer.value.toFixed(2)}× (${aMer.status || 'n/a'})` : null,
+    newCount?.total != null ? `  New customers: ${newCount.total} total, ${newCount.dailyAvg}/day, ${newCount.wowChangePct >= 0 ? '+' : ''}${newCount.wowChangePct}% WoW (${newCount.trend || 'n/a'})` : null,
+    framework.spend?.blended != null ? `  Blended ad spend: $${Math.round(framework.spend.blended).toLocaleString('en-AU')} AUD (Google $${Math.round(framework.spend.google || 0).toLocaleString('en-AU')} + Meta $${Math.round(framework.spend.meta || 0).toLocaleString('en-AU')})` : null,
+  ].filter(Boolean)
+  return lines.join('\n')
+}
+
+async function writeCardCopy(finding, bestPractice, impact, direction, cfg, framework) {
   // whatToFix is ALWAYS deterministic — never invented by Claude
   const whatToFix = templateWhatToFix(finding)
 
@@ -153,21 +182,19 @@ async function writeCardCopy(finding, bestPractice, impact, direction, cfg) {
         `  • Hardcoded AOV (track first_order_aov separately)\n` +
         `  • Blended remarketing + prospecting (report nCAC for prospecting only)\n\n` +
 
-        `KNOWN AGENT GAP (be honest in your narrative if relevant):\n` +
-        `The rules engine currently only produces Layer 4 channel findings (ROAS-based). ` +
-        `It does NOT yet compute nCAC, FOV/CAC, LTGP:nCAC, or true CM$. ` +
-        `Cost of Delivery is approximated by applying the ${Math.round(cfg.grossMarginPct * 100)}% gross margin to revenue, which is a rough stand-in for proper COGS+shipping+processing. ` +
-        `When you write narrative, use framework vocabulary where appropriate but do NOT claim nCAC or LTGP numbers the forecast has not provided.\n\n` +
+        `FRAMEWORK METRICS ARE LIVE (as of 2026-04-05)\n` +
+        `The rules engine now computes Layer 1 CM$ and Layer 3 customer metrics (nCAC, FOV/CAC, aMER, new customer count, WoW trend) from the live Shopify customer index + blended Google+Meta ad spend. Cost of Delivery uses the real framework formula (COGS + payment processing + shipping). You MAY reference these numbers in your narrative — they are provided explicitly in the prompt body.\n` +
+        `LTGP:nCAC cohort tracking (30/60/90/180/365d) is still pending — it requires monthly cohort grouping. If you need LTGP for a narrative point, note it as "not yet tracked" rather than fabricating a number.\n\n` +
 
         `WRITING STYLE\n` +
         `Plain Australian English. No dashes. No AI filler phrases ("leveraging", "going forward", "in order to"). Direct and specific.\n\n` +
 
         `HARD CONSTRAINTS — violating any of these produces a wrong answer:\n` +
-        `1. ONLY reference numbers that appear in the "Campaign context" or "Forecast" sections below. Do NOT invent specific dollar amounts, percentages, or budgets.\n` +
+        `1. ONLY reference numbers that appear in the "Campaign context", "Forecast", or "Framework metrics" sections below. Do NOT invent specific dollar amounts, percentages, or budgets.\n` +
         `2. Frame dollar impact as contribution margin (CM$), not gross revenue. Revenue on a physical-product business is vanity.\n` +
         `3. Do NOT contradict the "Prescription" field — the narrative must match the action, not propose an alternative.\n` +
         `4. Respect the "Direction" — only recommend actions from the legal set for that direction.\n` +
-        `5. If the narrative would imply a Layer 3 metric (nCAC, FOV/CAC, LTGP:nCAC, aMER), note that the agent has not yet computed it from Shopify new-customer data and stay at Layer 4 (ROAS) terminology instead of fabricating a Layer 3 number.\n\n` +
+        `5. For Layer 3 metrics (nCAC, FOV/CAC, aMER), use the exact values from the Framework metrics block. Do NOT fabricate values. LTGP:nCAC is not yet tracked — say so rather than inventing a number.\n\n` +
 
         `Respond ONLY with a JSON object, no preamble, no markdown.`,
       messages: [{
@@ -175,7 +202,8 @@ async function writeCardCopy(finding, bestPractice, impact, direction, cfg) {
         content:
           `Write the narrative explanation for this Google Ads finding.\n\n` +
           `ISSUE\n${finding.issueTitle}\n\n` +
-          `CAMPAIGN CONTEXT (verified from API — use these numbers, not any others)\n${campaignContextLines || '(no context available)'}\n\n` +
+          (renderFrameworkBlock(framework) ? `${renderFrameworkBlock(framework)}\n\n` : '') +
+          `CAMPAIGN CONTEXT (verified from API — use these numbers, not any others)\n${campaignContextLines || '(no context available — this is an account-level framework finding)'}\n\n` +
           `FORECAST (from the deterministic forecast module)\n${impactLine}\n` +
           (fc.formula ? `Formula: ${fc.formula}\n` : '') +
           (fc.confidence ? `Confidence: ${fc.confidence} — ${fc.confidenceReason || ''}\n` : '') +
@@ -230,6 +258,16 @@ function templateWhatToFix(finding) {
       return `Review the disapproval reason and fix or replace "${finding.entityName}" so it can serve again.`
     case 'shopping_product_zero_conversions':
       return `Review the product feed and landing experience for "${finding.entityName}" or exclude it from Shopping.`
+    case 'framework_ncac_spike':
+      return `Investigate which campaigns are driving the nCAC blowout. Compare the last 7 days of per-campaign spend and new-customer attribution against the prior week. Pause or reduce budget on the campaign(s) showing the biggest delta before the account hits the red band.`
+    case 'framework_fov_cac_below_one':
+      return `First-order gross profit is not covering acquisition cost. Review which campaigns are attracting lower-AOV customers and either tighten targeting, lift prices on hero SKUs, or raise bundle attach rate. If this persists for 2 more days the framework PAUSE gate triggers.`
+    case 'framework_fov_cac_pause_gate':
+      return `Framework PAUSE gate triggered — FOV/CAC has been below 1.0× for 3+ consecutive days. Pause the highest-spend, lowest-new-customer campaign(s) immediately and investigate offer, pricing, and targeting before resuming spend. This is the framework's hard stop.`
+    case 'framework_sponge_alert':
+      return `New customer count is falling sharply while ad spend has not pulled back. Audit creative fatigue, audience overlap, and whether recent ads are re-targeting existing buyers instead of acquiring new ones. Shift budget toward prospecting audiences until the new-customer trend recovers.`
+    case 'framework_cm_negative':
+      return `Contribution margin is negative — the account is losing money on new-customer acquisition after real costs. Immediately reduce blended spend or pause the worst-performing campaigns. Do not resume full budget until CM$ is back above zero for at least 3 consecutive days.`
     default:
       return `Review "${finding.entityName}" and apply the appropriate corrective action.`
   }
@@ -258,6 +296,16 @@ function templateWhy(finding, impact, direction) {
       return `This Shopping product has consumed meaningful spend without producing sales. The feed, price, or product detail page likely needs attention before continuing to spend on it. ${impactStr}`
     case 'keyword_zero_impressions':
       return `A keyword with zero impressions over the full window is dead weight in the account structure. Removing it keeps the account clean and focused on the keywords that actually carry traffic.`
+    case 'framework_ncac_spike':
+      return `Blended new customer acquisition cost has pushed well past the 90-day baseline, which is the framework's early-warning band. Each new customer is now costing more than historical norms, which compresses contribution margin even if channel ROAS still looks healthy at Layer 4.`
+    case 'framework_fov_cac_below_one':
+      return `First-order gross profit is no longer covering the cost of acquiring the customer. Without a strong repeat cohort, this means every new customer is sold at a loss. The framework treats this as a warning and escalates to a hard pause if it persists for three consecutive days.`
+    case 'framework_fov_cac_pause_gate':
+      return `The framework's PAUSE gate has triggered — FOV/CAC has been below breakeven for three or more consecutive days. Continuing to spend at current levels is mathematically burning contribution margin on every new order. This is the framework's hard stop, not a soft warning.`
+    case 'framework_sponge_alert':
+      return `New customer volume is collapsing while ad spend stays flat or grows, which the framework calls a sponge pattern — the account is absorbing budget without producing the acquisitions that budget was meant to buy. Usually points to creative fatigue, audience overlap, or spend drifting into retargeting.`
+    case 'framework_cm_negative':
+      return `Contribution margin dollars is the framework's Layer 1 scoreboard, and it is now negative. After accounting for COGS, payment processing, shipping, and blended ad spend, the new customer revenue the account is generating does not cover its own delivery cost. Nothing else in the account matters until this flips back above zero.`
     default:
       return `This issue is reducing the efficiency of the account and should be addressed. ${impactStr}`
   }
@@ -300,6 +348,20 @@ function buildProposedChange(finding) {
     case 'disapproved_ad':
     case 'shopping_product_zero_conversions':
       return { action: 'MANUAL_REVIEW_REQUIRED', entityType: finding.entityType, entityId: finding.entityId }
+    case 'framework_ncac_spike':
+    case 'framework_fov_cac_below_one':
+    case 'framework_fov_cac_pause_gate':
+    case 'framework_sponge_alert':
+    case 'framework_cm_negative':
+      // Framework alerts are diagnostic, not executable. The agent flags them
+      // so Josh can investigate at the account level — no single campaign
+      // mutation resolves a Layer 1 / Layer 3 issue.
+      return {
+        action: 'FRAMEWORK_ALERT_REVIEW_REQUIRED',
+        scope: 'account',
+        issueKey: finding.issueKey,
+        notes: 'Account-level framework alert. Review portfolio attribution and adjust spend / creative strategy manually — no single-entity mutation applies.',
+      }
     default:
       return { action: 'MANUAL_REVIEW_REQUIRED' }
   }
@@ -313,7 +375,7 @@ function buildProposedChange(finding) {
  * Top `AI_ENRICHMENT_CAP` findings get full Claude + web search.
  * Rest get deterministic template cards.
  */
-export async function buildRecommendationsFromFindings(findings) {
+export async function buildRecommendationsFromFindings(findings, framework = null) {
   const cfg = getConfig()
   const out = []
 
@@ -334,7 +396,7 @@ export async function buildRecommendationsFromFindings(findings) {
     if (i < AI_ENRICHMENT_CAP) {
       try {
         bestPractice = await searchBestPractice(finding.issueTitle)
-        copy = await writeCardCopy(finding, bestPractice, impact, direction, cfg)
+        copy = await writeCardCopy(finding, bestPractice, impact, direction, cfg, framework)
       } catch (err) {
         console.warn(`[GadsIntel] Enrichment failed for finding ${i}:`, err.message)
       }
@@ -365,8 +427,9 @@ export async function buildRecommendationsFromFindings(findings) {
 
 // ── Daily intelligence briefing ─────────────────────────────────────────────
 
-export async function generateIntelligenceBriefing(accountSummary) {
+export async function generateIntelligenceBriefing(accountSummary, framework = null) {
   const cfg = getConfig()
+  const frameworkBlock = renderFrameworkBlock(framework)
   try {
     const response = await callClaude({
       model: MODEL,
@@ -385,7 +448,7 @@ export async function generateIntelligenceBriefing(accountSummary) {
         `  New customer count daily.\n` +
         `4-layer hierarchy: Layer 1 CM$ → Layer 2 business metrics → Layer 3 customer metrics → Layer 4 channel ROAS. NEVER lead with Layer 4.\n` +
         `Revenue on a physical product business is vanity. Frame dollar claims as contribution margin or LTGP, never gross revenue.\n\n` +
-        `KNOWN AGENT GAP: the rules engine currently only produces Layer 4 (ROAS) findings. nCAC, FOV/CAC, LTGP:nCAC, and true CM$ are not yet computed from Shopify new-customer data. Use framework vocabulary but do not claim specific Layer 3 numbers.\n\n` +
+        `FRAMEWORK METRICS ARE LIVE. The agent now computes Layer 1 CM$ and Layer 3 customer metrics (nCAC, FOV/CAC, aMER, new customer count, WoW trend) from the live Shopify customer index and blended Google+Meta spend. Use the exact numbers provided in the user message, do NOT fabricate values. LTGP:nCAC cohort tracking is still pending — if you need LTGP, say "not yet tracked" rather than inventing a number.\n\n` +
         `Write in plain Australian English. No dashes. Respond only with JSON, no markdown, no preamble.`,
       messages: [{
         role: 'user',
@@ -395,6 +458,7 @@ export async function generateIntelligenceBriefing(accountSummary) {
           `2. Seasonal search trends in Australia for gender reveal products, baby showers, or pregnancy announcements right now\n` +
           `3. Any Google Merchant Centre policy or Shopping ads changes\n` +
           `4. Strategic guidance using the nCAC/LTGP framework. Account summary: ${JSON.stringify(accountSummary)}.\n\n` +
+          (frameworkBlock ? `${frameworkBlock}\n\n` : '') +
           `Return ONLY JSON with exactly these fields:\n` +
           `{\n` +
           `  "algorithmUpdates": "2-3 sentences on any platform changes",\n` +

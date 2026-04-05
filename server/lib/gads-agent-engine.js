@@ -27,6 +27,10 @@ import {
 } from './gads-agent-context.js'
 import { buildForecast, findingAddsNetSpend } from './gads-agent-forecast.js'
 import { getFrameworkMetrics } from './gads-agent-framework-metrics.js'
+import {
+  recordFrameworkSnapshot,
+  getFrameworkSnapshots,
+} from './gads-agent-framework-snapshots.js'
 
 const SEVERITY_ORDER = { critical: 0, high: 1, medium: 2, low: 3 }
 
@@ -254,6 +258,197 @@ function checkShoppingProducts(products, cfg) {
   return out
 }
 
+// ── Layer 3 framework checks (account-level alerts) ─────────────────────────
+//
+// These checks are account-level, not entity-level. They read the framework
+// metrics computed by gads-agent-framework-metrics.js and, where needed,
+// historical snapshots from gads-agent-framework-snapshots.js for multi-day
+// persistence checks.
+//
+// Findings use category='framework', entityType='account' so the existing
+// context filter and forecast steps are no-ops (no campaignId to resolve,
+// no known issueKey for the forecast switch). That means framework findings
+// flow through the existing pipeline unchanged.
+
+function frameworkFinding(base) {
+  return {
+    category: 'framework',
+    entityType: 'account',
+    entityId: 'account',
+    entityName: 'Account',
+    ...base,
+  }
+}
+
+/**
+ * nCAC spike — fires when current nCAC is >1.45× the 90-day historical
+ * baseline (framework amber band). Red band (2×) escalates to critical.
+ * Uses the nCAC status computed upstream by getNcacStatus().
+ */
+function checkNcacSpike(framework) {
+  const row = framework?.layer3?.ncac
+  if (!row || row.value == null || !row.historicalAvg) return []
+  if (row.value <= row.historicalAvg * 1.45) return []
+
+  const ratio = row.value / row.historicalAvg
+  const severity = row.status === 'red' ? 'critical' : 'high'
+  const newCount = framework.layer3?.newCustomerCount?.total || 0
+  // Wasted spend estimate: the excess CAC above baseline, multiplied by
+  // the new customers we actually acquired in this window.
+  const excessPerCustomer = Math.max(0, row.value - row.historicalAvg)
+  const estimatedWaste = excessPerCustomer * newCount
+
+  return [frameworkFinding({
+    severity,
+    issueKey: 'framework_ncac_spike',
+    issueTitle: `nCAC $${row.value.toFixed(2)} is ${ratio.toFixed(2)}× the 90-day baseline ($${row.historicalAvg.toFixed(2)}) — acquisition efficiency deteriorating`,
+    rawData: {
+      ncac: row.value,
+      historicalAvg: row.historicalAvg,
+      thresholds: row.thresholds,
+      status: row.status,
+      windowDays: framework.window?.days || null,
+      newCustomerCount: newCount,
+    },
+    estimatedWastedSpendAud: Number(estimatedWaste.toFixed(2)),
+  })]
+}
+
+/**
+ * FOV/CAC below 1.0 — framework PAUSE gate. Critical when it's been below
+ * 1.0 for 3+ consecutive days (persistence proven via snapshot history);
+ * high when it's the first day below (early warning before the gate
+ * formally triggers).
+ *
+ * "3+ days" = today's live value + the previous 2 days of snapshots all
+ * under 1.0. If history is shorter than that, we still fire a 'high'
+ * warning but not the 'critical' PAUSE gate.
+ */
+function checkFovCacBelowOne(framework, snapshots) {
+  const row = framework?.layer3?.fovCac
+  if (!row || row.value == null || row.value >= 1.0) return []
+
+  // Look at the last 2 snapshot days (not counting today — today is live).
+  // If today's date is already present in snapshots we still only want
+  // prior-day history for persistence, so filter by date < today.
+  const today = new Date().toISOString().slice(0, 10)
+  const priorDays = (snapshots || [])
+    .filter(s => s.date < today)
+    .slice(-2)
+    .map(s => s.fovCac)
+    .filter(v => v != null)
+
+  const persistenceDays = 1 + priorDays.filter(v => v < 1.0).length
+  const pauseGate = persistenceDays >= 3
+
+  const severity = pauseGate ? 'critical' : 'high'
+  const title = pauseGate
+    ? `FOV/CAC ${row.value.toFixed(2)}× below 1.0 for ${persistenceDays} consecutive days — framework PAUSE gate: first-order gross profit no longer covers acquisition cost`
+    : `FOV/CAC ${row.value.toFixed(2)}× below 1.0 — acquisition unprofitable on first order (pause gate triggers if this persists for 3+ days)`
+
+  return [frameworkFinding({
+    severity,
+    issueKey: pauseGate ? 'framework_fov_cac_pause_gate' : 'framework_fov_cac_below_one',
+    issueTitle: title,
+    rawData: {
+      current: row.value,
+      firstOrderAov: row.firstOrderAov,
+      marginApplied: row.marginApplied,
+      priorDayValues: priorDays,
+      persistenceDays,
+      pauseGate,
+    },
+  })]
+}
+
+/**
+ * Sponge alert — new customer count down >20% WoW while blended ad spend
+ * is flat or up. The "sponge" metaphor: ads are still absorbing spend but
+ * delivering fewer new customers. Critical when the drop is ≥30%.
+ *
+ * Needs 8+ days of snapshot history to compare this week's blended spend
+ * to last week's. If history is too short to compare spend, we still fire
+ * on the customer-count drop alone, one severity level lower.
+ */
+function checkSpongeAlert(framework, snapshots) {
+  const nc = framework?.layer3?.newCustomerCount
+  if (!nc || nc.wowChangePct == null || nc.wowChangePct > -20) return []
+
+  const thisWeekRow = snapshots && snapshots.length > 0 ? snapshots[snapshots.length - 1] : null
+  const priorWeekRow = snapshots && snapshots.length >= 8 ? snapshots[snapshots.length - 8] : null
+
+  let spendWowChangePct = null
+  if (
+    thisWeekRow?.blendedSpend != null &&
+    priorWeekRow?.blendedSpend != null &&
+    priorWeekRow.blendedSpend > 0
+  ) {
+    spendWowChangePct = ((thisWeekRow.blendedSpend - priorWeekRow.blendedSpend) / priorWeekRow.blendedSpend) * 100
+  }
+
+  // "Flat or up" = spend has not fallen meaningfully. A >5% drop in spend
+  // explains most of a new-customer drop, so we don't fire the sponge
+  // alert in that case — it would just be a correlated volume change, not
+  // a sponge.
+  const spendFlatOrUp = spendWowChangePct == null || spendWowChangePct >= -5
+  if (!spendFlatOrUp) return []
+
+  // Downgrade severity one step when we couldn't prove the spend side.
+  let severity
+  if (nc.wowChangePct <= -30) severity = spendWowChangePct == null ? 'high' : 'critical'
+  else severity = spendWowChangePct == null ? 'medium' : 'high'
+
+  const spendSuffix = spendWowChangePct == null
+    ? '(spend comparison unavailable — less than 8 days of snapshot history)'
+    : spendWowChangePct >= 0
+      ? `while ad spend +${spendWowChangePct.toFixed(1)}% WoW`
+      : `while ad spend only ${spendWowChangePct.toFixed(1)}% WoW (flat)`
+
+  return [frameworkFinding({
+    severity,
+    issueKey: 'framework_sponge_alert',
+    issueTitle: `Sponge alert — new customers ${nc.wowChangePct.toFixed(1)}% WoW (${nc.lastWeek} → ${nc.thisWeek}) ${spendSuffix}`,
+    rawData: {
+      newCustomerWowPct: nc.wowChangePct,
+      thisWeek: nc.thisWeek,
+      lastWeek: nc.lastWeek,
+      spendWowChangePct,
+      thisWeekSpend: thisWeekRow?.blendedSpend ?? null,
+      priorWeekSpend: priorWeekRow?.blendedSpend ?? null,
+    },
+  })]
+}
+
+/**
+ * CM$ negative — framework Layer 1 scoreboard in the red. Always critical:
+ * new-customer revenue minus Cost of Delivery minus blended ad spend is
+ * below zero, meaning the account is losing money on new-customer
+ * acquisition after real costs.
+ *
+ * Framework spec says "any sub-segment" should trigger this. We currently
+ * only compute blended CM$, so this fires on the blended value. Sub-segment
+ * coverage (per-channel, per-product, per-campaign CM$) is a phase 2b
+ * build once cohort grouping lands.
+ */
+function checkCmNegative(framework) {
+  const row = framework?.layer1?.cm
+  if (!row || row.value == null || row.value >= 0) return []
+
+  return [frameworkFinding({
+    severity: 'critical',
+    issueKey: 'framework_cm_negative',
+    issueTitle: `CM$ is negative — ${framework.window?.days || 30}d contribution margin = $${row.value.toFixed(2)} (new-customer revenue minus Cost of Delivery minus blended ad spend)`,
+    rawData: {
+      cm: row.value,
+      newCustomerRevenue: framework.customer?.newRevenue,
+      costOfDelivery: framework.layer1?.costOfDelivery?.total,
+      blendedSpend: framework.spend?.blended,
+      windowDays: framework.window?.days,
+    },
+    estimatedWastedSpendAud: Math.abs(row.value),
+  })]
+}
+
 // ── Public entry points ─────────────────────────────────────────────────────
 
 /**
@@ -285,6 +480,23 @@ export async function runFullScan() {
     getShoppingProductPerformance(),
   ])
 
+  // Compute framework metrics UP FRONT so the Layer 3 rules engine checks
+  // (nCAC spike, FOV/CAC pause gate, sponge alert, CM$ negative) can reason
+  // against them. Also upsert today's snapshot row so multi-day persistence
+  // checks have history to compare against on the next scan. Never throws:
+  // if framework computation fails the scan still produces entity-level
+  // findings and frameworkMetrics carries an error flag.
+  let frameworkMetrics = null
+  let frameworkSnapshots = []
+  try {
+    frameworkMetrics = await getFrameworkMetrics(30)
+    recordFrameworkSnapshot(frameworkMetrics)
+    frameworkSnapshots = getFrameworkSnapshots(14)
+  } catch (err) {
+    console.warn('[GadsEngine] Framework metrics computation failed:', err.message)
+    frameworkMetrics = { error: err.message }
+  }
+
   const rawFindings = [
     ...checkCampaignBleed(campaigns, cfg),
     ...checkBudgetReallocation(campaigns, cfg),
@@ -295,6 +507,14 @@ export async function runFullScan() {
     ...checkQualityScore(keywords, cfg),
     ...checkDisapprovedAds(ads),
     ...checkShoppingProducts(shoppingProducts, cfg),
+    // Layer 3 framework checks — account-level, run only when framework
+    // metrics were computed successfully.
+    ...(frameworkMetrics && !frameworkMetrics.error ? [
+      ...checkNcacSpike(frameworkMetrics),
+      ...checkFovCacBelowOne(frameworkMetrics, frameworkSnapshots),
+      ...checkSpongeAlert(frameworkMetrics, frameworkSnapshots),
+      ...checkCmNegative(frameworkMetrics),
+    ] : []),
   ]
 
   // Context filter + forecast build + week-1 redistribute filter.
@@ -373,17 +593,8 @@ export async function runFullScan() {
     return bImpact - aImpact
   })
 
-  // Compute framework metrics (Layer 1 CM$ + Layer 3 customer metrics) for
-  // this scan. Never throws — if framework computation fails, scan still
-  // returns normally and framework section is null with an error flag.
-  let frameworkMetrics = null
-  try {
-    frameworkMetrics = await getFrameworkMetrics(30)
-  } catch (err) {
-    console.warn('[GadsEngine] Framework metrics computation failed:', err.message)
-    frameworkMetrics = { error: err.message }
-  }
-
+  // Framework metrics were computed up front so the rules engine could use
+  // them — just return the already-computed object here.
   return {
     findings,
     counts: {

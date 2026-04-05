@@ -58,6 +58,146 @@ router.get('/account-summary', async (_req, res) => {
   }
 })
 
+// ── Per-campaign breakdown (every enabled campaign — ROAS, CPA, budget) ────
+//
+// Layer 4 attribution table. Supplements the Layer 1/3 framework panel by
+// answering the "which campaigns are actually spending the money" question.
+// Returns every ENABLED campaign in the account, sorted by spend, plus a
+// per-channel-type rollup so Search / Shopping / Performance Max / etc can
+// be compared at a glance. Window defaults to 30 days; override ?days=N.
+
+// google-ads-api AdvertisingChannelType enum → string name.
+// The SDK returns the integer enum for some query paths, so we normalise here
+// to stable string keys the UI understands.
+const CHANNEL_TYPE_NAMES = {
+  0: 'UNSPECIFIED',
+  1: 'UNKNOWN',
+  2: 'SEARCH',
+  3: 'DISPLAY',
+  4: 'SHOPPING',
+  5: 'HOTEL',
+  6: 'VIDEO',
+  7: 'MULTI_CHANNEL',
+  8: 'LOCAL',
+  9: 'SMART',
+  10: 'PERFORMANCE_MAX',
+  11: 'LOCAL_SERVICES',
+  12: 'DISCOVERY',
+  13: 'TRAVEL',
+  14: 'DEMAND_GEN',
+}
+function normaliseChannelType(t) {
+  if (t == null || t === '') return 'UNKNOWN'
+  if (typeof t === 'number') return CHANNEL_TYPE_NAMES[t] || 'UNKNOWN'
+  if (typeof t === 'string' && /^\d+$/.test(t)) return CHANNEL_TYPE_NAMES[parseInt(t, 10)] || 'UNKNOWN'
+  return String(t)
+}
+
+router.get('/campaigns', async (req, res) => {
+  try {
+    if (!isGadsConfigured()) return res.json({ ok: false, error: 'Google Ads API not configured' })
+    const days = Math.max(1, Math.min(180, parseInt(req.query.days || '30', 10)))
+    const { getCampaignPerformance } = await import('../lib/gads-queries.js')
+    const rows = await getCampaignPerformance(days)
+
+    const campaigns = rows.map(c => {
+      const spendAud = microsToDollars(c.costMicros)
+      const dailyBudgetAud = microsToDollars(c.budgetMicros)
+      const conversions = Number(c.conversions) || 0
+      const convValue   = Number(c.conversionsValue) || 0
+      const clicks      = Number(c.clicks) || 0
+      const impressions = Number(c.impressions) || 0
+      const roas = spendAud > 0 ? convValue / spendAud : 0
+      const cpa  = conversions > 0 ? spendAud / conversions : 0
+      const convRate = clicks > 0 ? conversions / clicks : 0
+      const ctr = impressions > 0 ? clicks / impressions : 0
+      const avgCpc = clicks > 0 ? spendAud / clicks : 0
+      // Utilisation: actual spend vs theoretical ceiling (daily budget × days).
+      // Flags campaigns that are budget-capped (>90%) or chronically under (<30%).
+      const budgetCeiling = dailyBudgetAud * days
+      const utilisation = budgetCeiling > 0 ? spendAud / budgetCeiling : 0
+      return {
+        campaignId: c.campaignId,
+        name: c.name,
+        status: c.status,
+        channelType: normaliseChannelType(c.channelType),
+        dailyBudgetAud: Number(dailyBudgetAud.toFixed(2)),
+        spendAud: Number(spendAud.toFixed(2)),
+        conversions: Number(conversions.toFixed(2)),
+        conversionsValueAud: Number(convValue.toFixed(2)),
+        clicks,
+        impressions,
+        roas: Number(roas.toFixed(2)),
+        cpa: Number(cpa.toFixed(2)),
+        convRate: Number((convRate * 100).toFixed(2)), // as %
+        ctr: Number((ctr * 100).toFixed(2)),           // as %
+        avgCpc: Number(avgCpc.toFixed(2)),
+        utilisationPct: Number((utilisation * 100).toFixed(1)),
+        budgetCeilingAud: Number(budgetCeiling.toFixed(2)),
+      }
+    })
+
+    // Sort highest spend first — shows Josh where the money is actually going
+    campaigns.sort((a, b) => b.spendAud - a.spendAud)
+
+    // Totals row for the footer
+    const totalsAcc = campaigns.reduce((acc, c) => {
+      acc.spendAud += c.spendAud
+      acc.conversionsValueAud += c.conversionsValueAud
+      acc.conversions += c.conversions
+      acc.clicks += c.clicks
+      acc.impressions += c.impressions
+      acc.dailyBudgetAud += c.dailyBudgetAud
+      return acc
+    }, { spendAud: 0, conversionsValueAud: 0, conversions: 0, clicks: 0, impressions: 0, dailyBudgetAud: 0 })
+    const totals = {
+      spendAud: Number(totalsAcc.spendAud.toFixed(2)),
+      conversionsValueAud: Number(totalsAcc.conversionsValueAud.toFixed(2)),
+      conversions: Number(totalsAcc.conversions.toFixed(2)),
+      clicks: totalsAcc.clicks,
+      impressions: totalsAcc.impressions,
+      dailyBudgetAud: Number(totalsAcc.dailyBudgetAud.toFixed(2)),
+      roas: totalsAcc.spendAud > 0 ? Number((totalsAcc.conversionsValueAud / totalsAcc.spendAud).toFixed(2)) : 0,
+      cpa:  totalsAcc.conversions > 0 ? Number((totalsAcc.spendAud / totalsAcc.conversions).toFixed(2)) : 0,
+      campaignCount: campaigns.length,
+    }
+
+    // Group by channel type so Search vs Shopping vs PMax comparisons are easy
+    const byChannel = {}
+    for (const c of campaigns) {
+      const k = c.channelType || 'UNKNOWN'
+      if (!byChannel[k]) byChannel[k] = { channelType: k, count: 0, spendAud: 0, conversionsValueAud: 0, conversions: 0, dailyBudgetAud: 0 }
+      byChannel[k].count += 1
+      byChannel[k].spendAud += c.spendAud
+      byChannel[k].conversionsValueAud += c.conversionsValueAud
+      byChannel[k].conversions += c.conversions
+      byChannel[k].dailyBudgetAud += c.dailyBudgetAud
+    }
+    const channelTotals = Object.values(byChannel).map(ch => ({
+      channelType: ch.channelType,
+      count: ch.count,
+      spendAud: Number(ch.spendAud.toFixed(2)),
+      conversionsValueAud: Number(ch.conversionsValueAud.toFixed(2)),
+      conversions: Number(ch.conversions.toFixed(2)),
+      dailyBudgetAud: Number(ch.dailyBudgetAud.toFixed(2)),
+      roas: ch.spendAud > 0 ? Number((ch.conversionsValueAud / ch.spendAud).toFixed(2)) : 0,
+      cpa:  ch.conversions > 0 ? Number((ch.spendAud / ch.conversions).toFixed(2)) : 0,
+    })).sort((a, b) => b.spendAud - a.spendAud)
+
+    res.json({
+      ok: true,
+      window: { days },
+      campaigns,
+      totals,
+      channelTotals,
+      computedAt: new Date().toISOString(),
+    })
+  } catch (err) {
+    console.error('[GadsAgent] campaigns error:', err)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
 // ── Framework metrics (Layer 1 CM$ + Layer 3 customer metrics) ──────────────
 //
 // Returns the full nCAC/LTGP/CM$ framework view computed from:

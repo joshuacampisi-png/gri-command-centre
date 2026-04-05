@@ -6,7 +6,14 @@
 
 export const GRI_ADS = {
   aov: 126.86,
-  grossMarginPct: 0.40,
+  // Josh-confirmed blended gross margin 2026-04-05. Single source of truth —
+  // Meta Flywheel, Ads Performance tab, Google Ads Agent framework metrics,
+  // and profit projections all read through this constant.
+  grossMarginPct: 0.47,
+  // NOTE: the breakeven constants below are independently calibrated business
+  // thresholds, NOT auto-derived from grossMarginPct × aov. They represent
+  // Josh's target CPAs / nCAC ceilings. Keep them in sync manually if Josh
+  // recalibrates the business model; don't recompute them from aov × margin.
   grossProfitPerOrder: 50.74,
   ncac: 50.74,
   mediaNcac: 43.13,

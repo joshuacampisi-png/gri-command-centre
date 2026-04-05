@@ -65,8 +65,10 @@ export async function runAgentScanJob() {
     return { findings: scan.findings.length, newRecommendations: 0, counts: scan.counts }
   }
 
-  // Build recommendation cards (top N get AI enrichment, rest are templated)
-  const recs = await buildRecommendationsFromFindings(newFindings)
+  // Build recommendation cards (top N get AI enrichment, rest are templated).
+  // Pass the framework metrics attached to the scan result so Claude can ground
+  // its narrative in real Layer 1/Layer 3 numbers instead of fabricating them.
+  const recs = await buildRecommendationsFromFindings(newFindings, scan.frameworkMetrics)
 
   for (const r of recs) {
     const saved = addRecommendation({ ...r, severity: newFindings.find(f => f.fingerprint === r.fingerprint)?.severity })
@@ -92,9 +94,9 @@ export async function runDailyBriefingJob() {
     return { skipped: true }
   }
 
-  // Pull latest account summary for context
+  // Pull latest account summary + framework metrics for context
   const scan = await runFullScan()
-  const briefing = await generateIntelligenceBriefing(scan.summary)
+  const briefing = await generateIntelligenceBriefing(scan.summary, scan.frameworkMetrics)
   const saved = addBriefing(briefing)
   logAudit('briefing_generated', { briefingId: saved.id, date: saved.briefingDate }, null, 'agent')
   return { briefingId: saved.id }
