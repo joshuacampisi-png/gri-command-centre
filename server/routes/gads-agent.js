@@ -17,6 +17,11 @@ import {
   pauseKeywordBatch, addKeywordBatch,
 } from '../lib/gads-mutations.js'
 import { dollarsToMicros, microsToDollars, pingGads, isGadsConfigured } from '../lib/gads-client.js'
+import {
+  getCampaignContextLive, getCampaignMetadataLive, getCampaignKeywordsLive,
+  classifyBrandedGeneric, getCoverageCrossCheck, getReplacementCandidates,
+  getCacheStats, invalidateCache,
+} from '../lib/gads-live.js'
 import { runFullScan } from '../lib/gads-agent-engine.js'
 import {
   canExecuteRecommendation, findTargetSharedList, getProtectionLevel,
@@ -245,6 +250,65 @@ router.post('/context/refresh', async (_req, res) => {
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message })
   }
+})
+
+// ── Live data fetcher (gads-live.js) ───────────────────────────────────────
+// Every endpoint returns { ok, data, fetchedAt, cacheHit } so the UI can
+// show freshness and the card generator can verify data age.
+
+router.get('/live/campaign-context/:campaignId', async (req, res) => {
+  try {
+    if (!isGadsConfigured()) return res.json({ ok: false, error: 'Google Ads API not configured' })
+    const days = Math.max(1, Math.min(180, parseInt(req.query.days || '30', 10)))
+    const ctx = await getCampaignContextLive(req.params.campaignId, days)
+    res.json({ ok: true, ...ctx })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+router.get('/live/branded-generic/:campaignId', async (req, res) => {
+  try {
+    if (!isGadsConfigured()) return res.json({ ok: false, error: 'Google Ads API not configured' })
+    const days = Math.max(1, Math.min(180, parseInt(req.query.days || '30', 10)))
+    const result = await classifyBrandedGeneric(req.params.campaignId, days)
+    res.json({ ok: true, ...result })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+router.get('/live/coverage-check/:campaignId', async (req, res) => {
+  try {
+    if (!isGadsConfigured()) return res.json({ ok: false, error: 'Google Ads API not configured' })
+    const deadTexts = (req.query.keywords || '').split(',').filter(Boolean)
+    if (!deadTexts.length) return res.status(400).json({ ok: false, error: 'keywords query param required (comma-separated)' })
+    const days = Math.max(1, Math.min(180, parseInt(req.query.days || '30', 10)))
+    const result = await getCoverageCrossCheck(req.params.campaignId, deadTexts, days)
+    res.json({ ok: true, ...result })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+router.get('/live/replacement-candidates/:campaignId', async (req, res) => {
+  try {
+    if (!isGadsConfigured()) return res.json({ ok: false, error: 'Google Ads API not configured' })
+    const days = Math.max(1, Math.min(180, parseInt(req.query.days || '30', 10)))
+    const result = await getReplacementCandidates(req.params.campaignId, days)
+    res.json({ ok: true, ...result })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+router.get('/live/cache-stats', (_req, res) => {
+  res.json({ ok: true, ...getCacheStats() })
+})
+
+router.post('/live/cache-invalidate', (_req, res) => {
+  invalidateCache()
+  res.json({ ok: true, cleared: true })
 })
 
 // ── Recommendations ─────────────────────────────────────────────────────────
