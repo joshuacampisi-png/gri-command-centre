@@ -258,6 +258,76 @@ function checkShoppingProducts(products, cfg) {
   return out
 }
 
+// ── Pre-flight validation gates ────────────────────────────────────────────
+//
+// Deterministic checks applied BEFORE a finding enters the recommendation
+// queue. A finding that fails any pre-flight question is suppressed with a
+// full audit trail. See feedback_gads_recommendation_preflight.md for the
+// 5-question rule that motivates this gate.
+
+/**
+ * Pre-flight validation for reallocation-type findings.
+ * Returns { pass: boolean, failures: string[] }.
+ * Only applied to findings with issueKey === 'budget_reallocation'.
+ *
+ * Five questions (any failure = suppressed):
+ *   1. TOF relevance — automated TOF bidding systematically undervalues ROAS
+ *   2. Data sufficiency — need >= 15 conversions for statistical significance
+ *   3. Framework check — campaign profitable at nCAC/CPP level despite ROAS
+ *   4. Recipient named — must name specific recipient campaign(s) with impression share
+ *   5. Margin framing — recommendation uses dollar amounts (always passes)
+ */
+function preflightReallocation(finding, cfg) {
+  const failures = []
+  const raw = finding.rawData || {}
+  const low = raw.low || {}
+
+  // 1. TOF RELEVANCE: If campaign uses automated TOF bidding, last-click ROAS
+  //    systematically undervalues it. Check via campaignContext (attached by
+  //    the engine) or fall back to the auto-discovered context.
+  const camp = finding.campaignContext || getCampaignById(raw.campaignId) || {}
+  const bidStrategy = camp.bidStrategy || ''
+  if (bidStrategy === 'MAXIMIZE_CONVERSION_VALUE' || bidStrategy === 'MAXIMIZE_CONVERSIONS') {
+    failures.push(
+      `TOF acquisition infrastructure — "${finding.entityName}" uses ${bidStrategy} (automated TOF bidding). Last-click ROAS systematically undervalues this campaign.`
+    )
+  }
+
+  // 2. DATA SUFFICIENCY: Need >= 15 conversions in the lookback window for
+  //    statistical significance on CPP. The low campaign object carries
+  //    conversions from the performance query.
+  const conversions = Number(low.conversions) || 0
+  if (conversions < 15) {
+    failures.push(
+      `Insufficient data for reallocation decision — campaign has ${conversions} conversions in the lookback window (minimum 15 required for CPP statistical significance).`
+    )
+  }
+
+  // 3. FRAMEWORK CHECK: If campaign CPA < breakeven CPP, the campaign is
+  //    profitable at the framework level and ROAS is misleading.
+  const costAud = low.costMicros ? microsToDollars(low.costMicros) : 0
+  if (conversions > 0 && costAud > 0) {
+    const campaignCpa = costAud / conversions
+    if (campaignCpa < cfg.breakevenCppAud) {
+      failures.push(
+        `Campaign is profitable at framework level — CPA $${campaignCpa.toFixed(2)} is below breakeven CPP $${cfg.breakevenCppAud}. ROAS is misleading.`
+      )
+    }
+  }
+
+  // 4. RECIPIENT NAMED: The finding must name specific recipient campaign(s)
+  //    with their current impression share. The engine does not currently pull
+  //    impression share data, so this always fails as a safety gate.
+  failures.push(
+    'No recipient campaign impression share data available — the engine does not yet pull impression share metrics for reallocation targets.'
+  )
+
+  // 5. MARGIN FRAMING: The engine already uses dollar amounts in its findings,
+  //    so this check always passes. No action needed.
+
+  return { pass: failures.length === 0, failures }
+}
+
 // ── Layer 3 framework checks (account-level alerts) ─────────────────────────
 //
 // These checks are account-level, not entity-level. They read the framework
@@ -532,6 +602,26 @@ export async function runFullScan() {
       suppressedCount++
       suppressionReasons[check.reason] = (suppressionReasons[check.reason] || 0) + 1
       continue
+    }
+
+    // Pre-flight gate for reallocation findings (5-question rule).
+    // Must run AFTER context filter (so campaignContext is not yet attached)
+    // but before the finding enters the active queue.
+    if (f.issueKey === 'budget_reallocation') {
+      const preflight = preflightReallocation(f, cfg)
+      if (!preflight.pass) {
+        suppressedCount++
+        const reason = `preflight_reallocation: failed ${preflight.failures.length} of 5 pre-flight questions`
+        suppressionReasons[reason] = (suppressionReasons[reason] || 0) + 1
+        try {
+          logAudit('preflight_suppressed', {
+            issueTitle: f.issueTitle,
+            failures: preflight.failures,
+            reason: 'Reallocation card failed pre-flight gate. See feedback_gads_recommendation_preflight.md for the 5-question rule.',
+          }, null, 'agent')
+        } catch { /* ok */ }
+        continue
+      }
     }
 
     // Attach campaign context
