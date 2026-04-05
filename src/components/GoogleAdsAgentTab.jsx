@@ -31,6 +31,7 @@ const CATEGORY = {
   bid:      { colour: G.green,  label: 'Bid',      icon: '↑' },
   quality:  { colour: G.yellow, label: 'Quality',  icon: '★' },
   merchant: { colour: G.violet, label: 'Merchant', icon: '⎘' },
+  revert:   { colour: G.red,    label: 'Revert',   icon: '↺' },
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -646,6 +647,7 @@ function ActionsPanel({
               campaign={getRecCampaign(zeroImpressionGroup.children[0])}
               protection={getRecProtection(zeroImpressionGroup.children[0])}
               dryRun={dryRun}
+              onApproveChild={onApprove}
               onDismissChild={onDismiss}
             />
           )}
@@ -708,12 +710,26 @@ function ProtectionBadge({ protection }) {
 
 function RecommendationCard({ rec, index, onApprove, onDismiss, dryRun, campaign, protection }) {
   const [expanded, setExpanded] = useState(false)
+  const [approving, setApproving] = useState(false)
   const sev = SEVERITY[rec.severity] || SEVERITY.low
   const cat = CATEGORY[rec.category] || CATEGORY.keyword
   const direction = rec.projectedImpactDirection
   const impactColour = direction === 'save' ? G.green : G.blue
   const impactLabel  = direction === 'save' ? 'potential monthly saving' : 'potential monthly revenue'
   const hasImpact = (rec.projectedDollarImpact || 0) > 0
+  const isProtected = protection === 'alert_only' || protection === 'never_touch'
+
+  async function handleApprove() {
+    setApproving(true)
+    try { await onApprove(rec.id) } finally { setApproving(false) }
+  }
+
+  // Honest button copy — tells you exactly what will happen on click
+  let approveLabel
+  if (approving) approveLabel = 'Recording approval...'
+  else if (isProtected) approveLabel = 'Approve (manual in Google Ads)'
+  else if (dryRun) approveLabel = 'Approve (audit only, no API call)'
+  else approveLabel = 'Approve & Execute'
 
   return (
     <article
@@ -777,30 +793,49 @@ function RecommendationCard({ rec, index, onApprove, onDismiss, dryRun, campaign
         </div>
       </div>
 
-      {/* Discovery-mode actions: no execute, just review + acknowledge */}
+      {/* Actions — every card has an explicit Approve button. Dry-run and
+          protected campaigns still capture the approval, they just route
+          differently (audit log or manual-only flag). */}
       <div className="gads-card-actions">
         <button
+          className="gads-btn gads-btn-primary"
+          onClick={handleApprove}
+          disabled={approving}
+          title={
+            isProtected
+              ? 'Records your approval but routes to manual review (this campaign is protected)'
+              : dryRun
+                ? 'Records your approval in the audit log. No Google Ads API call until Dry-Run is disabled.'
+                : 'Records your approval and executes the Google Ads API mutation immediately.'
+          }
+        >
+          <span className="gads-btn-glyph">✓</span>
+          {approveLabel}
+        </button>
+        <button
+          className="gads-btn gads-btn-ghost"
+          onClick={() => onDismiss(rec.id)}
+          title="Reject this finding — the agent will not take action"
+        >
+          Dismiss
+        </button>
+        <button
           className="gads-btn gads-btn-link"
+          style={{ marginLeft: 'auto' }}
           onClick={() => setExpanded(!expanded)}
         >
           {expanded ? 'Hide detail' : 'Show detail'}
           <span className={`gads-chevron ${expanded ? 'open' : ''}`}>▾</span>
         </button>
-        <button
-          className="gads-btn gads-btn-ghost"
-          style={{ marginLeft: 'auto' }}
-          onClick={() => onDismiss(rec.id)}
-          title="Remove this finding from the review queue"
-        >
-          Remove from review
-        </button>
       </div>
 
       {dryRun && (
         <div className="gads-discovery-note">
-          Discovery mode — no changes will be executed when dismissed or reviewed.
+          <strong>Dry-run:</strong> clicking Approve records your decision in the audit log but
+          does <strong>not</strong> call the Google Ads API. Switch off Dry-Run in Thresholds when you&apos;re
+          ready to start executing approved changes.
           {protection === 'alert_only' && (
-            <> This campaign is also protected as <strong>alert-only</strong>, so it will stay manual even after execution is enabled.</>
+            <> This campaign is also flagged <strong>alert-only</strong>, so even when execution is live the agent will route approvals to your manual queue rather than auto-executing.</>
           )}
         </div>
       )}
@@ -809,19 +844,41 @@ function RecommendationCard({ rec, index, onApprove, onDismiss, dryRun, campaign
 }
 
 // Grouped card for the 100+ zero-impression keyword cleanup.
-// Collapses structural noise into one reviewable batch.
-function GroupedKeywordCard({ group, campaign, protection, dryRun, onDismissChild }) {
+// Collapses structural noise into one reviewable batch with a batch-approve flow.
+function GroupedKeywordCard({ group, campaign, protection, dryRun, onApproveChild, onDismissChild }) {
   const [expanded, setExpanded] = useState(false)
+  const [approvingAll, setApprovingAll] = useState(false)
   const [dismissingAll, setDismissingAll] = useState(false)
+  const isProtected = protection === 'alert_only' || protection === 'never_touch'
+
+  async function approveAll() {
+    const msg = dryRun
+      ? `Approve pausing all ${group.count} zero-impression keywords?\n\nDry-run mode: this will record ${group.count} approvals in the audit log. No Google Ads API calls will be made.`
+      : `Approve pausing all ${group.count} zero-impression keywords?\n\nThis will execute ${group.count} Google Ads API mutations immediately.`
+    if (!confirm(msg)) return
+    setApprovingAll(true)
+    try {
+      for (const child of group.children) {
+        await onApproveChild(child.id)
+      }
+    } finally { setApprovingAll(false) }
+  }
 
   async function dismissAll() {
-    if (!confirm(`Remove all ${group.count} zero-impression keywords from the review queue?`)) return
+    if (!confirm(`Dismiss all ${group.count} zero-impression keywords? The agent will stop flagging them.`)) return
     setDismissingAll(true)
-    for (const child of group.children) {
-      await onDismissChild(child.id)
-    }
-    setDismissingAll(false)
+    try {
+      for (const child of group.children) {
+        await onDismissChild(child.id)
+      }
+    } finally { setDismissingAll(false) }
   }
+
+  let approveLabel
+  if (approvingAll) approveLabel = `Recording ${group.count} approvals...`
+  else if (isProtected) approveLabel = `Approve all ${group.count} (manual in Google Ads)`
+  else if (dryRun) approveLabel = `Approve all ${group.count} (audit only)`
+  else approveLabel = `Approve & Pause All ${group.count}`
 
   return (
     <article className="gads-card gads-card-group">
@@ -869,25 +926,35 @@ function GroupedKeywordCard({ group, campaign, protection, dryRun, onDismissChil
 
       <div className="gads-card-actions">
         <button
+          className="gads-btn gads-btn-primary"
+          onClick={approveAll}
+          disabled={approvingAll || dismissingAll}
+        >
+          <span className="gads-btn-glyph">✓</span>
+          {approveLabel}
+        </button>
+        <button
+          className="gads-btn gads-btn-ghost"
+          onClick={dismissAll}
+          disabled={approvingAll || dismissingAll}
+        >
+          {dismissingAll ? 'Dismissing...' : `Dismiss all ${group.count}`}
+        </button>
+        <button
           className="gads-btn gads-btn-link"
+          style={{ marginLeft: 'auto' }}
           onClick={() => setExpanded(!expanded)}
         >
           {expanded ? 'Hide keywords' : `Show all ${group.count} keywords`}
           <span className={`gads-chevron ${expanded ? 'open' : ''}`}>▾</span>
         </button>
-        <button
-          className="gads-btn gads-btn-ghost"
-          style={{ marginLeft: 'auto' }}
-          onClick={dismissAll}
-          disabled={dismissingAll}
-        >
-          {dismissingAll ? 'Removing...' : `Remove all ${group.count} from review`}
-        </button>
       </div>
 
       {dryRun && (
         <div className="gads-discovery-note">
-          Discovery mode — this is structural debt, not an urgent money leak. Safe to batch-review when you&apos;re ready to clean up the account structure.
+          <strong>Batch approval:</strong> clicking &quot;Approve all&quot; captures {group.count} separate
+          approvals in the audit log. In dry-run no API calls are made. When Dry-Run is off,
+          this batch-pauses every keyword in the group via the Google Ads API.
         </div>
       )}
     </article>

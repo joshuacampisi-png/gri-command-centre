@@ -9,9 +9,11 @@
  */
 import {
   getRecommendations, updateRecommendation, getConfig, logAudit,
+  addRecommendation, getExistingActiveFingerprints,
 } from './gads-agent-store.js'
 import {
   enableCampaign, enableKeyword, pauseKeyword, removeCampaignNegativeKeyword,
+  removeNegativeFromSharedList,
 } from './gads-mutations.js'
 import { getCampaignPerformance, getKeywordPerformance } from './gads-queries.js'
 import { microsToDollars } from './gads-client.js'
@@ -98,43 +100,58 @@ async function measureActualImpact(rec, campaigns, keywords) {
 }
 
 // ── Revert a change via the Google Ads API ──────────────────────────────────
+//
+// This function is NO LONGER called automatically. It is called by the
+// approve route when the user explicitly approves a "REVERT_CHANGE" card
+// that was raised by the accuracy-check sweep. Rule: nothing ever touches
+// the Google Ads account without Josh's explicit click.
 
-async function revertChange(rec) {
-  const proposed = rec.proposedChange || {}
-  const execution = rec.executionResult || {}
+export async function executeRevert(originalRec) {
+  const proposed = originalRec.proposedChange || {}
+  const execution = originalRec.executionResult || {}
 
   switch (proposed.action) {
     case 'PAUSE_CAMPAIGN':
-      return await enableCampaign(rec.entityId)
+      return await enableCampaign(originalRec.entityId)
     case 'PAUSE_KEYWORD':
-      return await enableKeyword(proposed.adGroupId, rec.entityId)
+      return await enableKeyword(proposed.adGroupId, originalRec.entityId)
     case 'ADD_NEGATIVE_KEYWORD':
-      // Use the resourceName captured at execution time
+      // The approve route might have routed this to a shared list or a
+      // campaign-level negative. Check which path was taken at execution.
+      if (execution?.routedTo === 'shared_list' && execution?.resourceName) {
+        return await removeNegativeFromSharedList(execution.resourceName)
+      }
       if (execution?.resourceName) {
         return await removeCampaignNegativeKeyword(execution.resourceName)
       }
-      return { ok: false, error: 'No resourceName stored for negative keyword — cannot auto-revert' }
+      return { ok: false, error: 'No resourceName stored for negative keyword — cannot revert automatically' }
     case 'INCREASE_BID':
-      // For now, revert-bid is flagged for manual intervention because we
-      // would need the exact previous bid micros to restore precisely.
-      return { ok: false, error: 'Bid revert requires manual intervention — previous bid not stored' }
+      return { ok: false, error: 'Bid revert requires manual intervention — previous bid micros not stored' }
     default:
       return { ok: false, error: `No revert handler for action ${proposed.action}` }
   }
 }
 
-// ── Main entry: run accuracy checks for all due completed recommendations ──
+// ── Main entry: run accuracy checks and raise REVERT APPROVAL CARDS ─────────
+//
+// CRITICAL: this function NEVER reverts anything automatically. When the
+// accuracy check determines that a change's projected impact did not
+// materialise, it creates a NEW pending recommendation card with category
+// 'revert'. The agent waits for Josh to click Approve on that card before
+// calling the Google Ads API to reverse the original change.
+//
+// Rule: "you cannot auto approve anything with my Google Ads account"
 
 export async function runAccuracyChecks() {
   const cfg = getConfig()
   const completed = getRecommendations('completed').filter(r => {
-    if (r.accuracyCheckedAt) return false // already checked
+    if (r.accuracyCheckedAt) return false
     if (!r.accuracyCheckDueAt) return false
     return new Date(r.accuracyCheckDueAt) <= new Date()
   })
 
   if (completed.length === 0) {
-    return { checked: 0, reverted: 0, confirmed: 0 }
+    return { checked: 0, revertCardsRaised: 0, confirmed: 0 }
   }
 
   const [campaigns, keywords] = await Promise.all([
@@ -142,7 +159,10 @@ export async function runAccuracyChecks() {
     getKeywordPerformance(),
   ])
 
-  let reverted = 0
+  // Dedup: don't raise a second revert card for the same original rec
+  const existingFingerprints = getExistingActiveFingerprints()
+
+  let revertCardsRaised = 0
   let confirmed = 0
 
   for (const rec of completed) {
@@ -165,41 +185,96 @@ export async function runAccuracyChecks() {
           actual,
           note,
         }, rec.id, 'agent')
-      } else {
-        // Revert
-        const revertResult = await revertChange(rec)
-        reverted++
+        continue
+      }
+
+      // Impact did NOT materialise. Raise a revert APPROVAL card — do NOT
+      // execute the revert. Josh must explicitly click Approve on the new
+      // card for the revert to run against the Google Ads account.
+      const revertFingerprint = `revert::${rec.id}`
+      if (existingFingerprints.has(revertFingerprint)) {
+        // Already raised a pending revert card for this rec — skip
         updateRecommendation(rec.id, {
-          status: 'reverted',
           accuracyCheckedAt: new Date().toISOString(),
           actualDollarImpact: Number(actual.toFixed(2)),
           accuracyDelta: Number(delta.toFixed(2)),
-          accuracyNote: note,
-          revertedAt: new Date().toISOString(),
-          revertReason: `Projected $${rec.projectedDollarImpact} AUD did not materialise (actual $${actual.toFixed(2)}). ${note}`,
-          revertResult,
+          accuracyNote: note + ' (revert card already pending)',
         })
-        logAudit('reverted', {
-          projected: rec.projectedDollarImpact,
-          actual,
-          note,
-          revertResult,
-        }, rec.id, 'agent')
-
-        await notifyTelegram(
-          `🔄 *Google Ads Agent Auto-Revert*\n\n` +
-          `*Issue:* ${rec.issueTitle}\n` +
-          `*Projected:* $${rec.projectedDollarImpact?.toFixed(2)} AUD ${rec.projectedImpactDirection}\n` +
-          `*Actual:* $${actual.toFixed(2)} AUD\n` +
-          `*Reason:* ${note}\n` +
-          `*Revert result:* ${revertResult?.ok ? (revertResult.dryRun ? 'dry-run' : 'executed') : 'failed — ' + revertResult?.error}`
-        )
+        continue
       }
+
+      const revertCard = addRecommendation({
+        priority: 1, // revert cards always sit at the top
+        severity: 'high',
+        category: 'revert',
+        issueTitle: `Revert approval needed — "${rec.issueTitle}" did not deliver`,
+        whatToFix: `Approve reversing the original change. This will ${describeRevertAction(rec)}.`,
+        whyItShouldChange: `The original change was projected to ${rec.projectedImpactDirection} $${rec.projectedDollarImpact?.toFixed(2)} AUD/month but the 7-day accuracy check measured only $${actual.toFixed(2)}. ${note}`,
+        projectedDollarImpact: Math.abs(delta),
+        projectedImpactDirection: 'save',
+        currentValue: {
+          originalRecommendationId: rec.id,
+          originalAction: rec.proposedChange?.action,
+          originalExecutionResult: rec.executionResult,
+          originalProjected: rec.projectedDollarImpact,
+          actualMeasured: actual,
+          measurementNote: note,
+        },
+        proposedChange: {
+          action: 'REVERT_CHANGE',
+          originalRecommendationId: rec.id,
+          reason: note,
+        },
+        bestPracticeSource: '',
+        bestPracticeSummary: '',
+        entityType: rec.entityType,
+        entityId: rec.entityId,
+        entityName: rec.entityName,
+        fingerprint: revertFingerprint,
+      })
+      revertCardsRaised++
+
+      updateRecommendation(rec.id, {
+        accuracyCheckedAt: new Date().toISOString(),
+        actualDollarImpact: Number(actual.toFixed(2)),
+        accuracyDelta: Number(delta.toFixed(2)),
+        accuracyNote: note,
+        revertCardRaisedId: revertCard.id,
+      })
+
+      logAudit('revert_card_raised', {
+        originalRecommendationId: rec.id,
+        revertCardId: revertCard.id,
+        projected: rec.projectedDollarImpact,
+        actual,
+        note,
+      }, rec.id, 'agent')
+
+      await notifyTelegram(
+        `⚠️ *Google Ads Agent — Revert Approval Needed*\n\n` +
+        `*Original:* ${rec.issueTitle}\n` +
+        `*Projected:* $${rec.projectedDollarImpact?.toFixed(2)} AUD ${rec.projectedImpactDirection}\n` +
+        `*Actual:* $${actual.toFixed(2)} AUD\n` +
+        `*Reason:* ${note}\n\n` +
+        `A revert approval card has been raised. Open the Google Ads Agent tab and approve the revert card to reverse the original change. *The agent will not revert automatically.*`
+      )
     } catch (err) {
       console.error('[GadsRevert] Accuracy check error for rec', rec.id, err.message)
       logAudit('accuracy_check_error', { error: err.message }, rec.id, 'agent')
     }
   }
 
-  return { checked: completed.length, reverted, confirmed }
+  return { checked: completed.length, revertCardsRaised, confirmed }
+}
+
+// Human-readable description of what the revert will actually do
+function describeRevertAction(rec) {
+  const action = rec.proposedChange?.action
+  switch (action) {
+    case 'PAUSE_CAMPAIGN':    return `re-enable the "${rec.entityName}" campaign`
+    case 'PAUSE_KEYWORD':     return `re-enable the "${rec.entityName}" keyword`
+    case 'ADD_NEGATIVE_KEYWORD': return `remove "${rec.entityName}" from the negative keyword list where it was added`
+    case 'INCREASE_BID':      return `flag for manual bid restoration (previous bid not snapshotted)`
+    default:                  return `reverse the original "${action}" action`
+  }
 }

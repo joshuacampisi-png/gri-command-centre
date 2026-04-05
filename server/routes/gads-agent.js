@@ -21,6 +21,7 @@ import {
   canExecuteRecommendation, findTargetSharedList, getProtectionLevel,
   getFullContext, refreshAutoContext,
 } from '../lib/gads-agent-context.js'
+import { executeRevert } from '../lib/gads-agent-revert.js'
 
 const router = Router()
 
@@ -187,6 +188,27 @@ router.post('/approve', async (req, res) => {
         executionResult = await updateKeywordBid(proposed.adGroupId, proposed.criterionId, newBidAud)
         executionResult.previousBidMicros = currentCpcMicros
         executionResult.newBidAud = newBidAud
+        break
+      }
+
+      case 'REVERT_CHANGE': {
+        // Revert approval card — execute the reverse of the original change.
+        // This only runs because Josh explicitly clicked Approve on this card.
+        const originalRecId = proposed.originalRecommendationId
+        const originalRec = getRecommendationById(originalRecId)
+        if (!originalRec) {
+          executionResult = { ok: false, error: `Original recommendation ${originalRecId} not found` }
+          break
+        }
+        executionResult = await executeRevert(originalRec)
+        executionResult.revertOf = originalRecId
+        // Mark the original rec as reverted (with the full trail)
+        updateRecommendation(originalRecId, {
+          status: 'reverted',
+          revertedAt: new Date().toISOString(),
+          revertReason: `User-approved revert via card ${recommendationId}. ${proposed.reason || ''}`.trim(),
+          revertResult: executionResult,
+        })
         break
       }
 
