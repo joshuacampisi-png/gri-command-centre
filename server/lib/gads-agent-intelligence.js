@@ -49,34 +49,144 @@ async function searchBestPractice(issueTitle) {
   }
 }
 
+// ── Directional classification ──────────────────────────────────────────────
+//
+// Every finding falls into one of four directions. This drives what classes
+// of recommendation are legal and blocks Claude from suggesting e.g. Smart
+// Bidding Exploration on an underperforming campaign.
+
+function classifyDirection(finding) {
+  switch (finding.issueKey) {
+    case 'campaign_zero_conversions':
+    case 'keyword_zero_conversions':
+    case 'negative_candidate':
+    case 'shopping_product_zero_conversions':
+    case 'budget_reallocation':
+    case 'low_quality_score':
+      return 'underperformance'
+    case 'bid_underbid':
+      return 'overperformance' // keyword converting well below breakeven CPP
+    case 'keyword_zero_impressions':
+      return 'structural_cleanup'
+    case 'disapproved_ad':
+      return 'quality_fix'
+    default:
+      return 'unknown'
+  }
+}
+
+const LEGAL_RECOMMENDATIONS_BY_DIRECTION = {
+  underperformance: 'Pause, reduce budget, add negative keywords, fix search-term targeting, lower target ROAS/CPA to something achievable, review landing page experience, or refine query matching. NEVER suggest scaling, loosening bid targets, Smart Bidding Exploration, or increasing budgets — those are for overperformers only.',
+  overperformance:  'Increase bids, scale budget, add lookalike audiences, or apply Smart Bidding Exploration to capture incremental volume. NEVER suggest pausing or cutting — this entity is already winning.',
+  structural_cleanup: 'Remove dead weight that consumes no budget. Do not frame this as a money opportunity — the value is account hygiene, not direct dollar impact.',
+  quality_fix: 'Fix the specific quality/compliance issue (disapproval, low QS) via ad rewrites, landing page improvements, or ad relevance work. Do not suggest bidding changes as the primary fix.',
+  unknown: 'Be conservative. Recommend manual review.',
+}
+
 // ── AI-enriched card copy ───────────────────────────────────────────────────
+//
+// The prescription (whatToFix) is ALWAYS the deterministic template — grounded
+// in the actual proposedChange that will execute on approval. Claude only
+// writes the explanatory narrative (whyItShouldChange), with strict guardrails:
+//
+//   1. Structured campaign context passed explicitly (no hallucinated numbers)
+//   2. Directional hint blocks backwards recommendations (e.g. scaling a loser)
+//   3. Numeric claims constrained to provided data only
+//   4. Dollar impact framed as contribution margin, not gross revenue
 
 async function writeCardCopy(finding, bestPractice, impact, direction, cfg) {
+  // whatToFix is ALWAYS deterministic — never invented by Claude
+  const whatToFix = templateWhatToFix(finding)
+
+  // Extract the real campaign context (populated by the engine from Layer 2 auto-discovery)
+  const ctx = finding.campaignContext || {}
+  const campaignContextLines = [
+    ctx.name ? `Campaign name: ${ctx.name}` : null,
+    ctx.channel ? `Channel: ${ctx.channel}` : null,
+    ctx.bidStrategy ? `Bid strategy: ${ctx.bidStrategy}` : null,
+    ctx.dailyBudgetAud != null ? `Daily budget: $${ctx.dailyBudgetAud} AUD` : null,
+    ctx.targetRoas != null ? `Target ROAS: ${ctx.targetRoas}x` : null,
+    ctx.optimizationScore != null ? `Optimization score: ${Math.round(ctx.optimizationScore * 100)}%` : null,
+    ctx.isAutoBid != null ? `Auto-bidding: ${ctx.isAutoBid ? 'yes (manual bid changes ignored by Google)' : 'no'}` : null,
+  ].filter(Boolean).join('\n')
+
+  // Use contribution margin from the forecast, not gross revenue
+  const fc = finding.forecast || {}
+  const netProfitMonthly = fc.monthly?.netProfitChangeAud ?? null
+  const revenueMonthly = fc.monthly?.revenueChangeAud ?? null
+  const spendMonthly = fc.monthly?.spendChangeAud ?? null
+  const impactLine = netProfitMonthly != null
+    ? `Projected net profit impact (after ${Math.round(cfg.grossMarginPct * 100)}% margin): $${netProfitMonthly.toFixed(2)} AUD/month. Revenue Δ: ${revenueMonthly >= 0 ? '+' : ''}$${(revenueMonthly || 0).toFixed(2)}. Spend Δ: ${spendMonthly > 0 ? '+' : ''}$${(spendMonthly || 0).toFixed(2)}.`
+    : `Projected impact: $${impact.toFixed(2)} AUD/month (${direction})`
+
+  const dxn = classifyDirection(finding)
+  const legalRecs = LEGAL_RECOMMENDATIONS_BY_DIRECTION[dxn]
+
   try {
     const response = await callClaude({
       model: MODEL,
-      max_tokens: 500,
+      max_tokens: 400,
       system:
-        `You are an expert Google Ads strategist for Gender Reveal Ideas (genderrevealideas.com.au), ` +
-        `an Australian DTC gender reveal products brand. Business constants: AOV $${cfg.avgOrderValueAud} AUD, ` +
-        `gross margin ${Math.round(cfg.grossMarginPct * 100)}%, breakeven CPP $${cfg.breakevenCppAud} AUD, ` +
-        `target ROAS ${cfg.targetRoas}x. Write in plain Australian English. No dashes. No AI filler phrases. ` +
-        `Be direct and specific. Respond ONLY with a JSON object, no preamble, no markdown.`,
+        `You are a senior Google Ads strategist for Gender Reveal Ideas (genderrevealideas.com.au), ` +
+        `an Australian DTC gender reveal products brand.\n\n` +
+        `BUSINESS CONSTANTS\n` +
+        `AOV $${cfg.avgOrderValueAud} AUD, gross margin ${Math.round(cfg.grossMarginPct * 100)}%, ` +
+        `breakeven CPP $${cfg.breakevenCppAud} AUD, blanket target ROAS ${cfg.targetRoas}x.\n\n` +
+
+        `THE nCAC / LTGP PROFITABILITY FRAMEWORK — your decision hierarchy\n` +
+        `(Source: Taylor Holiday CTC / Nathan Perdriau LTGP / Brad Ploch CBO. GRI adopted this as the canonical ads measurement framework. NEVER use CPA or LTV as primary metrics.)\n\n` +
+        `The Six Priority Metrics (top = most important):\n` +
+        `  P1 — nCAC = Total Ad Spend / New Customers. New = Shopify customer.numberOfOrders == 1. Use 3-day rolling average. Thresholds vs 90d historical avg: green below, amber +45%, red 2x.\n` +
+        `  P2 — FOV/CAC = (first_order_aov × margin) / nCAC. Decision rule: <1.0x for 3+ consecutive days = PAUSE. Green >3.0x, amber 1.0-3.0x, red <1.0x.\n` +
+        `  P3 — LTGP:nCAC = (customer revenue at Xd × margin) / nCAC. ALWAYS specify the window (30d/60d/90d/180d/365d). Green >5x, amber 3-5x, red <3x. CAC ceiling = 50-60% of 90d LTGP.\n` +
+        `  P4 — CM$ = Net Sales - Cost of Delivery - Ad Spend. Cost of Delivery = COGS + royalties + shipping + payment processing. THE scoreboard metric. If negative, nothing else matters. USE DOLLARS not percentage.\n` +
+        `  P5 — aMER = New Customer Revenue / Total Ad Spend. Green >5x, amber 2-5x, red <2x. If aMER << MER, ads are re-converting, not acquiring.\n` +
+        `  P6 — New Customer Count (daily). Sponge alert: declines >20% WoW while spend flat/increasing = shrinking acquisition.\n\n` +
+        `The Four-Layer Hierarchy (ALWAYS present top-to-bottom, NEVER lead with Layer 4):\n` +
+        `  Layer 1 Scoreboard:        CM$ (if negative, every other metric is noise)\n` +
+        `  Layer 2 Business metrics:  Order Revenue, Total Ad Spend, MER, AOV\n` +
+        `  Layer 3 Customer metrics:  nCAC, FOV/CAC, LTGP:nCAC, Repeat Rate, aMER, New Customer Count\n` +
+        `  Layer 4 Channel metrics:   Per-platform ROAS, CPA (PROXY INDICATORS ONLY — not primary)\n\n` +
+        `Common mistakes to avoid:\n` +
+        `  • Leading with CPA (use nCAC — new customers only)\n` +
+        `  • Revenue-based LTV (use LTGP with explicit time window)\n` +
+        `  • Hardcoded AOV (track first_order_aov separately)\n` +
+        `  • Blended remarketing + prospecting (report nCAC for prospecting only)\n\n` +
+
+        `KNOWN AGENT GAP (be honest in your narrative if relevant):\n` +
+        `The rules engine currently only produces Layer 4 channel findings (ROAS-based). ` +
+        `It does NOT yet compute nCAC, FOV/CAC, LTGP:nCAC, or true CM$. ` +
+        `Cost of Delivery is approximated by applying the ${Math.round(cfg.grossMarginPct * 100)}% gross margin to revenue, which is a rough stand-in for proper COGS+shipping+processing. ` +
+        `When you write narrative, use framework vocabulary where appropriate but do NOT claim nCAC or LTGP numbers the forecast has not provided.\n\n` +
+
+        `WRITING STYLE\n` +
+        `Plain Australian English. No dashes. No AI filler phrases ("leveraging", "going forward", "in order to"). Direct and specific.\n\n` +
+
+        `HARD CONSTRAINTS — violating any of these produces a wrong answer:\n` +
+        `1. ONLY reference numbers that appear in the "Campaign context" or "Forecast" sections below. Do NOT invent specific dollar amounts, percentages, or budgets.\n` +
+        `2. Frame dollar impact as contribution margin (CM$), not gross revenue. Revenue on a physical-product business is vanity.\n` +
+        `3. Do NOT contradict the "Prescription" field — the narrative must match the action, not propose an alternative.\n` +
+        `4. Respect the "Direction" — only recommend actions from the legal set for that direction.\n` +
+        `5. If the narrative would imply a Layer 3 metric (nCAC, FOV/CAC, LTGP:nCAC, aMER), note that the agent has not yet computed it from Shopify new-customer data and stay at Layer 4 (ROAS) terminology instead of fabricating a Layer 3 number.\n\n` +
+
+        `Respond ONLY with a JSON object, no preamble, no markdown.`,
       messages: [{
         role: 'user',
         content:
-          `Write a recommendation card for this Google Ads finding.\n\n` +
-          `Issue: ${finding.issueTitle}\n` +
-          `Category: ${finding.category}\n` +
-          `Entity: ${finding.entityName} (${finding.entityType})\n` +
-          `Raw data: ${JSON.stringify(finding.rawData).slice(0, 2000)}\n` +
-          `Current best practice guidance: ${bestPractice.summary}\n` +
-          `Projected impact: $${impact.toFixed(2)} AUD/month (${direction})\n\n` +
-          `Return a JSON object with exactly these three fields:\n` +
+          `Write the narrative explanation for this Google Ads finding.\n\n` +
+          `ISSUE\n${finding.issueTitle}\n\n` +
+          `CAMPAIGN CONTEXT (verified from API — use these numbers, not any others)\n${campaignContextLines || '(no context available)'}\n\n` +
+          `FORECAST (from the deterministic forecast module)\n${impactLine}\n` +
+          (fc.formula ? `Formula: ${fc.formula}\n` : '') +
+          (fc.confidence ? `Confidence: ${fc.confidence} — ${fc.confidenceReason || ''}\n` : '') +
+          `\n` +
+          `DIRECTION: ${dxn}\n` +
+          `LEGAL RECOMMENDATIONS FOR THIS DIRECTION: ${legalRecs}\n\n` +
+          `PRESCRIPTION (this is what will execute when Josh clicks Approve — your narrative must match it, not propose an alternative):\n${whatToFix}\n\n` +
+          `BEST PRACTICE CONTEXT: ${bestPractice.summary}\n\n` +
+          `Return a JSON object with exactly this field:\n` +
           `{\n` +
-          `  "whatToFix": "One clear sentence describing the specific action to take",\n` +
-          `  "whyItShouldChange": "Two sentences explaining what is happening and why the change matters in business terms",\n` +
-          `  "salesImpact": "One sentence on the expected improvement in sales or cost efficiency"\n` +
+          `  "whyItShouldChange": "Two to three sentences explaining what the account is doing wrong, grounded ONLY in the campaign context and forecast numbers above. Frame dollar impact as contribution margin, not gross revenue. Do NOT suggest a different action than the Prescription. Do NOT invent numbers."\n` +
           `}`,
       }],
     }, 'gads-agent-card-writer')
@@ -84,15 +194,15 @@ async function writeCardCopy(finding, bestPractice, impact, direction, cfg) {
     const text = response.content?.find(b => b.type === 'text')?.text || '{}'
     const cleaned = text.replace(/```json|```/g, '').trim()
     const parsed = JSON.parse(cleaned)
+
     return {
-      whatToFix: parsed.whatToFix || templateWhatToFix(finding),
-      whyItShouldChange: `${parsed.whyItShouldChange || ''} ${parsed.salesImpact || ''}`.trim()
-        || templateWhy(finding, impact, direction),
+      whatToFix,
+      whyItShouldChange: parsed.whyItShouldChange || templateWhy(finding, impact, direction),
     }
   } catch (err) {
     console.warn('[GadsIntel] writeCardCopy failed:', err.message)
     return {
-      whatToFix: templateWhatToFix(finding),
+      whatToFix,
       whyItShouldChange: templateWhy(finding, impact, direction),
     }
   }
@@ -256,6 +366,7 @@ export async function buildRecommendationsFromFindings(findings) {
 // ── Daily intelligence briefing ─────────────────────────────────────────────
 
 export async function generateIntelligenceBriefing(accountSummary) {
+  const cfg = getConfig()
   try {
     const response = await callClaude({
       model: MODEL,
@@ -263,22 +374,33 @@ export async function generateIntelligenceBriefing(accountSummary) {
       tools: [{ type: 'web_search_20250305', name: 'web_search' }],
       system:
         `You are a senior Google Ads strategist for Gender Reveal Ideas (genderrevealideas.com.au), ` +
-        `an Australian DTC gender reveal products business. Today is ${new Date().toLocaleDateString('en-AU', { timeZone: 'Australia/Brisbane' })}. ` +
+        `an Australian DTC gender reveal products business. Today is ${new Date().toLocaleDateString('en-AU', { timeZone: 'Australia/Brisbane' })}.\n\n` +
+        `FRAMEWORK — use this language and hierarchy when discussing account health:\n` +
+        `nCAC/LTGP framework (Taylor Holiday CTC). Six priority metrics top-to-bottom:\n` +
+        `  CM$ (scoreboard, contribution margin dollars)\n` +
+        `  nCAC (ad spend / new customers, new = customer.numberOfOrders == 1)\n` +
+        `  FOV/CAC (first_order_aov × margin / nCAC, pause if <1.0x for 3+ days)\n` +
+        `  LTGP:nCAC at specified window (green >5x, amber 3-5x, red <3x)\n` +
+        `  aMER (new customer revenue / ad spend)\n` +
+        `  New customer count daily.\n` +
+        `4-layer hierarchy: Layer 1 CM$ → Layer 2 business metrics → Layer 3 customer metrics → Layer 4 channel ROAS. NEVER lead with Layer 4.\n` +
+        `Revenue on a physical product business is vanity. Frame dollar claims as contribution margin or LTGP, never gross revenue.\n\n` +
+        `KNOWN AGENT GAP: the rules engine currently only produces Layer 4 (ROAS) findings. nCAC, FOV/CAC, LTGP:nCAC, and true CM$ are not yet computed from Shopify new-customer data. Use framework vocabulary but do not claim specific Layer 3 numbers.\n\n` +
         `Write in plain Australian English. No dashes. Respond only with JSON, no markdown, no preamble.`,
       messages: [{
         role: 'user',
         content:
-          `Search the web and compile today's Google Ads intelligence briefing covering:\n` +
+          `Compile today's Google Ads intelligence briefing for GRI covering:\n` +
           `1. Any Google Ads algorithm changes, Smart Bidding updates, or platform changes in the last 7 days\n` +
-          `2. Seasonal search trends in Australia relevant to gender reveal products, baby showers, or pregnancy announcements right now\n` +
-          `3. Any Google Merchant Centre policy updates or Shopping ads changes\n` +
-          `4. Strategic guidance for today given the account summary: ${JSON.stringify(accountSummary)}\n\n` +
+          `2. Seasonal search trends in Australia for gender reveal products, baby showers, or pregnancy announcements right now\n` +
+          `3. Any Google Merchant Centre policy or Shopping ads changes\n` +
+          `4. Strategic guidance using the nCAC/LTGP framework. Account summary: ${JSON.stringify(accountSummary)}.\n\n` +
           `Return ONLY JSON with exactly these fields:\n` +
           `{\n` +
           `  "algorithmUpdates": "2-3 sentences on any platform changes",\n` +
-          `  "seasonalOpportunities": "2-3 sentences on seasonal trends and opportunities",\n` +
+          `  "seasonalOpportunities": "2-3 sentences on seasonal trends and opportunities (framed against acquiring new customers, not blended revenue)",\n` +
           `  "competitorSignals": "1-2 sentences on Shopping ads or DTC landscape",\n` +
-          `  "accountHealthSummary": "1-2 sentences of strategic guidance given the summary"\n` +
+          `  "accountHealthSummary": "1-2 sentences of strategic guidance. Lead with CM$ / profitability framing, not ROAS."\n` +
           `}`,
       }],
     }, 'gads-agent-briefing')

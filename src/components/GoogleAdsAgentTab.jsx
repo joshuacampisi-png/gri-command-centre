@@ -400,6 +400,23 @@ export function GoogleAdsAgentTab() {
         </div>
       </header>
 
+      {/* Framework gap warning — the agent currently only produces Layer 4
+          (channel ROAS) findings. nCAC, FOV/CAC, LTGP:nCAC, and true CM$
+          are not yet computed from Shopify new-customer data. */}
+      <div className="gads-framework-warning">
+        <div className="gads-framework-warning-inner">
+          <span className="gads-framework-warning-chip">FRAMEWORK GAP</span>
+          <div className="gads-framework-warning-text">
+            <strong>Layer 4 metrics only.</strong> The agent currently reasons in channel ROAS —
+            the easiest but weakest layer of your nCAC / LTGP framework. <strong>nCAC, FOV/CAC,
+            LTGP:nCAC, aMER and true CM$</strong> (Net Sales – COGS – shipping – processing – ad spend)
+            are <em>not yet wired in</em> because they need Shopify new-customer sync, cohort
+            tracking, and Cost of Delivery breakdown. Narrative uses framework vocabulary;
+            numbers are still ROAS-based. Treat every finding as a proxy signal, not gospel.
+          </div>
+        </div>
+      </div>
+
       {/* Discovery-mode banner — sets expectations for the entire tab */}
       {status?.dryRun && (
         <div className="gads-phase-banner">
@@ -1523,6 +1540,58 @@ const styleSheet = `
   border: 1px solid rgba(251,188,4,0.3);
   text-transform: uppercase;
   margin-left: 4px;
+}
+
+/* ── Framework gap warning ─────────────────────────────────────────────── */
+
+.gads-framework-warning {
+  position: relative;
+  z-index: 1;
+  background:
+    linear-gradient(90deg, rgba(234,67,53,0.10), rgba(251,188,4,0.06) 40%, transparent 70%),
+    #0f0b08;
+  border-top: 1px solid rgba(234,67,53,0.25);
+  border-bottom: 1px solid rgba(234,67,53,0.15);
+  padding: 14px 44px;
+}
+
+.gads-framework-warning-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  max-width: 1400px;
+}
+
+.gads-framework-warning-chip {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  padding: 5px 10px;
+  border-radius: 4px;
+  background: rgba(234,67,53,0.16);
+  color: #ff6b5e;
+  border: 1px solid rgba(234,67,53,0.35);
+  flex-shrink: 0;
+  margin-top: 1px;
+  white-space: nowrap;
+}
+
+.gads-framework-warning-text {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #d0d3db;
+}
+
+.gads-framework-warning-text strong {
+  color: #f5f6f8;
+  font-weight: 600;
+}
+
+.gads-framework-warning-text em {
+  color: #ff9f95;
+  font-style: normal;
+  font-weight: 500;
 }
 
 /* ── Discovery-mode phase banner ────────────────────────────────────────── */
