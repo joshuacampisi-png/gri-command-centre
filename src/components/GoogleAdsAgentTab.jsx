@@ -97,6 +97,7 @@ export function GoogleAdsAgentTab() {
   const [config, setConfig]         = useState(null)
   const [summary, setSummary]       = useState(null)
   const [context, setContext]       = useState(null)
+  const [framework, setFramework]   = useState(null) // Layer 1 CM$ + Layer 3 customer metrics
   const [isScanning, setIsScanning] = useState(false)
   const [toast, setToast]           = useState(null)
   const [confirmation, setConfirmation] = useState(null) // post-approval modal payload
@@ -109,7 +110,7 @@ export function GoogleAdsAgentTab() {
 
   const fetchAll = useCallback(async () => {
     try {
-      const [s, r, b, a, cfg, sm, ctx] = await Promise.all([
+      const [s, r, b, a, cfg, sm, ctx, fw] = await Promise.all([
         fetch(`${API}/status`).then(x => x.json()).catch(() => ({})),
         fetch(`${API}/recommendations?status=pending`).then(x => x.json()).catch(() => ({})),
         fetch(`${API}/briefing`).then(x => x.json()).catch(() => ({})),
@@ -117,6 +118,7 @@ export function GoogleAdsAgentTab() {
         fetch(`${API}/config`).then(x => x.json()).catch(() => ({})),
         fetch(`${API}/account-summary`).then(x => x.json()).catch(() => null),
         fetch(`${API}/context`).then(x => x.json()).catch(() => null),
+        fetch(`${API}/framework-metrics?days=30`).then(x => x.json()).catch(() => null),
       ])
       if (s?.ok) setStatus(s)
       if (r?.ok) setRecs(r.recommendations || [])
@@ -125,6 +127,7 @@ export function GoogleAdsAgentTab() {
       if (cfg?.ok) setConfig(cfg.config)
       if (sm?.ok) setSummary(sm.summary)
       if (ctx?.ok) setContext(ctx.context)
+      if (fw?.ok) setFramework(fw.metrics)
     } catch (err) {
       showToast('error', err.message)
     }
@@ -434,22 +437,14 @@ export function GoogleAdsAgentTab() {
         </div>
       </header>
 
-      {/* Framework gap warning — the agent currently only produces Layer 4
-          (channel ROAS) findings. nCAC, FOV/CAC, LTGP:nCAC, and true CM$
-          are not yet computed from Shopify new-customer data. */}
-      <div className="gads-framework-warning">
-        <div className="gads-framework-warning-inner">
-          <span className="gads-framework-warning-chip">FRAMEWORK GAP</span>
-          <div className="gads-framework-warning-text">
-            <strong>Layer 4 metrics only.</strong> The agent currently reasons in channel ROAS —
-            the easiest but weakest layer of your nCAC / LTGP framework. <strong>nCAC, FOV/CAC,
-            LTGP:nCAC, aMER and true CM$</strong> (Net Sales – COGS – shipping – processing – ad spend)
-            are <em>not yet wired in</em> because they need Shopify new-customer sync, cohort
-            tracking, and Cost of Delivery breakdown. Narrative uses framework vocabulary;
-            numbers are still ROAS-based. Treat every finding as a proxy signal, not gospel.
-          </div>
-        </div>
-      </div>
+      {/* Framework panel — Layer 1 CM$ scoreboard + Layer 3 customer metrics.
+          Replaces the previous "FRAMEWORK GAP" warning banner. Powered by
+          gads-agent-framework-metrics.js which wires customer-index.js
+          (new/returning classification) into ads-metrics.js (nCAC, FOV/CAC,
+          CM$, Cost of Delivery, aMER). */}
+      {framework && !framework.error && (
+        <FrameworkPanel framework={framework} />
+      )}
 
       {/* Discovery-mode banner — sets expectations for the entire tab */}
       {status?.dryRun && (
@@ -752,6 +747,262 @@ function CampaignContextRow({ campaign }) {
         </>
       )}
     </div>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  FrameworkPanel — Layer 1 CM$ scoreboard + Layer 3 customer metrics
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// Replaces the old "FRAMEWORK GAP" warning banner with a real framework view.
+// Renders at the top of the Google Ads Agent tab so Josh sees the nCAC/LTGP
+// framework reality (CM$ first, customer metrics second) BEFORE the Layer 4
+// channel ROAS metrics strip. Exactly matches the four-layer hierarchy spec
+// from reference_ncac_ltgp_framework.md.
+//
+// Data comes from GET /api/gads-agent/framework-metrics which wires
+// customer-index.js + ads-metrics.js into a single structured response.
+
+function FrameworkPanel({ framework }) {
+  const [showGaps, setShowGaps] = useState(false)
+
+  const l1 = framework.layer1 || {}
+  const l3 = framework.layer3 || {}
+  const cm = l1.cm || {}
+  const cod = l1.costOfDelivery || {}
+  const ncac = l3.ncac || {}
+  const fov = l3.fovCac || {}
+  const aMer = l3.aMer || {}
+  const ncc = l3.newCustomerCount || {}
+
+  const statusColour = (s) => {
+    if (s === 'green')  return G.green
+    if (s === 'amber')  return G.yellow
+    if (s === 'red')    return G.red
+    return '#8b8f9c'
+  }
+
+  const cmColour = cm.value >= 0 ? G.green : G.red
+  const gapCount = (framework.gaps || []).length
+
+  return (
+    <section className="gads-framework">
+      <div className="gads-framework-head">
+        <div className="gads-framework-head-left">
+          <div className="gads-framework-eyebrow">
+            <span className="gads-framework-chip">nCAC / LTGP FRAMEWORK</span>
+            <span className="gads-framework-window">Last {framework.window?.days || 30} days · {framework.spend?.blended != null ? `blended spend $${Math.round(framework.spend.blended).toLocaleString('en-AU')}` : ''}</span>
+          </div>
+          <h2 className="gads-framework-title">Framework scoreboard</h2>
+        </div>
+        {gapCount > 0 && (
+          <button
+            className="gads-framework-gap-btn"
+            onClick={() => setShowGaps(!showGaps)}
+            title="Known limitations of the current framework computation"
+          >
+            {gapCount} known gap{gapCount === 1 ? '' : 's'} {showGaps ? '▴' : '▾'}
+          </button>
+        )}
+      </div>
+
+      {/* Layer 1 — CM$ scoreboard (the single most important number) */}
+      <div className="gads-framework-layer gads-framework-layer1">
+        <div className="gads-framework-layer-tag">Layer 1 · Scoreboard</div>
+        <div className="gads-framework-cm">
+          <div className="gads-framework-cm-main">
+            <div className="gads-framework-cm-label">Contribution margin (30d)</div>
+            <div className="gads-framework-cm-value" style={{ color: cmColour }}>
+              {cm.value >= 0 ? '' : '-'}${Math.abs(Math.round(cm.value || 0)).toLocaleString('en-AU')}
+            </div>
+            <div className="gads-framework-cm-sub">
+              ≈ ${Math.round(cm.perDay || 0).toLocaleString('en-AU')}/day · status <span style={{ color: statusColour(cm.status), fontWeight: 700, textTransform: 'uppercase' }}>{cm.status}</span>
+            </div>
+          </div>
+          <div className="gads-framework-cm-breakdown">
+            <div className="gads-framework-cm-row">
+              <span>New customer revenue</span>
+              <span className="mono">${Math.round(framework.customer?.newRevenue || 0).toLocaleString('en-AU')}</span>
+            </div>
+            <div className="gads-framework-cm-row minus">
+              <span>Cost of Delivery</span>
+              <span className="mono">−${Math.round(cod.total || 0).toLocaleString('en-AU')}</span>
+            </div>
+            <div className="gads-framework-cm-row sub">
+              <span>&nbsp;&nbsp;↳ COGS ({Math.round((framework.config?.grossMarginPct || 0.47) * 100)}% margin applied)</span>
+              <span className="mono">${Math.round(cod.cogs || 0).toLocaleString('en-AU')}</span>
+            </div>
+            <div className="gads-framework-cm-row sub">
+              <span>&nbsp;&nbsp;↳ Payment processing</span>
+              <span className="mono">${Math.round(cod.paymentFees || 0).toLocaleString('en-AU')}</span>
+            </div>
+            <div className="gads-framework-cm-row sub">
+              <span>&nbsp;&nbsp;↳ Shipping</span>
+              <span className="mono">${Math.round(cod.shipping || 0).toLocaleString('en-AU')}</span>
+            </div>
+            <div className="gads-framework-cm-row minus">
+              <span>Blended ad spend (Google + Meta)</span>
+              <span className="mono">−${Math.round(framework.spend?.blended || 0).toLocaleString('en-AU')}</span>
+            </div>
+            <div className="gads-framework-cm-row total">
+              <span>CM$</span>
+              <span className="mono" style={{ color: cmColour }}>${Math.round(cm.value || 0).toLocaleString('en-AU')}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Layer 3 — Customer Metrics (nCAC, FOV/CAC, aMER, new customer count) */}
+      <div className="gads-framework-layer gads-framework-layer3">
+        <div className="gads-framework-layer-tag">Layer 3 · Customer Metrics</div>
+        <div className="gads-framework-grid">
+          {/* nCAC */}
+          <div className="gads-framework-metric">
+            <div className="gads-framework-metric-head">
+              <span className="gads-framework-metric-name">nCAC</span>
+              <span className="gads-framework-metric-status" style={{ color: statusColour(ncac.status) }}>
+                ● {ncac.status}
+              </span>
+            </div>
+            <div className="gads-framework-metric-value mono">${(ncac.value || 0).toFixed(2)}</div>
+            <div className="gads-framework-metric-sub">per new customer</div>
+            <div className="gads-framework-metric-band">
+              <div className="gads-framework-band-row">
+                <span>90d avg</span>
+                <span className="mono">${(ncac.historicalAvg || 0).toFixed(2)}</span>
+              </div>
+              <div className="gads-framework-band-row green">
+                <span>green</span>
+                <span className="mono">&lt; ${(ncac.thresholds?.green || 0).toFixed(0)}</span>
+              </div>
+              <div className="gads-framework-band-row amber">
+                <span>amber</span>
+                <span className="mono">&lt; ${(ncac.thresholds?.amber || 0).toFixed(0)}</span>
+              </div>
+              <div className="gads-framework-band-row red">
+                <span>red</span>
+                <span className="mono">≥ ${(ncac.thresholds?.red || 0).toFixed(0)}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* FOV/CAC */}
+          <div className="gads-framework-metric">
+            <div className="gads-framework-metric-head">
+              <span className="gads-framework-metric-name">FOV / CAC</span>
+              <span className="gads-framework-metric-status" style={{ color: statusColour(fov.status) }}>
+                ● {fov.status}
+              </span>
+            </div>
+            <div className="gads-framework-metric-value mono">{(fov.value || 0).toFixed(2)}×</div>
+            <div className="gads-framework-metric-sub">first-order gross profit ÷ nCAC</div>
+            <div className="gads-framework-metric-band">
+              <div className="gads-framework-band-row">
+                <span>FOV</span>
+                <span className="mono">${(fov.firstOrderAov || 0).toFixed(2)} × {Math.round((fov.marginApplied || 0) * 100)}%</span>
+              </div>
+              <div className="gads-framework-band-row green">
+                <span>green</span>
+                <span className="mono">≥ 3.0×</span>
+              </div>
+              <div className="gads-framework-band-row amber">
+                <span>amber</span>
+                <span className="mono">1.0 – 3.0×</span>
+              </div>
+              <div className="gads-framework-band-row red">
+                <span>red / pause gate</span>
+                <span className="mono">&lt; 1.0×</span>
+              </div>
+            </div>
+          </div>
+
+          {/* aMER */}
+          <div className="gads-framework-metric">
+            <div className="gads-framework-metric-head">
+              <span className="gads-framework-metric-name">aMER</span>
+              <span className="gads-framework-metric-status" style={{ color: statusColour(aMer.status) }}>
+                ● {aMer.status}
+              </span>
+            </div>
+            <div className="gads-framework-metric-value mono">{(aMer.value || 0).toFixed(2)}×</div>
+            <div className="gads-framework-metric-sub">new customer revenue ÷ ad spend</div>
+            <div className="gads-framework-metric-band">
+              <div className="gads-framework-band-row">
+                <span>new cust rev</span>
+                <span className="mono">${Math.round(aMer.newCustomerRevenue || 0).toLocaleString('en-AU')}</span>
+              </div>
+              <div className="gads-framework-band-row green">
+                <span>green</span>
+                <span className="mono">≥ 5×</span>
+              </div>
+              <div className="gads-framework-band-row amber">
+                <span>amber</span>
+                <span className="mono">2 – 5×</span>
+              </div>
+              <div className="gads-framework-band-row red">
+                <span>red</span>
+                <span className="mono">&lt; 2×</span>
+              </div>
+            </div>
+          </div>
+
+          {/* New Customer Count + WoW trend */}
+          <div className="gads-framework-metric">
+            <div className="gads-framework-metric-head">
+              <span className="gads-framework-metric-name">New customers</span>
+              <span className="gads-framework-metric-status" style={{ color: statusColour(ncc.trend) }}>
+                ● {ncc.trend || 'stable'}
+              </span>
+            </div>
+            <div className="gads-framework-metric-value mono">{ncc.dailyAvg || 0}<span className="gads-framework-metric-unit"> / day</span></div>
+            <div className="gads-framework-metric-sub">{ncc.total || 0} acquired in window</div>
+            <div className="gads-framework-metric-band">
+              <div className="gads-framework-band-row">
+                <span>this week</span>
+                <span className="mono">{ncc.thisWeek || 0}</span>
+              </div>
+              <div className="gads-framework-band-row">
+                <span>last week</span>
+                <span className="mono">{ncc.lastWeek || 0}</span>
+              </div>
+              <div className="gads-framework-band-row" style={{ color: statusColour(ncc.trend) }}>
+                <span>WoW Δ</span>
+                <span className="mono">{(ncc.wowChangePct || 0) > 0 ? '+' : ''}{(ncc.wowChangePct || 0).toFixed(1)}%</span>
+              </div>
+              <div className="gads-framework-band-row">
+                <span>repeat rate</span>
+                <span className="mono">{(framework.customer?.repeatRate || 0).toFixed(1)}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* LTGP:nCAC placeholder + Layer 4 attribution */}
+      <div className="gads-framework-footer">
+        <div className="gads-framework-footer-item">
+          <strong>LTGP:nCAC</strong> cohort tracking — pending phase 2b (needs monthly cohort grouping at 30/60/90/180/365d windows)
+        </div>
+        <div className="gads-framework-footer-item muted">
+          Layer 4 (channel ROAS) metrics shown below this panel as proxy indicators only — framework says <em>never lead with Layer 4</em>.
+        </div>
+      </div>
+
+      {/* Gaps dropdown */}
+      {showGaps && framework.gaps && (
+        <div className="gads-framework-gaps">
+          <div className="gads-framework-gaps-head">Known limitations of this framework computation:</div>
+          <ul className="gads-framework-gaps-list">
+            {framework.gaps.map((g, i) => (
+              <li key={i} className={`gads-framework-gap-${g.severity}`}>
+                <span className="gads-framework-gap-area">{g.area}</span>
+                <span>{g.note}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </section>
   )
 }
 
@@ -1576,56 +1827,374 @@ const styleSheet = `
   margin-left: 4px;
 }
 
-/* ── Framework gap warning ─────────────────────────────────────────────── */
+/* ── Framework panel (Layer 1 CM$ + Layer 3 customer metrics) ──────────── */
 
-.gads-framework-warning {
+.gads-framework {
   position: relative;
   z-index: 1;
+  margin: 0;
+  padding: 28px 44px 24px;
   background:
-    linear-gradient(90deg, rgba(234,67,53,0.10), rgba(251,188,4,0.06) 40%, transparent 70%),
-    #0f0b08;
-  border-top: 1px solid rgba(234,67,53,0.25);
-  border-bottom: 1px solid rgba(234,67,53,0.15);
-  padding: 14px 44px;
+    radial-gradient(ellipse 60% 80% at 15% 0%, rgba(52,168,83,0.08), transparent 60%),
+    radial-gradient(ellipse 50% 70% at 85% 100%, rgba(66,133,244,0.05), transparent 60%),
+    var(--bg-surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
-.gads-framework-warning-inner {
+.gads-framework-head {
   display: flex;
+  justify-content: space-between;
   align-items: flex-start;
-  gap: 14px;
-  max-width: 1400px;
+  margin-bottom: 22px;
+  gap: 20px;
 }
 
-.gads-framework-warning-chip {
+.gads-framework-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.gads-framework-chip {
   font-family: var(--font-mono);
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.18em;
-  padding: 5px 10px;
+  padding: 5px 11px;
   border-radius: 4px;
-  background: rgba(234,67,53,0.16);
-  color: #ff6b5e;
-  border: 1px solid rgba(234,67,53,0.35);
-  flex-shrink: 0;
-  margin-top: 1px;
+  background: linear-gradient(180deg, var(--g-green), #1f7a3a);
+  color: white;
+  box-shadow: 0 4px 14px -6px rgba(52,168,83,0.5);
+}
+
+.gads-framework-window {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+
+.gads-framework-title {
+  font-family: var(--font-display);
+  font-variation-settings: 'opsz' 96;
+  font-weight: 500;
+  font-size: 28px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin: 0;
+}
+
+.gads-framework-gap-btn {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  cursor: pointer;
   white-space: nowrap;
+  transition: all 180ms ease;
 }
 
-.gads-framework-warning-text {
-  font-size: 12.5px;
-  line-height: 1.55;
-  color: #d0d3db;
+.gads-framework-gap-btn:hover {
+  border-color: var(--g-yellow);
+  color: var(--g-yellow);
 }
 
-.gads-framework-warning-text strong {
-  color: #f5f6f8;
+/* ── Layer tag (small label above each layer section) ─────────────────── */
+
+.gads-framework-layer {
+  margin-bottom: 22px;
+}
+
+.gads-framework-layer-tag {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+}
+
+/* ── Layer 1 — CM$ scoreboard ─────────────────────────────────────────── */
+
+.gads-framework-layer1 {
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--g-green);
+  border-radius: 14px;
+  padding: 22px 26px;
+}
+
+.gads-framework-cm {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 32px;
+  align-items: center;
+}
+
+@media (max-width: 860px) {
+  .gads-framework-cm {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+.gads-framework-cm-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.gads-framework-cm-value {
+  font-family: var(--font-display);
+  font-variation-settings: 'opsz' 144;
+  font-weight: 500;
+  font-size: 68px;
+  line-height: 1;
+  letter-spacing: -0.035em;
+}
+
+.gads-framework-cm-sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  letter-spacing: 0.02em;
+}
+
+.gads-framework-cm-breakdown {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+
+.gads-framework-cm-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  color: var(--text-soft);
+}
+
+.gads-framework-cm-row.minus {
+  color: var(--text-muted);
+}
+
+.gads-framework-cm-row.sub {
+  color: var(--text-dim);
+  font-size: 10.5px;
+}
+
+.gads-framework-cm-row.total {
+  border-top: 1px solid var(--border);
+  margin-top: 6px;
+  padding-top: 10px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.gads-framework-cm-row .mono {
+  font-family: var(--font-mono);
+}
+
+/* ── Layer 3 — Customer Metrics grid ──────────────────────────────────── */
+
+.gads-framework-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.gads-framework-metric {
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px 14px;
+  transition: border-color 200ms ease, transform 200ms ease;
+}
+
+.gads-framework-metric:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+
+.gads-framework-metric-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.gads-framework-metric-name {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.gads-framework-metric-status {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.gads-framework-metric-value {
+  font-family: var(--font-display);
+  font-variation-settings: 'opsz' 144;
+  font-weight: 500;
+  font-size: 34px;
+  line-height: 1;
+  letter-spacing: -0.025em;
+  color: var(--text);
+}
+
+.gads-framework-metric-value.mono {
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+
+.gads-framework-metric-unit {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.gads-framework-metric-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  margin-bottom: 12px;
+}
+
+.gads-framework-metric-band {
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.gads-framework-band-row {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.gads-framework-band-row .mono {
+  font-family: var(--font-mono);
+  color: var(--text-soft);
+}
+
+.gads-framework-band-row.green { color: var(--g-green); }
+.gads-framework-band-row.amber { color: var(--g-yellow); }
+.gads-framework-band-row.red   { color: var(--g-red); }
+.gads-framework-band-row.green .mono,
+.gads-framework-band-row.amber .mono,
+.gads-framework-band-row.red   .mono {
+  color: inherit;
+}
+
+/* ── Framework footer (LTGP placeholder + Layer 4 attribution) ────────── */
+
+.gads-framework-footer {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.gads-framework-footer-item.muted {
+  color: var(--text-dim);
+}
+
+.gads-framework-footer-item strong {
+  color: var(--text-soft);
   font-weight: 600;
 }
 
-.gads-framework-warning-text em {
-  color: #ff9f95;
+.gads-framework-footer-item em {
+  color: var(--g-yellow);
   font-style: normal;
-  font-weight: 500;
+}
+
+/* ── Gaps dropdown ────────────────────────────────────────────────────── */
+
+.gads-framework-gaps {
+  margin-top: 14px;
+  padding: 14px 18px;
+  background: rgba(251,188,4,0.04);
+  border: 1px solid rgba(251,188,4,0.15);
+  border-radius: 10px;
+}
+
+.gads-framework-gaps-head {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--g-yellow);
+  margin-bottom: 10px;
+}
+
+.gads-framework-gaps-list {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.gads-framework-gaps-list li {
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--text-soft);
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  display: flex;
+  gap: 10px;
+}
+
+.gads-framework-gaps-list li:last-child {
+  border-bottom: none;
+}
+
+.gads-framework-gap-area {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.05);
+  color: var(--text-muted);
+  flex-shrink: 0;
+  height: fit-content;
+  margin-top: 2px;
+  white-space: nowrap;
 }
 
 /* ── Discovery-mode phase banner ────────────────────────────────────────── */

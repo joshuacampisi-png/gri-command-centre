@@ -22,6 +22,7 @@ import {
   getFullContext, refreshAutoContext,
 } from '../lib/gads-agent-context.js'
 import { executeRevert } from '../lib/gads-agent-revert.js'
+import { getFrameworkMetrics } from '../lib/gads-agent-framework-metrics.js'
 
 const router = Router()
 
@@ -53,6 +54,29 @@ router.get('/account-summary', async (_req, res) => {
     const scan = await runFullScan()
     res.json({ ok: true, summary: scan.summary, counts: scan.counts })
   } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── Framework metrics (Layer 1 CM$ + Layer 3 customer metrics) ──────────────
+//
+// Returns the full nCAC/LTGP/CM$ framework view computed from:
+//   - customer-index.json (new/returning classification, live)
+//   - ads-metrics.js (all 12 framework functions)
+//   - Google Ads API (Google spend)
+//   - Meta Flywheel ad-set snapshots (Meta spend)
+//
+// See memory/project_gads_framework_integration.md for the full design.
+// Default window 30 days; override via ?days=N.
+
+router.get('/framework-metrics', async (req, res) => {
+  try {
+    if (!isGadsConfigured()) return res.json({ ok: false, error: 'Google Ads API not configured' })
+    const days = Math.max(1, Math.min(180, parseInt(req.query.days || '30', 10)))
+    const metrics = await getFrameworkMetrics(days)
+    res.json({ ok: true, metrics })
+  } catch (err) {
+    console.error('[GadsAgent] framework-metrics error:', err)
     res.status(500).json({ ok: false, error: err.message })
   }
 })

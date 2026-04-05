@@ -26,6 +26,7 @@ import {
   getCampaignById,
 } from './gads-agent-context.js'
 import { buildForecast, findingAddsNetSpend } from './gads-agent-forecast.js'
+import { getFrameworkMetrics } from './gads-agent-framework-metrics.js'
 
 const SEVERITY_ORDER = { critical: 0, high: 1, medium: 2, low: 3 }
 
@@ -372,6 +373,17 @@ export async function runFullScan() {
     return bImpact - aImpact
   })
 
+  // Compute framework metrics (Layer 1 CM$ + Layer 3 customer metrics) for
+  // this scan. Never throws — if framework computation fails, scan still
+  // returns normally and framework section is null with an error flag.
+  let frameworkMetrics = null
+  try {
+    frameworkMetrics = await getFrameworkMetrics(30)
+  } catch (err) {
+    console.warn('[GadsEngine] Framework metrics computation failed:', err.message)
+    frameworkMetrics = { error: err.message }
+  }
+
   return {
     findings,
     counts: {
@@ -384,6 +396,7 @@ export async function runFullScan() {
       findings: findings.length,
     },
     summary: buildAccountSummary(campaigns, cfg),
+    frameworkMetrics,
   }
 }
 
