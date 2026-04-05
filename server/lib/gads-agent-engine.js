@@ -17,7 +17,14 @@ import {
   getShoppingProductPerformance,
 } from './gads-queries.js'
 import { microsToDollars } from './gads-client.js'
-import { getConfig } from './gads-agent-store.js'
+import { getConfig, logAudit } from './gads-agent-store.js'
+import {
+  refreshAutoContext,
+  getAutoContext,
+  evaluateFindingAgainstContext,
+  getTargetRoasForCampaign,
+  getCampaignById,
+} from './gads-agent-context.js'
 
 const SEVERITY_ORDER = { critical: 0, high: 1, medium: 2, low: 3 }
 
@@ -55,28 +62,44 @@ function checkCampaignBleed(campaigns, cfg) {
 }
 
 function checkBudgetReallocation(campaigns, cfg) {
+  // Each campaign's "underperforming" threshold is a MULTIPLIER of ITS OWN target ROAS.
+  // reallocationLowRoas=0.80 means "below 80% of target". reallocationHighRoas=1.40
+  // means "above 140% of target". This respects per-campaign target overrides
+  // (e.g. Cannon & Powder Reveals at 2.0x target has a different trigger band
+  // than a 3.0x target campaign).
   const enriched = campaigns
-    .filter(c => microsToDollars(c.costMicros) > 10) // ignore trivial spend
-    .map(c => ({ ...c, roas: toRoas(c.conversionsValue, c.costMicros) }))
+    .filter(c => microsToDollars(c.costMicros) > 10)
+    .map(c => {
+      const campTarget = getTargetRoasForCampaign(c.campaignId) || cfg.targetRoas
+      return { ...c, roas: toRoas(c.conversionsValue, c.costMicros), campTarget }
+    })
 
-  const lows  = enriched.filter(c => c.roas > 0 && c.roas < cfg.reallocationLowRoas)
-  const highs = enriched.filter(c => c.roas > cfg.reallocationHighRoas)
+  const lows  = enriched.filter(c => c.roas > 0 && c.roas < c.campTarget * cfg.reallocationLowRoas)
+  const highs = enriched.filter(c => c.roas > c.campTarget * cfg.reallocationHighRoas)
   if (lows.length === 0 || highs.length === 0) return []
 
   const highNames = highs.map(h => h.name).join(', ')
   const out = []
   for (const low of lows) {
     const spendAud = microsToDollars(low.costMicros)
-    const targetRoasGap = Math.max(0, cfg.targetRoas - low.roas)
+    const targetRoasGap = Math.max(0, low.campTarget - low.roas)
     out.push({
       category: 'spend',
       severity: 'high',
       entityType: 'campaign',
       entityId: low.campaignId,
       entityName: low.name,
-      issueTitle: `Reallocation opportunity — "${low.name}" at ${low.roas.toFixed(2)}x ROAS while ${highs.length} campaign(s) exceed ${cfg.reallocationHighRoas}x`,
+      issueTitle: `Reallocation opportunity — "${low.name}" at ${low.roas.toFixed(2)}x ROAS (target ${low.campTarget}x) while ${highs.length} campaign(s) exceed their targets`,
       issueKey: 'budget_reallocation',
-      rawData: { low, highCampaignNames: highNames, lowRoas: low.roas, highRoasCampaigns: highs.map(h => ({ id: h.campaignId, name: h.name, roas: h.roas })) },
+      // Promote campaignId to top-level rawData so context filter can see it
+      rawData: {
+        campaignId: low.campaignId,
+        low,
+        highCampaignNames: highNames,
+        lowRoas: low.roas,
+        campaignTargetRoas: low.campTarget,
+        highRoasCampaigns: highs.map(h => ({ id: h.campaignId, name: h.name, roas: h.roas, target: h.campTarget })),
+      },
       estimatedOpportunityAud: spendAud * targetRoasGap,
     })
   }
@@ -233,9 +256,23 @@ function checkShoppingProducts(products, cfg) {
 
 /**
  * Run all checks and return findings ranked by severity then impact.
+ *
+ * Context-aware: refreshes Layer 2 auto-discovery first, then filters every
+ * raw finding through the context evaluator. Suppressed findings are logged
+ * to the audit log with a reason so Josh can see what the agent decided
+ * NOT to flag.
  */
 export async function runFullScan() {
   const cfg = getConfig()
+
+  // Layer 2: refresh auto-discovered context before anything else
+  // (enabled campaigns, channel types, bid strategies, shared lists, etc)
+  try {
+    await refreshAutoContext()
+  } catch (err) {
+    console.error('[GadsEngine] Context refresh failed, continuing with stale context:', err.message)
+  }
+  const auto = getAutoContext()
 
   const [campaigns, keywords, searchTerms, ads, zeroKws, shoppingProducts] = await Promise.all([
     getCampaignPerformance(),
@@ -246,7 +283,7 @@ export async function runFullScan() {
     getShoppingProductPerformance(),
   ])
 
-  const findings = [
+  const rawFindings = [
     ...checkCampaignBleed(campaigns, cfg),
     ...checkBudgetReallocation(campaigns, cfg),
     ...checkKeywordBleed(keywords, cfg),
@@ -258,7 +295,53 @@ export async function runFullScan() {
     ...checkShoppingProducts(shoppingProducts, cfg),
   ]
 
-  // Attach fingerprints
+  // Context filter: evaluate every finding against auto-discovered context
+  // + declared rules. Suppressed findings never reach the AI layer.
+  const findings = []
+  let suppressedCount = 0
+  const suppressionReasons = {}
+  for (const f of rawFindings) {
+    const check = evaluateFindingAgainstContext(f)
+    if (!check.allowed) {
+      suppressedCount++
+      suppressionReasons[check.reason] = (suppressionReasons[check.reason] || 0) + 1
+      continue
+    }
+    // Attach campaign context to the finding so the AI layer can reason with it
+    const cid = f.rawData?.campaignId ||
+      (f.entityType === 'campaign' ? f.entityId : null)
+    if (cid && auto) {
+      const camp = getCampaignById(cid)
+      if (camp) {
+        f.campaignContext = {
+          id: camp.id,
+          name: camp.name,
+          channel: camp.channel,
+          bidStrategy: camp.bidStrategy,
+          isAutoBid: camp.isAutoBid,
+          isKeywordless: camp.isKeywordless,
+          targetRoas: camp.targetRoas,
+          optimizationScore: camp.optimizationScore,
+          dailyBudgetAud: camp.budgetAud,
+        }
+        // Per-campaign target ROAS override beats the blanket config default
+        const campTargetRoas = getTargetRoasForCampaign(camp.id)
+        if (campTargetRoas) f.effectiveTargetRoas = campTargetRoas
+      }
+    }
+    findings.push(f)
+  }
+
+  if (suppressedCount > 0) {
+    try {
+      logAudit('findings_suppressed', {
+        count: suppressedCount,
+        byReason: suppressionReasons,
+      }, null, 'agent')
+    } catch { /* ok */ }
+  }
+
+  // Attach fingerprints (after suppression so we don't waste IDs)
   for (const f of findings) {
     f.fingerprint = fingerprint(f.entityType, f.entityId, f.issueKey)
   }

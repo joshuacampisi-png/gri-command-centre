@@ -13,9 +13,14 @@ import {
 } from '../lib/gads-agent-cron.js'
 import {
   pauseCampaign, pauseKeyword, addCampaignNegativeKeyword, updateKeywordBid,
+  addNegativeToSharedList,
 } from '../lib/gads-mutations.js'
 import { dollarsToMicros, microsToDollars, pingGads, isGadsConfigured } from '../lib/gads-client.js'
 import { runFullScan } from '../lib/gads-agent-engine.js'
+import {
+  canExecuteRecommendation, findTargetSharedList, getProtectionLevel,
+  getFullContext, refreshAutoContext,
+} from '../lib/gads-agent-context.js'
 
 const router = Router()
 
@@ -46,6 +51,31 @@ router.get('/account-summary', async (_req, res) => {
     if (!isGadsConfigured()) return res.json({ ok: false, error: 'Google Ads API not configured' })
     const scan = await runFullScan()
     res.json({ ok: true, summary: scan.summary, counts: scan.counts })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── Context (Layer 1 + 2) ───────────────────────────────────────────────────
+
+router.get('/context', (_req, res) => {
+  try {
+    res.json({ ok: true, context: getFullContext() })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+router.post('/context/refresh', async (_req, res) => {
+  try {
+    if (!isGadsConfigured()) return res.status(400).json({ ok: false, error: 'Google Ads API not configured' })
+    const auto = await refreshAutoContext()
+    res.json({
+      ok: true,
+      enabledCampaigns: auto.enabledCampaigns.length,
+      pausedCampaigns: auto.pausedCampaigns.length,
+      sharedLists: auto.sharedLists.length,
+    })
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message })
   }
@@ -91,6 +121,24 @@ router.post('/approve', async (req, res) => {
     if (!rec) return res.status(404).json({ ok: false, error: 'Recommendation not found' })
     if (rec.status !== 'pending') return res.status(400).json({ ok: false, error: `Recommendation is ${rec.status}` })
 
+    // Protection-level gate: alert_only campaigns refuse auto-execution.
+    // User still sees the recommendation but must action it manually in Google Ads.
+    const protectionCheck = canExecuteRecommendation(rec)
+    if (!protectionCheck.canExecute) {
+      logAudit('approve_blocked_by_protection', {
+        reason: protectionCheck.reason,
+        entityId: rec.entityId,
+        entityName: rec.entityName,
+      }, recommendationId, 'user')
+      return res.status(403).json({
+        ok: false,
+        blocked: true,
+        reason: protectionCheck.reason,
+        action: 'manual_review',
+        message: 'This campaign is protected. Action the recommendation manually in Google Ads, then dismiss the card here.',
+      })
+    }
+
     const proposed = rec.proposedChange || {}
     let executionResult = { ok: false, error: 'Unknown action' }
 
@@ -103,13 +151,31 @@ router.post('/approve', async (req, res) => {
         executionResult = await pauseKeyword(proposed.adGroupId, proposed.criterionId)
         break
 
-      case 'ADD_NEGATIVE_KEYWORD':
-        executionResult = await addCampaignNegativeKeyword(
-          proposed.campaignId,
-          proposed.searchTerm,
-          proposed.matchType || 'PHRASE'
-        )
+      case 'ADD_NEGATIVE_KEYWORD': {
+        // Smart routing: try to add to the correct shared negative list first.
+        // Falls back to campaign-level with a warning if no shared list matches.
+        const target = findTargetSharedList(proposed.searchTerm, proposed.campaignId)
+        if (target && target.subscribed) {
+          executionResult = await addNegativeToSharedList(
+            target.listId,
+            proposed.searchTerm,
+            proposed.matchType || 'PHRASE'
+          )
+          executionResult.routedTo = 'shared_list'
+          executionResult.listName = target.listName
+          executionResult.category = target.category
+          executionResult.note = target.reason
+        } else {
+          executionResult = await addCampaignNegativeKeyword(
+            proposed.campaignId,
+            proposed.searchTerm,
+            proposed.matchType || 'PHRASE'
+          )
+          executionResult.routedTo = 'campaign_level'
+          executionResult.fallbackReason = target?.reason || 'no matching shared list found'
+        }
         break
+      }
 
       case 'INCREASE_BID': {
         const currentCpcMicros = rec.currentValue?.cpcBidMicros

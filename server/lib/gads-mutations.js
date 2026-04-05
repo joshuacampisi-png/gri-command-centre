@@ -124,6 +124,37 @@ export async function removeCampaignNegativeKeyword(resourceName) {
   return { ok: true, dryRun: false, action: 'REMOVE_NEGATIVE_KEYWORD', resourceName, raw: res }
 }
 
+// ── Shared negative keyword list mutations ──────────────────────────────────
+//
+// Josh's account uses subject-based shared negative lists (Cannon Negatives,
+// Smoke & Extinguisher Negatives, etc). Adding a negative to the right shared
+// list propagates the block across every campaign that subscribes to it.
+// This preserves the account's sophisticated negative-list architecture
+// instead of fragmenting it with per-campaign additions.
+
+export async function addNegativeToSharedList(sharedSetId, searchTerm, matchType = 'PHRASE') {
+  if (isDryRun()) return dryLog('ADD_SHARED_NEGATIVE', { sharedSetId, searchTerm, matchType })
+  if (!sharedSetId || !searchTerm) throw new Error('addNegativeToSharedList: sharedSetId and searchTerm required')
+  const customer = getGadsCustomer()
+  const res = await customer.sharedCriteria.create([{
+    shared_set: `customers/${cust()}/sharedSets/${sharedSetId}`,
+    keyword: {
+      text: searchTerm,
+      match_type: matchType,
+    },
+  }])
+  const resourceName = res?.results?.[0]?.resource_name || null
+  return { ok: true, dryRun: false, action: 'ADD_SHARED_NEGATIVE', sharedSetId, searchTerm, matchType, resourceName, raw: res }
+}
+
+export async function removeNegativeFromSharedList(sharedCriterionResourceName) {
+  if (isDryRun()) return dryLog('REMOVE_SHARED_NEGATIVE', { sharedCriterionResourceName })
+  if (!sharedCriterionResourceName) throw new Error('removeNegativeFromSharedList: resource name required')
+  const customer = getGadsCustomer()
+  const res = await customer.sharedCriteria.remove([sharedCriterionResourceName])
+  return { ok: true, dryRun: false, action: 'REMOVE_SHARED_NEGATIVE', sharedCriterionResourceName, raw: res }
+}
+
 // ── Ad status ───────────────────────────────────────────────────────────────
 
 export async function pauseAd(adGroupId, adId) {

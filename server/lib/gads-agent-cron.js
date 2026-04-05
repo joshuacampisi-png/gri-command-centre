@@ -16,6 +16,7 @@ import {
 } from './gads-agent-store.js'
 import { runAccuracyChecks } from './gads-agent-revert.js'
 import { isGadsConfigured, pingGads } from './gads-client.js'
+import { refreshAutoContext } from './gads-agent-context.js'
 
 // ── Crash-safe wrapper ──────────────────────────────────────────────────────
 
@@ -125,13 +126,25 @@ export function startGadsAgentCrons() {
   // Daily accuracy check + revert sweep at 7am AEST
   cron.schedule('0 7 * * *', safeRun('daily-accuracy-check', runAccuracyCheckJob), { timezone: TZ })
 
-  // Boot-time verification: ping the API once so we surface auth errors immediately
+  // Boot-time verification: ping the API once so we surface auth errors immediately,
+  // then refresh the Layer 2 auto-discovered context so the first scan is context-aware.
   setTimeout(async () => {
     try {
       const result = await pingGads()
       if (result.ok) {
         console.log(`[GadsAgentCron] ✅ Google Ads API live (account: ${result.name || 'unknown'})`)
         logAudit('api_ping_ok', result, null, 'agent')
+        try {
+          const auto = await refreshAutoContext()
+          console.log(`[GadsAgentCron] ✅ Context discovered — ${auto.enabledCampaigns.length} enabled campaigns, ${auto.pausedCampaigns.length} paused, ${auto.sharedLists.length} shared lists`)
+          logAudit('context_refreshed', {
+            enabledCampaigns: auto.enabledCampaigns.length,
+            pausedCampaigns: auto.pausedCampaigns.length,
+            sharedLists: auto.sharedLists.length,
+          }, null, 'agent')
+        } catch (ctxErr) {
+          console.error('[GadsAgentCron] Context refresh failed at boot:', ctxErr.message)
+        }
       } else {
         console.error(`[GadsAgentCron] ❌ Google Ads API ping failed:`, result.error)
         logAudit('api_ping_failed', result, null, 'agent')
