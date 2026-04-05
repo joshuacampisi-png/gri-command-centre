@@ -87,13 +87,14 @@ function GoogleLogo({ size = 38 }) {
 // ═══════════════════════════════════════════════════════════════════════════
 
 export function GoogleAdsAgentTab() {
-  const [activeTab, setActiveTab]   = useState('actions')
+  const [activeTab, setActiveTab]   = useState('findings')
   const [status, setStatus]         = useState(null)
   const [recs, setRecs]             = useState([])
   const [briefing, setBriefing]     = useState(null)
   const [audit, setAudit]           = useState([])
   const [config, setConfig]         = useState(null)
   const [summary, setSummary]       = useState(null)
+  const [context, setContext]       = useState(null)
   const [isScanning, setIsScanning] = useState(false)
   const [toast, setToast]           = useState(null)
 
@@ -105,13 +106,14 @@ export function GoogleAdsAgentTab() {
 
   const fetchAll = useCallback(async () => {
     try {
-      const [s, r, b, a, cfg, sm] = await Promise.all([
+      const [s, r, b, a, cfg, sm, ctx] = await Promise.all([
         fetch(`${API}/status`).then(x => x.json()).catch(() => ({})),
         fetch(`${API}/recommendations?status=pending`).then(x => x.json()).catch(() => ({})),
         fetch(`${API}/briefing`).then(x => x.json()).catch(() => ({})),
         fetch(`${API}/audit?limit=100`).then(x => x.json()).catch(() => ({})),
         fetch(`${API}/config`).then(x => x.json()).catch(() => ({})),
         fetch(`${API}/account-summary`).then(x => x.json()).catch(() => null),
+        fetch(`${API}/context`).then(x => x.json()).catch(() => null),
       ])
       if (s?.ok) setStatus(s)
       if (r?.ok) setRecs(r.recommendations || [])
@@ -119,6 +121,7 @@ export function GoogleAdsAgentTab() {
       if (a?.ok) setAudit(a.events || [])
       if (cfg?.ok) setConfig(cfg.config)
       if (sm?.ok) setSummary(sm.summary)
+      if (ctx?.ok) setContext(ctx.context)
     } catch (err) {
       showToast('error', err.message)
     }
@@ -225,9 +228,67 @@ export function GoogleAdsAgentTab() {
     }
   }
 
-  // Filtered + sorted recommendations
+  // Build a campaign-id -> campaign-context lookup map from the /context endpoint.
+  // Every card uses this to show channel, bid strategy, budget, protection level.
+  const campaignLookup = useMemo(() => {
+    const map = {}
+    const auto = context?.auto
+    if (!auto) return map
+    for (const c of auto.enabledCampaigns || []) map[c.id] = c
+    for (const c of auto.pausedCampaigns || [])  map[c.id] = c
+    return map
+  }, [context])
+
+  // Resolve a recommendation's campaign context from the lookup map
+  function getRecCampaign(rec) {
+    const cid = rec?.currentValue?.campaignId ||
+      (rec?.entityType === 'campaign' ? rec.entityId : null)
+    if (!cid) return null
+    return campaignLookup[String(cid)] || null
+  }
+
+  // Protection level lookup (from declared context) keyed by campaign name
+  function getRecProtection(rec) {
+    const camp = getRecCampaign(rec)
+    if (!camp) return 'execute_freely'
+    const levels = context?.declared?.protectionLevels || {}
+    return levels[camp.name] || 'execute_freely'
+  }
+
+  // Determine if a rec is part of the zero-impression keyword group (for batching)
+  function isZeroImpressionKeyword(r) {
+    return r.category === 'keyword' &&
+      (r.issueTitle || '').toLowerCase().includes('zero impressions')
+  }
+
+  // Split recs into headline findings + a grouped batch for zero-impression noise
+  const { headlineRecs, zeroImpressionGroup } = useMemo(() => {
+    const zi = []
+    const headline = []
+    for (const r of recs) {
+      if (isZeroImpressionKeyword(r)) zi.push(r)
+      else headline.push(r)
+    }
+    // Build a synthetic batch record for the UI
+    const group = zi.length > 0 ? {
+      isBatch: true,
+      id: 'group-zero-impression',
+      category: 'keyword',
+      severity: 'medium',
+      count: zi.length,
+      children: zi,
+      entityName: zi[0] ? (getRecCampaign(zi[0])?.name || 'Search campaign') : 'Search campaign',
+      issueTitle: `${zi.length} keywords have received zero impressions over the full window`,
+      whatToFix: 'Review and bulk-pause dead keywords to clean up account structure. None of these are currently consuming spend, but they clutter optimisation and inflate Quality Score calculations.',
+      projectedDollarImpact: 0,
+      projectedImpactDirection: 'save',
+    } : null
+    return { headlineRecs: headline, zeroImpressionGroup: group }
+  }, [recs, campaignLookup, context])
+
+  // Filtered + sorted recommendations (headline only — group sits separately)
   const filteredRecs = useMemo(() => {
-    let out = [...recs]
+    let out = [...headlineRecs]
     if (filterSeverity !== 'all') out = out.filter(r => r.severity === filterSeverity)
     if (filterCategory !== 'all') out = out.filter(r => r.category === filterCategory)
     if (search.trim()) {
@@ -247,27 +308,28 @@ export function GoogleAdsAgentTab() {
       out.sort((a, b) => (a.priority || 999) - (b.priority || 999))
     }
     return out
-  }, [recs, filterSeverity, filterCategory, sortBy, search])
+  }, [headlineRecs, filterSeverity, filterCategory, sortBy, search])
 
-  // Tally counts for filter badges
+  // Tally counts for filter badges (headline findings only)
   const severityCounts = useMemo(() => {
-    const c = { all: recs.length, critical: 0, high: 0, medium: 0, low: 0 }
-    for (const r of recs) c[r.severity] = (c[r.severity] || 0) + 1
+    const c = { all: headlineRecs.length, critical: 0, high: 0, medium: 0, low: 0 }
+    for (const r of headlineRecs) c[r.severity] = (c[r.severity] || 0) + 1
     return c
-  }, [recs])
+  }, [headlineRecs])
 
   const categoryCounts = useMemo(() => {
-    const c = { all: recs.length, spend: 0, keyword: 0, bid: 0, quality: 0, merchant: 0 }
-    for (const r of recs) c[r.category] = (c[r.category] || 0) + 1
+    const c = { all: headlineRecs.length, spend: 0, keyword: 0, bid: 0, quality: 0, merchant: 0 }
+    for (const r of headlineRecs) c[r.category] = (c[r.category] || 0) + 1
     return c
-  }, [recs])
+  }, [headlineRecs])
 
-  const totalPotential = useMemo(() => {
-    return recs.reduce((sum, r) => sum + (Number(r.projectedDollarImpact) || 0), 0)
-  }, [recs])
+  // Opportunity pool = sum of dollar impact on headline findings only (noise excluded)
+  const totalOpportunity = useMemo(() => {
+    return headlineRecs.reduce((sum, r) => sum + (Number(r.projectedDollarImpact) || 0), 0)
+  }, [headlineRecs])
 
   const TABS = [
-    { key: 'actions',  label: 'Actions',  count: recs.length },
+    { key: 'findings', label: 'Findings', count: headlineRecs.length + (zeroImpressionGroup ? 1 : 0) },
     { key: 'briefing', label: 'Briefing' },
     { key: 'audit',    label: 'Audit' },
     { key: 'settings', label: 'Thresholds' },
@@ -293,13 +355,13 @@ export function GoogleAdsAgentTab() {
               <span className="gads-eyebrow-text">
                 {status?.configured ? 'Agent Live' : 'Not Configured'}
               </span>
-              {status?.dryRun && <span className="gads-drychip">Dry-Run</span>}
+              {status?.dryRun && <span className="gads-drychip">Discovery Mode</span>}
             </div>
             <h1 className="gads-title">Google Ads Agent</h1>
             <div className="gads-subtitle">
               <span>Gender Reveal Ideas</span>
               <span className="gads-sep">·</span>
-              <span>Autonomous optimisation</span>
+              <span>{context?.auto?.enabledCampaigns?.length || 0} active · {context?.auto?.pausedCampaigns?.length || 0} paused · {context?.auto?.sharedLists?.length || 0} shared lists</span>
               {status?.health?.lastAudit && (
                 <>
                   <span className="gads-sep">·</span>
@@ -311,11 +373,11 @@ export function GoogleAdsAgentTab() {
         </div>
 
         <div className="gads-header-right">
-          {recs.length > 0 && (
+          {totalOpportunity > 0 && (
             <div className="gads-potential">
-              <div className="gads-potential-label">Potential monthly impact</div>
-              <div className="gads-potential-value">{fmtAud(totalPotential)}</div>
-              <div className="gads-potential-sub">{recs.length} open actions</div>
+              <div className="gads-potential-label">Opportunities identified</div>
+              <div className="gads-potential-value">{fmtAud(totalOpportunity)}</div>
+              <div className="gads-potential-sub">across {headlineRecs.length} finding{headlineRecs.length === 1 ? '' : 's'} · under review</div>
             </div>
           )}
           <button
@@ -324,10 +386,41 @@ export function GoogleAdsAgentTab() {
             disabled={isScanning || !status?.configured}
           >
             <span className="gads-scan-btn-icon">{isScanning ? '◐' : '⟳'}</span>
-            <span>{isScanning ? 'Scanning account...' : 'Run Scan Now'}</span>
+            <span>{isScanning ? 'Scanning account...' : 'Run Scan'}</span>
           </button>
         </div>
       </header>
+
+      {/* Discovery-mode banner — sets expectations for the entire tab */}
+      {status?.dryRun && (
+        <div className="gads-phase-banner">
+          <div className="gads-phase-banner-left">
+            <span className="gads-phase-chip">PHASE 1</span>
+            <div>
+              <div className="gads-phase-title">Discovery &amp; Context</div>
+              <div className="gads-phase-sub">
+                The agent is mapping your account and validating its rules against real data.
+                Nothing below will be executed. Review findings to pressure-test the agent&apos;s judgement —
+                when you&apos;re confident, switch off Dry-Run in Thresholds to unlock execution.
+              </div>
+            </div>
+          </div>
+          <div className="gads-phase-banner-right">
+            <div className="gads-phase-stat">
+              <div className="gads-phase-stat-num">{context?.auto?.enabledCampaigns?.length || 0}</div>
+              <div className="gads-phase-stat-lbl">campaigns scanned</div>
+            </div>
+            <div className="gads-phase-stat">
+              <div className="gads-phase-stat-num">{context?.auto?.sharedLists?.length || 0}</div>
+              <div className="gads-phase-stat-lbl">shared lists mapped</div>
+            </div>
+            <div className="gads-phase-stat">
+              <div className="gads-phase-stat-num">{headlineRecs.length}</div>
+              <div className="gads-phase-stat-lbl">headline findings</div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Metrics strip */}
       {summary && (
@@ -371,10 +464,10 @@ export function GoogleAdsAgentTab() {
       </nav>
 
       <div className="gads-panel">
-        {activeTab === 'actions' && (
+        {activeTab === 'findings' && (
           <ActionsPanel
             recs={filteredRecs}
-            allCount={recs.length}
+            allCount={headlineRecs.length}
             severityCounts={severityCounts}
             categoryCounts={categoryCounts}
             filterSeverity={filterSeverity}
@@ -388,6 +481,10 @@ export function GoogleAdsAgentTab() {
             onApprove={approve}
             onDismiss={dismiss}
             dryRun={status?.dryRun}
+            campaignLookup={campaignLookup}
+            getRecCampaign={getRecCampaign}
+            getRecProtection={getRecProtection}
+            zeroImpressionGroup={zeroImpressionGroup}
           />
         )}
         {activeTab === 'briefing' && (
@@ -429,13 +526,14 @@ function ActionsPanel({
   filterSeverity, filterCategory, sortBy, search,
   onFilterSeverity, onFilterCategory, onSort, onSearch,
   onApprove, onDismiss, dryRun,
+  campaignLookup, getRecCampaign, getRecProtection, zeroImpressionGroup,
 }) {
-  if (allCount === 0) {
+  if (allCount === 0 && !zeroImpressionGroup) {
     return (
       <div className="gads-empty">
         <div className="gads-empty-mark">○</div>
-        <div className="gads-empty-title">No recommendations yet</div>
-        <div className="gads-empty-sub">Run a scan to check the account for optimisation opportunities.</div>
+        <div className="gads-empty-title">No findings yet</div>
+        <div className="gads-empty-sub">Run a scan to pressure-test the account against the rules engine.</div>
       </div>
     )
   }
@@ -515,11 +613,14 @@ function ActionsPanel({
 
       {/* Result summary */}
       <div className="gads-result-summary">
-        Showing <strong>{recs.length}</strong> of {allCount} recommendations
+        <strong>{recs.length}</strong> headline finding{recs.length === 1 ? '' : 's'}
+        {zeroImpressionGroup && (
+          <> · <strong>{zeroImpressionGroup.count}</strong> grouped as structural cleanup below</>
+        )}
       </div>
 
-      {/* Card grid */}
-      {recs.length === 0 ? (
+      {/* Headline cards */}
+      {recs.length === 0 && !zeroImpressionGroup ? (
         <div className="gads-empty small">
           <div className="gads-empty-title">No matches</div>
           <div className="gads-empty-sub">Try clearing the filters.</div>
@@ -534,28 +635,85 @@ function ActionsPanel({
               onApprove={onApprove}
               onDismiss={onDismiss}
               dryRun={dryRun}
+              campaign={getRecCampaign(r)}
+              protection={getRecProtection(r)}
             />
           ))}
+
+          {zeroImpressionGroup && filterSeverity === 'all' && (filterCategory === 'all' || filterCategory === 'keyword') && (
+            <GroupedKeywordCard
+              group={zeroImpressionGroup}
+              campaign={getRecCampaign(zeroImpressionGroup.children[0])}
+              protection={getRecProtection(zeroImpressionGroup.children[0])}
+              dryRun={dryRun}
+              onDismissChild={onDismiss}
+            />
+          )}
         </div>
       )}
     </div>
   )
 }
 
-function RecommendationCard({ rec, index, onApprove, onDismiss, dryRun }) {
+// Small sub-component: campaign context meta row rendered on every card.
+// Shows the 4 things you need to know at a glance: which campaign, channel,
+// bidding strategy, daily budget. Protection badge is rendered separately.
+function CampaignContextRow({ campaign }) {
+  if (!campaign) return null
+  return (
+    <div className="gads-ctx-row">
+      <span className="gads-ctx-item gads-ctx-name">{campaign.name}</span>
+      <span className="gads-ctx-sep">·</span>
+      <span className="gads-ctx-item">{campaign.channel}</span>
+      <span className="gads-ctx-sep">·</span>
+      <span className="gads-ctx-item">{campaign.bidStrategy?.replace(/_/g, ' ')}</span>
+      {campaign.budgetAud > 0 && (
+        <>
+          <span className="gads-ctx-sep">·</span>
+          <span className="gads-ctx-item">${campaign.budgetAud}/day</span>
+        </>
+      )}
+      {campaign.targetRoas && (
+        <>
+          <span className="gads-ctx-sep">·</span>
+          <span className="gads-ctx-item">target {campaign.targetRoas}×</span>
+        </>
+      )}
+    </div>
+  )
+}
+
+function ProtectionBadge({ protection }) {
+  if (protection === 'execute_freely') return null
+  const config = {
+    alert_only:  { label: 'Manual review only', colour: G.yellow, glyph: '⚑' },
+    never_touch: { label: 'Never touch',        colour: G.red,    glyph: '⊘' },
+  }[protection]
+  if (!config) return null
+  return (
+    <span
+      className="gads-protection-badge"
+      style={{
+        borderColor: `${config.colour}55`,
+        background: `${config.colour}18`,
+        color: config.colour,
+      }}
+      title={`This campaign is ${protection}. The agent will not auto-execute changes against it.`}
+    >
+      <span className="gads-protection-glyph">{config.glyph}</span>
+      {config.label}
+    </span>
+  )
+}
+
+function RecommendationCard({ rec, index, onApprove, onDismiss, dryRun, campaign, protection }) {
   const [expanded, setExpanded] = useState(false)
-  const [approving, setApproving] = useState(false)
   const sev = SEVERITY[rec.severity] || SEVERITY.low
   const cat = CATEGORY[rec.category] || CATEGORY.keyword
   const direction = rec.projectedImpactDirection
   const impactColour = direction === 'save' ? G.green : G.blue
   const impactLabel  = direction === 'save' ? 'potential monthly saving' : 'potential monthly revenue'
-
-  async function handleApprove() {
-    setApproving(true)
-    await onApprove(rec.id)
-    setApproving(false)
-  }
+  const hasImpact = (rec.projectedDollarImpact || 0) > 0
 
   return (
     <article
@@ -575,24 +733,28 @@ function RecommendationCard({ rec, index, onApprove, onDismiss, dryRun }) {
             <span>{sev.glyph}</span>
             {sev.label}
           </span>
-          <span className="gads-entity">{rec.entityName}</span>
+          <ProtectionBadge protection={protection} />
         </div>
 
-        <div className="gads-impact" style={{ color: impactColour }}>
-          <div className="gads-impact-num">{fmtAud(rec.projectedDollarImpact)}</div>
-          <div className="gads-impact-label">{impactLabel}</div>
-        </div>
+        {hasImpact && (
+          <div className="gads-impact" style={{ color: impactColour }}>
+            <div className="gads-impact-num">{fmtAud(rec.projectedDollarImpact)}</div>
+            <div className="gads-impact-label">{impactLabel}</div>
+          </div>
+        )}
       </div>
 
       <h3 className="gads-issue">{rec.issueTitle}</h3>
 
+      <CampaignContextRow campaign={campaign} />
+
       <div className="gads-card-body">
         <div className="gads-pillar">
-          <div className="gads-pillar-label">What to fix</div>
+          <div className="gads-pillar-label">What the agent thinks</div>
           <div className="gads-pillar-text">{rec.whatToFix}</div>
         </div>
         <div className="gads-pillar">
-          <div className="gads-pillar-label">Why it should change</div>
+          <div className="gads-pillar-label">Why it flagged this</div>
           <div className="gads-pillar-text muted">{rec.whyItShouldChange}</div>
         </div>
       </div>
@@ -609,25 +771,125 @@ function RecommendationCard({ rec, index, onApprove, onDismiss, dryRun }) {
             </div>
           )}
           <div className="gads-ref">
-            <div className="gads-ref-label">Proposed change</div>
+            <div className="gads-ref-label">Proposed change (for when execution is enabled)</div>
             <pre className="gads-ref-code">{JSON.stringify(rec.proposedChange, null, 2)}</pre>
           </div>
         </div>
       </div>
 
+      {/* Discovery-mode actions: no execute, just review + acknowledge */}
       <div className="gads-card-actions">
-        <button className="gads-btn gads-btn-primary" onClick={handleApprove} disabled={approving}>
-          <span className="gads-btn-glyph">✓</span>
-          {approving ? 'Executing...' : (dryRun ? 'Approve (dry-run)' : 'Approve & Execute')}
-        </button>
-        <button className="gads-btn gads-btn-ghost" onClick={() => onDismiss(rec.id)}>
-          Dismiss
-        </button>
-        <button className="gads-btn gads-btn-link" onClick={() => setExpanded(!expanded)}>
-          {expanded ? 'Hide detail' : 'More detail'}
+        <button
+          className="gads-btn gads-btn-link"
+          onClick={() => setExpanded(!expanded)}
+        >
+          {expanded ? 'Hide detail' : 'Show detail'}
           <span className={`gads-chevron ${expanded ? 'open' : ''}`}>▾</span>
         </button>
+        <button
+          className="gads-btn gads-btn-ghost"
+          style={{ marginLeft: 'auto' }}
+          onClick={() => onDismiss(rec.id)}
+          title="Remove this finding from the review queue"
+        >
+          Remove from review
+        </button>
       </div>
+
+      {dryRun && (
+        <div className="gads-discovery-note">
+          Discovery mode — no changes will be executed when dismissed or reviewed.
+          {protection === 'alert_only' && (
+            <> This campaign is also protected as <strong>alert-only</strong>, so it will stay manual even after execution is enabled.</>
+          )}
+        </div>
+      )}
+    </article>
+  )
+}
+
+// Grouped card for the 100+ zero-impression keyword cleanup.
+// Collapses structural noise into one reviewable batch.
+function GroupedKeywordCard({ group, campaign, protection, dryRun, onDismissChild }) {
+  const [expanded, setExpanded] = useState(false)
+  const [dismissingAll, setDismissingAll] = useState(false)
+
+  async function dismissAll() {
+    if (!confirm(`Remove all ${group.count} zero-impression keywords from the review queue?`)) return
+    setDismissingAll(true)
+    for (const child of group.children) {
+      await onDismissChild(child.id)
+    }
+    setDismissingAll(false)
+  }
+
+  return (
+    <article className="gads-card gads-card-group">
+      <div className="gads-card-head">
+        <div className="gads-card-tags">
+          <span className="gads-cat-pill" style={{ background: `${G.blue}18`, color: G.blue, borderColor: `${G.blue}55` }}>
+            <span className="gads-cat-icon">Kw</span>
+            Structural
+          </span>
+          <span className="gads-sev-pill" style={{ color: '#8b8f9c' }}>
+            <span>■</span>
+            Cleanup
+          </span>
+          <ProtectionBadge protection={protection} />
+          <span className="gads-group-count">{group.count} keywords</span>
+        </div>
+      </div>
+
+      <h3 className="gads-issue">{group.issueTitle}</h3>
+
+      <CampaignContextRow campaign={campaign} />
+
+      <div className="gads-card-body" style={{ gridTemplateColumns: '1fr' }}>
+        <div className="gads-pillar">
+          <div className="gads-pillar-label">What the agent thinks</div>
+          <div className="gads-pillar-text">{group.whatToFix}</div>
+        </div>
+      </div>
+
+      <div className={`gads-expand ${expanded ? 'open' : ''}`}>
+        <div className="gads-expand-inner">
+          <div className="gads-ref-label">All {group.count} keywords in this group</div>
+          <div className="gads-group-list">
+            {group.children.slice(0, 50).map(c => (
+              <div key={c.id} className="gads-group-list-item">
+                <span className="gads-group-list-name">{c.entityName}</span>
+              </div>
+            ))}
+            {group.children.length > 50 && (
+              <div className="gads-group-list-more">+ {group.children.length - 50} more</div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="gads-card-actions">
+        <button
+          className="gads-btn gads-btn-link"
+          onClick={() => setExpanded(!expanded)}
+        >
+          {expanded ? 'Hide keywords' : `Show all ${group.count} keywords`}
+          <span className={`gads-chevron ${expanded ? 'open' : ''}`}>▾</span>
+        </button>
+        <button
+          className="gads-btn gads-btn-ghost"
+          style={{ marginLeft: 'auto' }}
+          onClick={dismissAll}
+          disabled={dismissingAll}
+        >
+          {dismissingAll ? 'Removing...' : `Remove all ${group.count} from review`}
+        </button>
+      </div>
+
+      {dryRun && (
+        <div className="gads-discovery-note">
+          Discovery mode — this is structural debt, not an urgent money leak. Safe to batch-review when you&apos;re ready to clean up the account structure.
+        </div>
+      )}
     </article>
   )
 }
@@ -1002,6 +1264,92 @@ const styleSheet = `
   border: 1px solid rgba(251,188,4,0.3);
   text-transform: uppercase;
   margin-left: 4px;
+}
+
+/* ── Discovery-mode phase banner ────────────────────────────────────────── */
+
+.gads-phase-banner {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  padding: 20px 44px;
+  background:
+    linear-gradient(90deg, rgba(66,133,244,0.10), rgba(52,168,83,0.04) 40%, transparent 70%),
+    var(--bg-surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.gads-phase-banner-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  max-width: 780px;
+}
+
+.gads-phase-chip {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  padding: 6px 12px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, var(--g-blue), #3367d6);
+  color: white;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px -6px rgba(66,133,244,0.6);
+  margin-top: 2px;
+}
+
+.gads-phase-title {
+  font-family: var(--font-display);
+  font-variation-settings: 'opsz' 96;
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1.2;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  margin-bottom: 3px;
+}
+
+.gads-phase-sub {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  max-width: 680px;
+}
+
+.gads-phase-banner-right {
+  display: flex;
+  gap: 28px;
+}
+
+.gads-phase-stat {
+  text-align: right;
+}
+
+.gads-phase-stat-num {
+  font-family: var(--font-display);
+  font-variation-settings: 'opsz' 144;
+  font-weight: 500;
+  font-size: 28px;
+  line-height: 1;
+  color: var(--text);
+  letter-spacing: -0.015em;
+}
+
+.gads-phase-stat-lbl {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 4px;
 }
 
 .gads-title {
@@ -1459,8 +1807,131 @@ const styleSheet = `
   font-size: 20px;
   line-height: 1.3;
   color: var(--text);
-  margin: 0 0 16px 0;
+  margin: 0 0 10px 0;
   letter-spacing: -0.01em;
+}
+
+/* ── Campaign context meta row ─────────────────────────────────────────── */
+
+.gads-ctx-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 14px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-muted);
+  letter-spacing: 0.01em;
+}
+
+.gads-ctx-item {
+  white-space: nowrap;
+}
+
+.gads-ctx-name {
+  color: var(--text-soft);
+  font-weight: 600;
+}
+
+.gads-ctx-sep {
+  color: var(--text-dim);
+  opacity: 0.6;
+}
+
+/* ── Protection badge ──────────────────────────────────────────────────── */
+
+.gads-protection-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.gads-protection-glyph {
+  font-size: 11px;
+  line-height: 1;
+}
+
+/* ── Discovery-mode note (inside card) ─────────────────────────────────── */
+
+.gads-discovery-note {
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: rgba(66,133,244,0.06);
+  border: 1px solid rgba(66,133,244,0.2);
+  border-radius: 8px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.gads-discovery-note strong {
+  color: var(--g-yellow);
+  font-style: normal;
+}
+
+/* ── Grouped keyword card ──────────────────────────────────────────────── */
+
+.gads-card-group {
+  border-left-color: #8b8f9c;
+  background: linear-gradient(180deg, rgba(139,143,156,0.04) 0%, var(--bg-surface) 100%);
+}
+
+.gads-group-count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.05);
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.gads-group-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 6px 14px;
+  margin-top: 8px;
+}
+
+.gads-group-list-item {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-soft);
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.gads-group-list-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.gads-group-list-more {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  padding-top: 8px;
+  grid-column: 1 / -1;
+  text-align: center;
 }
 
 .gads-card-body {
