@@ -22,6 +22,7 @@ import {
   classifyBrandedGeneric, getCoverageCrossCheck, getReplacementCandidates,
   getCacheStats, invalidateCache,
 } from '../lib/gads-live.js'
+import { runPreflight, runPreflightWithLiveData } from '../lib/gads-preflight.js'
 import { runFullScan } from '../lib/gads-agent-engine.js'
 import {
   canExecuteRecommendation, findTargetSharedList, getProtectionLevel,
@@ -297,6 +298,57 @@ router.get('/live/replacement-candidates/:campaignId', async (req, res) => {
     const days = Math.max(1, Math.min(180, parseInt(req.query.days || '30', 10)))
     const result = await getReplacementCandidates(req.params.campaignId, days)
     res.json({ ok: true, ...result })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── POST /live/preflight — run 5-question check on a finding ──────────────
+// Body: { finding: { issueKey, campaignId, projectedDollarImpact, ... } }
+// Returns the full preflight result with per-question verdicts.
+router.post('/live/preflight', async (req, res) => {
+  try {
+    if (!isGadsConfigured()) return res.json({ ok: false, error: 'Google Ads API not configured' })
+    const finding = req.body?.finding
+    if (!finding) return res.status(400).json({ ok: false, error: 'finding required' })
+    const result = await runPreflightWithLiveData(finding)
+    res.json({ ok: true, preflight: result })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── POST /live/preflight-card/:id — run preflight on an existing pending card
+// Useful for retroactively checking cards that were created before preflight existed.
+router.post('/live/preflight-card/:id', async (req, res) => {
+  try {
+    if (!isGadsConfigured()) return res.json({ ok: false, error: 'Google Ads API not configured' })
+    const rec = getRecommendationById(req.params.id)
+    if (!rec) return res.status(404).json({ ok: false, error: 'Not found' })
+    // Convert stored recommendation back to a finding-like shape for preflight
+    const finding = {
+      issueKey: rec.category === 'keyword-hygiene' ? 'keyword_zero_impressions'
+        : rec.category === 'spend' ? 'budget_reallocation'
+        : rec.category || 'unknown',
+      issueTitle: rec.issueTitle,
+      campaignId: rec.entityId || rec.currentValue?.campaignId,
+      entityId: rec.entityId,
+      entityName: rec.entityName,
+      projectedDollarImpact: rec.projectedDollarImpact,
+      projectedImpactDirection: rec.projectedImpactDirection,
+      whyItShouldChange: rec.whyItShouldChange,
+      proposedChange: rec.proposedChange,
+      forecast: rec.forecast,
+      campaignContext: rec.campaignContext,
+    }
+    const result = await runPreflightWithLiveData(finding)
+    // Optionally store the preflight result on the card
+    if (req.query.save === 'true') {
+      updateRecommendation(rec.id, {
+        campaignContext: { ...(rec.campaignContext || {}), preflight: result },
+      })
+    }
+    res.json({ ok: true, preflight: result, recommendationId: rec.id })
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message })
   }
