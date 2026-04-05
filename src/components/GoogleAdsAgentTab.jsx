@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { GoogleAdsApprovalModal } from './GoogleAdsApprovalModal'
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  Google Ads Agent — Command Deck × Google Editorial
@@ -98,6 +99,7 @@ export function GoogleAdsAgentTab() {
   const [context, setContext]       = useState(null)
   const [isScanning, setIsScanning] = useState(false)
   const [toast, setToast]           = useState(null)
+  const [confirmation, setConfirmation] = useState(null) // post-approval modal payload
 
   // filter state
   const [filterSeverity, setFilterSeverity] = useState('all')
@@ -160,8 +162,14 @@ export function GoogleAdsAgentTab() {
         body: JSON.stringify({ recommendationId: id }),
       }).then(x => x.json())
       if (res.ok) {
-        const dry = res.executionResult?.dryRun ? ' · dry-run' : ''
-        showToast('ok', `Approved and executed${dry}`)
+        // Open the rich confirmation modal if the backend returned one.
+        // Falls back gracefully to a toast for older payload shapes.
+        if (res.confirmation) {
+          setConfirmation(res.confirmation)
+        } else {
+          const dry = res.executionResult?.dryRun ? ' · dry-run' : ''
+          showToast('ok', `Approved and executed${dry}`)
+        }
         await fetchAll()
       } else {
         showToast('error', res.error || 'Approve failed')
@@ -498,6 +506,14 @@ export function GoogleAdsAgentTab() {
           <SettingsPanel config={config} onSave={saveConfig} />
         )}
       </div>
+
+      {/* Post-approval confirmation modal — renders when an approve click
+          succeeds and the backend returns a confirmation payload. Zero
+          coupling to the rest of the dashboard, dismisses by itself. */}
+      <GoogleAdsApprovalModal
+        confirmation={confirmation}
+        onClose={() => setConfirmation(null)}
+      />
     </div>
   )
 }

@@ -223,11 +223,12 @@ router.post('/approve', async (req, res) => {
 
     const accuracyCheckDue = new Date()
     accuracyCheckDue.setDate(accuracyCheckDue.getDate() + (getConfig().accuracyCheckDays || 7))
+    const recordedAt = new Date().toISOString()
 
     updateRecommendation(recommendationId, {
       status: 'completed',
-      approvedAt: new Date().toISOString(),
-      executedAt: new Date().toISOString(),
+      approvedAt: recordedAt,
+      executedAt: recordedAt,
       executionResult,
       accuracyCheckDueAt: accuracyCheckDue.toISOString(),
     })
@@ -238,12 +239,88 @@ router.post('/approve', async (req, res) => {
       dryRun: executionResult.dryRun || false,
     }, recommendationId, 'user')
 
-    res.json({ ok: true, executionResult })
+    // Build a rich confirmation payload for the frontend modal.
+    // Backwards compatible — existing callers that only read `ok` and
+    // `executionResult` continue to work unchanged. New callers can use
+    // `confirmation` to render a post-approval detail view.
+    const confirmation = buildConfirmation({
+      rec,
+      proposed,
+      executionResult,
+      recordedAt,
+      accuracyCheckDueAt: accuracyCheckDue.toISOString(),
+      recommendationId,
+      protectionLevel: getProtectionLevel(rec.entityId || rec.currentValue?.campaignId),
+    })
+
+    res.json({ ok: true, executionResult, confirmation })
   } catch (err) {
     console.error('[GadsAgent] approve error:', err)
     res.status(500).json({ ok: false, error: err.message })
   }
 })
+
+// ── Confirmation payload builder ────────────────────────────────────────────
+// Converts the raw approve-path state into a presentation-ready object the
+// frontend modal can render without any additional API calls. Pure function.
+
+function buildConfirmation({ rec, proposed, executionResult, recordedAt, accuracyCheckDueAt, recommendationId, protectionLevel }) {
+  const dryRun = executionResult?.dryRun === true
+  const apiCallMade = !dryRun && executionResult?.ok === true && proposed.action !== 'MANUAL_REVIEW_REQUIRED' && proposed.action !== 'REDUCE_CAMPAIGN_BUDGET'
+  const success = executionResult?.ok === true
+
+  // Human-readable action label + detail
+  const actionMap = {
+    PAUSE_CAMPAIGN:       { label: 'Pause campaign',              detail: `Pausing "${rec.entityName}" — stops all spend on this campaign until re-enabled.` },
+    ENABLE_CAMPAIGN:      { label: 'Re-enable campaign',          detail: `Re-enabling "${rec.entityName}".` },
+    PAUSE_KEYWORD:        { label: 'Pause keyword',               detail: `Pausing keyword "${rec.entityName}" — stops it from triggering ad impressions.` },
+    ENABLE_KEYWORD:       { label: 'Re-enable keyword',           detail: `Re-enabling keyword "${rec.entityName}".` },
+    ADD_NEGATIVE_KEYWORD: { label: 'Add negative keyword',        detail: `Blocking "${rec.entityName}" so it never triggers ads again. Routed ${executionResult?.routedTo === 'shared_list' ? `to shared list "${executionResult?.listName}" (propagates across subscribing campaigns)` : 'at campaign level'}.` },
+    INCREASE_BID:         { label: 'Increase keyword bid',        detail: `Raising CPC bid by ${Math.round(((proposed.multiplier || 1.25) - 1) * 100)}% to capture more of the available inventory.` },
+    REVERT_CHANGE:        { label: 'Revert previous change',      detail: `Reversing the earlier "${proposed.originalRecommendationId}" change because the projected impact did not materialise at the 7-day check.` },
+    REDUCE_CAMPAIGN_BUDGET: { label: 'Reduce campaign budget',    detail: 'Flagged for your manual review — no automatic mutation.' },
+    MANUAL_REVIEW_REQUIRED: { label: 'Manual review required',    detail: 'This change requires you to action it directly in Google Ads.' },
+  }
+  const act = actionMap[proposed.action] || { label: proposed.action || 'Unknown action', detail: '' }
+
+  // What the 7-day accuracy check will specifically measure
+  const measuringMap = {
+    PAUSE_CAMPAIGN: 'Confirmed absence of spend on this campaign over the 7-day window. If spend resumed, the pause did not take effect.',
+    PAUSE_KEYWORD: 'Confirmed absence of spend on this keyword over 7 days.',
+    ADD_NEGATIVE_KEYWORD: 'Zero incremental clicks matching this search term over 7 days.',
+    INCREASE_BID: 'Conversion rate stability on the bid-scaled keyword. If new conversions did not materialise, the bid increase is reverted.',
+    REVERT_CHANGE: 'N/A — this is itself a revert action.',
+  }
+
+  return {
+    recordedAt,
+    recommendationId,
+    entityName: rec.entityName,
+    entityType: rec.entityType,
+    entityId: rec.entityId,
+    campaignContext: rec.campaignContext || null,
+
+    action: proposed.action,
+    actionLabel: act.label,
+    actionDetail: act.detail,
+
+    mutationSummary: act.label,
+
+    apiCallMade,
+    apiCallDetail: apiCallMade ? (executionResult?.raw ? { resourceName: executionResult?.resourceName, raw: '(API result trimmed)' } : executionResult) : null,
+    dryRun,
+    success,
+    blockedByProtection: false, // if we got here, we weren't blocked
+    protectionLevel: protectionLevel || 'execute_freely',
+
+    forecastSnapshot: rec.forecast || null,
+
+    accuracyCheckDueAt,
+    whatWeAreMeasuring: measuringMap[proposed.action] || 'Actual dollar impact vs projected forecast after 7 days.',
+
+    auditEventType: 'approved_and_executed',
+  }
+}
 
 // ── Dismiss ─────────────────────────────────────────────────────────────────
 
