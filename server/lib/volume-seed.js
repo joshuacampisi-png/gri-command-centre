@@ -55,6 +55,7 @@ import { join, dirname } from 'path'
 // committed snapshot is meaningfully better than an empty volume.
 const SEED_WHITELIST = [
   'flywheel/customer-index.json',
+  'gads-agent/grace-period.json',
 ]
 
 export function seedVolumeFromRepo() {
