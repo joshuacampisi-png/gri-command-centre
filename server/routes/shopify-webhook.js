@@ -7,6 +7,7 @@ import { sendHireEmail } from '../lib/hire-mailer.js';
 import { update } from '../lib/hire-store.js';
 import { notifyTNTEvent } from '../lib/tnt-telegram.js';
 import { recordOrder } from '../lib/sales-tracker.js';
+import { pushProductToBottom, reorderAllCollections } from '../lib/inventory-sorter.js';
 
 const router = Router();
 
@@ -335,6 +336,53 @@ router.get('/recent-orders', async (_req, res) => {
     res.json({ orders });
   } catch (err) {
     console.error('[shopify-webhook] Recent orders error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * POST /api/shopify/webhook/products-update
+ * Fires when any product is updated (including inventory changes).
+ * If total inventory hits 0, push product to bottom of all its collections.
+ */
+router.post('/products-update', async (req, res) => {
+  // Verify HMAC
+  const hmac = req.headers['x-shopify-hmac-sha256'];
+  if (hmac && req.rawBody) {
+    if (!verifyShopifyHmac(req.rawBody, hmac)) {
+      console.warn('[shopify-webhook] products-update HMAC mismatch (proceeding)');
+    }
+  }
+
+  // Respond immediately
+  res.status(200).json({ ok: true });
+
+  try {
+    const product = req.body;
+    const totalInventory = (product.variants || []).reduce(
+      (sum, v) => sum + (v.inventory_quantity || 0), 0
+    );
+
+    if (totalInventory <= 0) {
+      console.log(`[shopify-webhook] Product "${product.title}" is now OOS → reordering collections`);
+      const productGid = `gid://shopify/Product/${product.id}`;
+      await pushProductToBottom(productGid);
+    }
+  } catch (err) {
+    console.error('[shopify-webhook] products-update error:', err.message);
+  }
+});
+
+/**
+ * POST /api/shopify/webhook/reorder-all
+ * Manual trigger to reorder all collections (OOS to bottom).
+ */
+router.post('/reorder-all', async (_req, res) => {
+  try {
+    const result = await reorderAllCollections();
+    res.json({ ok: true, ...result });
+  } catch (err) {
+    console.error('[shopify-webhook] reorder-all error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
