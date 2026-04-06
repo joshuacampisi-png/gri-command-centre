@@ -247,19 +247,24 @@ export async function getZeroImpressionKeywords(zeroImpressionDays = 14) {
       ad_group_criterion.criterion_id,
       ad_group_criterion.keyword.text,
       ad_group_criterion.keyword.match_type,
+      ad_group_criterion.negative,
       ad_group.id,
       ad_group.name,
+      ad_group.status,
       campaign.id,
       campaign.name,
       metrics.impressions
     FROM keyword_view
     WHERE ad_group_criterion.status = 'ENABLED'
       AND campaign.status = 'ENABLED'
+      AND ad_group.status = 'ENABLED'
       AND segments.date DURING LAST_${zeroImpressionDays}_DAYS
   `)
 
   const byKey = new Map()
   for (const r of rows) {
+    // Skip negative keywords — they are blocking terms, not "dead" positives
+    if (r.ad_group_criterion?.negative) continue
     const critId = String(r.ad_group_criterion?.criterion_id || '')
     const agId = String(r.ad_group?.id || '')
     if (!critId || !agId) continue

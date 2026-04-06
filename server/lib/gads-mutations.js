@@ -90,21 +90,58 @@ export async function pauseKeywordBatch(items) {
   }
   if (isDryRun()) return dryLog('PAUSE_KEYWORD_BATCH', { count: items.length, items })
   const customer = getGadsCustomer()
-  const ops = items.map(it => ({
+
+  // Pre-check: query which items are negatives so we can exclude them.
+  // Google Ads API rejects the ENTIRE batch if any item is a negative keyword
+  // ("Negative ad group criteria are not updateable"), so one bad item kills
+  // the whole operation. We split negatives out and report them separately.
+  const criterionIds = items.map(it => it.criterionId).filter(Boolean)
+  let negativeIds = new Set()
+  if (criterionIds.length > 0) {
+    try {
+      const checkRows = await customer.query(`
+        SELECT ad_group_criterion.criterion_id, ad_group_criterion.negative
+        FROM ad_group_criterion
+        WHERE ad_group_criterion.criterion_id IN (${criterionIds.join(',')})
+          AND ad_group_criterion.negative = true
+      `)
+      for (const r of checkRows) {
+        negativeIds.add(String(r.ad_group_criterion.criterion_id))
+      }
+    } catch (err) {
+      console.warn('[GadsMutations] pauseKeywordBatch negative-check failed, proceeding without filter:', err.message)
+    }
+  }
+
+  const positiveItems = items.filter(it => !negativeIds.has(String(it.criterionId)))
+  const skippedNegatives = items.filter(it => negativeIds.has(String(it.criterionId)))
+
+  if (positiveItems.length === 0) {
+    return {
+      ok: true, dryRun: false, action: 'PAUSE_KEYWORD_BATCH',
+      count: 0, items: [], skippedNegatives,
+      note: 'All items were negatives — nothing to pause',
+    }
+  }
+
+  const ops = positiveItems.map(it => ({
     resource_name: adGroupCriterionResource(it.adGroupId, it.criterionId),
     status: 'PAUSED',
   }))
   try {
     const res = await customer.adGroupCriteria.update(ops)
-    return { ok: true, dryRun: false, action: 'PAUSE_KEYWORD_BATCH', count: items.length, items, raw: res }
+    return {
+      ok: true, dryRun: false, action: 'PAUSE_KEYWORD_BATCH',
+      count: positiveItems.length, items: positiveItems,
+      skippedNegatives: skippedNegatives.length > 0 ? skippedNegatives : undefined,
+      raw: res,
+    }
   } catch (err) {
-    // Google Ads returns partial failures in err.errors when partial_failure flag is set;
-    // without that flag any failure is a full rollback. Return the error surface for audit.
     return {
       ok: false,
       dryRun: false,
       action: 'PAUSE_KEYWORD_BATCH',
-      count: items.length,
+      count: positiveItems.length,
       items,
       error: err?.errors?.[0]?.message || err?.message || String(err),
     }

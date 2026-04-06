@@ -133,14 +133,30 @@ const DEFAULT_CONFIG = {
 export function getConfig() {
   const saved = loadObj(FILES.config)
   if (!saved || Object.keys(saved).length === 0) {
+    // First boot — write defaults. After this, the file always exists.
     save(FILES.config, DEFAULT_CONFIG)
     return { ...DEFAULT_CONFIG }
   }
+  // Merge: saved values win over defaults. This ensures any field Josh
+  // explicitly set (like dryRun: false) is never silently overwritten
+  // by a DEFAULT_CONFIG merge that re-introduces dryRun: true.
   return { ...DEFAULT_CONFIG, ...saved }
 }
 
 export function updateConfig(patch) {
-  const current = getConfig()
+  // Read the RAW saved file (not getConfig which merges with defaults).
+  // This prevents a race where a transient read failure causes getConfig
+  // to return DEFAULT_CONFIG → merge with patch → save dryRun:true over
+  // Josh's dryRun:false setting. If the raw file is unreadable, we still
+  // fall back to getConfig, but we log a warning.
+  let current
+  try {
+    const raw = loadObj(FILES.config)
+    current = (raw && Object.keys(raw).length > 0) ? { ...DEFAULT_CONFIG, ...raw } : getConfig()
+  } catch {
+    console.warn('[GadsAgentStore] updateConfig: raw load failed, falling back to getConfig()')
+    current = getConfig()
+  }
   const next = { ...current, ...patch, updatedAt: now() }
   save(FILES.config, next)
   return next
