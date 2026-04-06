@@ -101,6 +101,7 @@ export function GoogleAdsAgentTab() {
   const [context, setContext]       = useState(null)
   const [framework, setFramework]   = useState(null) // Layer 1 CM$ + Layer 3 customer metrics
   const [campaigns, setCampaigns]   = useState(null) // per-campaign breakdown: { campaigns, totals, channelTotals }
+  const [metricsWindow, setMetricsWindow] = useState(30) // 7, 14, or 30 day toggle
   const [isScanning, setIsScanning] = useState(false)
   const [toast, setToast]           = useState(null)
   const [confirmation, setConfirmation] = useState(null) // post-approval modal payload
@@ -113,14 +114,13 @@ export function GoogleAdsAgentTab() {
 
   const fetchAll = useCallback(async () => {
     try {
-      const [s, r, nr, b, a, cfg, sm, ctx, fw, cp] = await Promise.all([
+      const [s, r, nr, b, a, cfg, ctx, fw, cp] = await Promise.all([
         fetch(`${API}/status`).then(x => x.json()).catch(() => ({})),
         fetch(`${API}/recommendations?status=pending`).then(x => x.json()).catch(() => ({})),
         fetch(`${API}/recommendations?status=needs-review`).then(x => x.json()).catch(() => ({})),
         fetch(`${API}/briefing`).then(x => x.json()).catch(() => ({})),
         fetch(`${API}/audit?limit=100`).then(x => x.json()).catch(() => ({})),
         fetch(`${API}/config`).then(x => x.json()).catch(() => ({})),
-        fetch(`${API}/account-summary`).then(x => x.json()).catch(() => null),
         fetch(`${API}/context`).then(x => x.json()).catch(() => null),
         fetch(`${API}/framework-metrics?days=30`).then(x => x.json()).catch(() => null),
         fetch(`${API}/campaigns?days=30`).then(x => x.json()).catch(() => null),
@@ -131,16 +131,60 @@ export function GoogleAdsAgentTab() {
       if (b?.ok) setBriefing(b.briefing)
       if (a?.ok) setAudit(a.events || [])
       if (cfg?.ok) setConfig(cfg.config)
-      if (sm?.ok) setSummary(sm.summary)
       if (ctx?.ok) setContext(ctx.context)
       if (fw?.ok) setFramework(fw.metrics)
-      if (cp?.ok) setCampaigns({ campaigns: cp.campaigns || [], totals: cp.totals || null, channelTotals: cp.channelTotals || [], window: cp.window })
+      if (cp?.ok) {
+        setCampaigns({ campaigns: cp.campaigns || [], totals: cp.totals || null, channelTotals: cp.channelTotals || [], window: cp.window })
+        // Populate summary from campaigns totals (lightweight, no full scan needed)
+        if (cp.totals) {
+          setSummary({
+            lookbackDays: 30,
+            activeCampaigns: cp.totals.campaignCount || 0,
+            totalSpendAud: cp.totals.spendAud || 0,
+            totalConversionsValueAud: cp.totals.conversionsValueAud || 0,
+            totalConversions: cp.totals.conversions || 0,
+            totalClicks: cp.totals.clicks || 0,
+            totalImpressions: cp.totals.impressions || 0,
+            roas: cp.totals.roas || 0,
+            avgCpc: cp.totals.clicks > 0 ? cp.totals.spendAud / cp.totals.clicks : 0,
+            targetRoas: cfg?.config?.targetRoas || 3,
+          })
+        }
+      }
     } catch (err) {
       showToast('error', err.message)
     }
   }, [])
 
   useEffect(() => { fetchAll() }, [fetchAll])
+
+  // Re-fetch campaigns + summary when the metrics window changes
+  async function fetchMetricsForWindow(days) {
+    setMetricsWindow(days)
+    try {
+      const cp = await fetch(`${API}/campaigns?days=${days}`).then(x => x.json()).catch(() => null)
+      if (cp?.ok) {
+        setCampaigns({ campaigns: cp.campaigns || [], totals: cp.totals || null, channelTotals: cp.channelTotals || [], window: cp.window })
+        // Also update summary from the totals (so the metrics strip reflects the selected window)
+        if (cp.totals) {
+          setSummary({
+            lookbackDays: days,
+            activeCampaigns: cp.totals.campaignCount || 0,
+            totalSpendAud: cp.totals.spendAud || 0,
+            totalConversionsValueAud: cp.totals.conversionsValueAud || 0,
+            totalConversions: cp.totals.conversions || 0,
+            totalClicks: cp.totals.clicks || 0,
+            totalImpressions: cp.totals.impressions || 0,
+            roas: cp.totals.roas || 0,
+            avgCpc: cp.totals.cpa ? undefined : (cp.totals.clicks > 0 ? cp.totals.spendAud / cp.totals.clicks : 0),
+            targetRoas: config?.targetRoas || 3,
+          })
+        }
+      }
+    } catch (err) {
+      showToast('error', `Failed to load ${days}d metrics`)
+    }
+  }
 
   function showToast(type, text) {
     setToast({ type, text, id: Date.now() })
@@ -486,20 +530,31 @@ export function GoogleAdsAgentTab() {
         </div>
       )}
 
-      {/* Metrics strip */}
+      {/* Metrics strip — live, dynamic window */}
       {summary && (
         <section className="gads-metrics">
-          <MetricCard label="30d Spend"        value={fmtAud(summary.totalSpendAud)} mono />
-          <MetricCard label="30d Conv Value"   value={fmtAud(summary.totalConversionsValueAud)} mono accent={G.green} />
+          <div className="gads-metrics-window-toggle">
+            {[7, 14, 30].map(d => (
+              <button
+                key={d}
+                className={`gads-window-btn ${metricsWindow === d ? 'active' : ''}`}
+                onClick={() => fetchMetricsForWindow(d)}
+              >
+                {d}d
+              </button>
+            ))}
+          </div>
+          <MetricCard label={`${metricsWindow}d Spend`}       value={fmtAud(summary.totalSpendAud)} mono />
+          <MetricCard label={`${metricsWindow}d Conv Value`}  value={fmtAud(summary.totalConversionsValueAud)} mono accent={G.green} />
           <MetricCard
             label="ROAS"
             value={`${(summary.roas || 0).toFixed(2)}×`}
-            delta={summary.roas >= summary.targetRoas ? 'on target' : `target ${summary.targetRoas}×`}
-            deltaColour={summary.roas >= summary.targetRoas ? G.green : G.yellow}
+            delta={summary.roas >= (summary.targetRoas || config?.targetRoas || 3) ? 'on target' : `target ${summary.targetRoas || config?.targetRoas || 3}×`}
+            deltaColour={summary.roas >= (summary.targetRoas || config?.targetRoas || 3) ? G.green : G.yellow}
             mono
           />
           <MetricCard label="Conversions"      value={fmtNum(summary.totalConversions)} mono />
-          <MetricCard label="Avg CPC"          value={fmtAud(summary.avgCpc, 2)} mono />
+          <MetricCard label="Avg CPC"          value={fmtAud(summary.avgCpc || (summary.totalClicks > 0 ? summary.totalSpendAud / summary.totalClicks : 0), 2)} mono />
           <MetricCard label="Clicks"           value={fmtNum(summary.totalClicks)} mono />
           <MetricCard label="Impressions"      value={fmtNum(summary.totalImpressions)} mono />
           <MetricCard label="Campaigns"        value={summary.activeCampaigns || 0} mono accent={G.blue} />
@@ -2749,6 +2804,35 @@ const styleSheet = `
   gap: 1px;
   background: var(--border);
   border-bottom: 1px solid var(--border);
+}
+.gads-metrics-window-toggle {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 4px;
+  padding: 10px 22px 6px;
+  background: var(--bg-base);
+}
+.gads-window-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 4px 14px;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: transparent;
+  color: rgba(255,255,255,0.4);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.gads-window-btn:hover {
+  color: rgba(255,255,255,0.7);
+  border-color: rgba(255,255,255,0.15);
+}
+.gads-window-btn.active {
+  background: rgba(66,133,244,0.15);
+  color: #4285F4;
+  border-color: rgba(66,133,244,0.3);
 }
 
 .gads-metric {
