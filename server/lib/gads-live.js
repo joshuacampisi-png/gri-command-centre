@@ -28,6 +28,18 @@ import {
   getShoppingProductPerformance,
 } from './gads-queries.js'
 
+// Same date clause helper as gads-queries.js for consistency
+const VALID_DURING = new Set([7, 30])
+function dateClause(lookbackDays) {
+  if (VALID_DURING.has(lookbackDays)) {
+    return `segments.date DURING LAST_${lookbackDays}_DAYS`
+  }
+  const end = new Date()
+  const start = new Date()
+  start.setDate(end.getDate() - lookbackDays)
+  return `segments.date BETWEEN '${start.toISOString().slice(0, 10)}' AND '${end.toISOString().slice(0, 10)}'`
+}
+
 // ── TTL cache ──────────────────────────────────────────────────────────────
 
 const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
@@ -175,7 +187,7 @@ export function getCampaignKeywordsLive(campaignId, lookbackDays = 30) {
         metrics.conversions_value
       FROM keyword_view
       WHERE campaign.id = ${campaignId}
-        AND segments.date DURING LAST_${lookbackDays}_DAYS
+        AND ${dateClause(lookbackDays)}
         AND ad_group_criterion.status = 'ENABLED'
     `)
 
@@ -219,7 +231,7 @@ export function getSearchTermsEnriched(campaignId, lookbackDays = 30) {
         metrics.conversions_value
       FROM search_term_view
       WHERE campaign.id = ${campaignId}
-        AND segments.date DURING LAST_${lookbackDays}_DAYS
+        AND ${dateClause(lookbackDays)}
         AND metrics.impressions > 0
       ORDER BY metrics.impressions DESC
     `)

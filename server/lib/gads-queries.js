@@ -8,6 +8,20 @@ import { getGadsCustomer } from './gads-client.js'
 
 const DEFAULT_LOOKBACK_DAYS = 30
 
+// Google Ads GAQL only supports specific DURING literals (LAST_7_DAYS,
+// LAST_30_DAYS etc). For arbitrary windows like 14d we need explicit
+// BETWEEN date ranges. This helper always works for any day count.
+const VALID_DURING = new Set([7, 30])
+function dateClause(lookbackDays) {
+  if (VALID_DURING.has(lookbackDays)) {
+    return `segments.date DURING LAST_${lookbackDays}_DAYS`
+  }
+  const end = new Date()
+  const start = new Date()
+  start.setDate(end.getDate() - lookbackDays)
+  return `segments.date BETWEEN '${start.toISOString().slice(0, 10)}' AND '${end.toISOString().slice(0, 10)}'`
+}
+
 function safeNum(v) {
   if (v == null) return 0
   if (typeof v === 'bigint') return Number(v)
@@ -44,7 +58,7 @@ export async function getCampaignPerformance(lookbackDays = DEFAULT_LOOKBACK_DAY
       metrics.average_cpc
     FROM campaign
     WHERE campaign.status = 'ENABLED'
-      AND segments.date DURING LAST_${lookbackDays}_DAYS
+      AND ${dateClause(lookbackDays)}
   `)
 
   // Aggregate per campaign (date segments get returned row-per-day otherwise)
@@ -100,7 +114,7 @@ export async function getKeywordPerformance(lookbackDays = DEFAULT_LOOKBACK_DAYS
     FROM keyword_view
     WHERE ad_group_criterion.status = 'ENABLED'
       AND campaign.status = 'ENABLED'
-      AND segments.date DURING LAST_${lookbackDays}_DAYS
+      AND ${dateClause(lookbackDays)}
   `)
 
   const byKey = new Map()
@@ -152,7 +166,7 @@ export async function getSearchTermsReport(minClicks = 3, lookbackDays = DEFAULT
       metrics.conversions,
       metrics.ctr
     FROM search_term_view
-    WHERE segments.date DURING LAST_${lookbackDays}_DAYS
+    WHERE ${dateClause(lookbackDays)}
       AND metrics.clicks >= ${minClicks}
   `)
 
@@ -206,7 +220,7 @@ export async function getAdPerformance(lookbackDays = DEFAULT_LOOKBACK_DAYS) {
       metrics.cost_micros
     FROM ad_group_ad
     WHERE campaign.status = 'ENABLED'
-      AND segments.date DURING LAST_${lookbackDays}_DAYS
+      AND ${dateClause(lookbackDays)}
   `)
 
   const byId = new Map()
@@ -258,7 +272,7 @@ export async function getZeroImpressionKeywords(zeroImpressionDays = 14) {
     WHERE ad_group_criterion.status = 'ENABLED'
       AND campaign.status = 'ENABLED'
       AND ad_group.status = 'ENABLED'
-      AND segments.date DURING LAST_${zeroImpressionDays}_DAYS
+      AND ${dateClause(zeroImpressionDays)}
   `)
 
   const byKey = new Map()
@@ -301,7 +315,7 @@ export async function getShoppingProductPerformance(lookbackDays = DEFAULT_LOOKB
       metrics.conversions,
       metrics.conversions_value
     FROM shopping_performance_view
-    WHERE segments.date DURING LAST_${lookbackDays}_DAYS
+    WHERE ${dateClause(lookbackDays)}
   `)
 
   const byProduct = new Map()
