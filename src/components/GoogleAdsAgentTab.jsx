@@ -534,18 +534,18 @@ export function GoogleAdsAgentTab() {
       {summary && (
         <section className="gads-metrics">
           <div className="gads-metrics-window-toggle">
-            {[7, 14, 30].map(d => (
+            {[1, 7, 14, 30].map(d => (
               <button
                 key={d}
                 className={`gads-window-btn ${metricsWindow === d ? 'active' : ''}`}
                 onClick={() => fetchMetricsForWindow(d)}
               >
-                {d}d
+                {d === 1 ? 'Today' : `${d}d`}
               </button>
             ))}
           </div>
-          <MetricCard label={`${metricsWindow}d Spend`}       value={fmtAud(summary.totalSpendAud)} mono />
-          <MetricCard label={`${metricsWindow}d Conv Value`}  value={fmtAud(summary.totalConversionsValueAud)} mono accent={G.green} />
+          <MetricCard label={`${metricsWindow === 1 ? 'Today' : metricsWindow + 'd'} Spend`}       value={fmtAud(summary.totalSpendAud)} mono />
+          <MetricCard label={`${metricsWindow === 1 ? 'Today' : metricsWindow + 'd'} Conv Value`}  value={fmtAud(summary.totalConversionsValueAud)} mono accent={G.green} />
           <MetricCard
             label="ROAS"
             value={`${(summary.roas || 0).toFixed(2)}×`}
