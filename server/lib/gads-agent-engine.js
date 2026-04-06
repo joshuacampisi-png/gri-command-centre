@@ -17,7 +17,7 @@ import {
   getShoppingProductPerformance,
 } from './gads-queries.js'
 import { microsToDollars } from './gads-client.js'
-import { getConfig, logAudit } from './gads-agent-store.js'
+import { getConfig, logAudit, getGracePeriodIds } from './gads-agent-store.js'
 import {
   refreshAutoContext,
   getAutoContext,
@@ -136,16 +136,21 @@ function checkKeywordBleed(keywords, cfg) {
 }
 
 function checkZeroImpressionKeywords(zeroKws) {
-  return zeroKws.map(kw => ({
-    category: 'keyword',
-    severity: 'medium',
-    entityType: 'keyword',
-    entityId: kw.criterionId,
-    entityName: `${kw.keywordText} (${kw.matchType})`,
-    issueTitle: `Zero impressions — "${kw.keywordText}" has been dead for the full window`,
-    issueKey: 'keyword_zero_impressions',
-    rawData: kw,
-  }))
+  // Skip keywords in the grace period (recently added by the agent, need
+  // time to serve before being flagged as dead). Grace period = 7 days.
+  const graceIds = getGracePeriodIds()
+  return zeroKws
+    .filter(kw => !graceIds.has(String(kw.criterionId)))
+    .map(kw => ({
+      category: 'keyword',
+      severity: 'medium',
+      entityType: 'keyword',
+      entityId: kw.criterionId,
+      entityName: `${kw.keywordText} (${kw.matchType})`,
+      issueTitle: `Zero impressions — "${kw.keywordText}" has been dead for the full window`,
+      issueKey: 'keyword_zero_impressions',
+      rawData: kw,
+    }))
 }
 
 function checkNegativeCandidates(searchTerms, cfg) {

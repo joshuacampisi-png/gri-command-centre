@@ -18,6 +18,7 @@ const FILES = {
   briefings:       dataFile('gads-agent/briefings.json'),
   auditLog:        dataFile('gads-agent/audit-log.json'),
   config:          dataFile('gads-agent/config.json'),
+  gracePeriod:     dataFile('gads-agent/grace-period.json'),
 }
 
 // ── Atomic JSON helpers ─────────────────────────────────────────────────────
@@ -324,4 +325,35 @@ export function getStoreHealth() {
     auditEvents: audit.length,
     lastAudit: audit.length > 0 ? audit[audit.length - 1].createdAt : null,
   }
+}
+
+// ── Grace period ────────────────────────────────────────────────────────────
+// Tracks recently-added keyword criterion IDs so the zero-impression scanner
+// doesn't flag them as "dead" before they've had a chance to serve.
+// Each entry: { criterionId, addedAt, expiresAt }
+
+const GRACE_DAYS = 7
+
+export function addGracePeriod(criterionIds) {
+  const all = loadArr(FILES.gracePeriod)
+  const addedAt = now()
+  const expiresAt = new Date(Date.now() + GRACE_DAYS * 86400000).toISOString()
+  for (const cid of criterionIds) {
+    if (!all.find(e => e.criterionId === String(cid))) {
+      all.push({ criterionId: String(cid), addedAt, expiresAt })
+    }
+  }
+  save(FILES.gracePeriod, all)
+}
+
+export function getGracePeriodIds() {
+  const all = loadArr(FILES.gracePeriod)
+  const nowStr = new Date().toISOString()
+  // Return only non-expired IDs
+  const active = all.filter(e => e.expiresAt > nowStr)
+  // If some expired, clean them up
+  if (active.length < all.length) {
+    save(FILES.gracePeriod, active)
+  }
+  return new Set(active.map(e => e.criterionId))
 }

@@ -7,7 +7,7 @@
  * Mutation shapes target google-ads-api v23.
  */
 import { getGadsCustomer, getGadsCustomerId, dollarsToMicros } from './gads-client.js'
-import { isDryRun } from './gads-agent-store.js'
+import { isDryRun, addGracePeriod } from './gads-agent-store.js'
 
 function cust() { return getGadsCustomerId() }
 
@@ -184,6 +184,14 @@ export async function addKeywordBatch(items) {
   try {
     const res = await customer.adGroupCriteria.create(ops)
     const resourceNames = (res?.results || []).map(r => r.resource_name)
+    // Register new keywords for 7-day grace period so the zero-impression
+    // scanner doesn't flag them as "dead" before they've had time to serve.
+    const newCritIds = resourceNames
+      .map(rn => rn.split('~').pop())
+      .filter(Boolean)
+    if (newCritIds.length > 0) {
+      try { addGracePeriod(newCritIds) } catch { /* non-fatal */ }
+    }
     return {
       ok: true,
       dryRun: false,
