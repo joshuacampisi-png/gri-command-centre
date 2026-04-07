@@ -475,6 +475,9 @@ export default function TNTDashboard() {
             try {
               const r = await api('/sync', { method: 'POST' })
               showToast(`Synced: ${r.created} new hires found, ${r.skipped} skipped`)
+              // Auto-reconcile payments after sync
+              const rec = await api('/reconcile-payments', { method: 'POST' })
+              if (rec.reconciled > 0) showToast(`${rec.reconciled} bond payment(s) matched`)
               await loadHires()
             } catch (e) { showToast(e.message, 'error') }
           }} style={btnBase}>

@@ -133,8 +133,46 @@ router.post('/sync', async (_req, res) => {
 
       console.log(`[hires/sync] Created hire ${hire.id} for ${orderName} (${customerName})`)
 
-      // Create Square bond link if we have email
-      if (customerEmail) {
+      // Check Square for an existing completed payment matching this order
+      let bondAlreadyPaid = false
+      try {
+        const sqToken = process.env.SQUARE_ACCESS_TOKEN
+        if (sqToken) {
+          const payRes = await fetch('https://connect.squareup.com/v2/payments?sort_order=DESC&limit=20', {
+            headers: { 'Authorization': `Bearer ${sqToken}`, 'Content-Type': 'application/json', 'Square-Version': '2024-12-18' }
+          })
+          const payData = await payRes.json()
+          const match = (payData.payments || []).find(p =>
+            p.status === 'COMPLETED' &&
+            p.note && p.note.includes(orderName.replace('#', ''))
+          )
+          if (match) {
+            update(hire.id, {
+              bondStatus: 'paid',
+              bondPaymentId: match.id,
+              bondPaidAt: match.created_at,
+              bondOrderId: match.order_id,
+              status: 'bond_paid',
+            })
+            bondAlreadyPaid = true
+            console.log(`[hires/sync] Bond already paid for ${orderName} — payment ${match.id}`)
+
+            // Auto-send contract
+            const updatedHire = getById(hire.id)
+            const baseUrl = process.env.BASE_URL || `http://127.0.0.1:${process.env.PORT || 8787}`
+            try {
+              await sendHireEmail('contract', updatedHire, `${baseUrl}/api/contract/${hire.id}/sign`)
+              update(hire.id, { contractStatus: 'sent', contractSentAt: new Date().toISOString(), status: 'contract_sent' })
+              console.log(`[hires/sync] Contract auto-sent for ${orderName}`)
+            } catch (ce) { console.error(`[hires/sync] Contract send failed:`, ce.message) }
+          }
+        }
+      } catch (sqErr) {
+        console.error(`[hires/sync] Square payment check failed:`, sqErr.message)
+      }
+
+      // Only create new bond link if not already paid
+      if (!bondAlreadyPaid && customerEmail) {
         try {
           const link = await createBondPaymentLink(hire)
           update(hire.id, {
@@ -156,6 +194,61 @@ router.post('/sync', async (_req, res) => {
     res.json({ ok: true, created, skipped, total: orders.length })
   } catch (err) {
     console.error('[hires/sync] Error:', err.message)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// POST /api/hires/reconcile-payments — Match pending hires against actual Square payments
+// Fixes cases where bond was paid but hire wasn't created yet (webhook missed)
+router.post('/reconcile-payments', async (_req, res) => {
+  try {
+    const sqToken = process.env.SQUARE_ACCESS_TOKEN
+    if (!sqToken) return res.status(500).json({ ok: false, error: 'Square not configured' })
+
+    const payRes = await fetch('https://connect.squareup.com/v2/payments?sort_order=DESC&limit=50', {
+      headers: { 'Authorization': `Bearer ${sqToken}`, 'Content-Type': 'application/json', 'Square-Version': '2024-12-18' }
+    })
+    const payData = await payRes.json()
+    const payments = (payData.payments || []).filter(p => p.status === 'COMPLETED')
+
+    const hires = getAll()
+    let reconciled = 0
+
+    for (const hire of hires) {
+      if (hire.bondStatus === 'paid') continue
+
+      // Match by order number in payment note
+      const orderNum = (hire.orderNumber || '').replace('#', '')
+      const match = payments.find(p => p.note && p.note.includes(orderNum))
+
+      if (match) {
+        update(hire.id, {
+          bondStatus: 'paid',
+          bondPaymentId: match.id,
+          bondPaidAt: match.created_at,
+          bondOrderId: match.order_id,
+          status: hire.status === 'confirmed' ? 'bond_paid' : hire.status,
+        })
+        console.log(`[reconcile] Matched ${hire.orderNumber} to payment ${match.id}`)
+
+        // Auto-send contract if not already sent
+        const updatedHire = getById(hire.id)
+        if (updatedHire.contractStatus !== 'sent' && updatedHire.contractStatus !== 'signed') {
+          const baseUrl = process.env.BASE_URL || `http://127.0.0.1:${process.env.PORT || 8787}`
+          try {
+            await sendHireEmail('contract', updatedHire, `${baseUrl}/api/contract/${hire.id}/sign`)
+            update(hire.id, { contractStatus: 'sent', contractSentAt: new Date().toISOString(), status: 'contract_sent' })
+          } catch (e) { console.error(`[reconcile] Contract failed for ${hire.orderNumber}:`, e.message) }
+        }
+
+        notifyTNTEvent('bond_paid', getById(hire.id)).catch(() => {})
+        reconciled++
+      }
+    }
+
+    res.json({ ok: true, reconciled, checkedPayments: payments.length, totalHires: hires.length })
+  } catch (err) {
+    console.error('[reconcile] Error:', err.message)
     res.status(500).json({ ok: false, error: err.message })
   }
 })
