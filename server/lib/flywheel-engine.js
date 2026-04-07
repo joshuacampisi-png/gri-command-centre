@@ -108,23 +108,33 @@ export async function evaluateKillRules() {
 
   for (const ad of ads) {
     const snapshots = getAdSnapshots(ad.metaAdId || ad.id, 14)
-    if (snapshots.length < 3) continue
+    // Require minimum 7 days of data before making any kill decisions.
+    // Ads need a week to exit learning phase and stabilise.
+    if (snapshots.length < 7) continue
 
     // Get the CPA target for this ad's category (or blended)
     const target = cpaTargets[ad.productCategory || 'blended'] || cpaTargets.blended
 
-    // Rule 1: CPA exceeds 2.5x target for 3 consecutive days AND ROAS below 1.2
-    const last3 = snapshots.slice(-3)
-    const allCpaBreach = last3.every(s =>
-      s.cpa > target.max && s.roas < FLYWHEEL.ROAS_KILL_FLOOR && s.purchases > 0
-    )
-    if (allCpaBreach) {
+    // Weekly aggregates — this is how we evaluate, not daily noise
+    const last7 = snapshots.slice(-7)
+    const weekSpend = last7.reduce((a, s) => a + (s.spend || 0), 0)
+    const weekPurchases = last7.reduce((a, s) => a + (s.purchases || 0), 0)
+    const weekImpressions = last7.reduce((a, s) => a + (s.impressions || 0), 0)
+
+    // Skip ads with negligible spend — not enough data to judge
+    if (weekSpend < 30 || weekImpressions < 500) continue
+
+    const weekCpa = weekPurchases > 0 ? weekSpend / weekPurchases : 0
+    const weekRoas = weekSpend > 0 ? last7.reduce((a, s) => a + (s.revenue || 0), 0) / weekSpend : 0
+
+    // Rule 1: Weekly CPA exceeds 2.5x target AND ROAS below 1.2 over the full 7 days
+    if (weekPurchases > 0 && weekCpa > target.max && weekRoas < FLYWHEEL.ROAS_KILL_FLOOR) {
       const event = {
         entityType: 'ad',
         entityId: ad.metaAdId || ad.id,
         entityName: ad.name,
-        ruleType: 'cpa_breach_3day',
-        ruleDetail: `CPA $${last3.map(s => s.cpa.toFixed(2)).join(', $')} exceeds max $${target.max.toFixed(2)} for 3 days. ROAS: ${last3.map(s => s.roas.toFixed(2)).join(', ')}`,
+        ruleType: 'cpa_breach_weekly',
+        ruleDetail: `7-day CPA $${weekCpa.toFixed(2)} exceeds max $${target.max.toFixed(2)}. ROAS: ${weekRoas.toFixed(2)}x. Spend: $${weekSpend.toFixed(0)}.`,
         triggered: true,
         actioned: false,
       }
@@ -133,62 +143,73 @@ export async function evaluateKillRules() {
         type: 'kill_rule',
         severity: 'critical',
         title: `Kill signal: ${ad.name}`,
-        body: event.ruleDetail + `. Recommendation: pause this ad.`,
+        body: event.ruleDetail + ` Recommendation: pause this ad.`,
         entityType: 'ad',
         entityId: ad.metaAdId || ad.id,
         entityName: ad.name,
       })
       results.push(event)
-      logFlywheelEvent('kill_rule', `CPA breach on ${ad.name}: ${event.ruleDetail}`)
+      logFlywheelEvent('kill_rule', `Weekly CPA breach on ${ad.name}: ${event.ruleDetail}`)
     }
 
-    // Rule 2: CTR dropped more than 40% from day 1-2 baseline
-    if (snapshots.length >= 4) {
-      const baseline = (snapshots[0].ctr + snapshots[1].ctr) / 2
-      const recent = snapshots.slice(-1)[0].ctr
-      if (baseline > 0 && recent < baseline * (1 - FLYWHEEL.CTR_DROP_KILL_PCT)) {
-        const dropPct = ((baseline - recent) / baseline * 100).toFixed(0)
-        const event = {
-          entityType: 'ad',
-          entityId: ad.metaAdId || ad.id,
-          entityName: ad.name,
-          ruleType: 'ctr_drop_40pct',
-          ruleDetail: `CTR dropped ${dropPct}% from baseline ${(baseline * 100).toFixed(2)}% to ${(recent * 100).toFixed(2)}%`,
-          triggered: true,
-          actioned: false,
+    // Rule 2: CTR trending down — compare last 3 days avg vs prior 4 days avg (week-over-week)
+    // Only fires with 7+ days of data and minimum 1000 impressions per period
+    if (snapshots.length >= 7) {
+      const prior4 = snapshots.slice(-7, -3)
+      const recent3 = snapshots.slice(-3)
+
+      const priorImpr = prior4.reduce((a, s) => a + (s.impressions || 0), 0)
+      const recentImpr = recent3.reduce((a, s) => a + (s.impressions || 0), 0)
+
+      // Need meaningful impression volume in both periods
+      if (priorImpr >= 500 && recentImpr >= 300) {
+        const priorClicks = prior4.reduce((a, s) => a + (s.clicks || 0), 0)
+        const recentClicks = recent3.reduce((a, s) => a + (s.clicks || 0), 0)
+        const priorCtr = priorImpr > 0 ? priorClicks / priorImpr : 0
+        const recentCtr = recentImpr > 0 ? recentClicks / recentImpr : 0
+
+        if (priorCtr > 0 && recentCtr < priorCtr * (1 - FLYWHEEL.CTR_DROP_KILL_PCT)) {
+          const dropPct = ((priorCtr - recentCtr) / priorCtr * 100).toFixed(0)
+          const event = {
+            entityType: 'ad',
+            entityId: ad.metaAdId || ad.id,
+            entityName: ad.name,
+            ruleType: 'ctr_drop_weekly',
+            ruleDetail: `CTR dropped ${dropPct}% over the week: prior 4d avg ${(priorCtr * 100).toFixed(2)}% → recent 3d avg ${(recentCtr * 100).toFixed(2)}%`,
+            triggered: true,
+            actioned: false,
+          }
+          addKillEvent(event)
+          addAlert({
+            type: 'kill_rule',
+            severity: 'critical',
+            title: `Creative fatigue: ${ad.name}`,
+            body: event.ruleDetail + `. Creative is losing audience attention. Rotate or pause.`,
+            entityType: 'ad',
+            entityId: ad.metaAdId || ad.id,
+            entityName: ad.name,
+          })
+          results.push(event)
+          logFlywheelEvent('kill_rule', `Weekly CTR drop on ${ad.name}: ${event.ruleDetail}`)
         }
-        addKillEvent(event)
-        addAlert({
-          type: 'kill_rule',
-          severity: 'critical',
-          title: `Creative fatigue: ${ad.name}`,
-          body: event.ruleDetail + `. Creative is dying. Rotate or pause.`,
-          entityType: 'ad',
-          entityId: ad.metaAdId || ad.id,
-          entityName: ad.name,
-        })
-        results.push(event)
-        logFlywheelEvent('kill_rule', `CTR drop on ${ad.name}: ${event.ruleDetail}`)
       }
     }
 
-    // Rule 3: Zero purchases with spend exceeding 2x CPA target in 72 hours
-    const totalSpend3d = last3.reduce((a, s) => a + (s.spend || 0), 0)
-    const totalPurchases3d = last3.reduce((a, s) => a + (s.purchases || 0), 0)
-    if (totalPurchases3d === 0 && totalSpend3d > target.target * FLYWHEEL.ZERO_PURCHASE_SPEND_MULTIPLIER) {
+    // Rule 3: Zero purchases over 7 days with spend exceeding 2x CPA target
+    if (weekPurchases === 0 && weekSpend > target.target * FLYWHEEL.ZERO_PURCHASE_SPEND_MULTIPLIER) {
       const event = {
         entityType: 'ad',
         entityId: ad.metaAdId || ad.id,
         entityName: ad.name,
-        ruleType: 'zero_purchase_2x_cpa',
-        ruleDetail: `Spent $${totalSpend3d.toFixed(2)} with zero purchases in 3 days. Target CPA is $${target.target.toFixed(2)}.`,
+        ruleType: 'zero_purchase_weekly',
+        ruleDetail: `Spent $${weekSpend.toFixed(2)} with zero purchases over 7 days. Target CPA is $${target.target.toFixed(2)}.`,
         triggered: true,
         actioned: false,
       }
       addKillEvent(event)
       addAlert({
         type: 'kill_rule',
-        severity: 'warning',
+        severity: 'critical',
         title: `No conversions: ${ad.name}`,
         body: event.ruleDetail + ` Review or pause.`,
         entityType: 'ad',
@@ -196,7 +217,7 @@ export async function evaluateKillRules() {
         entityName: ad.name,
       })
       results.push(event)
-      logFlywheelEvent('kill_rule', `Zero purchase alert on ${ad.name}: ${event.ruleDetail}`)
+      logFlywheelEvent('kill_rule', `Zero purchase weekly alert on ${ad.name}: ${event.ruleDetail}`)
     }
   }
 

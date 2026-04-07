@@ -369,6 +369,15 @@ export function getAlerts(unresolvedOnly = true) {
 
 export function addAlert(alert) {
   const all = load(FILES.alerts)
+
+  // Deduplicate: if an unresolved alert already exists for same entity + type, skip
+  const isDupe = all.some(a =>
+    !a.resolved &&
+    a.entityId === (alert.entityId || null) &&
+    a.type === alert.type
+  )
+  if (isDupe) return null
+
   const record = {
     id: randomUUID(),
     type: alert.type,
@@ -385,6 +394,31 @@ export function addAlert(alert) {
   all.push(record)
   save(FILES.alerts, all)
   return record
+}
+
+// Deduplicate existing unresolved alerts on boot — keeps only the newest per entity+type
+export function deduplicateAlerts() {
+  const all = load(FILES.alerts)
+  const seen = new Map()
+  let dupes = 0
+  // Walk newest-first so we keep the most recent
+  for (let i = all.length - 1; i >= 0; i--) {
+    const a = all[i]
+    if (a.resolved) continue
+    const key = `${a.entityId || ''}_${a.type || ''}`
+    if (seen.has(key)) {
+      all[i].resolved = true
+      all[i].resolvedAt = now()
+      dupes++
+    } else {
+      seen.set(key, true)
+    }
+  }
+  if (dupes > 0) {
+    save(FILES.alerts, all)
+    console.log(`[Flywheel] Auto-resolved ${dupes} duplicate alerts`)
+  }
+  return dupes
 }
 
 export function resolveAlert(alertId) {

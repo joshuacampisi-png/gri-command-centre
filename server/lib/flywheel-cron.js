@@ -10,7 +10,7 @@ import {
 } from './meta-api.js'
 import {
   saveCampaigns, saveAdSets, saveAds, upsertAdSnapshot, upsertAdSetSnapshot,
-  logFlywheelEvent, getCampaigns as getStoredCampaigns
+  logFlywheelEvent, getCampaigns as getStoredCampaigns, deduplicateAlerts
 } from './flywheel-store.js'
 import {
   evaluateKillRules, evaluateScaleRules, calculateAovIntelligence, FLYWHEEL
@@ -196,10 +196,9 @@ export async function metaSyncJob() {
     })
     console.log(`[Flywheel Cron] Meta sync complete: ${campaignRecords.length} campaigns, ${allAdSets.length} ad sets, ${allAds.length} ads, ${snapshotCount} snapshots`)
 
-    // 5. Trigger kill and scale rule evaluation
-    await evaluateKillRules()
-    await evaluateScaleRules()
-    calculateAovIntelligence()
+    // Kill/scale rules run on their own daily schedule (6am/6:30am AEST).
+    // Do NOT re-run them on every 6-hour sync — that generates duplicate alerts
+    // and evaluates on incomplete data windows.
 
   } catch (err) {
     console.error('[Flywheel Cron] Meta sync failed:', err.message)
@@ -255,6 +254,9 @@ function classifyFormat(name) {
 
 export function startFlywheelCrons() {
   console.log('[Flywheel Cron] Starting flywheel scheduled jobs...')
+
+  // Boot-time cleanup: resolve duplicate unresolved alerts from previous cycles
+  try { deduplicateAlerts() } catch (e) { console.error('[Flywheel Cron] Alert dedup failed:', e.message) }
 
   // Meta sync: every 6 hours (2am, 8am, 2pm, 8pm AEST)
   cron.schedule('0 2,8,14,20 * * *', safeRun('meta-sync', metaSyncJob), { timezone: 'Australia/Brisbane' })
