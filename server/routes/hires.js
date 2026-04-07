@@ -54,6 +54,23 @@ router.get('/health', (_req, res) => {
 // Use this when the Shopify webhook didn't fire (e.g. webhook expired, Railway was down)
 const TNT_PRODUCT_IDS = [7988691927129]
 
+function normaliseIzyDate(val) {
+  if (!val) return null
+  const v = val.trim()
+  if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v
+  const auMatch = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
+  if (auMatch) return `${auMatch[3]}-${auMatch[2].padStart(2, '0')}-${auMatch[1].padStart(2, '0')}`
+  // "11 April 2026" format from IzyRent
+  const months = { january:'01', february:'02', march:'03', april:'04', may:'05', june:'06',
+    july:'07', august:'08', september:'09', october:'10', november:'11', december:'12' }
+  const longMatch = v.match(/^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})$/)
+  if (longMatch) {
+    const m = months[longMatch[2].toLowerCase()]
+    if (m) return `${longMatch[3]}-${m}-${longMatch[1].padStart(2, '0')}`
+  }
+  return null
+}
+
 router.post('/sync', async (_req, res) => {
   try {
     if (!env.shopify.storeDomain || !env.shopify.adminAccessToken) {
@@ -81,12 +98,26 @@ router.post('/sync', async (_req, res) => {
       const orderName = order.name || `#${order.order_number}`
       if (existingOrderNums.has(orderName)) { skipped++; continue }
 
-      // Create hire record
+      // Extract data from order + IzyRent line item properties
       const customer = order.customer || {}
       const shipping = order.shipping_address || order.billing_address || {}
-      const customerName = `${customer.first_name || shipping.first_name || ''} ${customer.last_name || shipping.last_name || ''}`.trim() || 'Unknown'
+      let customerName = `${customer.first_name || shipping.first_name || ''} ${customer.last_name || shipping.last_name || ''}`.trim() || 'Unknown'
       const customerEmail = order.contact_email || customer.email || order.email || ''
-      const customerPhone = shipping.phone || customer.phone || order.phone || ''
+      let customerPhone = shipping.phone || customer.phone || order.phone || ''
+      let eventDate = ''
+
+      // Parse IzyRent properties from TNT line items
+      for (const item of tntItems) {
+        for (const p of (item.properties || [])) {
+          const key = (p.name || '').toLowerCase().replace(/[_\s-]/g, '')
+          if (key === 'date' || key === 'eventdate' || key === 'starts' || key === 'startdate') {
+            eventDate = normaliseIzyDate(p.value) || ''
+          }
+          if (key === 'fullname' && p.value) customerName = p.value
+          if ((key === 'mobilenumber' || key === 'phone' || key === 'mobile') && p.value) customerPhone = p.value
+        }
+      }
+
       const kitQty = tntItems.reduce((sum, item) => sum + (item.quantity || 1), 0)
       const hireRevenue = tntItems.reduce((sum, item) => sum + parseFloat(item.price || 0) * (item.quantity || 1), 0)
 
@@ -95,7 +126,7 @@ router.post('/sync', async (_req, res) => {
         customerName,
         customerEmail,
         customerPhone,
-        eventDate: '',
+        eventDate,
         kitQty,
         revenue: hireRevenue,
       })
