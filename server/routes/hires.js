@@ -6,6 +6,7 @@ import { getAll, getById, create, update, clearAll } from '../lib/hire-store.js'
 import { createBondPaymentLink, refundBondPayment } from '../lib/square-client.js';
 import { sendHireEmail } from '../lib/hire-mailer.js';
 import { notifyTNTEvent } from '../lib/tnt-telegram.js';
+import { env } from '../lib/env.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const router = Router();
@@ -48,6 +49,85 @@ router.get('/health', (_req, res) => {
   const allOk = Object.values(checks).every(c => c.ok);
   res.json({ ok: allOk, checks, timestamp: new Date().toISOString() });
 });
+
+// POST /api/hires/sync — Pull recent TNT orders from Shopify and create missing hires
+// Use this when the Shopify webhook didn't fire (e.g. webhook expired, Railway was down)
+const TNT_PRODUCT_IDS = [7988691927129]
+
+router.post('/sync', async (_req, res) => {
+  try {
+    if (!env.shopify.storeDomain || !env.shopify.adminAccessToken) {
+      return res.status(500).json({ ok: false, error: 'Shopify credentials not configured' })
+    }
+
+    // Fetch last 50 orders from Shopify
+    const response = await fetch(
+      `https://${env.shopify.storeDomain}/admin/api/2025-01/orders.json?status=any&limit=50`,
+      { headers: { 'X-Shopify-Access-Token': env.shopify.adminAccessToken } }
+    )
+    const data = await response.json()
+    const orders = data.orders || []
+
+    const existing = getAll()
+    const existingOrderNums = new Set(existing.map(h => h.orderNumber))
+
+    let created = 0, skipped = 0
+    for (const order of orders) {
+      const tntItems = (order.line_items || []).filter(item =>
+        TNT_PRODUCT_IDS.includes(item.product_id)
+      )
+      if (tntItems.length === 0) { skipped++; continue }
+
+      const orderName = order.name || `#${order.order_number}`
+      if (existingOrderNums.has(orderName)) { skipped++; continue }
+
+      // Create hire record
+      const customer = order.customer || {}
+      const shipping = order.shipping_address || order.billing_address || {}
+      const customerName = `${customer.first_name || shipping.first_name || ''} ${customer.last_name || shipping.last_name || ''}`.trim() || 'Unknown'
+      const customerEmail = order.contact_email || customer.email || order.email || ''
+      const customerPhone = shipping.phone || customer.phone || order.phone || ''
+      const kitQty = tntItems.reduce((sum, item) => sum + (item.quantity || 1), 0)
+      const hireRevenue = tntItems.reduce((sum, item) => sum + parseFloat(item.price || 0) * (item.quantity || 1), 0)
+
+      const hire = create({
+        orderNumber: orderName,
+        customerName,
+        customerEmail,
+        customerPhone,
+        eventDate: '',
+        kitQty,
+        revenue: hireRevenue,
+      })
+
+      console.log(`[hires/sync] Created hire ${hire.id} for ${orderName} (${customerName})`)
+
+      // Create Square bond link if we have email
+      if (customerEmail) {
+        try {
+          const link = await createBondPaymentLink(hire)
+          update(hire.id, {
+            bondPaymentUrl: link.url,
+            bondPaymentLinkId: link.paymentLinkId,
+            bondOrderId: link.orderId,
+          })
+          await sendHireEmail('bond_link', hire, link.url)
+          console.log(`[hires/sync] Bond link sent to ${customerEmail}`)
+        } catch (e) {
+          console.error(`[hires/sync] Bond link failed for ${orderName}:`, e.message)
+        }
+      }
+
+      notifyTNTEvent('order_created', hire).catch(() => {})
+      created++
+    }
+
+    res.json({ ok: true, created, skipped, total: orders.length })
+  } catch (err) {
+    console.error('[hires/sync] Error:', err.message)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
 
 // GET /api/hires/contracts — signed contracts register (MUST be before /:id)
 router.get('/contracts', (_req, res) => {

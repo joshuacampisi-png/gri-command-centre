@@ -471,6 +471,15 @@ export default function TNTDashboard() {
       <div style={{ padding: "14px 24px", borderBottom: "0.5px solid var(--color-border-tertiary)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <span style={{ fontWeight: 600, fontSize: 15 }}>TNT Cannon Hire</span>
         <div style={{ display: "flex", gap: 8 }}>
+          <button onClick={async () => {
+            try {
+              const r = await api('/sync', { method: 'POST' })
+              showToast(`Synced: ${r.created} new hires found, ${r.skipped} skipped`)
+              await loadHires()
+            } catch (e) { showToast(e.message, 'error') }
+          }} style={btnBase}>
+            Sync Orders
+          </button>
           <button onClick={() => { loadHealth(); setShowHealth(v => !v); }} style={btnBase}>
             {showHealth ? 'Hide Health' : 'Flow Health'}
           </button>
