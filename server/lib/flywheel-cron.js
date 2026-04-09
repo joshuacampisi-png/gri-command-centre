@@ -20,6 +20,7 @@ import {
   generateCreativeBrief, runDecisionEngine, measureActionOutcomes
 } from './flywheel-intelligence.js'
 import { runDailyBackup, logFlywheelEvent as logEvent } from './flywheel-store.js'
+import { detectWinners, detectUnderperformers } from './winner-scout.js'
 
 // ── Crash-safe wrapper ──────────────────────────────────────────────────────
 // Every cron job is wrapped so a single failure never kills the process.
@@ -330,10 +331,12 @@ export function startFlywheelCrons() {
   // Creative brief generation: every Friday at 5pm AEST
   cron.schedule('0 17 * * 5', safeRun('creative-brief', generateCreativeBrief), { timezone: 'Australia/Brisbane' })
 
-  // Outcome measurement + activation impact: daily at 10am AEST
+  // Outcome measurement + activation impact + winner scout: daily at 10am AEST
   cron.schedule('0 10 * * *', safeRun('outcome-measurement', async () => {
     await measureActionOutcomes()
     await measureActivationImpacts()
+    await detectWinners()
+    await detectUnderperformers()
   }), { timezone: 'Australia/Brisbane' })
 
   // Daily backup: 1am AEST every day (before any other jobs run)

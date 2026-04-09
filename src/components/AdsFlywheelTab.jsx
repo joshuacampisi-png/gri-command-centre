@@ -120,6 +120,11 @@ export function AdsFlywheelTab() {
   const [replacing, setReplacing] = useState(false)
   const [oldCreativeSpec, setOldCreativeSpec] = useState(null) // fetched from Meta when modal opens
 
+  // Decision history + winner scout
+  const [decisionHistory, setDecisionHistory] = useState([])
+  const [expandedDecision, setExpandedDecision] = useState(null)
+  const [scoutRunning, setScoutRunning] = useState(false)
+
   // Auto-dismiss toast after 8 seconds
   const toastTimerRef = useRef(null)
   useEffect(() => {
@@ -523,8 +528,28 @@ export function AdsFlywheelTab() {
     setReplacing(false)
   }
 
-  // Load fatigue alerts on mount
-  useEffect(() => { loadFatigueAlerts() }, [])
+  // Decision history
+  async function loadDecisionHistory() {
+    try {
+      const r = await fetch(`${API}/decision-history`).then(r => r.json())
+      if (r.ok) setDecisionHistory(r.decisions || [])
+    } catch { /* silent */ }
+  }
+
+  // Manual winner scout run
+  async function runWinnerScout() {
+    setScoutRunning(true)
+    try {
+      const r = await fetch(`${API}/winner-scout/run`, { method: 'POST' }).then(r => r.json())
+      setScaleResult(r.ok ? { ok: true, message: r.message } : { ok: false, error: r.error })
+      loadDecisionHistory()
+      load() // refresh dashboard for updated winnerStats
+    } catch (e) { setScaleResult({ ok: false, error: e.message }) }
+    setScoutRunning(false)
+  }
+
+  // Load fatigue alerts + decision history on mount
+  useEffect(() => { loadFatigueAlerts(); loadDecisionHistory() }, [])
 
   if (loading) return <div style={{ background: C.bg, color: C.muted, padding: 60, textAlign: 'center', minHeight: '100vh' }}>Loading flywheel...</div>
   if (error && !d) return <div style={{ background: C.bg, color: C.red, padding: 40, minHeight: '100vh' }}>Error: {error}</div>
@@ -734,6 +759,29 @@ export function AdsFlywheelTab() {
         <HeroCard label="Bundle Rate" value={h.bundleRateRange != null ? fmtPct(h.bundleRateRange) : '--'} sub={h.bundleOrdersRange != null ? `${h.bundleOrdersRange} of ${h.shopifyOrders} orders` : 'Target: 30%+'} color={h.bundleRateRange != null ? (h.bundleRateRange >= 30 ? C.green : C.yellow) : C.muted} />
         <HeroCard label="Orders Today" value={range === 'today' ? (h.shopifyOrders || 0) : '--'} sub="From Shopify" color={C.text} />
       </div>
+
+      {/* ── Winner Scout Card ────────────────────────────────────────────── */}
+      {d?.winnerStats && d.winnerStats.totalWinners > 0 && (
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)', gap: 10, marginBottom: 10 }}>
+          <div style={{ ...card, borderTop: `3px solid ${C.green}` }}>
+            <div style={{ fontSize: 10, color: C.muted }}>Winners Found</div>
+            <div style={{ fontSize: 28, fontWeight: 900, color: C.green }}>{d.winnerStats.totalWinners}</div>
+          </div>
+          <div style={{ ...card, borderTop: `3px solid ${C.green}` }}>
+            <div style={{ fontSize: 10, color: C.muted }}>Avg Winner CPA</div>
+            <div style={{ fontSize: 28, fontWeight: 900, color: C.green }}>{fmt$(d.winnerStats.avgCpa)}</div>
+          </div>
+          <div style={{ ...card, borderTop: `3px solid ${C.green}` }}>
+            <div style={{ fontSize: 10, color: C.muted }}>Best Angle</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: C.text }}>{d.winnerStats.bestAngle}</div>
+          </div>
+          <div style={{ ...card, borderTop: `3px solid ${C.green}`, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+            <button onClick={runWinnerScout} disabled={scoutRunning} style={{ ...btnStyle(C.green), minHeight: isMobile ? 44 : 'auto' }}>
+              {scoutRunning ? 'Scanning...' : 'Run Winner Scout'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── nCAC Framework Metrics ──────────────────────────────────────────── */}
       <div style={{ marginBottom: 16 }}>
@@ -1004,6 +1052,120 @@ export function AdsFlywheelTab() {
         </div>
       )}
 
+      {/* ── 4c. Decision History (full audit trail) ───────────────────────── */}
+      {decisionHistory.length > 0 && (
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <h2 style={{ ...secTitle, margin: 0 }}>Decision History <span style={{ fontSize: 11, color: C.muted, fontWeight: 400 }}>({decisionHistory.length})</span></h2>
+            <button onClick={loadDecisionHistory} style={btnStyle(C.muted)}>Refresh</button>
+          </div>
+          <div style={{ ...card, overflowX: 'auto' }}>
+            <table style={tbl}>
+              <thead><tr>
+                <th style={th}></th><th style={th}>Ad</th><th style={th}>Campaign → Adset</th>
+                <th style={th}>Date</th><th style={th}>Baseline CPA</th><th style={th}>7d CPA</th>
+                <th style={th}>Delta</th><th style={th}>Verdict</th><th style={th}>Reason</th>
+              </tr></thead>
+              <tbody>
+                {decisionHistory.map((dec, i) => {
+                  const impact7d = dec.impact?.['7d']
+                  const cpaDelta = impact7d?.delta?.cpa
+                  const verdictColors = { winner: C.green, underperformer: C.red, neutral: C.yellow, tracking: C.muted }
+                  const verdictLabels = { winner: 'WINNER', underperformer: 'UNDERPERFORMER', neutral: 'NEUTRAL', tracking: 'TRACKING' }
+                  const isExpanded = expandedDecision === dec.id
+                  return (
+                    <>
+                      <tr key={dec.id} onClick={() => setExpandedDecision(isExpanded ? null : dec.id)} style={{ cursor: 'pointer', background: isExpanded ? '#1C2333' : 'transparent' }}>
+                        <td style={td}><span style={{ color: C.muted }}>{isExpanded ? '\u25BC' : '\u25B6'}</span></td>
+                        <td style={{ ...td, fontWeight: 600, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {dec.verdict === 'winner' && <span style={{ marginRight: 4 }}>{'\uD83C\uDFC6'}</span>}
+                          {dec.adName}
+                        </td>
+                        <td style={{ ...td, fontSize: 11 }}>
+                          {dec.campaignName && <span style={badge(C.blue)}>{dec.campaignName.slice(0, 20)}</span>}
+                          {dec.adSetName && <span style={{ ...badge(C.purple), marginLeft: 4 }}>{dec.adSetName.slice(0, 20)}</span>}
+                        </td>
+                        <td style={td}>{dec.activatedAt ? new Date(dec.activatedAt).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) : '--'}</td>
+                        <td style={td}>{fmt$(dec.baseline?.cpa)}</td>
+                        <td style={{ ...td, color: impact7d ? (impact7d.cpa <= 25 ? C.green : impact7d.cpa <= 50 ? C.yellow : C.red) : C.muted }}>
+                          {impact7d ? fmt$(impact7d.cpa) : 'Pending'}
+                        </td>
+                        <td style={{ ...td, color: cpaDelta != null ? (cpaDelta < 0 ? C.green : cpaDelta > 0 ? C.red : C.muted) : C.muted }}>
+                          {cpaDelta != null ? `${cpaDelta > 0 ? '+' : ''}${fmt$(cpaDelta)}` : '--'}
+                        </td>
+                        <td style={td}>
+                          <span style={badge(verdictColors[dec.verdict] || C.muted)}>
+                            {verdictLabels[dec.verdict] || dec.verdict || 'TRACKING'}
+                          </span>
+                        </td>
+                        <td style={{ ...td, fontSize: 11, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: C.muted }}>
+                          {dec.winnerReason || '--'}
+                        </td>
+                      </tr>
+                      {isExpanded && (
+                        <tr key={`${dec.id}-detail`}>
+                          <td colSpan={9} style={{ padding: 0, background: '#1C2333' }}>
+                            <div style={{ padding: '10px 16px' }}>
+                              {/* Impact windows */}
+                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 10 }}>
+                                {['3d', '5d', '7d'].map(w => {
+                                  const imp = dec.impact?.[w]
+                                  return (
+                                    <div key={w} style={{ background: C.bg, borderRadius: 6, padding: 8 }}>
+                                      <div style={{ fontSize: 10, color: C.muted, marginBottom: 2 }}>{w.toUpperCase()} Impact</div>
+                                      {imp ? (
+                                        <>
+                                          <div style={{ fontSize: 14, fontWeight: 700, color: imp.delta?.cpaDirection === 'improved' ? C.green : imp.delta?.cpaDirection === 'degraded' ? C.red : C.text }}>
+                                            CPA: {fmt$(imp.cpa)} ({imp.delta?.cpaDirection || '?'})
+                                          </div>
+                                          <div style={{ fontSize: 11, color: C.muted }}>ROAS: {imp.roas?.toFixed(2)}x · Freq: {imp.frequency?.toFixed(1)}</div>
+                                        </>
+                                      ) : <div style={{ color: C.muted, fontSize: 12 }}>Pending</div>}
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                              {/* Copy used */}
+                              {dec.copyPreview?.primaryText && (
+                                <div style={{ background: C.bg, borderRadius: 6, padding: 8, marginBottom: 8 }}>
+                                  <div style={{ fontSize: 10, color: C.muted }}>Copy Used</div>
+                                  <div style={{ fontSize: 12, color: C.text }}>{dec.copyPreview.primaryText}</div>
+                                  <div style={{ fontSize: 11, color: C.muted }}>{dec.copyPreview.headline} · {dec.copyPreview.description}</div>
+                                </div>
+                              )}
+                              {/* Winner reason */}
+                              {dec.winnerReason && (
+                                <div style={{ background: `${C.green}12`, border: `1px solid ${C.green}33`, borderRadius: 6, padding: 8, marginBottom: 8 }}>
+                                  <div style={{ fontSize: 10, color: C.green, fontWeight: 700 }}>WHY IT WON</div>
+                                  <div style={{ fontSize: 12, color: C.text, lineHeight: 1.4 }}>{dec.winnerReason}</div>
+                                </div>
+                              )}
+                              {/* Replacement chain */}
+                              {dec.chain && dec.chain.length > 0 && (
+                                <div style={{ background: C.bg, borderRadius: 6, padding: 8 }}>
+                                  <div style={{ fontSize: 10, color: C.muted, marginBottom: 4 }}>REPLACEMENT CHAIN</div>
+                                  {dec.chain.map((link, j) => (
+                                    <div key={j} style={{ fontSize: 11, color: C.text, display: 'flex', gap: 6, alignItems: 'center', marginBottom: 2 }}>
+                                      <span style={{ color: C.muted }}>{new Date(link.activatedAt).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}</span>
+                                      <span>{link.adName}</span>
+                                      <span style={badge(verdictColors[link.verdict] || C.muted)}>{link.verdict || '?'}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {/* ── 5. Creative Table with Recommendations ─────────────────────────── */}
       <div style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
@@ -1083,7 +1245,10 @@ export function AdsFlywheelTab() {
                 const crActionKey = `cr-${i}`
                 return (
                   <tr key={i} style={{ background: rowBg }}>
-                    <td style={{ ...td, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={cr.name}>{cr.name}</td>
+                    <td style={{ ...td, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', background: cr.cpa7d > 0 && cr.cpa7d <= 25 && cr.purchases >= 3 ? `${C.green}08` : 'transparent' }} title={cr.name}>
+                      {cr.cpa7d > 0 && cr.cpa7d <= 25 && cr.purchases >= 3 && <span style={{ marginRight: 4 }}>{'\uD83C\uDFC6'}</span>}
+                      {cr.name}
+                    </td>
                     <td style={td}><span style={badge(C.purple)}>{cr.creativeAngle}</span></td>
                     <td style={{ ...td, fontWeight: 600, color: cr.roas7d >= 2.22 ? C.green : cr.roas7d > 0 ? C.red : C.muted }}>{cr.roas7d > 0 ? fmtX(cr.roas7d) : '--'}</td>
                     <td style={{ ...td, color: cr.cpa7d > 0 && cr.cpa7d <= 43.13 ? C.green : cr.cpa7d > 50.74 ? C.red : C.text }}>{cr.cpa7d > 0 ? fmt$(cr.cpa7d) : '--'}</td>

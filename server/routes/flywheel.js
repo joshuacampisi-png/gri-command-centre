@@ -11,6 +11,7 @@ import {
   getCampaigns, getAdSets, getAds, getFlywheelHealth, runDailyBackup,
   getAdSetSnapshots, getAdSnapshots,
   getAdActivations, saveAdActivation, logFlywheelEvent,
+  getDecisionHistory, getWinnerLog, getWinnerStats,
 } from '../lib/flywheel-store.js'
 import {
   getFlywheelSummary, getCreativeLeaderboard, scoreCampaignHealth,
@@ -29,6 +30,7 @@ import {
 import { callClaude } from '../lib/claude-guard.js'
 import { getUnacknowledgedAlerts, acknowledgeAlert } from '../lib/fatigue-alert-cron.js'
 import { buildFatigueReport, prepareFatigueMetrics, calculateFrequencyTrend } from '../lib/fatigue-engine.js'
+import { detectWinners, detectUnderperformers } from '../lib/winner-scout.js'
 import { getShopifyTodayOrders, getShopifyOrdersRange } from '../connectors/shopify.js'
 import { GRI_ADS, calculateMER, calculateTrueCAC, calculateAMER, calculateNCAC, calculateFOVCAC, calculateCM, calculateCostOfDelivery, calculateAcquisitionMER } from '../lib/ads-metrics.js'
 import { getGoogleSpend } from '../lib/google-ads-spend.js'
@@ -269,8 +271,9 @@ router.get('/dashboard', async (req, res) => {
     const hasIntl = adSetsAll.some(a => (a.name || '').toLowerCase().includes('brazil'))
     if (hasIntl) opportunities.push({ type: 'expansion', title: 'Brazilian audience detected', detail: 'If converting, create Portuguese language creative. Gender reveal parties are massive in Brazil.', priority: 'medium' })
 
-    // Ad activations (recent, with impact tracking)
+    // Ad activations (recent, with impact tracking) + winner stats
     const recentActivations = getAdActivations().slice(0, 20)
+    const winnerStats = getWinnerStats()
 
     res.json({
       ok: true, range, dataFetchedAt: new Date().toISOString(),
@@ -307,6 +310,7 @@ router.get('/dashboard', async (req, res) => {
       aov: aovIntel, brief, health, rhythm,
       conversions: conversions.slice(0, 50),
       activations: recentActivations,
+      winnerStats,
     })
   } catch (err) {
     console.error('[Flywheel Dashboard]', err.message)
@@ -1427,6 +1431,50 @@ router.get('/live-refresh', async (_req, res) => {
     })
   } catch (err) {
     console.error('[Flywheel] Live refresh error:', err.message)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── GET /api/flywheel/decision-history ───────────────────────────────────────
+// Full history of every pause/replace/activate decision with before/after + chains.
+
+router.get('/decision-history', (_req, res) => {
+  try {
+    const decisions = getDecisionHistory(50)
+    res.json({ ok: true, decisions })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── GET /api/flywheel/winners ───────────────────────────────────────────────
+// All-time winner log + stats.
+
+router.get('/winners', (_req, res) => {
+  try {
+    const winners = getWinnerLog()
+    const stats = getWinnerStats()
+    res.json({ ok: true, winners, ...stats })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── POST /api/flywheel/winner-scout/run ─────────────────────────────────────
+// Manual trigger for winner + underperformer scan.
+
+router.post('/winner-scout/run', async (_req, res) => {
+  try {
+    const winners = await detectWinners()
+    const underperformers = await detectUnderperformers()
+    res.json({
+      ok: true,
+      winnersFound: winners.length,
+      underperformersFound: underperformers.length,
+      message: `Scout complete. ${winners.length} winners, ${underperformers.length} underperformers.`
+    })
+  } catch (err) {
+    console.error('[WinnerScout] Manual run error:', err.message)
     res.status(500).json({ ok: false, error: err.message })
   }
 })

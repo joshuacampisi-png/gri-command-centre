@@ -33,6 +33,7 @@ const FILES = {
   industryKnowledge: dataFile('flywheel/industry-knowledge.json'),
   flywheelLog:    dataFile('flywheel/flywheel-log.json'),
   adActivations:  dataFile('flywheel/ad-activations.json'),
+  winnerLog:      dataFile('flywheel/winner-log.json'),
 }
 
 // ── Generic helpers ─────────────────────────────────────────────────────────
@@ -741,4 +742,88 @@ export function updateAdActivationImpact(activationId, window, metrics) {
   if (record.impact['7d']) record.status = 'complete'
   save(FILES.adActivations, all)
   return record
+}
+
+export function markActivationAsWinner(activationId, reason) {
+  const all = load(FILES.adActivations)
+  const record = all.find(a => a.id === activationId)
+  if (!record) return null
+  record.verdict = 'winner'
+  record.winnerDetectedAt = now()
+  record.winnerReason = reason
+  save(FILES.adActivations, all)
+  return record
+}
+
+export function markActivationAsUnderperformer(activationId) {
+  const all = load(FILES.adActivations)
+  const record = all.find(a => a.id === activationId)
+  if (!record) return null
+  record.verdict = 'underperformer'
+  record.autoReplaceTriggered = true
+  save(FILES.adActivations, all)
+  return record
+}
+
+export function setActivationVerdict(activationId, verdict) {
+  const all = load(FILES.adActivations)
+  const record = all.find(a => a.id === activationId)
+  if (!record) return null
+  record.verdict = verdict
+  save(FILES.adActivations, all)
+  return record
+}
+
+export function getDecisionHistory(limit = 50) {
+  const all = load(FILES.adActivations)
+  // Build replacement chains
+  const idMap = Object.fromEntries(all.map(a => [a.id, a]))
+  return all
+    .sort((a, b) => new Date(b.activatedAt) - new Date(a.activatedAt))
+    .slice(0, limit)
+    .map(a => {
+      // Build chain: walk replacedFrom links
+      const chain = []
+      let current = a
+      while (current?.replacedFrom) {
+        const prev = idMap[current.replacedFrom]
+        if (!prev) break
+        chain.push({ id: prev.id, adName: prev.adName, verdict: prev.verdict || 'unknown', activatedAt: prev.activatedAt })
+        current = prev
+      }
+      return { ...a, chain }
+    })
+}
+
+// ── Winner Log (permanent, never pruned) ─────────────────────────────────
+
+export function getWinnerLog() {
+  return load(FILES.winnerLog).sort((a, b) => new Date(b.detectedAt) - new Date(a.detectedAt))
+}
+
+export function addWinnerLogEntry(entry) {
+  const all = load(FILES.winnerLog)
+  // Deduplicate: don't log same ad twice in same week
+  const exists = all.find(w => w.adId === entry.adId && new Date(w.detectedAt) > new Date(Date.now() - 7 * 86400000))
+  if (exists) return exists
+  entry.id = randomUUID()
+  entry.detectedAt = now()
+  all.push(entry)
+  save(FILES.winnerLog, all)
+  return entry
+}
+
+export function getWinnerStats() {
+  const all = load(FILES.winnerLog)
+  if (all.length === 0) return { totalWinners: 0, avgCpa: 0, bestAngle: 'none', recentWinners: [] }
+  const cpas = all.map(w => w.cpa).filter(c => c > 0)
+  const angles = {}
+  for (const w of all) { angles[w.angle || 'unknown'] = (angles[w.angle || 'unknown'] || 0) + 1 }
+  const bestAngle = Object.entries(angles).sort((a, b) => b[1] - a[1])[0]?.[0] || 'unknown'
+  return {
+    totalWinners: all.length,
+    avgCpa: cpas.length > 0 ? +(cpas.reduce((a, b) => a + b, 0) / cpas.length).toFixed(2) : 0,
+    bestAngle,
+    recentWinners: all.slice(0, 3)
+  }
 }
