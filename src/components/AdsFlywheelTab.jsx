@@ -121,6 +121,7 @@ export function AdsFlywheelTab() {
   const [oldCreativeSpec, setOldCreativeSpec] = useState(null) // fetched from Meta when modal opens
   const [uploadingCreative, setUploadingCreative] = useState(false)
   const [uploadedFile, setUploadedFile] = useState(null) // { name, type, url/videoId }
+  const [uploadError, setUploadError] = useState(null)
   const [dragOver, setDragOver] = useState(false)
 
   // Decision history + winner scout
@@ -861,6 +862,7 @@ export function AdsFlywheelTab() {
                   setOldCreativeSpec(null)
                   setUploadedFile(null)
                   setUploadingCreative(false)
+                  setUploadError(null)
                   setDragOver(false)
                   // Fetch the old ad's creative spec from Meta (format, media type, copy)
                   if (a.entityId) {
@@ -1776,41 +1778,24 @@ export function AdsFlywheelTab() {
 
               {uploadedFile ? (
                 /* Upload complete — animated tick confirmation */
-                <div style={{ background: `${C.green}12`, border: `2px solid ${C.green}44`, borderRadius: 10, padding: 20, textAlign: 'center' }}>
-                  <div style={{
-                    width: 48, height: 48, borderRadius: '50%', background: C.green,
+                <div style={{ background: `${C.green}18`, border: `2px solid ${C.green}`, borderRadius: 10, padding: 24, textAlign: 'center' }}>
+                  <div className="fw-tick-circle" style={{
+                    width: 56, height: 56, borderRadius: '50%', background: C.green,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    margin: '0 auto 10px',
-                    animation: 'tick-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+                    margin: '0 auto 12px', boxShadow: `0 0 20px ${C.green}44`,
                   }}>
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" style={{
-                      animation: 'tick-draw 0.3s ease-out 0.2s forwards',
-                      opacity: 0,
-                    }}>
-                      <path d="M5 13l4 4L19 7" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
+                    <span style={{ fontSize: 28, lineHeight: 1 }}>✓</span>
                   </div>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: C.green }}>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: C.green, marginBottom: 4 }}>
                     {uploadedFile.type === 'video' ? 'Video' : 'Image'} Uploaded ✅
                   </div>
-                  <div style={{ fontSize: 12, color: C.text, marginTop: 4 }}>{uploadedFile.name}</div>
-                  <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>
-                    {uploadedFile.type === 'video' ? `Ready on Meta (Video ID: ${uploadedFile.videoId})` : 'Ready on Meta'}
+                  <div style={{ fontSize: 13, color: C.text, fontWeight: 600 }}>{uploadedFile.name}</div>
+                  <div style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>
+                    {uploadedFile.type === 'video' ? `Ready on Meta · Video ID: ${uploadedFile.videoId}` : 'Ready on Meta · Continue to Step 2'}
                   </div>
-                  <button onClick={() => { setUploadedFile(null); setReplaceImageUrl('') }} style={{ ...btnStyle(C.muted), marginTop: 10, fontSize: 10 }}>
+                  <button onClick={() => { setUploadedFile(null); setReplaceImageUrl(''); setUploadError(null) }} style={{ ...btnStyle(C.muted), marginTop: 12, fontSize: 10 }}>
                     Remove & upload different file
                   </button>
-                  <style>{`
-                    @keyframes tick-pop {
-                      0% { transform: scale(0); opacity: 0; }
-                      60% { transform: scale(1.15); opacity: 1; }
-                      100% { transform: scale(1); opacity: 1; }
-                    }
-                    @keyframes tick-draw {
-                      0% { opacity: 0; transform: scale(0.5); }
-                      100% { opacity: 1; transform: scale(1); }
-                    }
-                  `}</style>
                 </div>
               ) : uploadingCreative ? (
                 /* Uploading — animated progress */
@@ -1857,6 +1842,7 @@ export function AdsFlywheelTab() {
                       return
                     }
                     setUploadingCreative(true)
+                    setUploadError(null)
                     try {
                       const formData = new FormData()
                       formData.append('file', file)
@@ -1865,11 +1851,12 @@ export function AdsFlywheelTab() {
                       if (result.ok) {
                         setUploadedFile({ name: file.name, type: result.type, url: result.url, videoId: result.videoId })
                         setReplaceImageUrl(result.url || `meta-video:${result.videoId}`)
+                        setUploadError(null)
                       } else {
-                        setScaleResult({ ok: false, error: result.error })
+                        setUploadError(result.error || 'Upload failed')
                       }
                     } catch (err) {
-                      setScaleResult({ ok: false, error: err.message })
+                      setUploadError(err.message || 'Upload failed — check your connection')
                     }
                     setUploadingCreative(false)
                   }}
@@ -1918,6 +1905,14 @@ export function AdsFlywheelTab() {
                       Match the original ratio: {oldCreativeSpec.isVideo ? '9:16 for Reels, 1:1 for Feed' : '1:1 or 4:5 to match existing'}
                     </div>
                   )}
+                </div>
+              )}
+              {/* Upload error message */}
+              {uploadError && (
+                <div style={{ background: `${C.red}15`, border: `1px solid ${C.red}44`, borderRadius: 8, padding: '8px 12px', marginTop: 8 }}>
+                  <div style={{ fontSize: 12, color: C.red, fontWeight: 600 }}>Upload failed</div>
+                  <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>{uploadError}</div>
+                  <button onClick={() => setUploadError(null)} style={{ ...btnStyle(C.muted), marginTop: 6, fontSize: 10 }}>Dismiss</button>
                 </div>
               )}
             </div>
