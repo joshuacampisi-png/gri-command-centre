@@ -106,8 +106,18 @@ export function AdsFlywheelTab() {
   const [autoRefresh, setAutoRefresh] = useState(false)
 
   // Pre-launch modal
-  const [activateTarget, setActivateTarget] = useState(null) // { adId, adSetId, campaignId, adName, adSetName, campaignName, copyPreview }
+  const [activateTarget, setActivateTarget] = useState(null)
   const [activating, setActivating] = useState(false)
+
+  // Resolve/Replace creative modal
+  const [resolveTarget, setResolveTarget] = useState(null) // alert object being resolved
+  const [replaceImageUrl, setReplaceImageUrl] = useState('')
+  const [replaceCopyAngle, setReplaceCopyAngle] = useState('')
+  const [replaceCopyProduct, setReplaceCopyProduct] = useState('')
+  const [replaceCopyVariants, setReplaceCopyVariants] = useState([])
+  const [replaceCopyLoading, setReplaceCopyLoading] = useState(false)
+  const [replaceSelectedVariant, setReplaceSelectedVariant] = useState(null)
+  const [replacing, setReplacing] = useState(false)
 
   // Auto-dismiss toast after 8 seconds
   const toastTimerRef = useRef(null)
@@ -421,6 +431,93 @@ export function AdsFlywheelTab() {
     return () => clearInterval(iv)
   }, [autoRefresh])
 
+  // Generate replacement copy for resolve modal
+  async function generateReplacementCopy() {
+    setReplaceCopyLoading(true); setReplaceCopyVariants([])
+    try {
+      const r = await fetch(`${API}/generate-copy`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ angle: replaceCopyAngle, product: replaceCopyProduct })
+      }).then(r => r.json())
+      if (r.ok) setReplaceCopyVariants(r.variants || [])
+    } catch (e) { setScaleResult({ ok: false, error: e.message }) }
+    setReplaceCopyLoading(false)
+  }
+
+  // Execute the full replace + activate flow
+  async function executeReplace() {
+    if (!resolveTarget || !replaceSelectedVariant) return
+    setReplacing(true)
+    try {
+      const v = replaceSelectedVariant
+      const alert = resolveTarget
+
+      // Find the adset and campaign for this ad from the dashboard data
+      let adSetId = '', adSetName = '', campaignId = '', campaignName = ''
+      for (const c of d?.campaigns || []) {
+        const adSets = c.adSets || c.adsets || []
+        for (const as of adSets) {
+          // Check if this ad belongs to this adset
+          adSetId = as.id || as.metaAdSetId || ''
+          adSetName = as.name || ''
+          campaignId = c.id || ''
+          campaignName = c.name || ''
+        }
+      }
+
+      // Step 1: Replace creative on the existing ad (or create new if image provided)
+      if (replaceImageUrl) {
+        // Replace creative with new image
+        await fetch(`${API}/replace-creative`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            adId: alert.entityId,
+            primaryText: v.primaryText,
+            headline: v.headline,
+            description: v.description,
+            imageUrl: replaceImageUrl
+          })
+        }).then(r => r.json())
+      }
+
+      // Step 2: Activate the ad with impact tracking
+      const activateRes = await fetch(`${API}/activate-ad`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          adId: alert.entityId,
+          adSetId,
+          campaignId,
+          adName: alert.entityName || alert.title,
+          adSetName,
+          campaignName,
+          copyPreview: { primaryText: v.primaryText, headline: v.headline, description: v.description }
+        })
+      }).then(r => r.json())
+
+      // Step 3: Resolve the alert
+      await fetch(`${API}/alerts/${alert.id}/resolve`, { method: 'POST' })
+
+      setScaleResult(activateRes.ok
+        ? { ok: true, message: `Creative replaced and ad set live! ${activateRes.message}` }
+        : { ok: false, error: activateRes.error }
+      )
+
+      // Reset modal
+      setResolveTarget(null)
+      setReplaceImageUrl('')
+      setReplaceCopyAngle('')
+      setReplaceCopyVariants([])
+      setReplaceSelectedVariant(null)
+      load()
+    } catch (e) {
+      setScaleResult({ ok: false, error: e.message })
+    }
+    setReplacing(false)
+  }
+
   // Load fatigue alerts on mount
   useEffect(() => { loadFatigueAlerts() }, [])
 
@@ -704,7 +801,7 @@ export function AdsFlywheelTab() {
                   <span style={badge(a.severity === 'critical' ? C.red : a.severity === 'warning' ? C.yellow : C.blue)}>{a.severity}</span>
                   <span style={{ fontSize: 13, color: C.text }}>{a.title}</span>
                 </div>
-                <button onClick={() => resolveAlert(a.id)} style={{ ...btnSm, cursor: 'pointer', minHeight: isMobile ? 44 : 'auto' }}>Resolve</button>
+                <button onClick={() => setResolveTarget(a)} style={{ ...btnStyle(C.pink), cursor: 'pointer', minHeight: isMobile ? 44 : 'auto' }}>Replace & Fix</button>
               </div>
             </div>
           ))}
@@ -1305,6 +1402,161 @@ export function AdsFlywheelTab() {
           <span style={badge(d.health.status === 'healthy' ? C.green : C.yellow)}>{d.health.status}</span>
           <span>Backup: {d.health.backups?.latest || 'none'} ({d.health.backups?.totalDays || 0} days)</span>
           {d.health.issues?.length > 0 && <span style={{ color: C.yellow }}>{d.health.issues.length} issues</span>}
+        </div>
+      )}
+
+      {/* ── Resolve / Replace Creative Modal ─────────────────────────────── */}
+      {resolveTarget && (
+        <div onClick={() => setResolveTarget(null)} style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999,
+          overflowY: 'auto', padding: 20
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{ ...card, maxWidth: 620, width: '100%', padding: 24, border: `2px solid ${C.pink}`, maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ fontSize: 18, fontWeight: 700, color: C.text, marginBottom: 4 }}>
+              Replace Fatigued Creative
+            </div>
+            <div style={{ fontSize: 12, color: C.muted, marginBottom: 16 }}>
+              This ad is exhausted. Replace the creative, generate fresh copy, and set it live.
+            </div>
+
+            {/* Fatigued ad info */}
+            <div style={{ background: C.bg, borderRadius: 8, padding: 12, marginBottom: 16, borderLeft: `3px solid ${C.red}` }}>
+              <div style={{ fontSize: 10, color: C.red, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4, fontWeight: 700 }}>FATIGUED AD</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{resolveTarget.entityName || resolveTarget.title}</div>
+              <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>{resolveTarget.body || ''}</div>
+              <div style={{ fontSize: 10, color: C.muted, marginTop: 4 }}>Ad ID: {resolveTarget.entityId}</div>
+            </div>
+
+            {/* Step 1: New creative image/video URL */}
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: C.pink, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>
+                STEP 1: NEW CREATIVE
+              </div>
+              <input
+                type="text"
+                value={replaceImageUrl}
+                onChange={e => setReplaceImageUrl(e.target.value)}
+                placeholder="Paste image or video URL (optional — leave blank to keep existing visual)"
+                style={{ width: '100%', padding: '10px 12px', background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, color: C.text, fontSize: 13 }}
+              />
+              <div style={{ fontSize: 10, color: C.muted, marginTop: 4 }}>
+                Upload your image to Shopify or any CDN first, then paste the URL here.
+              </div>
+            </div>
+
+            {/* Step 2: Generate new copy */}
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: C.pink, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>
+                STEP 2: FRESH AD COPY
+              </div>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexDirection: isMobile ? 'column' : 'row' }}>
+                <input
+                  type="text"
+                  value={replaceCopyAngle}
+                  onChange={e => setReplaceCopyAngle(e.target.value)}
+                  placeholder="Angle / Hook (e.g. 'Works every time', 'Bold colour guaranteed')"
+                  style={{ flex: 2, padding: '10px 12px', background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, color: C.text, fontSize: 13 }}
+                />
+                <select
+                  value={replaceCopyProduct}
+                  onChange={e => setReplaceCopyProduct(e.target.value)}
+                  style={{ flex: 1, padding: '10px 12px', background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, color: C.text, fontSize: 13 }}
+                >
+                  <option value="">Any product</option>
+                  <option value="Confetti Cannons">Confetti Cannons</option>
+                  <option value="Powder Cannons">Powder Cannons</option>
+                  <option value="Bio Cannons">Bio Cannons</option>
+                  <option value="Smoke Bombs">Smoke Bombs</option>
+                  <option value="Extinguishers">Extinguishers</option>
+                  <option value="Sports Balls">Sports Balls</option>
+                  <option value="Mega Blaster">Mega Blaster</option>
+                </select>
+                <button
+                  onClick={generateReplacementCopy}
+                  disabled={replaceCopyLoading || !replaceCopyAngle}
+                  style={{ ...btnStyle(C.pink), minHeight: isMobile ? 44 : 'auto', whiteSpace: 'nowrap' }}
+                >
+                  {replaceCopyLoading ? 'Generating...' : 'Generate Copy'}
+                </button>
+              </div>
+
+              {/* Copy variants */}
+              {replaceCopyVariants.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {replaceCopyVariants.map((v, i) => {
+                    const isSelected = replaceSelectedVariant === v
+                    return (
+                      <div
+                        key={i}
+                        onClick={() => setReplaceSelectedVariant(v)}
+                        style={{
+                          background: isSelected ? `${C.pink}15` : C.bg,
+                          border: `2px solid ${isSelected ? C.pink : C.border}`,
+                          borderRadius: 8, padding: 12, cursor: 'pointer',
+                          transition: 'border-color 0.2s'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                          <span style={{ fontSize: 10, color: isSelected ? C.pink : C.muted, fontWeight: 700 }}>
+                            VARIANT {i + 1} {isSelected ? '  SELECTED' : ''}
+                          </span>
+                          {isSelected && <span style={{ fontSize: 16, color: C.pink }}>✓</span>}
+                        </div>
+                        <div style={{ fontSize: 13, color: C.text, lineHeight: 1.4, marginBottom: 4 }}>{v.primaryText}</div>
+                        <div style={{ display: 'flex', gap: 12, fontSize: 11 }}>
+                          <span><span style={{ color: C.muted }}>Headline:</span> <span style={{ color: C.text, fontWeight: 600 }}>{v.headline}</span></span>
+                          <span><span style={{ color: C.muted }}>Desc:</span> <span style={{ color: C.text }}>{v.description}</span></span>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Step 3: Preview & Set Live */}
+            {replaceSelectedVariant && (
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: C.green, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>
+                  STEP 3: REVIEW & SET LIVE
+                </div>
+                <div style={{ background: C.bg, borderRadius: 8, padding: 12, borderLeft: `3px solid ${C.green}` }}>
+                  <div style={{ fontSize: 10, color: C.muted, marginBottom: 4 }}>WHAT WILL HAPPEN</div>
+                  <div style={{ fontSize: 12, color: C.text, lineHeight: 1.5 }}>
+                    1. {replaceImageUrl ? 'Creative will be swapped with new image/video' : 'Existing visual will be kept'}<br/>
+                    2. Copy will be updated to: "{replaceSelectedVariant.primaryText.slice(0, 60)}..."<br/>
+                    3. Ad will be set ACTIVE on Meta<br/>
+                    4. CPA impact tracking starts (3d / 5d / 7d comparison)
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Action buttons */}
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between', alignItems: 'center' }}>
+              <button onClick={() => {
+                resolveAlert(resolveTarget.id)
+                setResolveTarget(null)
+              }} style={{ ...btnStyle(C.muted), fontSize: 11 }}>
+                Just Dismiss (no action)
+              </button>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={() => setResolveTarget(null)} style={btnStyle(C.muted)}>Cancel</button>
+                <button
+                  onClick={executeReplace}
+                  disabled={replacing || !replaceSelectedVariant}
+                  style={{
+                    ...btnStyle(C.green), fontWeight: 700, fontSize: 13,
+                    opacity: replaceSelectedVariant ? 1 : 0.4,
+                    cursor: replaceSelectedVariant ? 'pointer' : 'not-allowed'
+                  }}
+                >
+                  {replacing ? 'Replacing & Activating...' : 'Replace Creative & Set Live'}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
