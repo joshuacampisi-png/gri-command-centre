@@ -1874,6 +1874,7 @@ export function AdsFlywheelTab() {
                       const file = e.target.files[0]
                       if (!file) return
                       setUploadingCreative(true)
+                      setUploadError(null)
                       try {
                         const formData = new FormData()
                         formData.append('file', file)
@@ -1882,11 +1883,12 @@ export function AdsFlywheelTab() {
                         if (result.ok) {
                           setUploadedFile({ name: file.name, type: result.type, url: result.url, videoId: result.videoId })
                           setReplaceImageUrl(result.url || `meta-video:${result.videoId}`)
+                          setUploadError(null)
                         } else {
-                          setScaleResult({ ok: false, error: result.error })
+                          setUploadError(result.error || 'Upload failed')
                         }
                       } catch (err) {
-                        setScaleResult({ ok: false, error: err.message })
+                        setUploadError(err.message || 'Upload failed')
                       }
                       setUploadingCreative(false)
                     }

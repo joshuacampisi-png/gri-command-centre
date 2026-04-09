@@ -320,18 +320,18 @@ export async function uploadAdImageBytes(base64Data, filename) {
 
 /**
  * Upload a raw video buffer to Meta via multipart form.
+ * Uses Node 18+ built-in FormData/Blob (or undici).
  * Returns { id: videoId }
  */
 export async function uploadAdVideoFile(buffer, filename) {
   const accountId = metaAccountId()
   await rateLimitWait()
-  const { FormData, Blob } = await import('node-fetch') // node 18+ has global FormData
-    .catch(() => ({ FormData: globalThis.FormData, Blob: globalThis.Blob }))
 
+  // Node 18+ has global FormData and Blob via undici
   const formData = new FormData()
   formData.append('access_token', metaToken())
   formData.append('title', filename || 'creative.mp4')
-  formData.append('source', new Blob([buffer]), filename || 'creative.mp4')
+  formData.append('source', new Blob([buffer], { type: 'video/mp4' }), filename || 'creative.mp4')
 
   const res = await fetch(`${BASE}/${accountId}/advideos`, { method: 'POST', body: formData })
   const data = await res.json()
