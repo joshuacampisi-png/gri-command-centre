@@ -24,7 +24,7 @@ import {
   updateAdSetBudget, updateCampaignBudget, fetchAdsetsForCampaign, fetchAccountInsights,
   duplicateAd, duplicateAdSet, updateAdCreative, createAdCreative, createAd as metaCreateAd,
   updateAdStatus as metaUpdateAdStatus, fetchCampaigns, fetchCampaignInsightsRange,
-  fetchAdSetInsightsRange
+  fetchAdSetInsightsRange, fetchAdCreativeSpec, createAdCreativeFromUrl
 } from '../lib/meta-api.js'
 import { callClaude } from '../lib/claude-guard.js'
 import { getUnacknowledgedAlerts, acknowledgeAlert } from '../lib/fatigue-alert-cron.js'
@@ -1125,29 +1125,17 @@ router.post('/pause-replace-activate', async (req, res) => {
     await metaUpdateAdStatus(adId, 'PAUSED')
     steps.push('Paused ad on Meta')
 
-    // Step 2: Create new creative object
-    // CRITICAL: only include image_url if actually provided — undefined/null crashes Meta API
-    const linkData = {
-      message: primaryText,
-      name: headline || '',
-      description: description || '',
-      link: 'https://genderrevealideas.com.au',
-      call_to_action: { type: 'SHOP_NOW' }
-    }
-    if (imageUrl && imageUrl.trim()) {
-      linkData.image_url = imageUrl.trim()
-    }
-
+    // Step 2: Create new creative (handles image URLs, video URLs, or copy-only)
     let creative
     try {
-      creative = await createAdCreative({
+      creative = await createAdCreativeFromUrl({
         name: `Replacement - ${adName || adId} - ${new Date().toISOString().slice(0, 10)}`,
-        object_story_spec: JSON.stringify({
-          page_id: '105089549192262',
-          link_data: linkData
-        })
+        primaryText,
+        headline: headline || '',
+        description: description || '',
+        mediaUrl: imageUrl || '',
       })
-      steps.push(`Created new creative (${creative.id})`)
+      steps.push(`Created new creative (${creative.id})${imageUrl ? (imageUrl.match(/\.(mp4|mov|webm)/i) ? ' [video]' : ' [image]') : ' [copy only]'}`)
     } catch (creativeErr) {
       // ROLLBACK: reactivate the ad with old creative since we failed to create new one
       console.error('[Flywheel] Creative creation failed, rolling back pause:', creativeErr.message)
@@ -1384,6 +1372,18 @@ router.post('/activate-ad', async (req, res) => {
     })
   } catch (err) {
     console.error('[Flywheel] Activate ad error:', err.message)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── GET /api/flywheel/ad-creative-spec/:adId ─────────────────────────────────
+// Fetch the current creative spec for an ad (image vs video, dimensions, copy).
+
+router.get('/ad-creative-spec/:adId', async (req, res) => {
+  try {
+    const spec = await fetchAdCreativeSpec(req.params.adId)
+    res.json({ ok: true, spec })
+  } catch (err) {
     res.status(500).json({ ok: false, error: err.message })
   }
 })

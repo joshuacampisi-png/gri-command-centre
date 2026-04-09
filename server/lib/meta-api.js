@@ -238,6 +238,107 @@ export async function uploadAdVideo(videoUrl) {
   return metaPost(`/${accountId}/advideos`, { file_url: videoUrl })
 }
 
+/**
+ * Fetch full creative spec for an ad — reveals whether it's image or video,
+ * the actual media dimensions, and the copy used.
+ */
+export async function fetchAdCreativeSpec(adId) {
+  const ad = await metaGet(`/${adId}`, {
+    fields: 'creative{id,name,object_story_spec,thumbnail_url,image_url,video_id}'
+  })
+  const c = ad.creative || {}
+  const spec = c.object_story_spec || {}
+  const linkData = spec.link_data || {}
+  const videoData = spec.video_data || {}
+
+  return {
+    creativeId: c.id || null,
+    thumbnailUrl: c.thumbnail_url || null,
+    isVideo: Boolean(videoData.video_id || c.video_id),
+    isImage: Boolean(linkData.image_hash || linkData.image_url || c.image_url),
+    videoId: videoData.video_id || c.video_id || null,
+    imageUrl: linkData.image_url || c.image_url || null,
+    message: linkData.message || videoData.message || '',
+    headline: linkData.name || videoData.title || '',
+    description: linkData.description || '',
+    pageId: spec.page_id || '',
+    link: linkData.link || videoData.call_to_action?.value?.link || '',
+  }
+}
+
+/**
+ * Detect if a URL is a video based on extension.
+ */
+export function isVideoUrl(url) {
+  if (!url) return false
+  const lower = url.toLowerCase()
+  return /\.(mp4|mov|avi|webm|mkv|m4v)(\?|$)/.test(lower)
+}
+
+/**
+ * Create an ad creative with proper handling for both image and video URLs.
+ * Detects URL type, uploads video if needed, builds correct spec.
+ */
+export async function createAdCreativeFromUrl({ name, primaryText, headline, description, mediaUrl, pageId }) {
+  const pid = pageId || '105089549192262'
+
+  // No media — link ad with copy only
+  if (!mediaUrl || !mediaUrl.trim()) {
+    return createAdCreative({
+      name,
+      object_story_spec: JSON.stringify({
+        page_id: pid,
+        link_data: {
+          message: primaryText || '',
+          name: headline || '',
+          description: description || '',
+          link: 'https://genderrevealideas.com.au',
+          call_to_action: { type: 'SHOP_NOW' }
+        }
+      })
+    })
+  }
+
+  const url = mediaUrl.trim()
+
+  // Video URL — upload first, then create video creative
+  if (isVideoUrl(url)) {
+    const videoResult = await uploadAdVideo(url)
+    const videoId = videoResult.id || videoResult.video_id
+    if (!videoId) throw new Error('Video upload failed — no video ID returned from Meta')
+
+    return createAdCreative({
+      name,
+      object_story_spec: JSON.stringify({
+        page_id: pid,
+        video_data: {
+          video_id: videoId,
+          message: primaryText || '',
+          title: headline || '',
+          link_description: description || '',
+          call_to_action: { type: 'SHOP_NOW', value: { link: 'https://genderrevealideas.com.au' } }
+        }
+      })
+    })
+  }
+
+  // Image URL — standard link_data creative
+  return createAdCreative({
+    name,
+    object_story_spec: JSON.stringify({
+      page_id: pid,
+      link_data: {
+        message: primaryText || '',
+        name: headline || '',
+        description: description || '',
+        link: 'https://genderrevealideas.com.au',
+        image_url: url,
+        call_to_action: { type: 'SHOP_NOW' }
+      }
+    })
+  })
+}
+
 export async function createAdCreative(params) {
   const accountId = metaAccountId()
   return metaPost(`/${accountId}/adcreatives`, params)

@@ -118,6 +118,7 @@ export function AdsFlywheelTab() {
   const [replaceCopyLoading, setReplaceCopyLoading] = useState(false)
   const [replaceSelectedVariant, setReplaceSelectedVariant] = useState(null)
   const [replacing, setReplacing] = useState(false)
+  const [oldCreativeSpec, setOldCreativeSpec] = useState(null) // fetched from Meta when modal opens
 
   // Auto-dismiss toast after 8 seconds
   const toastTimerRef = useRef(null)
@@ -805,14 +806,21 @@ export function AdsFlywheelTab() {
                   <span style={badge(a.severity === 'critical' ? C.red : a.severity === 'warning' ? C.yellow : C.blue)}>{a.severity}</span>
                   <span style={{ fontSize: 13, color: C.text }}>{a.title}</span>
                 </div>
-                <button onClick={() => {
+                <button onClick={async () => {
                   setResolveTarget(a)
-                  // Pre-fill copy generator with the fatigued ad's angle so AI generates in the same direction
                   setReplaceCopyAngle(a.creativeAngle && a.creativeAngle !== 'unknown' ? a.creativeAngle : '')
                   setReplaceCopyProduct(a.productCategory && a.productCategory !== 'blended' ? a.productCategory : '')
                   setReplaceCopyVariants([])
                   setReplaceSelectedVariant(null)
                   setReplaceImageUrl('')
+                  setOldCreativeSpec(null)
+                  // Fetch the old ad's creative spec from Meta (format, media type, copy)
+                  if (a.entityId) {
+                    try {
+                      const r = await fetch(`${API}/ad-creative-spec/${a.entityId}`).then(r => r.json())
+                      if (r.ok) setOldCreativeSpec(r.spec)
+                    } catch { /* silent — modal still works without it */ }
+                  }
                 }} style={{ ...btnStyle(C.pink), cursor: 'pointer', minHeight: isMobile ? 44 : 'auto' }}>Pause & Replace</button>
               </div>
             </div>
@@ -1501,20 +1509,73 @@ export function AdsFlywheelTab() {
               </div>
             </div>
 
+            {/* Current creative info (fetched from Meta) */}
+            {oldCreativeSpec && (
+              <div style={{ background: C.bg, borderRadius: 8, padding: 12, marginBottom: 16, borderLeft: `3px solid ${C.blue}` }}>
+                <div style={{ fontSize: 10, color: C.blue, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6, fontWeight: 700 }}>CURRENT CREATIVE</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 8 }}>
+                  <div style={{ background: C.card, borderRadius: 6, padding: '6px 8px' }}>
+                    <div style={{ fontSize: 9, color: C.muted, textTransform: 'uppercase' }}>Type</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: oldCreativeSpec.isVideo ? C.pink : C.blue }}>
+                      {oldCreativeSpec.isVideo ? 'VIDEO' : 'IMAGE'}
+                    </div>
+                  </div>
+                  <div style={{ background: C.card, borderRadius: 6, padding: '6px 8px' }}>
+                    <div style={{ fontSize: 9, color: C.muted, textTransform: 'uppercase' }}>Format</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>
+                      {oldCreativeSpec.isVideo ? 'Upload .mp4 or .mov' : 'Upload .jpg or .png'}
+                    </div>
+                  </div>
+                  <div style={{ background: C.card, borderRadius: 6, padding: '6px 8px' }}>
+                    <div style={{ fontSize: 9, color: C.muted, textTransform: 'uppercase' }}>Media</div>
+                    <div style={{ fontSize: 10, color: C.muted, wordBreak: 'break-all' }}>
+                      {oldCreativeSpec.isVideo ? `Video ID: ${oldCreativeSpec.videoId || '--'}` : 'Image ad'}
+                    </div>
+                  </div>
+                </div>
+                {/* Show current copy for reference */}
+                {oldCreativeSpec.message && (
+                  <div style={{ fontSize: 11, color: C.muted, lineHeight: 1.4 }}>
+                    <span style={{ color: C.text, fontWeight: 600 }}>Current copy:</span> "{oldCreativeSpec.message.slice(0, 100)}{oldCreativeSpec.message.length > 100 ? '...' : ''}"
+                  </div>
+                )}
+                {/* Ratio warning */}
+                <div style={{ marginTop: 6, fontSize: 10, color: C.yellow, fontWeight: 600 }}>
+                  Upload the same ratio as the current ad. {oldCreativeSpec.isVideo
+                    ? 'If the old video was 9:16 (Reels), upload 9:16. If 1:1 (Feed), upload 1:1.'
+                    : 'If the old image was 1:1, upload 1:1. If 4:5, upload 4:5.'}
+                </div>
+              </div>
+            )}
+
             {/* Step 1: New creative image/video URL */}
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: C.pink, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>
-                STEP 1: NEW CREATIVE
+                STEP 1: NEW CREATIVE {oldCreativeSpec?.isVideo ? '(VIDEO)' : oldCreativeSpec?.isImage ? '(IMAGE)' : ''}
               </div>
               <input
                 type="text"
                 value={replaceImageUrl}
                 onChange={e => setReplaceImageUrl(e.target.value)}
-                placeholder="Paste image or video URL (optional — leave blank to keep existing visual)"
+                placeholder={oldCreativeSpec?.isVideo
+                  ? 'Paste video URL (.mp4 or .mov) — must match original ratio'
+                  : 'Paste image URL (.jpg or .png) — must match original ratio'}
                 style={{ width: '100%', padding: '10px 12px', background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, color: C.text, fontSize: 13 }}
               />
+              {/* URL type detection feedback */}
+              {replaceImageUrl && (
+                <div style={{ fontSize: 10, marginTop: 4, fontWeight: 600, color: /\.(mp4|mov|webm|avi)/i.test(replaceImageUrl) ? C.pink : C.blue }}>
+                  {/\.(mp4|mov|webm|avi)/i.test(replaceImageUrl) ? 'Detected: VIDEO — will be uploaded to Meta then attached' : 'Detected: IMAGE — will be set directly'}
+                  {oldCreativeSpec?.isVideo && !/\.(mp4|mov|webm|avi)/i.test(replaceImageUrl) && (
+                    <span style={{ color: C.red, marginLeft: 8 }}>Warning: old ad was VIDEO but you're uploading an image</span>
+                  )}
+                  {oldCreativeSpec?.isImage && /\.(mp4|mov|webm|avi)/i.test(replaceImageUrl) && (
+                    <span style={{ color: C.yellow, marginLeft: 8 }}>Note: old ad was IMAGE but you're uploading a video (format change)</span>
+                  )}
+                </div>
+              )}
               <div style={{ fontSize: 10, color: C.muted, marginTop: 4 }}>
-                Upload your image to Shopify or any CDN first, then paste the URL here.
+                Upload to Shopify CDN or any public URL first. Supports .jpg, .png, .mp4, .mov
               </div>
             </div>
 
