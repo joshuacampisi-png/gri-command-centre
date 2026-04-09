@@ -1138,10 +1138,12 @@ router.post('/pause-replace-activate', async (req, res) => {
     let mediaUrl = imageUrl || ''
     let oldPageId = ''
     let oldLink = ''
+    let oldThumbnail = ''
     try {
       const oldSpec = await fetchAdCreativeSpec(adId)
       oldPageId = oldSpec.pageId || ''
       oldLink = oldSpec.link || ''
+      oldThumbnail = oldSpec.thumbnailUrl || ''
       if (!mediaUrl) {
         if (oldSpec.isVideo && oldSpec.videoId) {
           mediaUrl = `meta-video:${oldSpec.videoId}`
@@ -1164,6 +1166,7 @@ router.post('/pause-replace-activate', async (req, res) => {
         mediaUrl,
         pageId: oldPageId,
         link: oldLink,
+        thumbnailUrl: oldThumbnail,
       })
       steps.push(`Created new creative (${creative.id})${imageUrl ? (imageUrl.match(/\.(mp4|mov|webm)/i) ? ' [video]' : ' [image]') : ' [copy only]'}`)
     } catch (creativeErr) {

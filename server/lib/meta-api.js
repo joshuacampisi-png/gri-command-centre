@@ -380,8 +380,8 @@ export function isVideoUrl(url) {
  * Create an ad creative with proper handling for both image and video URLs.
  * Detects URL type, uploads video if needed, builds correct spec.
  */
-export async function createAdCreativeFromUrl({ name, primaryText, headline, description, mediaUrl, pageId, link }) {
-  const pid = pageId || '155263927680879'  // GRI Facebook Page (was wrong: 105089549192262)
+export async function createAdCreativeFromUrl({ name, primaryText, headline, description, mediaUrl, pageId, link, thumbnailUrl }) {
+  const pid = pageId || '155263927680879'  // GRI Facebook Page
   const siteLink = link || 'https://genderrevealideas.com.au'
 
   // No media — link ad with copy only
@@ -403,21 +403,32 @@ export async function createAdCreativeFromUrl({ name, primaryText, headline, des
 
   const url = mediaUrl.trim()
 
+  // Helper: get video thumbnail from Meta if not provided
+  async function getVideoThumbnail(videoId) {
+    if (thumbnailUrl) return thumbnailUrl
+    try {
+      const vid = await metaGet(`/${videoId}`, { fields: 'thumbnails' })
+      const thumbs = vid.thumbnails?.data || []
+      if (thumbs.length > 0) return thumbs[0].uri || thumbs[0].url
+    } catch { /* fallback */ }
+    return null
+  }
+
   // Already-uploaded video (from drag-and-drop) — videoId passed as "meta-video:XXXXX"
   if (url.startsWith('meta-video:')) {
     const videoId = url.replace('meta-video:', '')
+    const thumb = await getVideoThumbnail(videoId)
+    const videoData = {
+      video_id: videoId,
+      message: primaryText || '',
+      title: headline || '',
+      link_description: description || '',
+      call_to_action: { type: 'SHOP_NOW', value: { link: siteLink } }
+    }
+    if (thumb) videoData.image_url = thumb
     return createAdCreative({
       name,
-      object_story_spec: JSON.stringify({
-        page_id: pid,
-        video_data: {
-          video_id: videoId,
-          message: primaryText || '',
-          title: headline || '',
-          link_description: description || '',
-          call_to_action: { type: 'SHOP_NOW', value: { link: siteLink } }
-        }
-      })
+      object_story_spec: JSON.stringify({ page_id: pid, video_data: videoData })
     })
   }
 
@@ -427,18 +438,18 @@ export async function createAdCreativeFromUrl({ name, primaryText, headline, des
     const videoId = videoResult.id || videoResult.video_id
     if (!videoId) throw new Error('Video upload failed — no video ID returned from Meta')
 
+    const thumb = await getVideoThumbnail(videoId)
+    const videoData = {
+      video_id: videoId,
+      message: primaryText || '',
+      title: headline || '',
+      link_description: description || '',
+      call_to_action: { type: 'SHOP_NOW', value: { link: siteLink } }
+    }
+    if (thumb) videoData.image_url = thumb
     return createAdCreative({
       name,
-      object_story_spec: JSON.stringify({
-        page_id: pid,
-        video_data: {
-          video_id: videoId,
-          message: primaryText || '',
-          title: headline || '',
-          link_description: description || '',
-          call_to_action: { type: 'SHOP_NOW', value: { link: siteLink } }
-        }
-      })
+      object_story_spec: JSON.stringify({ page_id: pid, video_data: videoData })
     })
   }
 
