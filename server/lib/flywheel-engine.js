@@ -17,8 +17,8 @@ export const FLYWHEEL = {
   CPA_BREACH_MULTIPLIER: 2.5,
   CPA_BREACH_CONSECUTIVE_DAYS: 3,
   ROAS_KILL_FLOOR: 1.2,
-  FREQUENCY_KILL_COLD: 6,
-  FREQUENCY_KILL_WARM: 4,
+  FREQUENCY_KILL_COLD: 5,     // Aligned with FREQUENCY_FATIGUE_CRITICAL (was 6, caused threshold mismatch)
+  FREQUENCY_KILL_WARM: 3.5,   // Aligned with FREQUENCY_FATIGUE_WARNING (was 4)
   CTR_DROP_KILL_PCT: 0.40,
   ZERO_PURCHASE_SPEND_MULTIPLIER: 2,
   CPM_SPIKE_PCT: 0.30,
@@ -246,16 +246,23 @@ export async function evaluateKillRules() {
       ? FLYWHEEL.FREQUENCY_KILL_COLD
       : FLYWHEEL.FREQUENCY_KILL_WARM
 
-    // Rule 4: Frequency exceeds limit on cold/broad audience
+    // Rule 4: Frequency exceeds limit — check BOTH average AND peak (spike masking fix)
     const last7 = snapshots.slice(-7)
-    const avgFreq = last7.reduce((a, s) => a + (s.frequency || 0), 0) / last7.length
-    if (avgFreq > freqLimit) {
+    const freqs = last7.map(s => s.frequency || 0)
+    const avgFreq = freqs.reduce((a, f) => a + f, 0) / freqs.length
+    const peakFreq = Math.max(...freqs)
+    // Fire if average exceeds limit OR peak exceeds limit * 1.3 (catches single-day saturation spikes)
+    const avgBreach = avgFreq > freqLimit
+    const peakBreach = peakFreq > freqLimit * 1.3
+    if (avgBreach || peakBreach) {
       const event = {
         entityType: 'ad_set',
         entityId: adSet.metaAdSetId || adSet.id,
         entityName: adSet.name,
         ruleType: 'frequency_breach',
-        ruleDetail: `7 day avg frequency ${avgFreq.toFixed(1)} exceeds ${freqLimit} for ${audience} audience`,
+        ruleDetail: peakBreach && !avgBreach
+          ? `Peak frequency ${peakFreq.toFixed(1)} on a single day exceeds ${(freqLimit * 1.3).toFixed(1)} spike threshold for ${audience} audience (avg ${avgFreq.toFixed(1)})`
+          : `7 day avg frequency ${avgFreq.toFixed(1)} exceeds ${freqLimit} for ${audience} audience (peak: ${peakFreq.toFixed(1)})`,
         triggered: true,
         actioned: false,
       }
@@ -279,11 +286,13 @@ export async function evaluateKillRules() {
       const thisWeek = snapshots.slice(-7)
       const prevCpm = prevWeek.reduce((a, s) => a + (s.cpm || 0), 0) / prevWeek.length
       const thisCpm = thisWeek.reduce((a, s) => a + (s.cpm || 0), 0) / thisWeek.length
+      // CTR from Meta is stored as percentage (e.g., 1.86 = 1.86%). Compare in percentage space.
       const prevCtr = prevWeek.reduce((a, s) => a + (s.ctr || 0), 0) / prevWeek.length
       const thisCtr = thisWeek.reduce((a, s) => a + (s.ctr || 0), 0) / thisWeek.length
 
       if (prevCpm > 0 && thisCpm > prevCpm * (1 + FLYWHEEL.CPM_SPIKE_PCT)) {
-        const ctrFlat = Math.abs(thisCtr - prevCtr) < 0.002
+        // CTR "flat" = less than 0.2 percentage points change (e.g., 1.8% vs 2.0%)
+        const ctrFlat = Math.abs(thisCtr - prevCtr) < 0.2
         if (ctrFlat) {
           const event = {
             entityType: 'ad_set',
@@ -365,9 +374,13 @@ export async function evaluateScaleRules() {
     if (totalPurchases >= FLYWHEEL.LEARNING_PHASE_MIN_EVENTS) {
       const cpaTargets = getCpaTargets()
       const target = cpaTargets.blended
-      const recentCpa = last5.reduce((a, s) => a + (s.cpa || 0), 0) / last5.length
+      // Only average CPA from days that had purchases (zero-sale days = no data, not $0 CPA)
+      const daysWithSales = last5.filter(s => s.purchases > 0)
+      const recentCpa = daysWithSales.length > 0
+        ? daysWithSales.reduce((a, s) => a + (s.cpa || 0), 0) / daysWithSales.length
+        : 0
 
-      if (recentCpa <= target.max && recentCpa > 0) {
+      if (recentCpa <= target.max && recentCpa > 0 && daysWithSales.length >= 2) {
         const existing = getAlerts(true).find(a =>
           a.entityId === (adSet.metaAdSetId || adSet.id) && a.type === 'scale_opportunity'
         )

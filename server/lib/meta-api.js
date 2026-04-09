@@ -773,11 +773,26 @@ function parseInsights(raw) {
   const purchases = actions.find(a => a.action_type === 'purchase')
   const purchaseValue = actionValues.find(a => a.action_type === 'purchase')
 
-  const spend = Number(raw.spend || 0)
-  const impressions = Number(raw.impressions || 0)
-  const clicks = Number(raw.clicks || 0)
-  const purchaseCount = purchases ? Number(purchases.value) : 0
-  const purchaseTotal = purchaseValue ? Number(purchaseValue.value) : 0
+  // Bug 7 fix: log if actions array exists but has no purchase event (potential pixel issue)
+  if (actions.length > 0 && !purchases) {
+    const actionTypes = actions.map(a => a.action_type).join(', ')
+    console.warn(`[Meta API] No 'purchase' action in insights. Available: ${actionTypes}`)
+  }
+
+  // Bug 6 fix: parseFloat + isNaN guard on all numeric fields (handles "1.86%"-style strings)
+  const safeNum = (v) => { const n = parseFloat(v); return isNaN(n) ? 0 : n }
+
+  const spend = safeNum(raw.spend)
+  const impressions = safeNum(raw.impressions)
+  const clicks = safeNum(raw.clicks)
+  const purchaseCount = purchases ? safeNum(purchases.value) : 0
+  const purchaseTotal = purchaseValue ? safeNum(purchaseValue.value) : 0
+
+  // Bug 5 fix: CTR from Meta is already a percentage (e.g., 1.86 = 1.86%).
+  // Cap at 100 to prevent impossible values. Frequency cannot exceed ~50 realistically.
+  const ctr = Math.min(safeNum(raw.ctr), 100)
+  const frequency = Math.min(safeNum(raw.frequency), 50)
+  const cpm = safeNum(raw.cpm)
 
   return {
     spend,
@@ -785,10 +800,11 @@ function parseInsights(raw) {
     clicks,
     purchases: purchaseCount,
     purchaseValue: purchaseTotal,
-    frequency: Number(raw.frequency || 0),
-    ctr: Number(raw.ctr || 0),
-    cpm: Number(raw.cpm || 0),
-    reach: Number(raw.reach || 0),
+    frequency,
+    ctr,
+    cpm,
+    reach: safeNum(raw.reach),
+    // Bug 4 fix: always return 0, never null/NaN
     roas: spend > 0 ? purchaseTotal / spend : 0,
     cpa: purchaseCount > 0 ? spend / purchaseCount : 0,
     date: raw.date_start || null

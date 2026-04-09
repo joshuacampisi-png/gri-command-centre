@@ -372,11 +372,13 @@ export function getAlerts(unresolvedOnly = true) {
 export function addAlert(alert) {
   const all = load(FILES.alerts)
 
-  // Deduplicate: if an unresolved alert already exists for same entity + type, skip
+  // Deduplicate: if an unresolved alert already exists for same entity + type + severity, skip
+  // Bug 8 fix: include severity in dedup check so a critical doesn't get blocked by a warning
   const isDupe = all.some(a =>
     !a.resolved &&
     a.entityId === (alert.entityId || null) &&
-    a.type === alert.type
+    a.type === alert.type &&
+    a.severity === alert.severity
   )
   if (isDupe) return null
 
@@ -389,6 +391,13 @@ export function addAlert(alert) {
     entityType: alert.entityType || null,
     entityId: alert.entityId || null,
     entityName: alert.entityName || null,
+    // Enriched context (from kill rules)
+    adSetId: alert.adSetId || null,
+    campaignId: alert.campaignId || null,
+    creativeAngle: alert.creativeAngle || null,
+    formatType: alert.formatType || null,
+    audience: alert.audience || null,
+    productCategory: alert.productCategory || null,
     resolved: false,
     resolvedAt: null,
     createdAt: now(),
