@@ -120,6 +120,7 @@ export function AdsFlywheelTab() {
   const [replacing, setReplacing] = useState(false)
   const [oldCreativeSpec, setOldCreativeSpec] = useState(null) // fetched from Meta when modal opens
   const [uploadingCreative, setUploadingCreative] = useState(false)
+  const [successPopup, setSuccessPopup] = useState(null) // { adName, metaLink, adId }
   const [uploadedFile, setUploadedFile] = useState(null) // { name, type, url/videoId }
   const [uploadError, setUploadError] = useState(null)
   const [dragOver, setDragOver] = useState(false)
@@ -518,23 +519,20 @@ export function AdsFlywheelTab() {
 
       // Only resolve the alert if the action succeeded
       if (result.ok) {
-        await fetch(`${API}/alerts/${alert.id}/resolve`, { method: 'POST' })
-      }
+        await fetch(`${API}/alerts/${alert.id}/resolve`, { method: 'POST' }).catch(() => {})
 
-      const metaLink = alert.entityId ? `https://www.facebook.com/adsmanager/manage/ads?act=1519116685663528&selected_ad_ids=${alert.entityId}` : ''
-      setScaleResult(result.ok
-        ? { ok: true, message: `${result.message}${metaLink ? `\n\nView in Meta Ads Manager: ${metaLink}` : ''}` }
-        : { ok: false, error: result.error }
-      )
-
-      // Only close modal on success — keep it open on failure so user can retry
-      if (result.ok) {
+        // Show success popup with Meta link instead of closing modal
+        const metaLink = `https://www.facebook.com/adsmanager/manage/ads?act=1519116685663528&selected_ad_ids=${alert.entityId}`
         setResolveTarget(null)
         setReplaceImageUrl('')
         setReplaceCopyAngle('')
         setReplaceCopyVariants([])
         setReplaceSelectedVariant(null)
+        setSuccessPopup({ adName: alert.entityName || alert.title, metaLink, adId: alert.entityId })
         load()
+        loadDecisionHistory()
+      } else {
+        setScaleResult({ ok: false, error: result.error })
       }
     } catch (e) {
       setScaleResult({ ok: false, error: e.message })
@@ -1036,7 +1034,7 @@ export function AdsFlywheelTab() {
 
       {/* ── 4b. Impact Tracker (recently activated ads) ───────────────────── */}
       {(d?.activations || []).length > 0 && (
-        <div style={{ marginBottom: 16 }}>
+        <div style={{ marginBottom: 16 }} data-section="impact-tracker">
           <h2 style={secTitle}>Ad Impact Tracker</h2>
           <div style={{ ...card, overflowX: 'auto' }}>
             <table style={tbl}>
@@ -1626,6 +1624,69 @@ export function AdsFlywheelTab() {
           )}
         </div>
       </div>
+
+      {/* ── Success Popup after Pause & Replace ─────────────────────────── */}
+      {successPopup && (
+        <div onClick={() => setSuccessPopup(null)} style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999,
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{ ...card, maxWidth: 480, width: '95%', padding: 28, border: `2px solid ${C.green}`, textAlign: 'center' }}>
+            {/* Animated tick */}
+            <div style={{
+              width: 64, height: 64, borderRadius: '50%', background: C.green,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 16px', boxShadow: `0 0 30px ${C.green}44`,
+            }}>
+              <span style={{ fontSize: 32, color: '#fff' }}>✓</span>
+            </div>
+
+            <div style={{ fontSize: 20, fontWeight: 800, color: C.green, marginBottom: 6 }}>
+              Creative Replaced & Live ✅
+            </div>
+            <div style={{ fontSize: 13, color: C.text, marginBottom: 20 }}>
+              {successPopup.adName}
+            </div>
+
+            {/* Two action buttons */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <a
+                href={successPopup.metaLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'block', background: '#1877F2', color: '#fff', borderRadius: 8,
+                  padding: '14px 20px', fontSize: 14, fontWeight: 700, textDecoration: 'none',
+                  textAlign: 'center',
+                }}
+              >
+                View Live Ad in Meta Ads Manager ↗
+              </a>
+
+              <button
+                onClick={() => {
+                  setSuccessPopup(null)
+                  // Scroll to Impact Tracker
+                  setTimeout(() => {
+                    const el = document.querySelector('[data-section="impact-tracker"]')
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                  }, 100)
+                }}
+                style={{
+                  background: `${C.green}20`, color: C.green, border: `2px solid ${C.green}`,
+                  borderRadius: 8, padding: '14px 20px', fontSize: 14, fontWeight: 700, cursor: 'pointer',
+                }}
+              >
+                Track Changes in Flywheel ↓
+              </button>
+            </div>
+
+            <div style={{ fontSize: 10, color: C.muted, marginTop: 16 }}>
+              Impact tracking started · 3d / 5d / 7d CPA comparison against baseline
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── 11. System Health (compact footer) ─────────────────────────────── */}
       {d?.health && (
