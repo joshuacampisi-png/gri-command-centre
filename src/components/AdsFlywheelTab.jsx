@@ -534,12 +534,13 @@ export function AdsFlywheelTab() {
   }
 
   // Campaign table data (own date range)
-  async function loadCampData(r) {
+  async function loadCampData(dateRange) {
     setCampLoading(true)
     try {
-      const res = await fetch(`/api/ads/performance?dateRange=${r || campRange}`).then(r => r.json())
-      if (res.ok) setCampData(res)
-    } catch { /* silent */ }
+      const resp = await fetch(`/api/ads/performance?dateRange=${dateRange || campRange}`)
+      const json = await resp.json()
+      if (json.ok) setCampData(json)
+    } catch (err) { console.error('Campaign data fetch error:', err) }
     setCampLoading(false)
   }
 
@@ -872,17 +873,18 @@ export function AdsFlywheelTab() {
       {/* ── 4. Campaign Table (expandable with surgical actions) ────────────── */}
       <div style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-          <h2 style={{ ...secTitle, margin: 0 }}>Campaign Health</h2>
-          <div style={{ display: 'flex', gap: 4 }}>
+          <h2 style={{ fontSize: 15, fontWeight: 600, margin: 0, color: C.text }}>Campaign Health</h2>
+          <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
             {[{ key: 'today', label: 'Today' }, { key: '7d', label: '7d' }, { key: '14d', label: '14d' }, { key: '30d', label: '30d' }].map(r => (
               <button key={r.key} onClick={() => setCampRange(r.key)} style={{
                 background: campRange === r.key ? C.blue : C.card,
                 color: campRange === r.key ? '#fff' : C.muted,
                 border: `1px solid ${campRange === r.key ? C.blue : C.border}`,
-                borderRadius: 5, padding: '4px 10px', fontSize: 11, fontWeight: campRange === r.key ? 700 : 500, cursor: 'pointer',
+                borderRadius: 6, padding: '6px 14px', fontSize: 12, fontWeight: campRange === r.key ? 700 : 500, cursor: 'pointer',
+                minHeight: isMobile ? 44 : 'auto',
               }}>{r.label}</button>
             ))}
-            {campLoading && <span style={{ fontSize: 10, color: C.muted, alignSelf: 'center', marginLeft: 4 }}>Loading...</span>}
+            {campLoading && <span style={{ fontSize: 10, color: C.blue, alignSelf: 'center', marginLeft: 4 }}>Loading...</span>}
           </div>
         </div>
         <div style={{ ...card, overflowX: 'auto' }}>
