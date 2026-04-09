@@ -453,15 +453,25 @@ export function AdsFlywheelTab() {
       const v = replaceSelectedVariant
       const alert = resolveTarget
 
-      // Find the adset and campaign for this ad from the dashboard data
-      let adSetId = '', adSetName = '', campaignId = '', campaignName = ''
+      // Use adSetId/campaignId from the alert (enriched at kill-rule time)
+      // Fall back to scanning dashboard data if alert doesn't have them
+      let adSetId = alert.adSetId || ''
+      let adSetName = ''
+      let campaignId = alert.campaignId || ''
+      let campaignName = ''
+
+      // Resolve names from dashboard data
       for (const c of d?.campaigns || []) {
-        const adSets = c.adSets || c.adsets || []
-        for (const as of adSets) {
-          adSetId = as.id || as.metaAdSetId || ''
-          adSetName = as.name || ''
-          campaignId = c.id || ''
+        if (campaignId && c.id === campaignId) {
           campaignName = c.name || ''
+          const adSets = c.adSets || c.adsets || []
+          for (const as of adSets) {
+            if ((as.id || as.metaAdSetId) === adSetId) {
+              adSetName = as.name || ''
+              break
+            }
+          }
+          break
         }
       }
 
@@ -1411,7 +1421,31 @@ export function AdsFlywheelTab() {
               <div style={{ fontSize: 10, color: C.red, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4, fontWeight: 700 }}>FATIGUED AD</div>
               <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{resolveTarget.entityName || resolveTarget.title}</div>
               <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>{resolveTarget.body || ''}</div>
-              <div style={{ fontSize: 10, color: C.muted, marginTop: 4 }}>Ad ID: {resolveTarget.entityId}</div>
+              <div style={{ display: 'flex', gap: 12, marginTop: 6, fontSize: 10, color: C.muted }}>
+                <span>Ad: {resolveTarget.entityId}</span>
+                {resolveTarget.adSetId && <span>Ad Set: {resolveTarget.adSetId}</span>}
+                {resolveTarget.campaignId && <span>Campaign: {resolveTarget.campaignId}</span>}
+              </div>
+              {/* Show adset/campaign names from dashboard context */}
+              {(() => {
+                let asName = '', cName = ''
+                for (const c of d?.campaigns || []) {
+                  if (resolveTarget.campaignId && c.id === resolveTarget.campaignId) {
+                    cName = c.name
+                    for (const as of c.adSets || c.adsets || []) {
+                      if ((as.id || as.metaAdSetId) === resolveTarget.adSetId) { asName = as.name; break }
+                    }
+                    break
+                  }
+                }
+                if (!cName && !asName) return null
+                return (
+                  <div style={{ display: 'flex', gap: 6, marginTop: 6, fontSize: 11 }}>
+                    {cName && <span style={badge(C.blue)}>{cName}</span>}
+                    {asName && <span style={badge(C.purple)}>{asName}</span>}
+                  </div>
+                )
+              })()}
             </div>
 
             {/* Step 1: New creative image/video URL */}

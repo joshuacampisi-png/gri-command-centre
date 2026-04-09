@@ -147,6 +147,8 @@ export async function evaluateKillRules() {
         entityType: 'ad',
         entityId: ad.metaAdId || ad.id,
         entityName: ad.name,
+        adSetId: ad.adSetId || '',
+        campaignId: ad.campaignId || '',
       })
       results.push(event)
       logFlywheelEvent('kill_rule', `Weekly CPA breach on ${ad.name}: ${event.ruleDetail}`)
@@ -188,6 +190,8 @@ export async function evaluateKillRules() {
             entityType: 'ad',
             entityId: ad.metaAdId || ad.id,
             entityName: ad.name,
+            adSetId: ad.adSetId || '',
+            campaignId: ad.campaignId || '',
           })
           results.push(event)
           logFlywheelEvent('kill_rule', `Weekly CTR drop on ${ad.name}: ${event.ruleDetail}`)
@@ -215,6 +219,8 @@ export async function evaluateKillRules() {
         entityType: 'ad',
         entityId: ad.metaAdId || ad.id,
         entityName: ad.name,
+        adSetId: ad.adSetId || '',
+        campaignId: ad.campaignId || '',
       })
       results.push(event)
       logFlywheelEvent('kill_rule', `Zero purchase weekly alert on ${ad.name}: ${event.ruleDetail}`)
