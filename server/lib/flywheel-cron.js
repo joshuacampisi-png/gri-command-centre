@@ -345,7 +345,9 @@ export function startFlywheelCrons() {
   }), { timezone: 'Australia/Brisbane' })
 
   // Run initial meta sync on startup (delayed 30s to let server boot)
-  setTimeout(safeRun('startup-meta-sync', metaSyncJob), 30000)
+  // Startup sync disabled — each Railway deploy was triggering this, burning Meta rate limit
+  // setTimeout(safeRun('startup-meta-sync', metaSyncJob), 30000)
+  console.log('[Flywheel] Startup sync DISABLED — use manual Sync Meta button or wait for scheduled cron')
 
   // Run first backup immediately on startup
   setTimeout(() => {

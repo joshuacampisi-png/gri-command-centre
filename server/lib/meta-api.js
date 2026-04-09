@@ -46,7 +46,7 @@ let _lastCallTime = 0
 const MIN_CALL_GAP_MS = 1000 // 1 second between calls
 let _callsThisHour = 0
 let _hourStart = Date.now()
-const MAX_CALLS_PER_HOUR = 9999 // Temporarily unlimited for testing — restore to 180 after
+const MAX_CALLS_PER_HOUR = 500 // Higher limit for testing — Meta allows ~200 but resets rolling
 
 async function rateLimitWait() {
   // Reset hourly counter

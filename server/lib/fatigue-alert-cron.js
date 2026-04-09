@@ -163,7 +163,8 @@ export function acknowledgeAlert(alertId) {
  */
 export function startFatigueAlertCron() {
   // Run once on startup after 2 min delay (let other systems init)
-  setTimeout(() => runFatigueCheck(), 2 * 60 * 1000)
+  // Startup check disabled — saves Meta API calls on deploy
+  // setTimeout(() => runFatigueCheck(), 2 * 60 * 1000)
 
   // Then every 4 hours
   const FOUR_HOURS = 4 * 60 * 60 * 1000
