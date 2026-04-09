@@ -1117,6 +1117,7 @@ router.post('/pause-replace-activate', async (req, res) => {
   try {
     const { adId, adSetId, campaignId, adName, adSetName, campaignName, primaryText, headline, description, imageUrl } = req.body
     if (!adId) return res.status(400).json({ ok: false, error: 'Missing adId' })
+    if (!primaryText) return res.status(400).json({ ok: false, error: 'Missing primaryText — generate copy first' })
 
     const steps = []
 
@@ -1125,25 +1126,53 @@ router.post('/pause-replace-activate', async (req, res) => {
     steps.push('Paused ad on Meta')
 
     // Step 2: Create new creative object
-    const creative = await createAdCreative({
-      name: `Replacement - ${adName || adId} - ${new Date().toISOString().slice(0, 10)}`,
-      object_story_spec: JSON.stringify({
-        page_id: '105089549192262',
-        link_data: {
-          message: primaryText || '',
-          name: headline || '',
-          description: description || '',
-          link: 'https://genderrevealideas.com.au',
-          image_url: imageUrl || undefined,
-          call_to_action: { type: 'SHOP_NOW' }
-        }
+    // CRITICAL: only include image_url if actually provided — undefined/null crashes Meta API
+    const linkData = {
+      message: primaryText,
+      name: headline || '',
+      description: description || '',
+      link: 'https://genderrevealideas.com.au',
+      call_to_action: { type: 'SHOP_NOW' }
+    }
+    if (imageUrl && imageUrl.trim()) {
+      linkData.image_url = imageUrl.trim()
+    }
+
+    let creative
+    try {
+      creative = await createAdCreative({
+        name: `Replacement - ${adName || adId} - ${new Date().toISOString().slice(0, 10)}`,
+        object_story_spec: JSON.stringify({
+          page_id: '105089549192262',
+          link_data: linkData
+        })
       })
-    })
-    steps.push(`Created new creative (${creative.id})`)
+      steps.push(`Created new creative (${creative.id})`)
+    } catch (creativeErr) {
+      // ROLLBACK: reactivate the ad with old creative since we failed to create new one
+      console.error('[Flywheel] Creative creation failed, rolling back pause:', creativeErr.message)
+      try { await metaUpdateAdStatus(adId, 'ACTIVE') } catch { /* best effort rollback */ }
+      return res.status(500).json({
+        ok: false,
+        error: `Creative creation failed: ${creativeErr.message}. Ad has been reactivated with old creative — no changes made.`,
+        rolledBack: true
+      })
+    }
 
     // Step 3: Swap creative on the paused ad
-    await updateAdCreative(adId, creative.id)
-    steps.push('Swapped creative on paused ad')
+    try {
+      await updateAdCreative(adId, creative.id)
+      steps.push('Swapped creative on paused ad')
+    } catch (swapErr) {
+      // ROLLBACK: reactivate with old creative
+      console.error('[Flywheel] Creative swap failed, rolling back:', swapErr.message)
+      try { await metaUpdateAdStatus(adId, 'ACTIVE') } catch { /* best effort */ }
+      return res.status(500).json({
+        ok: false,
+        error: `Creative swap failed: ${swapErr.message}. Ad reactivated with old creative.`,
+        rolledBack: true
+      })
+    }
 
     // Step 4: Capture baseline from adset (before reactivation)
     let baseline = { cpa: 0, roas: 0, frequency: 0, spend: 0, purchases: 0, capturedAt: new Date().toISOString() }
@@ -1163,7 +1192,6 @@ router.post('/pause-replace-activate', async (req, res) => {
           capturedAt: new Date().toISOString()
         }
       }
-      // Try live data for freshest baseline
       try {
         const live = await fetchAdSetInsightsRange(adSetId, 3)
         if (live && live.spend > 0) {
@@ -1237,19 +1265,35 @@ router.post('/fatigue-alerts/:id/ack', (req, res) => {
 
 router.post('/generate-copy', async (req, res) => {
   try {
-    const { angle, product, audience, tone } = req.body
+    const { angle, product, audience, tone, isReplacement, oldAngle, audienceType, formatType } = req.body
     if (!angle) return res.status(400).json({ ok: false, error: 'Missing angle' })
+
+    // Build replacement context if this is a creative refresh
+    const replacementContext = isReplacement ? `
+IMPORTANT — THIS IS A CREATIVE REPLACEMENT:
+The previous ad used the "${oldAngle || angle}" angle and is now fatigued (audience saw it too many times).
+The audience type is: ${audienceType || 'cold broad'}
+The format is: ${formatType || 'unknown'}
+
+RULES FOR REPLACEMENT COPY:
+- Keep the same angle direction ("${oldAngle || angle}") — the hook was converting, the creative died
+- Write FRESH wording — do not repeat the old copy verbatim
+- ${audienceType === 'retargeting_warm' ? 'This is retargeting — they know GRI. Use urgency, trust, social proof, scarcity.' : ''}
+- ${audienceType === 'lookalike' ? 'This is a lookalike audience — similar to buyers. Lead with the strongest version of the hook.' : ''}
+- ${audienceType === 'cold_broad' ? 'This is cold traffic — they have never seen GRI. Lead with a scroll-stopping hook. Make the reveal moment the hero.' : ''}
+- ${formatType === 'video' ? 'This is for video — the first line must be a thumb-stop hook that works in the first 3 seconds.' : ''}
+` : ''
 
     const prompt = `You are an expert Meta Ads copywriter for Gender Reveal Ideas (genderrevealideas.com.au), Australian DTC e-commerce on the Gold Coast selling gender reveal products.
 
 Products: Confetti Cannons, Powder Cannons, Bio Cannons, Smoke Bombs, Extinguishers, Sports Balls, Mega Blaster, Mini Blaster.
 Brand voice: Excited, Aussie, fun, trustworthy. Australian English (colour not color, mum not mom). No dashes.
 Target: Expectant parents AU/NZ, ages 22-40, predominantly female.
-
+${replacementContext}
 BRIEF:
 - Angle: ${angle}
 - Product: ${product || 'Any/all'}
-- Audience: ${audience || 'Broad'}
+- Audience: ${audience || audienceType || 'Broad'}
 - Tone: ${tone || 'Excited, authentic, Aussie'}
 
 Generate 3 ad copy variants. Each: primaryText (max 125 chars, hook first), headline (max 40 chars), description (max 30 chars).

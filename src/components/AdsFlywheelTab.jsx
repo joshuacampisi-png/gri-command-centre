@@ -431,14 +431,22 @@ export function AdsFlywheelTab() {
     return () => clearInterval(iv)
   }, [autoRefresh])
 
-  // Generate replacement copy for resolve modal
+  // Generate replacement copy for resolve modal (with fatigued ad context)
   async function generateReplacementCopy() {
     setReplaceCopyLoading(true); setReplaceCopyVariants([])
     try {
       const r = await fetch(`${API}/generate-copy`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ angle: replaceCopyAngle, product: replaceCopyProduct })
+        body: JSON.stringify({
+          angle: replaceCopyAngle,
+          product: replaceCopyProduct,
+          // Pass replacement context so AI keeps the same hook direction
+          isReplacement: true,
+          oldAngle: resolveTarget?.creativeAngle || '',
+          audienceType: resolveTarget?.audience || '',
+          formatType: resolveTarget?.formatType || '',
+        })
       }).then(r => r.json())
       if (r.ok) setReplaceCopyVariants(r.variants || [])
     } catch (e) { setScaleResult({ ok: false, error: e.message }) }
@@ -797,7 +805,15 @@ export function AdsFlywheelTab() {
                   <span style={badge(a.severity === 'critical' ? C.red : a.severity === 'warning' ? C.yellow : C.blue)}>{a.severity}</span>
                   <span style={{ fontSize: 13, color: C.text }}>{a.title}</span>
                 </div>
-                <button onClick={() => setResolveTarget(a)} style={{ ...btnStyle(C.pink), cursor: 'pointer', minHeight: isMobile ? 44 : 'auto' }}>Pause & Replace</button>
+                <button onClick={() => {
+                  setResolveTarget(a)
+                  // Pre-fill copy generator with the fatigued ad's angle so AI generates in the same direction
+                  setReplaceCopyAngle(a.creativeAngle && a.creativeAngle !== 'unknown' ? a.creativeAngle : '')
+                  setReplaceCopyProduct(a.productCategory && a.productCategory !== 'blended' ? a.productCategory : '')
+                  setReplaceCopyVariants([])
+                  setReplaceSelectedVariant(null)
+                  setReplaceImageUrl('')
+                }} style={{ ...btnStyle(C.pink), cursor: 'pointer', minHeight: isMobile ? 44 : 'auto' }}>Pause & Replace</button>
               </div>
             </div>
           ))}
