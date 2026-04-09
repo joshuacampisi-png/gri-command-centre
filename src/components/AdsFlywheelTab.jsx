@@ -521,8 +521,9 @@ export function AdsFlywheelTab() {
         await fetch(`${API}/alerts/${alert.id}/resolve`, { method: 'POST' })
       }
 
+      const metaLink = alert.entityId ? `https://www.facebook.com/adsmanager/manage/ads?act=1519116685663528&selected_ad_ids=${alert.entityId}` : ''
       setScaleResult(result.ok
-        ? { ok: true, message: result.message }
+        ? { ok: true, message: `${result.message}${metaLink ? `\n\nView in Meta Ads Manager: ${metaLink}` : ''}` }
         : { ok: false, error: result.error }
       )
 
@@ -823,7 +824,17 @@ export function AdsFlywheelTab() {
       {scaleResult && (
         <div style={{ ...card, marginBottom: 12, borderLeft: `3px solid ${scaleResult.ok ? C.green : C.red}` }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 13, color: C.text }}>{scaleResult.ok ? scaleResult.message : `Action failed: ${scaleResult.error}`}</span>
+            <span style={{ fontSize: 13, color: C.text }}>
+              {scaleResult.ok ? (
+                <>
+                  {scaleResult.message.split('\n').map((line, i) =>
+                    line.startsWith('http') || line.includes('facebook.com')
+                      ? <a key={i} href={line.replace('View in Meta Ads Manager: ', '')} target="_blank" rel="noopener noreferrer" style={{ color: C.blue, display: 'block', marginTop: 4, fontSize: 12 }}>View in Meta Ads Manager ↗</a>
+                      : <span key={i}>{line}{i < scaleResult.message.split('\n').length - 1 && <br />}</span>
+                  )}
+                </>
+              ) : `Action failed: ${scaleResult.error}`}
+            </span>
             <button onClick={() => setScaleResult(null)} style={{ ...btnSm, cursor: 'pointer', minHeight: isMobile ? 44 : 'auto' }}>Dismiss</button>
           </div>
         </div>
@@ -1031,7 +1042,7 @@ export function AdsFlywheelTab() {
             <table style={tbl}>
               <thead><tr>
                 <th style={th}>Ad</th><th style={th}>Ad Set</th><th style={th}>Activated</th>
-                <th style={th}>Baseline CPA</th><th style={th}>3d</th><th style={th}>5d</th><th style={th}>7d</th><th style={th}>Verdict</th>
+                <th style={th}>Baseline CPA</th><th style={th}>3d</th><th style={th}>5d</th><th style={th}>7d</th><th style={th}>Verdict</th><th style={th}>Meta</th>
               </tr></thead>
               <tbody>
                 {(d.activations || []).map((a, i) => {
@@ -1049,6 +1060,7 @@ export function AdsFlywheelTab() {
                   }
                   const hasAll = a.impact?.['3d'] && a.impact?.['5d'] && a.impact?.['7d']
                   const verdict7d = a.impact?.['7d']?.delta?.cpaDirection
+                  const metaAdsUrl = a.adId ? `https://www.facebook.com/adsmanager/manage/ads?act=1519116685663528&selected_ad_ids=${a.adId}` : null
                   return (
                     <tr key={i}>
                       <td style={{ ...td, fontWeight: 600 }}>{a.adName}</td>
@@ -1065,6 +1077,13 @@ export function AdsFlywheelTab() {
                           </span>
                         ) : (
                           <span style={badge(C.muted)}>TRACKING</span>
+                        )}
+                      </td>
+                      <td style={td}>
+                        {metaAdsUrl && (
+                          <a href={metaAdsUrl} target="_blank" rel="noopener noreferrer" style={{ color: C.blue, fontSize: 11, textDecoration: 'none', fontWeight: 600 }}>
+                            View in Meta ↗
+                          </a>
                         )}
                       </td>
                     </tr>
