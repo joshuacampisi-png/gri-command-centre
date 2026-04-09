@@ -840,7 +840,7 @@ export function AdsFlywheelTab() {
               </div>
             </div>
           ))}
-          {d.alerts?.slice(0, 5).map(a => (
+          {d.alerts?.map(a => (
             <div key={a.id} style={{ ...card, borderLeft: `3px solid ${a.severity === 'critical' ? C.red : a.severity === 'warning' ? C.yellow : C.blue}`, marginBottom: 4, padding: '8px 12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
