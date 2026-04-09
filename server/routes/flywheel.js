@@ -1462,7 +1462,10 @@ router.post('/scan-fatigue', async (_req, res) => {
         const ins = ad.insights || {}
         const spend = ins.spend || 0
 
-        if (spend < 20 || fatigue.score >= 60) continue
+        // Dead ads (score ≤ 20) always show regardless of spend — they need replacing
+        // Watch/Fatiguing ads need $20+ spend to be actionable
+        if (fatigue.score >= 60) continue
+        if (fatigue.score > 20 && spend < 20) continue
 
         const cpa = ins.cpa || 0
         const roas = ins.roas || 0
