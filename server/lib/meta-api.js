@@ -402,6 +402,24 @@ export async function createAdCreativeFromUrl({ name, primaryText, headline, des
 
   const url = mediaUrl.trim()
 
+  // Already-uploaded video (from drag-and-drop) — videoId passed as "meta-video:XXXXX"
+  if (url.startsWith('meta-video:')) {
+    const videoId = url.replace('meta-video:', '')
+    return createAdCreative({
+      name,
+      object_story_spec: JSON.stringify({
+        page_id: pid,
+        video_data: {
+          video_id: videoId,
+          message: primaryText || '',
+          title: headline || '',
+          link_description: description || '',
+          call_to_action: { type: 'SHOP_NOW', value: { link: 'https://genderrevealideas.com.au' } }
+        }
+      })
+    })
+  }
+
   // Video URL — upload first, then create video creative
   if (isVideoUrl(url)) {
     const videoResult = await uploadAdVideo(url)

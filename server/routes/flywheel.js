@@ -1134,7 +1134,22 @@ router.post('/pause-replace-activate', async (req, res) => {
     await metaUpdateAdStatus(adId, 'PAUSED')
     steps.push('Paused ad on Meta')
 
-    // Step 2: Create new creative (handles image URLs, video URLs, or copy-only)
+    // Step 2: If no new media provided, get the old ad's media to reuse
+    let mediaUrl = imageUrl || ''
+    if (!mediaUrl) {
+      try {
+        const oldSpec = await fetchAdCreativeSpec(adId)
+        if (oldSpec.isVideo && oldSpec.videoId) {
+          mediaUrl = `meta-video:${oldSpec.videoId}`
+          steps.push(`Reusing old video (ID: ${oldSpec.videoId})`)
+        } else if (oldSpec.imageUrl) {
+          mediaUrl = oldSpec.imageUrl
+          steps.push('Reusing old image')
+        }
+      } catch { /* continue without old media */ }
+    }
+
+    // Step 3: Create new creative (handles image URLs, video URLs, meta-video:ID, or copy-only)
     let creative
     try {
       creative = await createAdCreativeFromUrl({
@@ -1142,7 +1157,7 @@ router.post('/pause-replace-activate', async (req, res) => {
         primaryText,
         headline: headline || '',
         description: description || '',
-        mediaUrl: imageUrl || '',
+        mediaUrl,
       })
       steps.push(`Created new creative (${creative.id})${imageUrl ? (imageUrl.match(/\.(mp4|mov|webm)/i) ? ' [video]' : ' [image]') : ' [copy only]'}`)
     } catch (creativeErr) {
