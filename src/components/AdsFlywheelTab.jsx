@@ -125,6 +125,11 @@ export function AdsFlywheelTab() {
   const [expandedDecision, setExpandedDecision] = useState(null)
   const [scoutRunning, setScoutRunning] = useState(false)
 
+  // Campaign table own date range (independent of top-level)
+  const [campRange, setCampRange] = useState('7d')
+  const [campData, setCampData] = useState(null)
+  const [campLoading, setCampLoading] = useState(false)
+
   // Auto-dismiss toast after 8 seconds
   const toastTimerRef = useRef(null)
   useEffect(() => {
@@ -528,6 +533,18 @@ export function AdsFlywheelTab() {
     setReplacing(false)
   }
 
+  // Campaign table data (own date range)
+  async function loadCampData(r) {
+    setCampLoading(true)
+    try {
+      const res = await fetch(`/api/ads/performance?dateRange=${r || campRange}`).then(r => r.json())
+      if (res.ok) setCampData(res)
+    } catch { /* silent */ }
+    setCampLoading(false)
+  }
+
+  useEffect(() => { loadCampData(campRange) }, [campRange])
+
   // Decision history
   async function loadDecisionHistory() {
     try {
@@ -878,7 +895,20 @@ export function AdsFlywheelTab() {
 
       {/* ── 4. Campaign Table (expandable with surgical actions) ────────────── */}
       <div style={{ marginBottom: 16 }}>
-        <h2 style={secTitle}>Campaign Health</h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <h2 style={{ ...secTitle, margin: 0 }}>Campaign Health</h2>
+          <div style={{ display: 'flex', gap: 4 }}>
+            {[{ key: 'today', label: 'Today' }, { key: '7d', label: '7d' }, { key: '14d', label: '14d' }, { key: '30d', label: '30d' }].map(r => (
+              <button key={r.key} onClick={() => setCampRange(r.key)} style={{
+                background: campRange === r.key ? C.blue : C.card,
+                color: campRange === r.key ? '#fff' : C.muted,
+                border: `1px solid ${campRange === r.key ? C.blue : C.border}`,
+                borderRadius: 5, padding: '4px 10px', fontSize: 11, fontWeight: campRange === r.key ? 700 : 500, cursor: 'pointer',
+              }}>{r.label}</button>
+            ))}
+            {campLoading && <span style={{ fontSize: 10, color: C.muted, alignSelf: 'center', marginLeft: 4 }}>Loading...</span>}
+          </div>
+        </div>
         <div style={{ ...card, overflowX: 'auto' }}>
           <table style={tbl}>
             <thead><tr>
@@ -888,20 +918,24 @@ export function AdsFlywheelTab() {
             </tr></thead>
             <tbody>
               {(d?.campaigns || []).map((c, i) => {
-                const m = c.health?.metrics || {}
+                // Use campData (from date selector) if available, fall back to flywheel data
+                const campMatch = campData?.campaigns?.find(cc => cc.id === c.id)
+                const m = campMatch?.insights || c.health?.metrics || {}
                 const statusColor = { SCALE_READY: C.green, HEALTHY: C.blue, WATCH: C.yellow, KILL_SIGNAL: C.red, NO_DATA: C.muted }
                 const isExpanded = expandedCamp === i
                 const actionCount = (c.surgicalActions || []).length
+                const cpa = m.purchases > 0 ? (m.spend / m.purchases) : (m.cpa || 0)
+                const freq = m.frequency || 0
                 return (
                   <>
                     <tr key={`camp-${i}`} onClick={() => setExpandedCamp(isExpanded ? null : i)} style={{ cursor: 'pointer', background: isExpanded ? '#1C2333' : 'transparent' }}>
                       <td style={td}><span style={{ color: C.muted }}>{isExpanded ? '\u25BC' : '\u25B6'}</span></td>
                       <td style={{ ...td, fontWeight: 600 }}>{c.name}</td>
-                      <td style={td}>{fmt$(c.dailyBudget || c.budget)}</td>
+                      <td style={td}>{fmt$(campMatch?.dailyBudget || c.dailyBudget || c.budget)}</td>
                       <td style={td}>{fmt$(m.spend)}</td>
                       <td style={td}>{m.purchases || 0}</td>
-                      <td style={{ ...td, color: m.cpa <= 43.13 ? C.green : m.cpa <= 50.74 ? C.yellow : C.red }}>{m.cpa > 0 ? fmt$(m.cpa) : '--'}</td>
-                      <td style={{ ...td, color: m.frequency > 5 ? C.red : m.frequency > 3.5 ? C.yellow : C.text }}>{m.frequency?.toFixed(1) || '--'}</td>
+                      <td style={{ ...td, color: cpa <= 43.13 ? C.green : cpa <= 50.74 ? C.yellow : C.red }}>{cpa > 0 ? fmt$(cpa) : '--'}</td>
+                      <td style={{ ...td, color: freq > 5 ? C.red : freq > 3.5 ? C.yellow : C.text }}>{freq > 0 ? freq.toFixed(1) : '--'}</td>
                       <td style={td}>{c.health?.score || '--'}</td>
                       <td style={td}><span style={badge(statusColor[c.health?.status] || C.muted)}>{c.health?.status || '?'}</span></td>
                       <td style={td}>{actionCount > 0 ? <span style={badge(C.pink)}>{actionCount} actions</span> : <span style={{ color: C.muted, fontSize: 11 }}>Hold</span>}</td>
