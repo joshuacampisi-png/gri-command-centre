@@ -1443,6 +1443,32 @@ router.post('/upload-creative', upload.single('file'), async (req, res) => {
   }
 })
 
+// ── POST /api/flywheel/force-alert ───────────────────────────────────────────
+// Bypass dedup and inject a single alert directly.
+
+router.post('/force-alert', async (req, res) => {
+  try {
+    const { readFileSync, writeFileSync } = await import('fs')
+    const { dataFile } = await import('../lib/data-dir.js')
+    const { randomUUID } = await import('crypto')
+    const file = dataFile('flywheel/alerts.json')
+    let all = []
+    try { all = JSON.parse(readFileSync(file, 'utf8')) } catch { all = [] }
+    const record = {
+      id: randomUUID(),
+      ...req.body,
+      resolved: false,
+      resolvedAt: null,
+      createdAt: new Date().toISOString(),
+    }
+    all.push(record)
+    writeFileSync(file, JSON.stringify(all, null, 2))
+    res.json({ ok: true, alert: record })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
 // ── POST /api/flywheel/scan-fatigue ──────────────────────────────────────────
 // Pull 7d data from Meta, run fatigue scoring, inject real alerts into flywheel store.
 
