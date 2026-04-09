@@ -608,30 +608,6 @@ export function AdsFlywheelTab() {
         {autoRefresh && <span style={{ color: C.green }}>Auto-refresh ON (5min)</span>}
       </div>
 
-      {/* ── Fatigue Alerts ────────────────────────────────────────────────── */}
-      {fatigueAlerts.length > 0 && (
-        <div style={{ marginBottom: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: C.red, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>
-            FATIGUE ALERTS ({fatigueAlerts.length})
-          </div>
-          {fatigueAlerts.map(a => (
-            <div key={a.id} style={{ ...card, borderLeft: `3px solid ${a.currentStatus === 'DEAD' ? C.red : C.yellow}`, marginBottom: 6, padding: '8px 12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: 13, color: C.text }}>{a.adName}</div>
-                  <div style={{ fontSize: 11, color: a.currentStatus === 'DEAD' ? C.red : C.yellow, fontWeight: 600 }}>
-                    {a.previousStatus} → {a.currentStatus} (Score: {a.score}/100)
-                    {a.daysRemaining != null && <span style={{ color: C.muted }}> — ~{a.daysRemaining}d left</span>}
-                  </div>
-                  <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>{a.recommendation}</div>
-                </div>
-                <button onClick={() => ackFatigueAlert(a.id)} style={btnSm}>Dismiss</button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
       {/* ── 2. Revenue + Spend Cards ─────────────────────────────────────── */}
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10, marginBottom: 10 }}>
 
