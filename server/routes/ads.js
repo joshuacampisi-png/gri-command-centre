@@ -1401,7 +1401,7 @@ router.post('/generate-copy', async (req, res) => {
 
     const prompt = `You are an expert Meta Ads copywriter for Gender Reveal Ideas (genderrevealideas.com.au), an Australian DTC e-commerce brand on the Gold Coast selling gender reveal products.
 
-Products: Confetti Cannons, Powder Cannons, Bio Cannons, Smoke Bombs, Extinguishers, Sports Balls (Football, Basketball, Golf, Cricket, Baseball), Balloon Boxes, Mega Blaster, Mini Blaster.
+Products: Confetti Cannons, Powder Cannons, Bio Cannons, Smoke Bombs, Extinguishers, Sports Balls (Football, Basketball, Golf, Cricket, Baseball), Balloon Boxes, Mega Blaster, Mini Blaster, TNT Rental (hire service — customers rent a TNT cannon setup for their event, Gold Coast local pickup/delivery), Bundles (multi-product bundles at a discount).
 
 Brand voice: Excited, Aussie, fun, trustworthy, safe. Australian English (colour not color, mum not mom). No dashes. No corporate speak.
 

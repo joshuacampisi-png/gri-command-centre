@@ -1194,6 +1194,9 @@ export function AdsFlywheelTab() {
                 <option value="Extinguishers">Extinguishers</option>
                 <option value="Sports Balls">Sports Balls</option>
                 <option value="Mega Blaster">Mega Blaster</option>
+                <option value="Mini Blaster">Mini Blaster</option>
+                <option value="TNT Rental">TNT Rental (Hire)</option>
+                <option value="Bundles">Bundles</option>
               </select>
               <button onClick={generateCopy} disabled={copyLoading || !copyAngle} style={{ ...btnStyle(C.pink), minHeight: isMobile ? 44 : 'auto' }}>
                 {copyLoading ? 'Generating...' : 'Generate 3 Variants'}
