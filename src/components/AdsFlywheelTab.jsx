@@ -516,21 +516,25 @@ export function AdsFlywheelTab() {
         })
       }).then(r => r.json())
 
-      // Resolve the alert
-      await fetch(`${API}/alerts/${alert.id}/resolve`, { method: 'POST' })
+      // Only resolve the alert if the action succeeded
+      if (result.ok) {
+        await fetch(`${API}/alerts/${alert.id}/resolve`, { method: 'POST' })
+      }
 
       setScaleResult(result.ok
         ? { ok: true, message: result.message }
         : { ok: false, error: result.error }
       )
 
-      // Reset modal
-      setResolveTarget(null)
-      setReplaceImageUrl('')
-      setReplaceCopyAngle('')
-      setReplaceCopyVariants([])
-      setReplaceSelectedVariant(null)
-      load()
+      // Only close modal on success — keep it open on failure so user can retry
+      if (result.ok) {
+        setResolveTarget(null)
+        setReplaceImageUrl('')
+        setReplaceCopyAngle('')
+        setReplaceCopyVariants([])
+        setReplaceSelectedVariant(null)
+        load()
+      }
     } catch (e) {
       setScaleResult({ ok: false, error: e.message })
     }
