@@ -1813,10 +1813,34 @@ export function AdsFlywheelTab() {
                   `}</style>
                 </div>
               ) : uploadingCreative ? (
-                /* Uploading... */
-                <div style={{ background: C.bg, border: `2px dashed ${C.blue}`, borderRadius: 10, padding: 32, textAlign: 'center' }}>
-                  <div style={{ fontSize: 14, color: C.blue, fontWeight: 600 }}>Uploading to Meta...</div>
-                  <div style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>This may take a moment for large videos</div>
+                /* Uploading — animated progress */
+                <div style={{ background: C.bg, border: `2px solid ${C.blue}`, borderRadius: 10, padding: 24, textAlign: 'center' }}>
+                  {/* Spinning loader */}
+                  <div style={{
+                    width: 44, height: 44, border: `3px solid ${C.border}`, borderTop: `3px solid ${C.blue}`,
+                    borderRadius: '50%', margin: '0 auto 12px',
+                    animation: 'upload-spin 0.8s linear infinite',
+                  }} />
+                  <div style={{ fontSize: 15, color: C.blue, fontWeight: 700 }}>Uploading to Meta...</div>
+                  <div style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>Please wait, do not close this window</div>
+                  {/* Progress bar animation */}
+                  <div style={{ width: '80%', height: 4, background: C.border, borderRadius: 2, margin: '12px auto 0', overflow: 'hidden' }}>
+                    <div style={{
+                      height: '100%', background: C.blue, borderRadius: 2,
+                      animation: 'upload-bar 2s ease-in-out infinite',
+                    }} />
+                  </div>
+                  <style>{`
+                    @keyframes upload-spin {
+                      0% { transform: rotate(0deg); }
+                      100% { transform: rotate(360deg); }
+                    }
+                    @keyframes upload-bar {
+                      0% { width: 0%; }
+                      50% { width: 70%; }
+                      100% { width: 95%; }
+                    }
+                  `}</style>
                 </div>
               ) : (
                 /* Drag and drop zone */
