@@ -1608,11 +1608,45 @@ export function AdsFlywheelTab() {
               This ad is exhausted. It will be paused → creative swapped → reactivated in one batch. No spend during the swap.
             </div>
 
-            {/* Fatigued ad info + creative context */}
+            {/* Current ad preview — thumbnail + copy */}
             <div style={{ background: C.bg, borderRadius: 8, padding: 12, marginBottom: 16, borderLeft: `3px solid ${C.red}` }}>
-              <div style={{ fontSize: 10, color: C.red, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4, fontWeight: 700 }}>FATIGUED AD</div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{resolveTarget.entityName || resolveTarget.title}</div>
-              <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>{resolveTarget.body || ''}</div>
+              <div style={{ fontSize: 10, color: C.red, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8, fontWeight: 700 }}>CURRENT AD (REPLACING THIS)</div>
+              <div style={{ display: 'flex', gap: 12 }}>
+                {/* Thumbnail */}
+                {(oldCreativeSpec?.thumbnailUrl || oldCreativeSpec?.imageUrl) ? (
+                  <div style={{ flexShrink: 0, width: 120, height: 120, borderRadius: 8, overflow: 'hidden', background: C.card, border: `1px solid ${C.border}` }}>
+                    <img
+                      src={oldCreativeSpec.thumbnailUrl || oldCreativeSpec.imageUrl}
+                      alt="Current ad"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      onError={e => { e.target.style.display = 'none' }}
+                    />
+                  </div>
+                ) : (
+                  <div style={{ flexShrink: 0, width: 120, height: 120, borderRadius: 8, background: C.card, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ color: C.muted, fontSize: 10, textAlign: 'center' }}>
+                      {oldCreativeSpec ? (oldCreativeSpec.isVideo ? 'Video ad\n(no thumbnail)' : 'No preview') : 'Loading...'}
+                    </span>
+                  </div>
+                )}
+
+                {/* Ad details */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 4 }}>{resolveTarget.entityName || resolveTarget.title}</div>
+                  {/* Current copy from Meta */}
+                  {oldCreativeSpec?.message && (
+                    <div style={{ fontSize: 12, color: C.text, lineHeight: 1.4, marginBottom: 4, maxHeight: 48, overflow: 'hidden' }}>
+                      "{oldCreativeSpec.message.slice(0, 120)}{oldCreativeSpec.message.length > 120 ? '...' : ''}"
+                    </div>
+                  )}
+                  {oldCreativeSpec?.headline && (
+                    <div style={{ fontSize: 11, color: C.muted }}>
+                      Headline: <span style={{ color: C.text, fontWeight: 600 }}>{oldCreativeSpec.headline}</span>
+                    </div>
+                  )}
+                  <div style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>{resolveTarget.body || ''}</div>
+                </div>
+              </div>
 
               {/* Campaign + Adset context */}
               {(() => {
