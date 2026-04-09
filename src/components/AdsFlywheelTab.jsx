@@ -1416,36 +1416,73 @@ export function AdsFlywheelTab() {
               This ad is exhausted. It will be paused → creative swapped → reactivated in one batch. No spend during the swap.
             </div>
 
-            {/* Fatigued ad info */}
+            {/* Fatigued ad info + creative context */}
             <div style={{ background: C.bg, borderRadius: 8, padding: 12, marginBottom: 16, borderLeft: `3px solid ${C.red}` }}>
               <div style={{ fontSize: 10, color: C.red, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4, fontWeight: 700 }}>FATIGUED AD</div>
               <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{resolveTarget.entityName || resolveTarget.title}</div>
               <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>{resolveTarget.body || ''}</div>
-              <div style={{ display: 'flex', gap: 12, marginTop: 6, fontSize: 10, color: C.muted }}>
-                <span>Ad: {resolveTarget.entityId}</span>
-                {resolveTarget.adSetId && <span>Ad Set: {resolveTarget.adSetId}</span>}
-                {resolveTarget.campaignId && <span>Campaign: {resolveTarget.campaignId}</span>}
-              </div>
-              {/* Show adset/campaign names from dashboard context */}
+
+              {/* Campaign + Adset context */}
               {(() => {
-                let asName = '', cName = ''
+                let asName = '', cName = '', cObjective = ''
                 for (const c of d?.campaigns || []) {
                   if (resolveTarget.campaignId && c.id === resolveTarget.campaignId) {
                     cName = c.name
+                    cObjective = c.objective || ''
                     for (const as of c.adSets || c.adsets || []) {
                       if ((as.id || as.metaAdSetId) === resolveTarget.adSetId) { asName = as.name; break }
                     }
                     break
                   }
                 }
-                if (!cName && !asName) return null
                 return (
-                  <div style={{ display: 'flex', gap: 6, marginTop: 6, fontSize: 11 }}>
-                    {cName && <span style={badge(C.blue)}>{cName}</span>}
-                    {asName && <span style={badge(C.purple)}>{asName}</span>}
+                  <div style={{ marginTop: 8 }}>
+                    {(cName || asName) && (
+                      <div style={{ display: 'flex', gap: 6, marginBottom: 6, flexWrap: 'wrap' }}>
+                        {cName && <span style={badge(C.blue)}>{cName}</span>}
+                        {cObjective && <span style={badge(C.muted)}>{cObjective.replace('OUTCOME_', '')}</span>}
+                        {asName && <span style={badge(C.purple)}>{asName}</span>}
+                      </div>
+                    )}
                   </div>
                 )
               })()}
+
+              {/* Creative context — what type of ad is this */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginTop: 8 }}>
+                <div style={{ background: `${C.card}`, borderRadius: 6, padding: '6px 8px' }}>
+                  <div style={{ fontSize: 9, color: C.muted, textTransform: 'uppercase' }}>Audience</div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: C.text }}>
+                    {(resolveTarget.audience || 'unknown').replace(/_/g, ' ')}
+                  </div>
+                </div>
+                <div style={{ background: `${C.card}`, borderRadius: 6, padding: '6px 8px' }}>
+                  <div style={{ fontSize: 9, color: C.muted, textTransform: 'uppercase' }}>Angle</div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: C.text }}>
+                    {resolveTarget.creativeAngle || 'unknown'}
+                  </div>
+                </div>
+                <div style={{ background: `${C.card}`, borderRadius: 6, padding: '6px 8px' }}>
+                  <div style={{ fontSize: 9, color: C.muted, textTransform: 'uppercase' }}>Format</div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: C.text }}>
+                    {resolveTarget.formatType || 'unknown'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Guidance: what type of creative to replace with */}
+              <div style={{ marginTop: 8, background: `${C.yellow}12`, border: `1px solid ${C.yellow}33`, borderRadius: 6, padding: '8px 10px' }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: C.yellow, marginBottom: 2 }}>REPLACEMENT GUIDE</div>
+                <div style={{ fontSize: 11, color: C.text, lineHeight: 1.4 }}>
+                  {resolveTarget.audience === 'retargeting_warm'
+                    ? 'This is a retargeting ad — viewers already know GRI. Use trust/urgency creative (reviews, scarcity, "order before your reveal date").'
+                    : resolveTarget.audience === 'lookalike'
+                    ? 'This is a lookalike audience — similar to your buyers. Use your best-performing angle with a fresh visual. Same hook, new look.'
+                    : 'This is a cold/broad audience — they\'ve never seen GRI. Lead with a strong hook, show the product in action, make the reveal moment the hero.'}
+                  {resolveTarget.formatType === 'video' ? ' Keep it as video — swap the first 3 seconds (hook) for maximum impact.' : ''}
+                  {resolveTarget.formatType === 'image' ? ' Consider testing a video version — video typically outperforms static for gender reveals.' : ''}
+                </div>
+              </div>
             </div>
 
             {/* Step 1: New creative image/video URL */}

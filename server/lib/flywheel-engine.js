@@ -103,6 +103,7 @@ export function detectBundle(lineItems) {
 export async function evaluateKillRules() {
   const ads = getAds().filter(a => a.status === 'ACTIVE')
   const adSets = getAdSets().filter(a => a.status === 'ACTIVE')
+  const adSetMap = Object.fromEntries(adSets.map(as => [as.metaAdSetId || as.id, as]))
   const cpaTargets = getCpaTargets()
   const results = []
 
@@ -114,6 +115,17 @@ export async function evaluateKillRules() {
 
     // Get the CPA target for this ad's category (or blended)
     const target = cpaTargets[ad.productCategory || 'blended'] || cpaTargets.blended
+
+    // Context for enriched alerts
+    const parentAdSet = adSetMap[ad.adSetId] || {}
+    const adContext = {
+      adSetId: ad.adSetId || '',
+      campaignId: ad.campaignId || '',
+      creativeAngle: ad.creativeAngle || 'unknown',
+      formatType: ad.formatType || 'unknown',
+      audience: parentAdSet.audience || 'unknown',
+      productCategory: ad.productCategory || 'blended',
+    }
 
     // Weekly aggregates — this is how we evaluate, not daily noise
     const last7 = snapshots.slice(-7)
@@ -147,8 +159,7 @@ export async function evaluateKillRules() {
         entityType: 'ad',
         entityId: ad.metaAdId || ad.id,
         entityName: ad.name,
-        adSetId: ad.adSetId || '',
-        campaignId: ad.campaignId || '',
+        ...adContext,
       })
       results.push(event)
       logFlywheelEvent('kill_rule', `Weekly CPA breach on ${ad.name}: ${event.ruleDetail}`)
@@ -190,8 +201,7 @@ export async function evaluateKillRules() {
             entityType: 'ad',
             entityId: ad.metaAdId || ad.id,
             entityName: ad.name,
-            adSetId: ad.adSetId || '',
-            campaignId: ad.campaignId || '',
+            ...adContext,
           })
           results.push(event)
           logFlywheelEvent('kill_rule', `Weekly CTR drop on ${ad.name}: ${event.ruleDetail}`)
@@ -219,8 +229,7 @@ export async function evaluateKillRules() {
         entityType: 'ad',
         entityId: ad.metaAdId || ad.id,
         entityName: ad.name,
-        adSetId: ad.adSetId || '',
-        campaignId: ad.campaignId || '',
+        ...adContext,
       })
       results.push(event)
       logFlywheelEvent('kill_rule', `Zero purchase weekly alert on ${ad.name}: ${event.ruleDetail}`)
