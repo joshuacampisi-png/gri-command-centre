@@ -34,19 +34,77 @@ export function isMetaConfigured() {
   return Boolean(metaToken() && metaAccountId())
 }
 
+// ── Centralised Rate Limiter ────────────────────────────────────────────────
+// ALL Meta API calls go through this. Prevents bans from too-frequent requests.
+// - GET requests: cached for 5 minutes (read-heavy dashboard won't re-fetch)
+// - All requests: minimum 1 second between calls (serialised queue)
+// - Burst protection: max 180 calls per hour (Meta allows ~200)
+
+const _getCache = new Map()
+const GET_CACHE_TTL = 5 * 60 * 1000 // 5 minutes
+let _lastCallTime = 0
+const MIN_CALL_GAP_MS = 1000 // 1 second between calls
+let _callsThisHour = 0
+let _hourStart = Date.now()
+const MAX_CALLS_PER_HOUR = 180
+
+async function rateLimitWait() {
+  // Reset hourly counter
+  if (Date.now() - _hourStart > 3600000) {
+    _callsThisHour = 0
+    _hourStart = Date.now()
+  }
+
+  // Reject if over hourly limit
+  if (_callsThisHour >= MAX_CALLS_PER_HOUR) {
+    const waitMs = 3600000 - (Date.now() - _hourStart)
+    console.warn(`[Meta API] Rate limit: ${_callsThisHour}/${MAX_CALLS_PER_HOUR} calls this hour. Blocking for ${Math.round(waitMs / 1000)}s.`)
+    throw new Error(`Meta API rate limit reached (${MAX_CALLS_PER_HOUR}/hour). Try again in ${Math.round(waitMs / 60000)} minutes.`)
+  }
+
+  // Enforce minimum gap between calls
+  const now = Date.now()
+  const gap = now - _lastCallTime
+  if (gap < MIN_CALL_GAP_MS) {
+    await new Promise(r => setTimeout(r, MIN_CALL_GAP_MS - gap))
+  }
+  _lastCallTime = Date.now()
+  _callsThisHour++
+}
+
 async function metaGet(path, params = {}) {
   const url = new URL(`${BASE}${path}`)
   url.searchParams.set('access_token', metaToken())
   for (const [k, v] of Object.entries(params)) {
     url.searchParams.set(k, v)
   }
-  const res = await fetch(url.toString())
+  const urlStr = url.toString()
+
+  // Check cache first (strips token for cache key)
+  const cacheKey = urlStr.replace(/access_token=[^&]+/, 'TOKEN')
+  const cached = _getCache.get(cacheKey)
+  if (cached && Date.now() - cached.ts < GET_CACHE_TTL) {
+    return cached.data
+  }
+
+  await rateLimitWait()
+  const res = await fetch(urlStr)
   const data = await res.json()
   if (data.error) throw new Error(`Meta API: ${data.error.message}`)
+
+  // Cache successful GET responses
+  _getCache.set(cacheKey, { data, ts: Date.now() })
+  // Prune cache if too large
+  if (_getCache.size > 500) {
+    const oldest = [..._getCache.entries()].sort((a, b) => a[1].ts - b[1].ts)
+    for (let i = 0; i < 100; i++) _getCache.delete(oldest[i][0])
+  }
+
   return data
 }
 
 async function metaPost(path, body = {}) {
+  await rateLimitWait()
   const url = `${BASE}${path}`
   const form = new URLSearchParams({ access_token: metaToken(), ...body })
   const res = await fetch(url, { method: 'POST', body: form })

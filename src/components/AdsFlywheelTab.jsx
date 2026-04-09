@@ -161,7 +161,7 @@ export function AdsFlywheelTab() {
     setLoading(true)
     load()
     loadAudiences()
-    const i = setInterval(load, 60000)
+    const i = setInterval(load, 5 * 60 * 1000) // 5 min (was 60s — too aggressive for Meta rate limits)
     return () => clearInterval(i)
   }, [load, loadAudiences])
 
@@ -437,7 +437,7 @@ export function AdsFlywheelTab() {
   // Auto-refresh (2 min interval)
   useEffect(() => {
     if (!autoRefresh) return
-    const iv = setInterval(doLiveRefresh, 2 * 60 * 1000)
+    const iv = setInterval(doLiveRefresh, 5 * 60 * 1000) // 5 min (was 2 min — respects Meta rate limits)
     doLiveRefresh() // immediate first pull
     return () => clearInterval(iv)
   }, [autoRefresh])
@@ -605,7 +605,7 @@ export function AdsFlywheelTab() {
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginBottom: 6, fontSize: 10, color: C.muted }}>
         {d?.dataFetchedAt && <span>Dashboard: {new Date(d.dataFetchedAt).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' })}</span>}
         {liveData?.fetchedAt && <span style={{ color: C.green }}>Live: {new Date(liveData.fetchedAt).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' })}</span>}
-        {autoRefresh && <span style={{ color: C.green }}>Auto-refresh ON (2min)</span>}
+        {autoRefresh && <span style={{ color: C.green }}>Auto-refresh ON (5min)</span>}
       </div>
 
       {/* ── Fatigue Alerts ────────────────────────────────────────────────── */}

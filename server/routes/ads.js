@@ -94,7 +94,7 @@ function saveJSON(file, data) {
 // ── In-memory cache (avoids hammering Meta API on every page load) ──────────
 
 const cache = new Map()
-const CACHE_TTL = 3 * 60 * 1000 // 3 minutes
+const CACHE_TTL = 5 * 60 * 1000 // 5 minutes (aligned with meta-api.js internal GET cache)
 
 function getCached(key) {
   const entry = cache.get(key)
