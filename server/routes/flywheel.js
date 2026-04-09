@@ -12,6 +12,7 @@ import {
   getAdSetSnapshots, getAdSnapshots,
   getAdActivations, saveAdActivation, logFlywheelEvent,
   getDecisionHistory, getWinnerLog, getWinnerStats,
+  addAlert,
 } from '../lib/flywheel-store.js'
 import {
   getFlywheelSummary, getCreativeLeaderboard, scoreCampaignHealth,
@@ -1388,6 +1389,66 @@ router.get('/ad-creative-spec/:adId', async (req, res) => {
     const spec = await fetchAdCreativeSpec(req.params.adId)
     res.json({ ok: true, spec })
   } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── POST /api/flywheel/scan-fatigue ──────────────────────────────────────────
+// Pull 7d data from Meta, run fatigue scoring, inject real alerts into flywheel store.
+
+router.post('/scan-fatigue', async (_req, res) => {
+  try {
+    const { fetchFullPerformance: fetchPerf } = await import('../lib/meta-api.js')
+    const { calculateFatigueScore: calcFatigue, prepareFatigueMetrics: prepMetrics } = await import('../lib/fatigue-engine.js')
+
+    const perfData = await fetchPerf('last_7d')
+    const campaigns = perfData.campaigns || []
+    let injected = 0
+
+    for (const c of campaigns) {
+      for (const ad of c.ads || []) {
+        const metrics = prepMetrics(ad)
+        const fatigue = calcFatigue(metrics)
+        const ins = ad.insights || {}
+        const spend = ins.spend || 0
+
+        if (spend < 20 || fatigue.score >= 60) continue
+
+        const cpa = ins.cpa || 0
+        const roas = ins.roas || 0
+        const freq = ins.frequency || 0
+
+        const bodyParts = []
+        if (cpa > 50) bodyParts.push(`CPA $${cpa.toFixed(2)} above breakeven`)
+        if (cpa === 0 && spend > 30) bodyParts.push(`$${spend.toFixed(0)} spent with zero purchases`)
+        if (freq > 4) bodyParts.push(`Frequency ${freq.toFixed(1)} — audience saturated`)
+        for (const s of fatigue.signals) bodyParts.push(s)
+
+        const severity = fatigue.score <= 20 ? 'critical' : fatigue.score <= 35 ? 'critical' : 'warning'
+        const lower = (ad.name || '').toLowerCase()
+        const formatType = (lower.includes('video') || lower.includes('reel')) ? 'video' : lower.includes('image') ? 'image' : null
+
+        addAlert({
+          type: 'kill_rule',
+          severity,
+          title: `Creative fatigue: ${ad.name}`,
+          body: bodyParts.join('. ') || `Fatigue score ${fatigue.score}/100`,
+          entityType: 'ad',
+          entityId: ad.id,
+          entityName: ad.name,
+          adSetId: ad.adsetId || '',
+          campaignId: c.id || '',
+          formatType,
+          creativeAngle: null,
+          audience: null,
+        })
+        injected++
+      }
+    }
+
+    res.json({ ok: true, injected, message: `${injected} fatigue alerts created from 7-day Meta data.` })
+  } catch (err) {
+    console.error('[Flywheel] Scan fatigue error:', err.message)
     res.status(500).json({ ok: false, error: err.message })
   }
 })
