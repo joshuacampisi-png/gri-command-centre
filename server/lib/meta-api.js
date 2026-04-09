@@ -380,8 +380,9 @@ export function isVideoUrl(url) {
  * Create an ad creative with proper handling for both image and video URLs.
  * Detects URL type, uploads video if needed, builds correct spec.
  */
-export async function createAdCreativeFromUrl({ name, primaryText, headline, description, mediaUrl, pageId }) {
-  const pid = pageId || '105089549192262'
+export async function createAdCreativeFromUrl({ name, primaryText, headline, description, mediaUrl, pageId, link }) {
+  const pid = pageId || '155263927680879'  // GRI Facebook Page (was wrong: 105089549192262)
+  const siteLink = link || 'https://genderrevealideas.com.au'
 
   // No media — link ad with copy only
   if (!mediaUrl || !mediaUrl.trim()) {
@@ -393,7 +394,7 @@ export async function createAdCreativeFromUrl({ name, primaryText, headline, des
           message: primaryText || '',
           name: headline || '',
           description: description || '',
-          link: 'https://genderrevealideas.com.au',
+          link: siteLink,
           call_to_action: { type: 'SHOP_NOW' }
         }
       })
@@ -414,7 +415,7 @@ export async function createAdCreativeFromUrl({ name, primaryText, headline, des
           message: primaryText || '',
           title: headline || '',
           link_description: description || '',
-          call_to_action: { type: 'SHOP_NOW', value: { link: 'https://genderrevealideas.com.au' } }
+          call_to_action: { type: 'SHOP_NOW', value: { link: siteLink } }
         }
       })
     })
@@ -435,7 +436,7 @@ export async function createAdCreativeFromUrl({ name, primaryText, headline, des
           message: primaryText || '',
           title: headline || '',
           link_description: description || '',
-          call_to_action: { type: 'SHOP_NOW', value: { link: 'https://genderrevealideas.com.au' } }
+          call_to_action: { type: 'SHOP_NOW', value: { link: siteLink } }
         }
       })
     })

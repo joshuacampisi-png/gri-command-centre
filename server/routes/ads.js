@@ -1466,7 +1466,7 @@ router.post('/create-ad', async (req, res) => {
     const creative = await createAdCreative({
       name: `Creative - ${name}`,
       object_story_spec: JSON.stringify({
-        page_id: pageId || '105089549192262', // GRI Facebook Page ID
+        page_id: pageId || '155263927680879', // GRI Facebook Page ID
         link_data: {
           message: primaryText,
           name: headline || '',

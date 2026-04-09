@@ -1084,7 +1084,7 @@ JSON only: { "primaryText": "...", "headline": "...", "description": "..." }`
     const creative = await createAdCreative({
       name: `Creative - ${name || angle}`,
       object_story_spec: JSON.stringify({
-        page_id: '105089549192262',
+        page_id: '155263927680879',
         link_data: {
           message: copy.primaryText,
           name: copy.headline,
@@ -1134,11 +1134,15 @@ router.post('/pause-replace-activate', async (req, res) => {
     await metaUpdateAdStatus(adId, 'PAUSED')
     steps.push('Paused ad on Meta')
 
-    // Step 2: If no new media provided, get the old ad's media to reuse
+    // Step 2: Fetch old ad's creative spec (page ID, media, link) to reuse
     let mediaUrl = imageUrl || ''
-    if (!mediaUrl) {
-      try {
-        const oldSpec = await fetchAdCreativeSpec(adId)
+    let oldPageId = ''
+    let oldLink = ''
+    try {
+      const oldSpec = await fetchAdCreativeSpec(adId)
+      oldPageId = oldSpec.pageId || ''
+      oldLink = oldSpec.link || ''
+      if (!mediaUrl) {
         if (oldSpec.isVideo && oldSpec.videoId) {
           mediaUrl = `meta-video:${oldSpec.videoId}`
           steps.push(`Reusing old video (ID: ${oldSpec.videoId})`)
@@ -1146,8 +1150,8 @@ router.post('/pause-replace-activate', async (req, res) => {
           mediaUrl = oldSpec.imageUrl
           steps.push('Reusing old image')
         }
-      } catch { /* continue without old media */ }
-    }
+      }
+    } catch { /* continue without old spec */ }
 
     // Step 3: Create new creative (handles image URLs, video URLs, meta-video:ID, or copy-only)
     let creative
@@ -1158,6 +1162,8 @@ router.post('/pause-replace-activate', async (req, res) => {
         headline: headline || '',
         description: description || '',
         mediaUrl,
+        pageId: oldPageId,
+        link: oldLink,
       })
       steps.push(`Created new creative (${creative.id})${imageUrl ? (imageUrl.match(/\.(mp4|mov|webm)/i) ? ' [video]' : ' [image]') : ' [copy only]'}`)
     } catch (creativeErr) {
