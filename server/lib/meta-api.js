@@ -297,6 +297,49 @@ export async function uploadAdVideo(videoUrl) {
 }
 
 /**
+ * Upload a raw image buffer to Meta (base64 encoded).
+ * Returns { images: { hash: { hash, url } } }
+ */
+export async function uploadAdImageBytes(base64Data, filename) {
+  const accountId = metaAccountId()
+  await rateLimitWait()
+  const form = new URLSearchParams({
+    access_token: metaToken(),
+    bytes: base64Data,
+    name: filename || 'creative.jpg',
+  })
+  const res = await fetch(`${BASE}/${accountId}/adimages`, { method: 'POST', body: form })
+  const data = await res.json()
+  if (data.error) throw new Error(`Meta API (image upload): ${data.error.message}`)
+  // Extract the image URL from the response
+  const images = data.images || {}
+  const firstKey = Object.keys(images)[0]
+  const imageData = firstKey ? images[firstKey] : {}
+  return { hash: imageData.hash, url: imageData.url, permalink_url: imageData.permalink_url }
+}
+
+/**
+ * Upload a raw video buffer to Meta via multipart form.
+ * Returns { id: videoId }
+ */
+export async function uploadAdVideoFile(buffer, filename) {
+  const accountId = metaAccountId()
+  await rateLimitWait()
+  const { FormData, Blob } = await import('node-fetch') // node 18+ has global FormData
+    .catch(() => ({ FormData: globalThis.FormData, Blob: globalThis.Blob }))
+
+  const formData = new FormData()
+  formData.append('access_token', metaToken())
+  formData.append('title', filename || 'creative.mp4')
+  formData.append('source', new Blob([buffer]), filename || 'creative.mp4')
+
+  const res = await fetch(`${BASE}/${accountId}/advideos`, { method: 'POST', body: formData })
+  const data = await res.json()
+  if (data.error) throw new Error(`Meta API (video upload): ${data.error.message}`)
+  return { id: data.id, videoId: data.id }
+}
+
+/**
  * Fetch full creative spec for an ad — reveals whether it's image or video,
  * the actual media dimensions, and the copy used.
  */

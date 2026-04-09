@@ -26,7 +26,8 @@ import {
   updateAdSetBudget, updateCampaignBudget, fetchAdsetsForCampaign, fetchAccountInsights,
   duplicateAd, duplicateAdSet, updateAdCreative, createAdCreative, createAd as metaCreateAd,
   updateAdStatus as metaUpdateAdStatus, fetchCampaigns, fetchCampaignInsightsRange,
-  fetchAdSetInsightsRange, fetchAdCreativeSpec, createAdCreativeFromUrl
+  fetchAdSetInsightsRange, fetchAdCreativeSpec, createAdCreativeFromUrl,
+  uploadAdImageBytes, uploadAdVideoFile
 } from '../lib/meta-api.js'
 import { callClaude } from '../lib/claude-guard.js'
 import { getUnacknowledgedAlerts, acknowledgeAlert } from '../lib/fatigue-alert-cron.js'
@@ -38,6 +39,9 @@ import { getGoogleSpend } from '../lib/google-ads-spend.js'
 import { getIndex, classifyOrders } from '../lib/customer-index.js'
 import { calculateFatigueScore } from '../lib/fatigue-engine.js'
 import { processShopifyOrder, verifyShopifyHmac } from '../lib/flywheel-webhook.js'
+import multer from 'multer'
+
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 100 * 1024 * 1024 } }) // 100MB max
 
 const router = Router()
 
@@ -1389,6 +1393,52 @@ router.get('/ad-creative-spec/:adId', async (req, res) => {
     const spec = await fetchAdCreativeSpec(req.params.adId)
     res.json({ ok: true, spec })
   } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── POST /api/flywheel/upload-creative ───────────────────────────────────────
+// Drag-and-drop file upload → sends directly to Meta → returns URL/ID for use in ads.
+
+router.post('/upload-creative', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ ok: false, error: 'No file uploaded' })
+
+    const { buffer, originalname, mimetype, size } = req.file
+    const isVideo = mimetype.startsWith('video/')
+    const isImage = mimetype.startsWith('image/')
+
+    if (!isVideo && !isImage) {
+      return res.status(400).json({ ok: false, error: `Unsupported file type: ${mimetype}. Use image (jpg/png) or video (mp4/mov).` })
+    }
+
+    console.log(`[Flywheel] Uploading ${isVideo ? 'video' : 'image'}: ${originalname} (${(size / 1024 / 1024).toFixed(1)}MB)`)
+
+    if (isImage) {
+      const base64 = buffer.toString('base64')
+      const result = await uploadAdImageBytes(base64, originalname)
+      return res.json({
+        ok: true,
+        type: 'image',
+        url: result.url || result.permalink_url,
+        hash: result.hash,
+        filename: originalname,
+        message: `Image uploaded to Meta: ${originalname}`
+      })
+    }
+
+    if (isVideo) {
+      const result = await uploadAdVideoFile(buffer, originalname)
+      return res.json({
+        ok: true,
+        type: 'video',
+        videoId: result.id || result.videoId,
+        filename: originalname,
+        message: `Video uploaded to Meta: ${originalname} (ID: ${result.id})`
+      })
+    }
+  } catch (err) {
+    console.error('[Flywheel] Upload creative error:', err.message)
     res.status(500).json({ ok: false, error: err.message })
   }
 })

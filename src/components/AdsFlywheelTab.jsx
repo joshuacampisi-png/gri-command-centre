@@ -119,6 +119,9 @@ export function AdsFlywheelTab() {
   const [replaceSelectedVariant, setReplaceSelectedVariant] = useState(null)
   const [replacing, setReplacing] = useState(false)
   const [oldCreativeSpec, setOldCreativeSpec] = useState(null) // fetched from Meta when modal opens
+  const [uploadingCreative, setUploadingCreative] = useState(false)
+  const [uploadedFile, setUploadedFile] = useState(null) // { name, type, url/videoId }
+  const [dragOver, setDragOver] = useState(false)
 
   // Decision history + winner scout
   const [decisionHistory, setDecisionHistory] = useState([])
@@ -856,6 +859,9 @@ export function AdsFlywheelTab() {
                   setReplaceSelectedVariant(null)
                   setReplaceImageUrl('')
                   setOldCreativeSpec(null)
+                  setUploadedFile(null)
+                  setUploadingCreative(false)
+                  setDragOver(false)
                   // Fetch the old ad's creative spec from Meta (format, media type, copy)
                   if (a.entityId) {
                     try {
@@ -1762,35 +1768,108 @@ export function AdsFlywheelTab() {
               </div>
             )}
 
-            {/* Step 1: New creative image/video URL */}
+            {/* Step 1: Drag and drop creative */}
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: C.pink, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>
                 STEP 1: NEW CREATIVE {oldCreativeSpec?.isVideo ? '(VIDEO)' : oldCreativeSpec?.isImage ? '(IMAGE)' : ''}
               </div>
-              <input
-                type="text"
-                value={replaceImageUrl}
-                onChange={e => setReplaceImageUrl(e.target.value)}
-                placeholder={oldCreativeSpec?.isVideo
-                  ? 'Paste video URL (.mp4 or .mov) — must match original ratio'
-                  : 'Paste image URL (.jpg or .png) — must match original ratio'}
-                style={{ width: '100%', padding: '10px 12px', background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, color: C.text, fontSize: 13 }}
-              />
-              {/* URL type detection feedback */}
-              {replaceImageUrl && (
-                <div style={{ fontSize: 10, marginTop: 4, fontWeight: 600, color: /\.(mp4|mov|webm|avi)/i.test(replaceImageUrl) ? C.pink : C.blue }}>
-                  {/\.(mp4|mov|webm|avi)/i.test(replaceImageUrl) ? 'Detected: VIDEO — will be uploaded to Meta then attached' : 'Detected: IMAGE — will be set directly'}
-                  {oldCreativeSpec?.isVideo && !/\.(mp4|mov|webm|avi)/i.test(replaceImageUrl) && (
-                    <span style={{ color: C.red, marginLeft: 8 }}>Warning: old ad was VIDEO but you're uploading an image</span>
-                  )}
-                  {oldCreativeSpec?.isImage && /\.(mp4|mov|webm|avi)/i.test(replaceImageUrl) && (
-                    <span style={{ color: C.yellow, marginLeft: 8 }}>Note: old ad was IMAGE but you're uploading a video (format change)</span>
+
+              {uploadedFile ? (
+                /* Upload complete — show result */
+                <div style={{ background: `${C.green}12`, border: `2px solid ${C.green}44`, borderRadius: 10, padding: 16, textAlign: 'center' }}>
+                  <div style={{ fontSize: 24, marginBottom: 6 }}>{uploadedFile.type === 'video' ? '\uD83C\uDFA5' : '\uD83D\uDDBC\uFE0F'}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: C.green }}>{uploadedFile.name}</div>
+                  <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>
+                    {uploadedFile.type === 'video' ? `Uploaded to Meta (Video ID: ${uploadedFile.videoId})` : 'Uploaded to Meta'}
+                  </div>
+                  <button onClick={() => { setUploadedFile(null); setReplaceImageUrl('') }} style={{ ...btnStyle(C.muted), marginTop: 8, fontSize: 10 }}>
+                    Remove & upload different file
+                  </button>
+                </div>
+              ) : uploadingCreative ? (
+                /* Uploading... */
+                <div style={{ background: C.bg, border: `2px dashed ${C.blue}`, borderRadius: 10, padding: 32, textAlign: 'center' }}>
+                  <div style={{ fontSize: 14, color: C.blue, fontWeight: 600 }}>Uploading to Meta...</div>
+                  <div style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>This may take a moment for large videos</div>
+                </div>
+              ) : (
+                /* Drag and drop zone */
+                <div
+                  onDragOver={e => { e.preventDefault(); setDragOver(true) }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={async e => {
+                    e.preventDefault()
+                    setDragOver(false)
+                    const file = e.dataTransfer.files[0]
+                    if (!file) return
+                    if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+                      setScaleResult({ ok: false, error: `Unsupported file: ${file.type}. Use jpg/png/mp4/mov.` })
+                      return
+                    }
+                    setUploadingCreative(true)
+                    try {
+                      const formData = new FormData()
+                      formData.append('file', file)
+                      const resp = await fetch(`${API}/upload-creative`, { method: 'POST', body: formData })
+                      const result = await resp.json()
+                      if (result.ok) {
+                        setUploadedFile({ name: file.name, type: result.type, url: result.url, videoId: result.videoId })
+                        setReplaceImageUrl(result.url || `meta-video:${result.videoId}`)
+                      } else {
+                        setScaleResult({ ok: false, error: result.error })
+                      }
+                    } catch (err) {
+                      setScaleResult({ ok: false, error: err.message })
+                    }
+                    setUploadingCreative(false)
+                  }}
+                  style={{
+                    background: dragOver ? `${C.pink}15` : C.bg,
+                    border: `2px dashed ${dragOver ? C.pink : C.border}`,
+                    borderRadius: 10, padding: 32, textAlign: 'center', cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                  onClick={() => {
+                    const input = document.createElement('input')
+                    input.type = 'file'
+                    input.accept = 'image/*,video/*'
+                    input.onchange = async (e) => {
+                      const file = e.target.files[0]
+                      if (!file) return
+                      setUploadingCreative(true)
+                      try {
+                        const formData = new FormData()
+                        formData.append('file', file)
+                        const resp = await fetch(`${API}/upload-creative`, { method: 'POST', body: formData })
+                        const result = await resp.json()
+                        if (result.ok) {
+                          setUploadedFile({ name: file.name, type: result.type, url: result.url, videoId: result.videoId })
+                          setReplaceImageUrl(result.url || `meta-video:${result.videoId}`)
+                        } else {
+                          setScaleResult({ ok: false, error: result.error })
+                        }
+                      } catch (err) {
+                        setScaleResult({ ok: false, error: err.message })
+                      }
+                      setUploadingCreative(false)
+                    }
+                    input.click()
+                  }}
+                >
+                  <div style={{ fontSize: 32, marginBottom: 8, opacity: 0.5 }}>+</div>
+                  <div style={{ fontSize: 13, color: C.text, fontWeight: 600 }}>
+                    Drag & drop your {oldCreativeSpec?.isVideo ? 'video' : 'image'} here
+                  </div>
+                  <div style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>
+                    or click to browse · jpg, png, mp4, mov · uploads direct to Meta
+                  </div>
+                  {oldCreativeSpec && (
+                    <div style={{ fontSize: 10, color: C.yellow, marginTop: 8 }}>
+                      Match the original ratio: {oldCreativeSpec.isVideo ? '9:16 for Reels, 1:1 for Feed' : '1:1 or 4:5 to match existing'}
+                    </div>
                   )}
                 </div>
               )}
-              <div style={{ fontSize: 10, color: C.muted, marginTop: 4 }}>
-                Upload to Shopify CDN or any public URL first. Supports .jpg, .png, .mp4, .mov
-              </div>
             </div>
 
             {/* Step 2: Generate new copy */}
