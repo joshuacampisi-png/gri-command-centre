@@ -1108,17 +1108,25 @@ JSON only: { "primaryText": "...", "headline": "...", "description": "..." }`
   }
 })
 
-// ── POST /api/flywheel/replace-creative ─────────────────────────────────────
-// Swap the creative on an existing ad (new image/video URL).
+// ── POST /api/flywheel/pause-replace-activate ───────────────────────────────
+// Atomic batch: PAUSE fatigued ad → swap creative → capture baseline → ACTIVATE → track impact.
+// This is the correct flow: pausing first stops spend, swapping while paused is clean,
+// then reactivating starts fresh creative learning with a proper baseline.
 
-router.post('/replace-creative', async (req, res) => {
+router.post('/pause-replace-activate', async (req, res) => {
   try {
-    const { adId, primaryText, headline, description, imageUrl } = req.body
+    const { adId, adSetId, campaignId, adName, adSetName, campaignName, primaryText, headline, description, imageUrl } = req.body
     if (!adId) return res.status(400).json({ ok: false, error: 'Missing adId' })
 
-    // Create new creative
+    const steps = []
+
+    // Step 1: PAUSE the ad (stop spend immediately)
+    await metaUpdateAdStatus(adId, 'PAUSED')
+    steps.push('Paused ad on Meta')
+
+    // Step 2: Create new creative object
     const creative = await createAdCreative({
-      name: `Replacement - ${new Date().toISOString().slice(0, 10)}`,
+      name: `Replacement - ${adName || adId} - ${new Date().toISOString().slice(0, 10)}`,
       object_story_spec: JSON.stringify({
         page_id: '105089549192262',
         link_data: {
@@ -1131,17 +1139,74 @@ router.post('/replace-creative', async (req, res) => {
         }
       })
     })
+    steps.push(`Created new creative (${creative.id})`)
 
-    // Swap creative on existing ad
+    // Step 3: Swap creative on the paused ad
     await updateAdCreative(adId, creative.id)
+    steps.push('Swapped creative on paused ad')
+
+    // Step 4: Capture baseline from adset (before reactivation)
+    let baseline = { cpa: 0, roas: 0, frequency: 0, spend: 0, purchases: 0, capturedAt: new Date().toISOString() }
+    if (adSetId) {
+      const snapshots = getAdSetSnapshots(adSetId, 7)
+      if (snapshots.length > 0) {
+        const totalSpend = snapshots.reduce((s, r) => s + (r.spend || 0), 0)
+        const totalPurchases = snapshots.reduce((s, r) => s + (r.purchases || 0), 0)
+        const totalRevenue = snapshots.reduce((s, r) => s + (r.revenue || 0), 0)
+        const avgFreq = snapshots.reduce((s, r) => s + (r.frequency || 0), 0) / snapshots.length
+        baseline = {
+          cpa: totalPurchases > 0 ? +(totalSpend / totalPurchases).toFixed(2) : 0,
+          roas: totalSpend > 0 ? +(totalRevenue / totalSpend).toFixed(2) : 0,
+          frequency: +avgFreq.toFixed(2),
+          spend: +totalSpend.toFixed(2),
+          purchases: totalPurchases,
+          capturedAt: new Date().toISOString()
+        }
+      }
+      // Try live data for freshest baseline
+      try {
+        const live = await fetchAdSetInsightsRange(adSetId, 3)
+        if (live && live.spend > 0) {
+          baseline.cpa = live.cpa || baseline.cpa
+          baseline.roas = live.roas || baseline.roas
+          baseline.frequency = live.frequency || baseline.frequency
+          baseline.capturedAt = new Date().toISOString()
+        }
+      } catch { /* fallback to stored */ }
+    }
+    steps.push(`Baseline captured (CPA: $${baseline.cpa}, ROAS: ${baseline.roas}x, Freq: ${baseline.frequency})`)
+
+    // Step 5: ACTIVATE the ad with fresh creative
+    await metaUpdateAdStatus(adId, 'ACTIVE')
+    steps.push('Reactivated ad with fresh creative')
+
+    // Step 6: Save activation record for impact tracking
+    const activation = saveAdActivation({
+      adId, adSetId, campaignId,
+      adName: adName || adId,
+      adSetName: adSetName || '',
+      campaignName: campaignName || '',
+      copyPreview: { primaryText, headline, description },
+      baseline
+    })
+    steps.push('Impact tracking started (3d/5d/7d)')
+
+    // Step 7: Log event
+    logFlywheelEvent('pause_replace_activate', {
+      adId, adSetId, adName, creativeId: creative.id,
+      baseline, steps,
+      message: `Paused → replaced creative → reactivated "${adName}" with fresh creative`
+    })
 
     res.json({
       ok: true,
-      newCreativeId: creative.id,
-      message: `Creative swapped on ad ${adId}. New creative ID: ${creative.id}`
+      activation,
+      creativeId: creative.id,
+      steps,
+      message: `Done! Paused → swapped creative → reactivated "${adName || adId}". Tracking CPA impact vs baseline $${baseline.cpa}.`
     })
   } catch (err) {
-    console.error('[Flywheel] Replace creative error:', err.message)
+    console.error('[Flywheel] Pause-replace-activate error:', err.message)
     res.status(500).json({ ok: false, error: err.message })
   }
 })

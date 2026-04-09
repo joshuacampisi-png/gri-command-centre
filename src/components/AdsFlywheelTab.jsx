@@ -445,7 +445,7 @@ export function AdsFlywheelTab() {
     setReplaceCopyLoading(false)
   }
 
-  // Execute the full replace + activate flow
+  // Execute the full PAUSE → REPLACE → ACTIVATE flow (single atomic call)
   async function executeReplace() {
     if (!resolveTarget || !replaceSelectedVariant) return
     setReplacing(true)
@@ -458,7 +458,6 @@ export function AdsFlywheelTab() {
       for (const c of d?.campaigns || []) {
         const adSets = c.adSets || c.adsets || []
         for (const as of adSets) {
-          // Check if this ad belongs to this adset
           adSetId = as.id || as.metaAdSetId || ''
           adSetName = as.name || ''
           campaignId = c.id || ''
@@ -466,24 +465,8 @@ export function AdsFlywheelTab() {
         }
       }
 
-      // Step 1: Replace creative on the existing ad (or create new if image provided)
-      if (replaceImageUrl) {
-        // Replace creative with new image
-        await fetch(`${API}/replace-creative`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            adId: alert.entityId,
-            primaryText: v.primaryText,
-            headline: v.headline,
-            description: v.description,
-            imageUrl: replaceImageUrl
-          })
-        }).then(r => r.json())
-      }
-
-      // Step 2: Activate the ad with impact tracking
-      const activateRes = await fetch(`${API}/activate-ad`, {
+      // Single atomic call: pause → swap creative → capture baseline → activate → track
+      const result = await fetch(`${API}/pause-replace-activate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -493,16 +476,19 @@ export function AdsFlywheelTab() {
           adName: alert.entityName || alert.title,
           adSetName,
           campaignName,
-          copyPreview: { primaryText: v.primaryText, headline: v.headline, description: v.description }
+          primaryText: v.primaryText,
+          headline: v.headline,
+          description: v.description,
+          imageUrl: replaceImageUrl || undefined
         })
       }).then(r => r.json())
 
-      // Step 3: Resolve the alert
+      // Resolve the alert
       await fetch(`${API}/alerts/${alert.id}/resolve`, { method: 'POST' })
 
-      setScaleResult(activateRes.ok
-        ? { ok: true, message: `Creative replaced and ad set live! ${activateRes.message}` }
-        : { ok: false, error: activateRes.error }
+      setScaleResult(result.ok
+        ? { ok: true, message: result.message }
+        : { ok: false, error: result.error }
       )
 
       // Reset modal
@@ -801,7 +787,7 @@ export function AdsFlywheelTab() {
                   <span style={badge(a.severity === 'critical' ? C.red : a.severity === 'warning' ? C.yellow : C.blue)}>{a.severity}</span>
                   <span style={{ fontSize: 13, color: C.text }}>{a.title}</span>
                 </div>
-                <button onClick={() => setResolveTarget(a)} style={{ ...btnStyle(C.pink), cursor: 'pointer', minHeight: isMobile ? 44 : 'auto' }}>Replace & Fix</button>
+                <button onClick={() => setResolveTarget(a)} style={{ ...btnStyle(C.pink), cursor: 'pointer', minHeight: isMobile ? 44 : 'auto' }}>Pause & Replace</button>
               </div>
             </div>
           ))}
@@ -1414,10 +1400,10 @@ export function AdsFlywheelTab() {
         }}>
           <div onClick={e => e.stopPropagation()} style={{ ...card, maxWidth: 620, width: '100%', padding: 24, border: `2px solid ${C.pink}`, maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ fontSize: 18, fontWeight: 700, color: C.text, marginBottom: 4 }}>
-              Replace Fatigued Creative
+              Pause & Replace Fatigued Creative
             </div>
             <div style={{ fontSize: 12, color: C.muted, marginBottom: 16 }}>
-              This ad is exhausted. Replace the creative, generate fresh copy, and set it live.
+              This ad is exhausted. It will be paused → creative swapped → reactivated in one batch. No spend during the swap.
             </div>
 
             {/* Fatigued ad info */}
@@ -1522,12 +1508,13 @@ export function AdsFlywheelTab() {
                   STEP 3: REVIEW & SET LIVE
                 </div>
                 <div style={{ background: C.bg, borderRadius: 8, padding: 12, borderLeft: `3px solid ${C.green}` }}>
-                  <div style={{ fontSize: 10, color: C.muted, marginBottom: 4 }}>WHAT WILL HAPPEN</div>
+                  <div style={{ fontSize: 10, color: C.muted, marginBottom: 4 }}>WHAT WILL HAPPEN (1 atomic batch)</div>
                   <div style={{ fontSize: 12, color: C.text, lineHeight: 1.5 }}>
-                    1. {replaceImageUrl ? 'Creative will be swapped with new image/video' : 'Existing visual will be kept'}<br/>
-                    2. Copy will be updated to: "{replaceSelectedVariant.primaryText.slice(0, 60)}..."<br/>
-                    3. Ad will be set ACTIVE on Meta<br/>
-                    4. CPA impact tracking starts (3d / 5d / 7d comparison)
+                    1. Ad will be <strong style={{ color: C.red }}>PAUSED</strong> immediately (stops spend)<br/>
+                    2. {replaceImageUrl ? 'Creative swapped with new image/video' : 'Copy updated (existing visual kept)'}: "{replaceSelectedVariant.primaryText.slice(0, 50)}..."<br/>
+                    3. Baseline CPA/ROAS/frequency captured from adset<br/>
+                    4. Ad <strong style={{ color: C.green }}>REACTIVATED</strong> with fresh creative<br/>
+                    5. CPA impact tracking starts (3d / 5d / 7d comparison)
                   </div>
                 </div>
               </div>
@@ -1552,7 +1539,7 @@ export function AdsFlywheelTab() {
                     cursor: replaceSelectedVariant ? 'pointer' : 'not-allowed'
                   }}
                 >
-                  {replacing ? 'Replacing & Activating...' : 'Replace Creative & Set Live'}
+                  {replacing ? 'Pausing → Replacing → Activating...' : 'Pause & Replace Creative'}
                 </button>
               </div>
             </div>
