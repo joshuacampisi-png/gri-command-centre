@@ -7,6 +7,7 @@ import {
   isMetaConfigured,
   metaToken,
   fetchFullPerformance,
+  fetchMultiWindowPerformance,
   fetchAccountInsights,
   fetchCampaigns,
   fetchAdInsights,
@@ -16,7 +17,9 @@ import {
   updateCampaignBudget,
   updateAdSetStatus,
   updateAdSetBudget,
-  updateAdStatus
+  updateAdStatus,
+  createAdCreative,
+  createAd as metaCreateAd
 } from '../lib/meta-api.js'
 import { getShopifyOrdersRange } from '../connectors/shopify.js'
 import {
@@ -52,8 +55,14 @@ import { seedVolumeFromRepo, forceSeedFile, getSeedWhitelist } from '../lib/volu
 import {
   calculateFatigueScore,
   prepareFatigueMetrics,
+  buildFatigueReport,
   STATUS_COLORS
 } from '../lib/fatigue-engine.js'
+import {
+  getUnacknowledgedAlerts,
+  getAllAlerts,
+  acknowledgeAlert
+} from '../lib/fatigue-alert-cron.js'
 import {
   verifySecret,
   recordGoogleSpend,
@@ -1240,6 +1249,271 @@ Respond in JSON only:
     res.json({ ok: true, ...parsed })
   } catch (err) {
     console.error('[Ads] Account recommendation error:', err.message)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── GET /api/ads/multi-window ────────────────────────────────────────────────
+// Returns campaign→adset→ad tree with 3d/5d/7d metrics side by side.
+
+router.get('/multi-window', async (_req, res) => {
+  try {
+    if (!isMetaConfigured()) return res.json({ ok: false, error: 'Meta API not configured' })
+
+    const cacheKey = 'multi-window'
+    const cached = getCached(cacheKey)
+    if (cached) return res.json(cached)
+
+    const data = await fetchMultiWindowPerformance()
+
+    // Enrich ads with fatigue reports
+    for (const campaign of data.campaigns) {
+      for (const ad of campaign.ads) {
+        const metrics = prepareFatigueMetrics({
+          insights: ad.windows['7d'],
+          dailyInsights: ad.dailyInsights,
+          daysRunning: ad.daysRunning
+        })
+        // Add CPM daily data for enhanced fatigue
+        metrics.cpmByDay = (ad.dailyInsights || []).map(d => d?.cpm || 0)
+        ad.fatigue = buildFatigueReport(metrics)
+      }
+    }
+
+    // Aggregate totals per window
+    const windowTotals = {}
+    for (const w of ['3d', '5d', '7d']) {
+      let spend = 0, impressions = 0, clicks = 0, purchases = 0, purchaseValue = 0
+      for (const c of data.campaigns) {
+        const ins = c.windows[w]
+        if (ins) {
+          spend += ins.spend || 0
+          impressions += ins.impressions || 0
+          clicks += ins.clicks || 0
+          purchases += ins.purchases || 0
+          purchaseValue += ins.purchaseValue || 0
+        }
+      }
+      windowTotals[w] = {
+        spend, impressions, clicks, purchases, purchaseValue,
+        roas: spend > 0 ? purchaseValue / spend : 0,
+        cpa: purchases > 0 ? spend / purchases : 0,
+        ctr: impressions > 0 ? (clicks / impressions) * 100 : 0,
+        cpm: impressions > 0 ? (spend / impressions) * 1000 : 0
+      }
+    }
+
+    const result = { ok: true, ...data, windowTotals }
+    setCache(cacheKey, result)
+    res.json(result)
+  } catch (err) {
+    console.error('[Ads] Multi-window fetch error:', err.message)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── GET /api/ads/fatigue-report ─────────────────────────────────────────────
+// Full fatigue report for all active ads.
+
+router.get('/fatigue-report', async (_req, res) => {
+  try {
+    if (!isMetaConfigured()) return res.json({ ok: false, error: 'Meta API not configured' })
+
+    const cacheKey = 'fatigue-report'
+    const cached = getCached(cacheKey)
+    if (cached) return res.json(cached)
+
+    const perfData = await fetchFullPerformance('last_7d')
+    const campaigns = perfData.campaigns || []
+    const reports = []
+
+    for (const campaign of campaigns) {
+      for (const ad of campaign.ads || []) {
+        const metrics = prepareFatigueMetrics(ad)
+        metrics.cpmByDay = (ad.dailyInsights || []).map(d => d?.cpm || 0)
+        const report = buildFatigueReport(metrics)
+        reports.push({
+          adId: ad.id,
+          adName: ad.name,
+          adsetId: ad.adsetId,
+          adsetName: ad.adsetName,
+          campaignId: campaign.id,
+          campaignName: campaign.name,
+          status: ad.status,
+          thumbnailUrl: ad.thumbnailUrl,
+          ...report,
+          dataFetchedAt: new Date().toISOString()
+        })
+      }
+    }
+
+    // Sort: worst first
+    reports.sort((a, b) => a.score - b.score)
+
+    const result = { ok: true, reports, total: reports.length }
+    setCache(cacheKey, result)
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── GET /api/ads/fatigue-alerts ─────────────────────────────────────────────
+
+router.get('/fatigue-alerts', (_req, res) => {
+  try {
+    const unacked = getUnacknowledgedAlerts()
+    res.json({ ok: true, alerts: unacked })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── GET /api/ads/fatigue-alerts/all ─────────────────────────────────────────
+
+router.get('/fatigue-alerts/all', (_req, res) => {
+  try {
+    const all = getAllAlerts()
+    res.json({ ok: true, alerts: all })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── POST /api/ads/fatigue-alerts/:id/ack ────────────────────────────────────
+
+router.post('/fatigue-alerts/:id/ack', (req, res) => {
+  try {
+    const ok = acknowledgeAlert(req.params.id)
+    res.json({ ok })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── POST /api/ads/generate-copy ─────────────────────────────────────────────
+// AI-powered ad copy generation. Returns 3 variants.
+
+router.post('/generate-copy', async (req, res) => {
+  try {
+    const { angle, product, audience, tone, adsetName } = req.body
+    if (!angle) return res.status(400).json({ ok: false, error: 'Missing angle' })
+
+    const prompt = `You are an expert Meta Ads copywriter for Gender Reveal Ideas (genderrevealideas.com.au), an Australian DTC e-commerce brand on the Gold Coast selling gender reveal products.
+
+Products: Confetti Cannons, Powder Cannons, Bio Cannons, Smoke Bombs, Extinguishers, Sports Balls (Football, Basketball, Golf, Cricket, Baseball), Balloon Boxes, Mega Blaster, Mini Blaster.
+
+Brand voice: Excited, Aussie, fun, trustworthy, safe. Australian English (colour not color, mum not mom). No dashes. No corporate speak.
+
+Target: Expectant parents, baby shower planners, family & friends organising a gender reveal. Australia & NZ. Ages 22-40, predominantly female.
+
+BRIEF:
+- Angle: ${angle}
+- Product: ${product || 'Any/all'}
+- Audience: ${audience || 'Broad — expectant parents AU/NZ'}
+- Tone: ${tone || 'Excited, authentic, Aussie'}
+- Ad set: ${adsetName || 'New'}
+
+Generate EXACTLY 3 ad copy variants. Each variant must have:
+1. Primary Text (max 125 chars for mobile, hook in first line, emoji OK but not excessive)
+2. Headline (max 40 chars, punchy, benefit-driven)
+3. Description (max 30 chars, supporting CTA)
+
+Respond as JSON array:
+[
+  { "primaryText": "...", "headline": "...", "description": "..." },
+  { "primaryText": "...", "headline": "...", "description": "..." },
+  { "primaryText": "...", "headline": "...", "description": "..." }
+]
+
+ONLY return the JSON array. No markdown, no explanation.`
+
+    const response = await callClaude({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [{ role: 'user', content: prompt }]
+    }, 'ads-copy-generation')
+
+    const text = response.content[0].text.trim()
+    let variants
+    try {
+      const jsonMatch = text.match(/\[[\s\S]*\]/)
+      variants = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(text)
+    } catch {
+      variants = [{ primaryText: text, headline: '', description: '' }]
+    }
+
+    res.json({ ok: true, variants, generatedAt: new Date().toISOString() })
+  } catch (err) {
+    console.error('[Ads] Copy generation error:', err.message)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── POST /api/ads/create-ad ─────────────────────────────────────────────────
+// Create a new ad in an existing adset. Always PAUSED until user activates.
+
+router.post('/create-ad', async (req, res) => {
+  try {
+    if (!isMetaConfigured()) return res.status(400).json({ ok: false, error: 'Meta API not configured' })
+
+    const { adsetId, name, primaryText, headline, description, imageUrl, pageId } = req.body
+    if (!adsetId || !name || !primaryText) {
+      return res.status(400).json({ ok: false, error: 'Missing required fields: adsetId, name, primaryText' })
+    }
+
+    // Create ad creative
+    const creative = await createAdCreative({
+      name: `Creative - ${name}`,
+      object_story_spec: JSON.stringify({
+        page_id: pageId || '105089549192262', // GRI Facebook Page ID
+        link_data: {
+          message: primaryText,
+          name: headline || '',
+          description: description || '',
+          link: 'https://genderrevealideas.com.au',
+          image_url: imageUrl || undefined,
+          call_to_action: { type: 'SHOP_NOW' }
+        }
+      })
+    })
+
+    if (!creative.id) {
+      return res.status(500).json({ ok: false, error: 'Failed to create ad creative' })
+    }
+
+    // Create ad (always PAUSED)
+    const ad = await metaCreateAd({
+      name,
+      adset_id: adsetId,
+      creative: JSON.stringify({ creative_id: creative.id }),
+      status: 'PAUSED'
+    })
+
+    // Log the creation
+    const refreshLog = loadJSON(REFRESH_LOG_FILE)
+    refreshLog.push({
+      adId: ad.id,
+      adName: name,
+      adsetId,
+      creativeId: creative.id,
+      primaryText,
+      headline,
+      description,
+      status: 'PAUSED',
+      createdAt: new Date().toISOString()
+    })
+    saveJSON(REFRESH_LOG_FILE, refreshLog)
+
+    res.json({
+      ok: true,
+      adId: ad.id,
+      creativeId: creative.id,
+      status: 'PAUSED',
+      message: 'Ad created in PAUSED state. Activate when ready.'
+    })
+  } catch (err) {
+    console.error('[Ads] Create ad error:', err.message)
     res.status(500).json({ ok: false, error: err.message })
   }
 })

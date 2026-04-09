@@ -48,6 +48,7 @@ import { startFlywheelCrons } from './lib/flywheel-cron.js'
 import gadsAgentRoutes from './routes/gads-agent.js'
 import { startGadsAgentCrons } from './lib/gads-agent-cron.js'
 import { startIGReplyBotCron } from './lib/ig-reply-bot/cron.js'
+import { startFatigueAlertCron } from './lib/fatigue-alert-cron.js'
 import { startTNTPaymentPoller } from './lib/tnt-payment-poller.js'
 import { seedVolumeFromRepo } from './lib/volume-seed.js'
 
@@ -454,6 +455,9 @@ const server = app.listen(env.port, '0.0.0.0', () => {
 
   // Google Ads Agent — smart cadence scans, daily briefing, auto-revert
   startGadsAgentCrons()
+
+  // Ad fatigue alerts — checks every 4 hours, pings Telegram on transitions
+  startFatigueAlertCron()
 
   console.log('✅ Server running — auto Telegram messages: DISABLED')
   console.log('🔒 Crash recovery: ACTIVE')

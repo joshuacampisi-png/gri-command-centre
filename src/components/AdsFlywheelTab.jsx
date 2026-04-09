@@ -91,6 +91,24 @@ export function AdsFlywheelTab() {
   const [creatingAudience, setCreatingAudience] = useState({}) // track per-template creating state
   const [expandedTemplate, setExpandedTemplate] = useState(null) // for interest/geo "View Config"
 
+  // New: fatigue alerts, copy gen, duplicate
+  const [fatigueAlerts, setFatigueAlerts] = useState([])
+  const [showCopyGen, setShowCopyGen] = useState(false)
+  const [copyAngle, setCopyAngle] = useState('')
+  const [copyProduct, setCopyProduct] = useState('')
+  const [copyVariants, setCopyVariants] = useState([])
+  const [copyLoading, setCopyLoading] = useState(false)
+  const [duplicateTarget, setDuplicateTarget] = useState(null)
+
+  // Live refresh + auto-refresh
+  const [liveData, setLiveData] = useState(null)
+  const [liveRefreshing, setLiveRefreshing] = useState(false)
+  const [autoRefresh, setAutoRefresh] = useState(false)
+
+  // Pre-launch modal
+  const [activateTarget, setActivateTarget] = useState(null) // { adId, adSetId, campaignId, adName, adSetName, campaignName, copyPreview }
+  const [activating, setActivating] = useState(false)
+
   // Auto-dismiss toast after 8 seconds
   const toastTimerRef = useRef(null)
   useEffect(() => {
@@ -294,6 +312,118 @@ export function AdsFlywheelTab() {
     setAnalysing(false)
   }
 
+  // Fatigue alerts
+  async function loadFatigueAlerts() {
+    try {
+      const r = await fetch(`${API}/fatigue-alerts`).then(r => r.json())
+      if (r.ok) setFatigueAlerts(r.alerts || [])
+    } catch { /* silent */ }
+  }
+  async function ackFatigueAlert(id) {
+    await fetch(`${API}/fatigue-alerts/${id}/ack`, { method: 'POST' })
+    setFatigueAlerts(prev => prev.filter(a => a.id !== id))
+  }
+
+  // Copy generation
+  async function generateCopy() {
+    setCopyLoading(true); setCopyVariants([])
+    try {
+      const r = await fetch(`${API}/generate-copy`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ angle: copyAngle, product: copyProduct })
+      }).then(r => r.json())
+      if (r.ok) setCopyVariants(r.variants || [])
+    } catch (e) { setScaleResult({ ok: false, error: e.message }) }
+    setCopyLoading(false)
+  }
+
+  // Duplicate ad
+  async function doDuplicateAd(sourceAdId, name) {
+    setActionLoading(prev => ({ ...prev, [`dup-${sourceAdId}`]: true }))
+    try {
+      const r = await fetch(`${API}/duplicate-ad`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sourceAdId, newName: `${name} [Dup]` })
+      }).then(r => r.json())
+      setScaleResult(r.ok ? { ok: true, message: r.message } : { ok: false, error: r.error })
+      load()
+    } catch (e) { setScaleResult({ ok: false, error: e.message }) }
+    setActionLoading(prev => ({ ...prev, [`dup-${sourceAdId}`]: false }))
+  }
+
+  // Duplicate adset
+  async function doDuplicateAdSet(sourceAdSetId, name) {
+    setActionLoading(prev => ({ ...prev, [`dup-as-${sourceAdSetId}`]: true }))
+    try {
+      const r = await fetch(`${API}/duplicate-adset`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sourceAdSetId, newName: `${name} [Dup]` })
+      }).then(r => r.json())
+      setScaleResult(r.ok ? { ok: true, message: r.message } : { ok: false, error: r.error })
+      load()
+    } catch (e) { setScaleResult({ ok: false, error: e.message }) }
+    setActionLoading(prev => ({ ...prev, [`dup-as-${sourceAdSetId}`]: false }))
+  }
+
+  // Create ad from AI copy directly into adset
+  async function createAdFromCopy(adsetId, angle, product) {
+    setActionLoading(prev => ({ ...prev, 'create-ad-copy': true }))
+    try {
+      const r = await fetch(`${API}/create-ad-from-copy`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adsetId, angle, product })
+      }).then(r => r.json())
+      setScaleResult(r.ok
+        ? { ok: true, message: `${r.message}\n\nCopy: "${r.copy?.primaryText}"` }
+        : { ok: false, error: r.error }
+      )
+      load()
+    } catch (e) { setScaleResult({ ok: false, error: e.message }) }
+    setActionLoading(prev => ({ ...prev, 'create-ad-copy': false }))
+  }
+
+  // Live refresh (fresh Meta API pull)
+  async function doLiveRefresh() {
+    setLiveRefreshing(true)
+    try {
+      const r = await fetch(`${API}/live-refresh`).then(r => r.json())
+      if (r.ok) setLiveData(r)
+    } catch (e) { setScaleResult({ ok: false, error: e.message }) }
+    setLiveRefreshing(false)
+  }
+
+  // Activate ad (pre-launch → set live)
+  async function doActivateAd() {
+    if (!activateTarget) return
+    setActivating(true)
+    try {
+      const r = await fetch(`${API}/activate-ad`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(activateTarget)
+      }).then(r => r.json())
+      setScaleResult(r.ok ? { ok: true, message: r.message } : { ok: false, error: r.error })
+      setActivateTarget(null)
+      load()
+    } catch (e) { setScaleResult({ ok: false, error: e.message }) }
+    setActivating(false)
+  }
+
+  // Auto-refresh (2 min interval)
+  useEffect(() => {
+    if (!autoRefresh) return
+    const iv = setInterval(doLiveRefresh, 2 * 60 * 1000)
+    doLiveRefresh() // immediate first pull
+    return () => clearInterval(iv)
+  }, [autoRefresh])
+
+  // Load fatigue alerts on mount
+  useEffect(() => { loadFatigueAlerts() }, [])
+
   if (loading) return <div style={{ background: C.bg, color: C.muted, padding: 60, textAlign: 'center', minHeight: '100vh' }}>Loading flywheel...</div>
   if (error && !d) return <div style={{ background: C.bg, color: C.red, padding: 40, minHeight: '100vh' }}>Error: {error}</div>
 
@@ -320,10 +450,43 @@ export function AdsFlywheelTab() {
               minHeight: isMobile ? 44 : 'auto',
             }}>{r.label}</button>
           ))}
+          <button onClick={doLiveRefresh} disabled={liveRefreshing} style={{ ...btnStyle(C.green), minHeight: isMobile ? 44 : 'auto' }}>{liveRefreshing ? 'Refreshing...' : 'Live Refresh'}</button>
+          <button onClick={() => setAutoRefresh(!autoRefresh)} style={{ ...btnStyle(autoRefresh ? C.green : C.muted), minHeight: isMobile ? 44 : 'auto' }}>Auto: {autoRefresh ? 'ON' : 'OFF'}</button>
           <button onClick={triggerSync} disabled={syncing} style={{ ...btnStyle(C.blue), minHeight: isMobile ? 44 : 'auto' }}>{syncing ? 'Syncing...' : 'Sync Meta'}</button>
           <button onClick={runEngine} style={{ ...btnStyle(C.purple), minHeight: isMobile ? 44 : 'auto' }}>Run AI Engine</button>
         </div>
       </div>
+
+      {/* ── Data Freshness Indicator ──────────────────────────────────────── */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginBottom: 6, fontSize: 10, color: C.muted }}>
+        {d?.dataFetchedAt && <span>Dashboard: {new Date(d.dataFetchedAt).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' })}</span>}
+        {liveData?.fetchedAt && <span style={{ color: C.green }}>Live: {new Date(liveData.fetchedAt).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' })}</span>}
+        {autoRefresh && <span style={{ color: C.green }}>Auto-refresh ON (2min)</span>}
+      </div>
+
+      {/* ── Fatigue Alerts ────────────────────────────────────────────────── */}
+      {fatigueAlerts.length > 0 && (
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: C.red, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>
+            FATIGUE ALERTS ({fatigueAlerts.length})
+          </div>
+          {fatigueAlerts.map(a => (
+            <div key={a.id} style={{ ...card, borderLeft: `3px solid ${a.currentStatus === 'DEAD' ? C.red : C.yellow}`, marginBottom: 6, padding: '8px 12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: 13, color: C.text }}>{a.adName}</div>
+                  <div style={{ fontSize: 11, color: a.currentStatus === 'DEAD' ? C.red : C.yellow, fontWeight: 600 }}>
+                    {a.previousStatus} → {a.currentStatus} (Score: {a.score}/100)
+                    {a.daysRemaining != null && <span style={{ color: C.muted }}> — ~{a.daysRemaining}d left</span>}
+                  </div>
+                  <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>{a.recommendation}</div>
+                </div>
+                <button onClick={() => ackFatigueAlert(a.id)} style={btnSm}>Dismiss</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* ── 2. Revenue + Spend Cards ─────────────────────────────────────── */}
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10, marginBottom: 10 }}>
@@ -611,13 +774,17 @@ export function AdsFlywheelTab() {
                                         <ScaleButton entityId={sa.execute.params.adSetId} entityName={sa.entityName} currentBudget={sa.revenueProjection?.currentBudget} roas={sa.revenueProjection?.basedOnRoas} onScale={executeScale} scaling={scaling} isMobile={isMobile} />
                                       )}
                                       {sa.action === 'PAUSE' && (
-                                        <div style={{ textAlign: 'right' }}>
+                                        <div style={{ textAlign: 'right', display: 'flex', gap: 3, alignItems: 'flex-start' }}>
                                           <button
                                             onClick={e => { e.stopPropagation(); executeAction2('updateAdSetStatus', { adSetId: sa.entityId, status: 'PAUSED' }, saKey) }}
                                             disabled={actionLoading[saKey]}
                                             style={{ ...btnStyle(C.red), minHeight: isMobile ? 44 : 'auto' }}
-                                          >{actionLoading[saKey] ? '...' : 'Pause Ad Set'}</button>
-                                          <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>Stops all spend immediately</div>
+                                          >{actionLoading[saKey] ? '...' : 'Pause'}</button>
+                                          <button
+                                            onClick={e => { e.stopPropagation(); doDuplicateAdSet(sa.entityId, sa.entityName) }}
+                                            disabled={actionLoading[`dup-as-${sa.entityId}`]}
+                                            style={{ ...btnStyle(C.blue), minHeight: isMobile ? 44 : 'auto' }}
+                                          >{actionLoading[`dup-as-${sa.entityId}`] ? '...' : 'Duplicate'}</button>
                                         </div>
                                       )}
                                       {sa.action === 'REDUCE_BUDGET' && (
@@ -667,9 +834,117 @@ export function AdsFlywheelTab() {
         </div>
       </div>
 
+      {/* ── 4b. Impact Tracker (recently activated ads) ───────────────────── */}
+      {(d?.activations || []).length > 0 && (
+        <div style={{ marginBottom: 16 }}>
+          <h2 style={secTitle}>Ad Impact Tracker</h2>
+          <div style={{ ...card, overflowX: 'auto' }}>
+            <table style={tbl}>
+              <thead><tr>
+                <th style={th}>Ad</th><th style={th}>Ad Set</th><th style={th}>Activated</th>
+                <th style={th}>Baseline CPA</th><th style={th}>3d</th><th style={th}>5d</th><th style={th}>7d</th><th style={th}>Verdict</th>
+              </tr></thead>
+              <tbody>
+                {(d.activations || []).map((a, i) => {
+                  const impactCell = (window) => {
+                    const imp = a.impact?.[window]
+                    if (!imp) return <td style={{ ...td, color: C.muted }}>Pending</td>
+                    const dir = imp.delta?.cpaDirection
+                    const color = dir === 'improved' ? C.green : dir === 'degraded' ? C.red : C.yellow
+                    return (
+                      <td style={{ ...td, color }}>
+                        {fmt$(imp.cpa)}
+                        <div style={{ fontSize: 10, color }}>{dir === 'improved' ? '\u2193' : dir === 'degraded' ? '\u2191' : '\u2192'} {fmt$(Math.abs(imp.delta?.cpa || 0))}</div>
+                      </td>
+                    )
+                  }
+                  const hasAll = a.impact?.['3d'] && a.impact?.['5d'] && a.impact?.['7d']
+                  const verdict7d = a.impact?.['7d']?.delta?.cpaDirection
+                  return (
+                    <tr key={i}>
+                      <td style={{ ...td, fontWeight: 600 }}>{a.adName}</td>
+                      <td style={td}>{a.adSetName}</td>
+                      <td style={td}>{a.activatedAt ? new Date(a.activatedAt).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) : '--'}</td>
+                      <td style={td}>{fmt$(a.baseline?.cpa)}</td>
+                      {impactCell('3d')}
+                      {impactCell('5d')}
+                      {impactCell('7d')}
+                      <td style={td}>
+                        {hasAll ? (
+                          <span style={badge(verdict7d === 'improved' ? C.green : verdict7d === 'degraded' ? C.red : C.yellow)}>
+                            {verdict7d === 'improved' ? 'WIN' : verdict7d === 'degraded' ? 'LOSS' : 'NEUTRAL'}
+                          </span>
+                        ) : (
+                          <span style={badge(C.muted)}>TRACKING</span>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {/* ── 5. Creative Table with Recommendations ─────────────────────────── */}
       <div style={{ marginBottom: 16 }}>
-        <h2 style={secTitle}>Creative Performance</h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <h2 style={{ ...secTitle, margin: 0 }}>Creative Performance</h2>
+          <button onClick={() => setShowCopyGen(!showCopyGen)} style={btnStyle(C.pink)}>
+            {showCopyGen ? 'Close' : '+ New Creative'}
+          </button>
+        </div>
+
+        {/* Copy Gen Panel (inline, toggleable) */}
+        {showCopyGen && (
+          <div style={{ ...card, marginBottom: 10, borderLeft: `3px solid ${C.pink}` }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: C.pink, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
+              AI Copy Generator
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexDirection: isMobile ? 'column' : 'row' }}>
+              <input type="text" value={copyAngle} onChange={e => setCopyAngle(e.target.value)} placeholder="Angle / Hook (e.g. 'Works every time', 'Safe for mum & bub')"
+                style={{ flex: 2, background: C.bg, color: C.text, border: `1px solid ${C.border}`, borderRadius: 6, padding: '8px 12px', fontSize: 13, minHeight: isMobile ? 44 : 'auto' }} />
+              <select value={copyProduct} onChange={e => setCopyProduct(e.target.value)}
+                style={{ flex: 1, background: C.bg, color: C.text, border: `1px solid ${C.border}`, borderRadius: 6, padding: '8px 12px', fontSize: 13, minHeight: isMobile ? 44 : 'auto' }}>
+                <option value="">Any product</option>
+                <option value="Confetti Cannons">Confetti Cannons</option>
+                <option value="Powder Cannons">Powder Cannons</option>
+                <option value="Bio Cannons">Bio Cannons</option>
+                <option value="Smoke Bombs">Smoke Bombs</option>
+                <option value="Extinguishers">Extinguishers</option>
+                <option value="Sports Balls">Sports Balls</option>
+                <option value="Mega Blaster">Mega Blaster</option>
+              </select>
+              <button onClick={generateCopy} disabled={copyLoading || !copyAngle} style={{ ...btnStyle(C.pink), minHeight: isMobile ? 44 : 'auto' }}>
+                {copyLoading ? 'Generating...' : 'Generate 3 Variants'}
+              </button>
+            </div>
+            {copyVariants.length > 0 && (
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 8 }}>
+                {copyVariants.map((v, i) => (
+                  <div key={i} style={{ background: C.bg, borderRadius: 8, padding: 12 }}>
+                    <div style={{ fontSize: 10, color: C.pink, fontWeight: 700, marginBottom: 4 }}>VARIANT {i + 1}</div>
+                    <div style={{ fontSize: 12, color: C.text, lineHeight: 1.4, marginBottom: 6 }}>{v.primaryText}</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: C.text, marginBottom: 2 }}>{v.headline}</div>
+                    <div style={{ fontSize: 10, color: C.muted }}>{v.description}</div>
+                    <div style={{ display: 'flex', gap: 4, marginTop: 6 }}>
+                      <button onClick={() => navigator.clipboard.writeText(`${v.primaryText}\n\n${v.headline}\n${v.description}`)} style={{ ...btnSm, cursor: 'pointer' }}>Copy</button>
+                      <button onClick={() => {
+                        const adsets = d?.campaigns?.flatMap(c => (c.adSets || c.adsets || []).map(as => ({ ...as, campaignId: c.id, campaignName: c.name }))) || []
+                        if (adsets.length > 0) {
+                          createAdFromCopy(adsets[0].id || adsets[0].metaAdSetId, copyAngle, copyProduct)
+                        }
+                      }} disabled={actionLoading['create-ad-copy']} style={{ ...btnStyle(C.green), fontSize: 10, padding: '3px 8px', cursor: 'pointer' }}>
+                        {actionLoading['create-ad-copy'] ? '...' : 'Create Ad'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
         <div style={{ ...card, overflowX: 'auto' }}>
           <table style={tbl}>
             <thead><tr>
@@ -697,7 +972,15 @@ export function AdsFlywheelTab() {
                     <td style={{ ...td, color: cr.cpa7d > 0 && cr.cpa7d <= 43.13 ? C.green : cr.cpa7d > 50.74 ? C.red : C.text }}>{cr.cpa7d > 0 ? fmt$(cr.cpa7d) : '--'}</td>
                     <td style={td}>{fmt$(cr.spend)}</td>
                     <td style={td}>{cr.purchases}</td>
-                    <td style={{ ...td, color: cr.frequency > 5 ? C.red : cr.frequency > 3.5 ? C.yellow : C.text }}>{cr.frequency}</td>
+                    <td style={{ ...td, color: cr.frequency > 5 ? C.red : cr.frequency > 3.5 ? C.yellow : C.text }}>
+                      {cr.frequency}
+                      {cr.frequencyTrend && (
+                        <div style={{ fontSize: 9, color: cr.frequencyTrend.trend === 'rising' ? C.red : cr.frequencyTrend.trend === 'falling' ? C.green : C.muted }}>
+                          {cr.frequencyTrend.trend === 'rising' ? '\u2191' : cr.frequencyTrend.trend === 'falling' ? '\u2193' : '\u2192'} {Math.abs(cr.frequencyTrend.velocity)}%
+                          {cr.frequencyTrend.alert && <span style={{ color: C.red, fontWeight: 700, marginLeft: 3 }}>SPIKING</span>}
+                        </div>
+                      )}
+                    </td>
                     <td style={td}><FatigueBar score={cr.fatigueScore} status={cr.fatigueStatus} /></td>
                     <td style={td}>
                       <span style={recBadge(recColor)}>{cr.recommendation}</span>
@@ -737,6 +1020,13 @@ export function AdsFlywheelTab() {
                             >{actionLoading[`replace-${crActionKey}`] ? '...' : 'Pause'}</button>
                           )}
                           <button onClick={e => { e.stopPropagation(); analyseCreative(cr.name) }} style={{ ...btnStyle(C.purple), minHeight: isMobile ? 44 : 'auto' }}>AI</button>
+                          {creativeAdId && (
+                            <button
+                              onClick={e => { e.stopPropagation(); doDuplicateAd(creativeAdId, cr.name) }}
+                              disabled={actionLoading[`dup-${creativeAdId}`]}
+                              style={{ ...btnStyle(C.blue), minHeight: isMobile ? 44 : 'auto' }}
+                            >{actionLoading[`dup-${creativeAdId}`] ? '...' : 'Dup'}</button>
+                          )}
                         </div>
                       )}
                     </td>
@@ -1015,6 +1305,69 @@ export function AdsFlywheelTab() {
           <span style={badge(d.health.status === 'healthy' ? C.green : C.yellow)}>{d.health.status}</span>
           <span>Backup: {d.health.backups?.latest || 'none'} ({d.health.backups?.totalDays || 0} days)</span>
           {d.health.issues?.length > 0 && <span style={{ color: C.yellow }}>{d.health.issues.length} issues</span>}
+        </div>
+      )}
+
+      {/* ── Pre-Launch Confirmation Modal ─────────────────────────────────── */}
+      {activateTarget && (
+        <div onClick={() => setActivateTarget(null)} style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{ ...card, maxWidth: 520, width: '95%', padding: 24, border: `2px solid ${C.green}` }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 16 }}>
+              Confirm: Set Ad Live
+            </div>
+
+            {/* Destination */}
+            <div style={{ background: C.bg, borderRadius: 8, padding: 12, marginBottom: 12 }}>
+              <div style={{ fontSize: 10, color: C.muted, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>DESTINATION</div>
+              <div style={{ fontSize: 13, color: C.text }}>
+                <span style={{ color: C.muted }}>Campaign:</span> {activateTarget.campaignName || '--'}
+              </div>
+              <div style={{ fontSize: 13, color: C.text }}>
+                <span style={{ color: C.muted }}>Ad Set:</span> {activateTarget.adSetName || '--'}
+              </div>
+            </div>
+
+            {/* Current adset metrics */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 12 }}>
+              <div style={{ background: C.bg, borderRadius: 6, padding: 8, textAlign: 'center' }}>
+                <div style={{ fontSize: 10, color: C.muted }}>Current CPA</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: C.text }}>{fmt$(activateTarget.baseline?.cpa || 0)}</div>
+              </div>
+              <div style={{ background: C.bg, borderRadius: 6, padding: 8, textAlign: 'center' }}>
+                <div style={{ fontSize: 10, color: C.muted }}>Current ROAS</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: C.text }}>{fmtX(activateTarget.baseline?.roas || 0)}</div>
+              </div>
+              <div style={{ background: C.bg, borderRadius: 6, padding: 8, textAlign: 'center' }}>
+                <div style={{ fontSize: 10, color: C.muted }}>Frequency</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: (activateTarget.baseline?.frequency || 0) > 4 ? C.red : C.text }}>
+                  {activateTarget.baseline?.frequency?.toFixed(1) || '--'}
+                </div>
+              </div>
+            </div>
+
+            {/* Ad details */}
+            <div style={{ background: C.bg, borderRadius: 8, padding: 12, marginBottom: 12, borderLeft: `3px solid ${C.pink}` }}>
+              <div style={{ fontSize: 10, color: C.muted, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>AD TO ACTIVATE</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 4 }}>{activateTarget.adName || '--'}</div>
+              {activateTarget.copyPreview?.primaryText && (
+                <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.4 }}>{activateTarget.copyPreview.primaryText}</div>
+              )}
+            </div>
+
+            <div style={{ fontSize: 11, color: C.yellow, marginBottom: 12 }}>
+              This will activate the ad on Meta and start tracking CPA impact at 3d, 5d, 7d.
+            </div>
+
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button onClick={() => setActivateTarget(null)} style={btnStyle(C.muted)}>Cancel</button>
+              <button onClick={doActivateAd} disabled={activating} style={{ ...btnStyle(C.green), fontWeight: 700, fontSize: 13 }}>
+                {activating ? 'Activating...' : 'Confirm: Set Live'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -32,6 +32,7 @@ const FILES = {
   agentLearning:  dataFile('flywheel/agent-learning.json'),
   industryKnowledge: dataFile('flywheel/industry-knowledge.json'),
   flywheelLog:    dataFile('flywheel/flywheel-log.json'),
+  adActivations:  dataFile('flywheel/ad-activations.json'),
 }
 
 // ── Generic helpers ─────────────────────────────────────────────────────────
@@ -703,4 +704,41 @@ export function logFlywheelEvent(type, detail) {
   // Keep last 500 events max
   if (all.length > 500) all.splice(0, all.length - 500)
   save(FILES.flywheelLog, all)
+}
+
+// ── Ad Activation Tracking ─────────────────────────────────────────────────
+
+export function getAdActivations(status) {
+  let all = load(FILES.adActivations)
+  if (status) all = all.filter(a => a.status === status)
+  return all.sort((a, b) => new Date(b.activatedAt) - new Date(a.activatedAt)).slice(0, 50)
+}
+
+export function getAdActivation(adId) {
+  const all = load(FILES.adActivations)
+  return all.filter(a => a.adId === adId).sort((a, b) => new Date(b.activatedAt) - new Date(a.activatedAt))[0] || null
+}
+
+export function saveAdActivation(record) {
+  const all = load(FILES.adActivations)
+  record.id = randomUUID()
+  record.activatedAt = now()
+  record.status = 'tracking'
+  record.impact = { '3d': null, '5d': null, '7d': null }
+  all.push(record)
+  // Keep last 200 activations
+  if (all.length > 200) all.splice(0, all.length - 200)
+  save(FILES.adActivations, all)
+  return record
+}
+
+export function updateAdActivationImpact(activationId, window, metrics) {
+  const all = load(FILES.adActivations)
+  const record = all.find(a => a.id === activationId)
+  if (!record) return null
+  record.impact[window] = { ...metrics, measuredAt: now() }
+  // Mark complete when 7d populated
+  if (record.impact['7d']) record.status = 'complete'
+  save(FILES.adActivations, all)
+  return record
 }

@@ -9,7 +9,8 @@ import {
   markActionExecuted, getFlywheelLog, getAovIntel, getAgentLearning,
   getIndustryKnowledge, saveIndustryKnowledge, getLatestBrief, approveBrief,
   getCampaigns, getAdSets, getAds, getFlywheelHealth, runDailyBackup,
-  getAdSetSnapshots,
+  getAdSetSnapshots, getAdSnapshots,
+  getAdActivations, saveAdActivation, logFlywheelEvent,
 } from '../lib/flywheel-store.js'
 import {
   getFlywheelSummary, getCreativeLeaderboard, scoreCampaignHealth,
@@ -20,8 +21,14 @@ import {
 } from '../lib/flywheel-intelligence.js'
 import { metaSyncJob } from '../lib/flywheel-cron.js'
 import {
-  updateAdSetBudget, updateCampaignBudget, fetchAdsetsForCampaign, fetchAccountInsights
+  updateAdSetBudget, updateCampaignBudget, fetchAdsetsForCampaign, fetchAccountInsights,
+  duplicateAd, duplicateAdSet, updateAdCreative, createAdCreative, createAd as metaCreateAd,
+  updateAdStatus as metaUpdateAdStatus, fetchCampaigns, fetchCampaignInsightsRange,
+  fetchAdSetInsightsRange
 } from '../lib/meta-api.js'
+import { callClaude } from '../lib/claude-guard.js'
+import { getUnacknowledgedAlerts, acknowledgeAlert } from '../lib/fatigue-alert-cron.js'
+import { buildFatigueReport, prepareFatigueMetrics, calculateFrequencyTrend } from '../lib/fatigue-engine.js'
 import { getShopifyTodayOrders, getShopifyOrdersRange } from '../connectors/shopify.js'
 import { GRI_ADS, calculateMER, calculateTrueCAC, calculateAMER, calculateNCAC, calculateFOVCAC, calculateCM, calculateCostOfDelivery, calculateAcquisitionMER } from '../lib/ads-metrics.js'
 import { getGoogleSpend } from '../lib/google-ads-spend.js'
@@ -236,7 +243,12 @@ router.get('/dashboard', async (req, res) => {
         revenueProjection = { currentDailySpend: Math.round(dailySpend * 100) / 100, extraSpendPerDay: Math.round(extraSpend * 100) / 100, expectedRevenuePerDay: Math.round(expectedRev * 100) / 100, expectedProfitPerDay: Math.round(expectedProfit * 100) / 100, basedOnRoas: Math.round(crRoas * 100) / 100 }
       }
 
-      return { ...cr, fatigueScore: fatigue.score, fatigueStatus: fatigue.status, fatigueSignals: fatigue.signals, recommendation, recommendationReason, revenueProjection }
+      // Frequency trend (3d vs 7d)
+      const adId = cr.metaAdId || cr.adId
+      const adSnaps = adId ? getAdSnapshots(adId, 14) : []
+      const freqTrend = calculateFrequencyTrend(adSnaps)
+
+      return { ...cr, fatigueScore: fatigue.score, fatigueStatus: fatigue.status, fatigueSignals: fatigue.signals, recommendation, recommendationReason, revenueProjection, frequencyTrend: freqTrend }
     })
 
     // Growth opportunities
@@ -257,8 +269,11 @@ router.get('/dashboard', async (req, res) => {
     const hasIntl = adSetsAll.some(a => (a.name || '').toLowerCase().includes('brazil'))
     if (hasIntl) opportunities.push({ type: 'expansion', title: 'Brazilian audience detected', detail: 'If converting, create Portuguese language creative. Gender reveal parties are massive in Brazil.', priority: 'medium' })
 
+    // Ad activations (recent, with impact tracking)
+    const recentActivations = getAdActivations().slice(0, 20)
+
     res.json({
-      ok: true, range,
+      ok: true, range, dataFetchedAt: new Date().toISOString(),
       hero: {
         shopifyRevenue: Math.round(shopifyRevenue * 100) / 100, shopifyOrders,
         metaSpend: Math.round(metaSpend * 100) / 100,
@@ -291,6 +306,7 @@ router.get('/dashboard', async (req, res) => {
       alerts, pendingActions, opportunities,
       aov: aovIntel, brief, health, rhythm,
       conversions: conversions.slice(0, 50),
+      activations: recentActivations,
     })
   } catch (err) {
     console.error('[Flywheel Dashboard]', err.message)
@@ -985,6 +1001,325 @@ router.post('/backup', (_req, res) => {
 
 router.get('/constants', (_req, res) => {
   res.json({ ok: true, constants: FLYWHEEL })
+})
+
+// ── POST /api/flywheel/duplicate-ad ─────────────────────────────────────────
+// Duplicate a winning ad into same or different adset. Always starts PAUSED.
+
+router.post('/duplicate-ad', async (req, res) => {
+  try {
+    const { sourceAdId, targetAdSetId, newName } = req.body
+    if (!sourceAdId) return res.status(400).json({ ok: false, error: 'Missing sourceAdId' })
+
+    const result = await duplicateAd(sourceAdId, { targetAdSetId, newName })
+    res.json({ ok: true, newAdId: result.id, message: `Ad duplicated (PAUSED). ID: ${result.id}` })
+  } catch (err) {
+    console.error('[Flywheel] Duplicate ad error:', err.message)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── POST /api/flywheel/duplicate-adset ──────────────────────────────────────
+// Duplicate an adset (targeting + budget). Always starts PAUSED.
+
+router.post('/duplicate-adset', async (req, res) => {
+  try {
+    const { sourceAdSetId, targetCampaignId, newName, dailyBudget } = req.body
+    if (!sourceAdSetId) return res.status(400).json({ ok: false, error: 'Missing sourceAdSetId' })
+
+    const result = await duplicateAdSet(sourceAdSetId, { targetCampaignId, newName, dailyBudget })
+    res.json({ ok: true, newAdSetId: result.id, message: `Ad set duplicated (PAUSED). ID: ${result.id}` })
+  } catch (err) {
+    console.error('[Flywheel] Duplicate adset error:', err.message)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── POST /api/flywheel/create-ad-from-copy ──────────────────────────────────
+// Generate AI copy and create ad in one step. Always PAUSED.
+
+router.post('/create-ad-from-copy', async (req, res) => {
+  try {
+    const { adsetId, angle, product, imageUrl, name } = req.body
+    if (!adsetId || !angle) return res.status(400).json({ ok: false, error: 'Missing adsetId or angle' })
+
+    // 1. Generate copy via Claude
+    const prompt = `You are an expert Meta Ads copywriter for Gender Reveal Ideas (genderrevealideas.com.au), Australian DTC gender reveal products. Gold Coast based.
+
+Products: Confetti Cannons, Powder Cannons, Bio Cannons, Smoke Bombs, Extinguishers, Sports Balls, Mega Blaster, Mini Blaster.
+Brand voice: Excited, Aussie, fun, trustworthy. Australian English. No dashes.
+
+BRIEF:
+- Angle: ${angle}
+- Product: ${product || 'Any'}
+
+Generate 1 ad copy with: primaryText (max 125 chars, hook first), headline (max 40 chars), description (max 30 chars).
+JSON only: { "primaryText": "...", "headline": "...", "description": "..." }`
+
+    const aiRes = await callClaude({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 400,
+      messages: [{ role: 'user', content: prompt }]
+    }, 'flywheel-create-ad-copy')
+
+    const text = aiRes.content[0].text.trim()
+    let copy
+    try {
+      const match = text.match(/\{[\s\S]*\}/)
+      copy = match ? JSON.parse(match[0]) : JSON.parse(text)
+    } catch {
+      copy = { primaryText: angle, headline: 'Shop Now', description: 'Gender Reveal Ideas' }
+    }
+
+    // 2. Create ad creative
+    const creative = await createAdCreative({
+      name: `Creative - ${name || angle}`,
+      object_story_spec: JSON.stringify({
+        page_id: '105089549192262',
+        link_data: {
+          message: copy.primaryText,
+          name: copy.headline,
+          description: copy.description,
+          link: 'https://genderrevealideas.com.au',
+          image_url: imageUrl || undefined,
+          call_to_action: { type: 'SHOP_NOW' }
+        }
+      })
+    })
+
+    // 3. Create ad (PAUSED)
+    const ad = await metaCreateAd({
+      name: name || `Flywheel - ${angle}`,
+      adset_id: adsetId,
+      creative: JSON.stringify({ creative_id: creative.id }),
+      status: 'PAUSED'
+    })
+
+    res.json({
+      ok: true,
+      adId: ad.id,
+      creativeId: creative.id,
+      copy,
+      message: `Ad created PAUSED with AI copy. Review and activate when ready.`
+    })
+  } catch (err) {
+    console.error('[Flywheel] Create ad from copy error:', err.message)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── POST /api/flywheel/replace-creative ─────────────────────────────────────
+// Swap the creative on an existing ad (new image/video URL).
+
+router.post('/replace-creative', async (req, res) => {
+  try {
+    const { adId, primaryText, headline, description, imageUrl } = req.body
+    if (!adId) return res.status(400).json({ ok: false, error: 'Missing adId' })
+
+    // Create new creative
+    const creative = await createAdCreative({
+      name: `Replacement - ${new Date().toISOString().slice(0, 10)}`,
+      object_story_spec: JSON.stringify({
+        page_id: '105089549192262',
+        link_data: {
+          message: primaryText || '',
+          name: headline || '',
+          description: description || '',
+          link: 'https://genderrevealideas.com.au',
+          image_url: imageUrl || undefined,
+          call_to_action: { type: 'SHOP_NOW' }
+        }
+      })
+    })
+
+    // Swap creative on existing ad
+    await updateAdCreative(adId, creative.id)
+
+    res.json({
+      ok: true,
+      newCreativeId: creative.id,
+      message: `Creative swapped on ad ${adId}. New creative ID: ${creative.id}`
+    })
+  } catch (err) {
+    console.error('[Flywheel] Replace creative error:', err.message)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── GET /api/flywheel/fatigue-alerts ────────────────────────────────────────
+
+router.get('/fatigue-alerts', (_req, res) => {
+  try {
+    res.json({ ok: true, alerts: getUnacknowledgedAlerts() })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── POST /api/flywheel/fatigue-alerts/:id/ack ──────────────────────────────
+
+router.post('/fatigue-alerts/:id/ack', (req, res) => {
+  try {
+    acknowledgeAlert(req.params.id)
+    res.json({ ok: true })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── POST /api/flywheel/generate-copy ────────────────────────────────────────
+// AI generates 3 ad copy variants for a given angle/product.
+
+router.post('/generate-copy', async (req, res) => {
+  try {
+    const { angle, product, audience, tone } = req.body
+    if (!angle) return res.status(400).json({ ok: false, error: 'Missing angle' })
+
+    const prompt = `You are an expert Meta Ads copywriter for Gender Reveal Ideas (genderrevealideas.com.au), Australian DTC e-commerce on the Gold Coast selling gender reveal products.
+
+Products: Confetti Cannons, Powder Cannons, Bio Cannons, Smoke Bombs, Extinguishers, Sports Balls, Mega Blaster, Mini Blaster.
+Brand voice: Excited, Aussie, fun, trustworthy. Australian English (colour not color, mum not mom). No dashes.
+Target: Expectant parents AU/NZ, ages 22-40, predominantly female.
+
+BRIEF:
+- Angle: ${angle}
+- Product: ${product || 'Any/all'}
+- Audience: ${audience || 'Broad'}
+- Tone: ${tone || 'Excited, authentic, Aussie'}
+
+Generate 3 ad copy variants. Each: primaryText (max 125 chars, hook first), headline (max 40 chars), description (max 30 chars).
+JSON array only: [{ "primaryText": "...", "headline": "...", "description": "..." }, ...]`
+
+    const aiRes = await callClaude({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [{ role: 'user', content: prompt }]
+    }, 'flywheel-copy-gen')
+
+    const text = aiRes.content[0].text.trim()
+    let variants
+    try {
+      const match = text.match(/\[[\s\S]*\]/)
+      variants = match ? JSON.parse(match[0]) : JSON.parse(text)
+    } catch {
+      variants = [{ primaryText: text, headline: '', description: '' }]
+    }
+
+    res.json({ ok: true, variants, generatedAt: new Date().toISOString() })
+  } catch (err) {
+    console.error('[Flywheel] Copy gen error:', err.message)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── POST /api/flywheel/activate-ad ──────────────────────────────────────────
+// Capture baseline → activate on Meta → start impact tracking.
+
+router.post('/activate-ad', async (req, res) => {
+  try {
+    const { adId, adSetId, campaignId, adName, adSetName, campaignName, copyPreview } = req.body
+    if (!adId || !adSetId) return res.status(400).json({ ok: false, error: 'Missing adId or adSetId' })
+
+    // 1. Capture baseline from adset snapshots (stored data)
+    const snapshots = getAdSetSnapshots(adSetId, 7)
+    let baseline = { cpa: 0, roas: 0, frequency: 0, spend: 0, purchases: 0, capturedAt: new Date().toISOString() }
+
+    if (snapshots.length > 0) {
+      const totalSpend = snapshots.reduce((s, r) => s + (r.spend || 0), 0)
+      const totalPurchases = snapshots.reduce((s, r) => s + (r.purchases || 0), 0)
+      const avgFreq = snapshots.reduce((s, r) => s + (r.frequency || 0), 0) / snapshots.length
+      baseline = {
+        cpa: totalPurchases > 0 ? totalSpend / totalPurchases : 0,
+        roas: totalSpend > 0 ? snapshots.reduce((s, r) => s + (r.revenue || 0), 0) / totalSpend : 0,
+        frequency: +avgFreq.toFixed(2),
+        spend: totalSpend,
+        purchases: totalPurchases,
+        capturedAt: new Date().toISOString()
+      }
+    }
+
+    // Try live data for freshest baseline (non-blocking fallback)
+    try {
+      const liveInsights = await fetchAdSetInsightsRange(adSetId, 3)
+      if (liveInsights && liveInsights.spend > 0) {
+        baseline.cpa = liveInsights.cpa || baseline.cpa
+        baseline.roas = liveInsights.roas || baseline.roas
+        baseline.frequency = liveInsights.frequency || baseline.frequency
+        baseline.capturedAt = new Date().toISOString()
+      }
+    } catch { /* fallback to stored data */ }
+
+    // 2. Activate on Meta
+    await metaUpdateAdStatus(adId, 'ACTIVE')
+
+    // 3. Save activation record
+    const activation = saveAdActivation({
+      adId, adSetId, campaignId,
+      adName: adName || adId,
+      adSetName: adSetName || adSetId,
+      campaignName: campaignName || '',
+      copyPreview: copyPreview || {},
+      baseline
+    })
+
+    // 4. Log event
+    logFlywheelEvent('ad_activated', {
+      adId, adSetId, adName, baseline,
+      message: `Ad "${adName}" activated. Baseline CPA: $${baseline.cpa.toFixed(2)}, ROAS: ${baseline.roas.toFixed(2)}x`
+    })
+
+    res.json({
+      ok: true,
+      activation,
+      message: `Ad "${adName || adId}" is now ACTIVE. Tracking impact against baseline CPA $${baseline.cpa.toFixed(2)}.`
+    })
+  } catch (err) {
+    console.error('[Flywheel] Activate ad error:', err.message)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── GET /api/flywheel/ad-activations ────────────────────────────────────────
+// All recent activations with impact data.
+
+router.get('/ad-activations', (_req, res) => {
+  try {
+    const activations = getAdActivations()
+    res.json({ ok: true, activations })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// ── GET /api/flywheel/live-refresh ──────────────────────────────────────────
+// Bypass 6h cache — fresh Meta API pull (4 calls only, rate-limit safe).
+
+router.get('/live-refresh', async (_req, res) => {
+  try {
+    // Account-level today
+    const account = await fetchAccountInsights('today')
+
+    // Campaign-level today (3 GRI campaigns)
+    const campaigns = await fetchCampaigns()
+    const campaignData = await Promise.all(
+      campaigns.map(async (c) => {
+        try {
+          const insights = await fetchCampaignInsightsRange(c.id, 1)
+          return { id: c.id, name: c.name, status: c.status, ...(insights || {}) }
+        } catch { return { id: c.id, name: c.name, status: c.status } }
+      })
+    )
+
+    res.json({
+      ok: true,
+      fetchedAt: new Date().toISOString(),
+      account: account || {},
+      campaigns: campaignData
+    })
+  } catch (err) {
+    console.error('[Flywheel] Live refresh error:', err.message)
+    res.status(500).json({ ok: false, error: err.message })
+  }
 })
 
 export default router

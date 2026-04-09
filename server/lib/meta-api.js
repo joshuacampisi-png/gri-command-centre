@@ -248,6 +248,72 @@ export async function createAd(params) {
   return metaPost(`/${accountId}/ads`, params)
 }
 
+/**
+ * Duplicate an ad: reads the original ad's creative + adset, creates a copy in PAUSED state.
+ * Optionally override the target adset.
+ */
+export async function duplicateAd(sourceAdId, { targetAdSetId, newName } = {}) {
+  // 1. Read the source ad
+  const source = await metaGet(`/${sourceAdId}`, {
+    fields: 'name,adset_id,creative{id},status'
+  })
+  if (!source.id) throw new Error(`Could not read source ad ${sourceAdId}`)
+
+  const accountId = metaAccountId()
+  const adsetId = targetAdSetId || source.adset_id
+  const name = newName || `${source.name} [Copy]`
+
+  // 2. Create the duplicate (reuses same creative)
+  return metaPost(`/${accountId}/ads`, {
+    name,
+    adset_id: adsetId,
+    creative: JSON.stringify({ creative_id: source.creative?.id }),
+    status: 'PAUSED'
+  })
+}
+
+/**
+ * Duplicate an ad set: reads the original adset's config, creates a copy in PAUSED state.
+ * Optionally override budget, name, or campaign.
+ */
+export async function duplicateAdSet(sourceAdSetId, { targetCampaignId, newName, dailyBudget } = {}) {
+  // 1. Read the source ad set
+  const source = await metaGet(`/${sourceAdSetId}`, {
+    fields: 'name,campaign_id,daily_budget,lifetime_budget,optimization_goal,billing_event,targeting,promoted_object,bid_amount,bid_strategy,status'
+  })
+  if (!source.id) throw new Error(`Could not read source ad set ${sourceAdSetId}`)
+
+  const accountId = metaAccountId()
+  const campaignId = targetCampaignId || source.campaign_id
+  const name = newName || `${source.name} [Copy]`
+  const budget = dailyBudget ? Math.round(dailyBudget * 100) : source.daily_budget
+
+  const params = {
+    name,
+    campaign_id: campaignId,
+    optimization_goal: source.optimization_goal || 'OFFSITE_CONVERSIONS',
+    billing_event: source.billing_event || 'IMPRESSIONS',
+    status: 'PAUSED'
+  }
+
+  if (budget) params.daily_budget = String(budget)
+  if (source.targeting) params.targeting = JSON.stringify(source.targeting)
+  if (source.promoted_object) params.promoted_object = JSON.stringify(source.promoted_object)
+  if (source.bid_amount) params.bid_amount = source.bid_amount
+  if (source.bid_strategy) params.bid_strategy = source.bid_strategy
+
+  return metaPost(`/${accountId}/adsets`, params)
+}
+
+/**
+ * Update an existing ad's creative (swap creative on a live ad).
+ */
+export async function updateAdCreative(adId, creativeId) {
+  return metaPost(`/${adId}`, {
+    creative: JSON.stringify({ creative_id: creativeId })
+  })
+}
+
 // ── Audience Creation ───────────────────────────────────────────────────────
 
 const GRI_PIXEL_ID = '810404797873042'
@@ -485,6 +551,114 @@ export async function fetchFullPerformance(datePreset = 'last_7d') {
       cpm: totalImpressions > 0 ? (totalSpend / totalImpressions * 1000) : 0
     }
   }
+}
+
+// ── Multi-window insights (3d, 5d, 7d comparison) ──────────────────────────
+
+function dateRange(days) {
+  const until = new Date()
+  const since = new Date()
+  since.setDate(since.getDate() - days)
+  return JSON.stringify({ since: fmt(since), until: fmt(until) })
+}
+
+const INSIGHT_FIELDS = 'spend,impressions,clicks,actions,action_values,frequency,cpm,ctr,reach'
+
+/**
+ * Fetch campaign → adset → ad tree with insights for a specific day range.
+ */
+export async function fetchCampaignInsightsRange(campaignId, days) {
+  const data = await metaGet(`/${campaignId}/insights`, {
+    fields: 'campaign_name,' + INSIGHT_FIELDS,
+    time_range: dateRange(days)
+  })
+  return parseInsights(data.data?.[0])
+}
+
+export async function fetchAdSetInsightsRange(adSetId, days) {
+  const data = await metaGet(`/${adSetId}/insights`, {
+    fields: INSIGHT_FIELDS,
+    time_range: dateRange(days)
+  })
+  return parseInsights(data.data?.[0])
+}
+
+export async function fetchAdInsightsRange(adId, days) {
+  const data = await metaGet(`/${adId}/insights`, {
+    fields: INSIGHT_FIELDS,
+    time_range: dateRange(days)
+  })
+  return parseInsights(data.data?.[0])
+}
+
+/**
+ * Fetch full performance tree for multiple windows (3d, 5d, 7d) in parallel.
+ * Returns { campaigns: [{ id, name, status, windows: { '3d': insights, '5d': insights, '7d': insights }, adsets: [...], ads: [...] }] }
+ */
+export async function fetchMultiWindowPerformance() {
+  const windows = [3, 5, 7]
+  const campaigns = await fetchCampaigns()
+
+  const enriched = await Promise.all(campaigns.map(async (campaign) => {
+    // Fetch campaign-level insights for all windows
+    const [w3, w5, w7] = await Promise.all(
+      windows.map(d => fetchCampaignInsightsRange(campaign.id, d).catch(() => null))
+    )
+
+    // Fetch adsets + ads
+    const [adsets, ads] = await Promise.all([
+      fetchAdsetsForCampaign(campaign.id).catch(() => []),
+      fetchAdsForCampaign(campaign.id).catch(() => [])
+    ])
+
+    // Adset insights for all windows in parallel
+    const enrichedAdsets = await Promise.all(adsets.map(async (adset) => {
+      const [as3, as5, as7] = await Promise.all(
+        windows.map(d => fetchAdSetInsightsRange(adset.id, d).catch(() => null))
+      )
+      return {
+        id: adset.id,
+        name: adset.name,
+        status: adset.status,
+        dailyBudget: adset.daily_budget ? Number(adset.daily_budget) / 100 : null,
+        windows: { '3d': as3, '5d': as5, '7d': as7 }
+      }
+    }))
+
+    // Ad insights for all windows + daily breakdown for fatigue
+    const enrichedAds = await Promise.all(ads.map(async (ad) => {
+      const [ad3, ad5, ad7, daily] = await Promise.all([
+        ...windows.map(d => fetchAdInsightsRange(ad.id, d).catch(() => null)),
+        fetchAdInsightsByDay(ad.id, 14).catch(() => [])
+      ])
+      const createdDate = ad.created_time ? new Date(ad.created_time) : null
+      const daysRunning = createdDate ? Math.floor((Date.now() - createdDate.getTime()) / 86400000) : 0
+
+      return {
+        id: ad.id,
+        name: ad.name,
+        status: ad.status,
+        adsetId: ad.adset_id,
+        thumbnailUrl: ad.creative?.thumbnail_url || null,
+        daysRunning,
+        windows: { '3d': ad3, '5d': ad5, '7d': ad7 },
+        dailyInsights: daily
+      }
+    }))
+
+    return {
+      id: campaign.id,
+      name: campaign.name,
+      status: campaign.status,
+      dailyBudget: campaign.daily_budget ? Number(campaign.daily_budget) / 100 : null,
+      objective: campaign.objective,
+      windows: { '3d': w3, '5d': w5, '7d': w7 },
+      adsets: enrichedAdsets,
+      ads: enrichedAds
+    }
+  }))
+
+  return { campaigns: enriched, fetchedAt: new Date().toISOString() }
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

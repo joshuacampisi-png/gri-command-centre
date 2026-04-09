@@ -1476,6 +1476,476 @@ function AccountHealthModal({ data, loading, onClose }) {
   )
 }
 
+// ── Fatigue Alerts Banner ──────────────────────────────────────────────────
+
+function FatigueAlertsBanner({ alerts, onAck }) {
+  if (!alerts || alerts.length === 0) return null
+
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: COLOURS.muted, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
+        FATIGUE ALERTS ({alerts.length})
+      </div>
+      {alerts.map(alert => {
+        const isDead = alert.currentStatus === 'DEAD'
+        const bg = isDead ? '#F8514915' : '#D2992215'
+        const borderColor = isDead ? '#F8514944' : '#D2992244'
+        const iconColor = isDead ? COLOURS.red : COLOURS.yellow
+        return (
+          <div key={alert.id} style={{
+            background: bg, border: `1px solid ${borderColor}`, borderRadius: 10,
+            padding: '12px 16px', marginBottom: 8, display: 'flex', alignItems: 'flex-start', gap: 12
+          }}>
+            <span style={{ color: iconColor, fontSize: 16, flexShrink: 0, marginTop: 2 }}>
+              {isDead ? '!!' : '!'}
+            </span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ color: COLOURS.text, fontSize: 13, fontWeight: 600 }}>
+                {alert.adName}
+                <span style={{ color: COLOURS.muted, fontWeight: 400, marginLeft: 8 }}>{alert.campaignName}</span>
+              </div>
+              <div style={{ color: iconColor, fontSize: 12, fontWeight: 700, marginTop: 2 }}>
+                {alert.previousStatus} → {alert.currentStatus} (Score: {alert.score}/100)
+                {alert.daysRemaining != null && <span style={{ color: COLOURS.muted }}> — ~{alert.daysRemaining}d left</span>}
+              </div>
+              {alert.signals && alert.signals.length > 0 && (
+                <div style={{ color: COLOURS.muted, fontSize: 11, marginTop: 4 }}>
+                  {alert.signals.join(' · ')}
+                </div>
+              )}
+              <div style={{ color: COLOURS.muted, fontSize: 11, marginTop: 4, fontStyle: 'italic' }}>
+                {alert.recommendation}
+              </div>
+            </div>
+            <button
+              onClick={() => onAck(alert.id)}
+              style={{
+                background: 'transparent', border: `1px solid ${COLOURS.border}`, borderRadius: 6,
+                color: COLOURS.muted, fontSize: 11, padding: '4px 10px', cursor: 'pointer', flexShrink: 0
+              }}
+            >
+              Dismiss
+            </button>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// ── Multi-Window Overview (3d / 5d / 7d) ──────────────────────────────────
+
+function MultiWindowOverview({ data, loading, onRefresh }) {
+  if (loading) {
+    return (
+      <div className="ads-dark-card" style={{ padding: 24 }}>
+        <Skeleton width="30%" height={14} />
+        <div style={{ display: 'flex', gap: 16, marginTop: 16 }}>
+          {[1, 2, 3].map(i => <Skeleton key={i} height={120} />)}
+        </div>
+      </div>
+    )
+  }
+  if (!data) return null
+
+  const { windowTotals, campaigns, fetchedAt } = data
+  const windows = ['3d', '5d', '7d']
+  const windowLabels = { '3d': '3 Day', '5d': '5 Day', '7d': '7 Day' }
+
+  // Trend: compare 3d direction vs 7d
+  const trend3v7 = (metric) => {
+    const v3 = windowTotals?.['3d']?.[metric]
+    const v7 = windowTotals?.['7d']?.[metric]
+    if (!v3 || !v7) return null
+    // Normalise to daily
+    const daily3 = v3 / 3
+    const daily7 = v7 / 7
+    if (daily7 === 0) return null
+    return ((daily3 - daily7) / Math.abs(daily7)) * 100
+  }
+
+  return (
+    <div style={{ marginBottom: 20 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: COLOURS.muted, textTransform: 'uppercase', letterSpacing: 1 }}>
+          PERFORMANCE WINDOWS
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {fetchedAt && (
+            <span style={{ fontSize: 10, color: COLOURS.muted }}>
+              {new Date(fetchedAt).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          )}
+          <button className="ads-dark-btn-micro ads-dark-btn-ghost" onClick={onRefresh} style={{ fontSize: 10 }}>
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      {/* Window summary cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 16 }}>
+        {windows.map(w => {
+          const t = windowTotals?.[w] || {}
+          return (
+            <div key={w} className="ads-dark-card" style={{ padding: 16 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: COLOURS.text, marginBottom: 12 }}>
+                {windowLabels[w]}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                <MiniStat label="Spend" value={fmtCurrency(t.spend)} />
+                <MiniStat label="Results" value={fmtInt(t.purchases)} />
+                <MiniStat label="CPA" value={fmtCurrency(t.cpa)} color={cppColour(t.cpa)} />
+                <MiniStat label="ROAS" value={t.roas ? t.roas.toFixed(2) + 'x' : '--'} color={t.roas >= 2.5 ? COLOURS.green : t.roas >= 1.5 ? COLOURS.yellow : COLOURS.red} />
+                <MiniStat label="CPM" value={fmtCurrency(t.cpm)} />
+                <MiniStat label="CTR" value={t.ctr ? t.ctr.toFixed(2) + '%' : '--'} />
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Trend arrows */}
+      {(() => {
+        const cpaTrend = trend3v7('cpa')
+        const roasTrend = trend3v7('roas')
+        const cpmTrend = trend3v7('cpm')
+        if (cpaTrend === null) return null
+
+        return (
+          <div className="ads-dark-card" style={{ padding: 12, display: 'flex', gap: 24, justifyContent: 'center' }}>
+            <TrendPill label="CPA" value={cpaTrend} invert />
+            <TrendPill label="ROAS" value={roasTrend} />
+            <TrendPill label="CPM" value={cpmTrend} invert />
+          </div>
+        )
+      })()}
+
+      {/* Campaign → Adset → Ad breakdown */}
+      {campaigns && campaigns.length > 0 && (
+        <div style={{ marginTop: 16 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: COLOURS.muted, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
+            BREAKDOWN BY CAMPAIGN → ADSET → AD
+          </div>
+          {campaigns.map(c => (
+            <CampaignWindowRow key={c.id} campaign={c} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function MiniStat({ label, value, color }) {
+  return (
+    <div>
+      <div style={{ fontSize: 10, color: COLOURS.muted, textTransform: 'uppercase' }}>{label}</div>
+      <div style={{ fontSize: 14, fontWeight: 700, color: color || COLOURS.text }}>{value}</div>
+    </div>
+  )
+}
+
+function TrendPill({ label, value, invert = false }) {
+  if (value == null) return null
+  const isGood = invert ? value < 0 : value > 0
+  const color = isGood ? COLOURS.green : value === 0 ? COLOURS.muted : COLOURS.red
+  const arrow = value > 0 ? '\u2191' : value < 0 ? '\u2193' : '\u2192'
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+      <span style={{ fontSize: 11, color: COLOURS.muted }}>{label}</span>
+      <span style={{ fontSize: 12, fontWeight: 700, color }}>
+        {arrow} {Math.abs(value).toFixed(1)}%
+      </span>
+      <span style={{ fontSize: 10, color: COLOURS.muted }}>3d vs 7d/day</span>
+    </div>
+  )
+}
+
+function CampaignWindowRow({ campaign }) {
+  const [expanded, setExpanded] = useState(false)
+  const windows = ['3d', '5d', '7d']
+
+  return (
+    <div className="ads-dark-card" style={{ marginBottom: 8, padding: 0, overflow: 'hidden' }}>
+      {/* Campaign header */}
+      <div
+        onClick={() => setExpanded(!expanded)}
+        style={{
+          padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12,
+          cursor: 'pointer', borderBottom: expanded ? `1px solid ${COLOURS.border}` : 'none'
+        }}
+      >
+        <span style={{ color: COLOURS.muted, fontSize: 12 }}>{expanded ? '\u25BC' : '\u25B6'}</span>
+        <span style={{ color: campaign.status === 'ACTIVE' ? COLOURS.green : COLOURS.red, fontSize: 8 }}>{'\u25CF'}</span>
+        <span style={{ color: COLOURS.text, fontSize: 13, fontWeight: 700, flex: 1 }}>{campaign.name}</span>
+        {/* Quick 7d stats */}
+        {campaign.windows?.['7d'] && (
+          <div style={{ display: 'flex', gap: 16, fontSize: 12 }}>
+            <span style={{ color: COLOURS.muted }}>7d: {fmtCurrency(campaign.windows['7d'].spend)}</span>
+            <span style={{ color: COLOURS.muted }}>{campaign.windows['7d'].purchases || 0} purch</span>
+            <span style={{ color: cppColour(campaign.windows['7d'].cpa) }}>CPA {fmtCurrency(campaign.windows['7d'].cpa)}</span>
+          </div>
+        )}
+      </div>
+
+      {expanded && (
+        <div style={{ padding: '0 16px 12px' }}>
+          {/* Adset rows */}
+          {(campaign.adsets || []).map(adset => (
+            <AdsetWindowRow key={adset.id} adset={adset} ads={(campaign.ads || []).filter(a => a.adsetId === adset.id)} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function AdsetWindowRow({ adset, ads }) {
+  const [expanded, setExpanded] = useState(false)
+
+  return (
+    <div style={{ marginTop: 8 }}>
+      <div
+        onClick={() => setExpanded(!expanded)}
+        style={{
+          padding: '8px 12px', background: COLOURS.bg, borderRadius: 8,
+          display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer'
+        }}
+      >
+        <span style={{ color: COLOURS.muted, fontSize: 10 }}>{expanded ? '\u25BC' : '\u25B6'}</span>
+        <span style={{ color: adset.status === 'ACTIVE' ? COLOURS.green : COLOURS.red, fontSize: 6 }}>{'\u25CF'}</span>
+        <span style={{ color: COLOURS.text, fontSize: 12, fontWeight: 600, flex: 1 }}>{adset.name}</span>
+        {adset.dailyBudget && <span style={{ color: COLOURS.muted, fontSize: 11 }}>{fmtCurrency(adset.dailyBudget)}/day</span>}
+        {adset.windows?.['7d'] && (
+          <span style={{ color: COLOURS.muted, fontSize: 11 }}>
+            7d: {fmtCurrency(adset.windows['7d'].spend)} · {adset.windows['7d'].purchases || 0} purch
+          </span>
+        )}
+      </div>
+
+      {expanded && ads.length > 0 && (
+        <div style={{ marginTop: 4, marginLeft: 20 }}>
+          {/* Table header */}
+          <div style={{
+            display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr',
+            gap: 8, padding: '6px 8px', fontSize: 10, color: COLOURS.muted,
+            textTransform: 'uppercase', borderBottom: `1px solid ${COLOURS.border}`
+          }}>
+            <span>Ad</span>
+            <span>Status</span>
+            <span>Fatigue</span>
+            <span>3d Spend</span>
+            <span>5d Spend</span>
+            <span>7d Spend</span>
+            <span>7d CPA</span>
+            <span>7d ROAS</span>
+            <span>Freq</span>
+          </div>
+          {ads.map(ad => (
+            <AdWindowRow key={ad.id} ad={ad} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function AdWindowRow({ ad }) {
+  const [toggling, setToggling] = useState(false)
+
+  const toggleStatus = async () => {
+    setToggling(true)
+    try {
+      const newStatus = ad.status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE'
+      await fetch(`${API}/status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ entityId: ad.id, entityType: 'ad', status: newStatus })
+      })
+      ad.status = newStatus // optimistic update
+    } catch (err) {
+      console.error('Toggle ad status error:', err)
+    }
+    setToggling(false)
+  }
+
+  const fatigue = ad.fatigue || {}
+  const fatigueStyle = FATIGUE_MAP[fatigue.status] || FATIGUE_MAP.HEALTHY
+
+  return (
+    <div style={{
+      display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr',
+      gap: 8, padding: '8px', fontSize: 12, borderBottom: `1px solid ${COLOURS.border}11`,
+      alignItems: 'center'
+    }}>
+      <span style={{ color: COLOURS.text, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {ad.name}
+      </span>
+      <button
+        onClick={toggleStatus}
+        disabled={toggling}
+        style={{
+          background: ad.status === 'ACTIVE' ? COLOURS.green + '20' : COLOURS.red + '20',
+          color: ad.status === 'ACTIVE' ? COLOURS.green : COLOURS.red,
+          border: 'none', borderRadius: 4, padding: '2px 8px', fontSize: 10,
+          fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase'
+        }}
+      >
+        {toggling ? '...' : ad.status}
+      </button>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        <span style={{
+          display: 'inline-block', width: 8, height: 8, borderRadius: '50%',
+          background: fatigueStyle.color
+        }} />
+        <span style={{ color: fatigueStyle.color, fontSize: 10, fontWeight: 600 }}>
+          {fatigue.status || '--'}
+        </span>
+        {fatigue.daysRemaining != null && (
+          <span style={{ color: COLOURS.muted, fontSize: 9 }}>({fatigue.daysRemaining}d)</span>
+        )}
+      </div>
+      <span style={{ color: COLOURS.text }}>{fmtCurrency(ad.windows?.['3d']?.spend)}</span>
+      <span style={{ color: COLOURS.text }}>{fmtCurrency(ad.windows?.['5d']?.spend)}</span>
+      <span style={{ color: COLOURS.text }}>{fmtCurrency(ad.windows?.['7d']?.spend)}</span>
+      <span style={{ color: cppColour(ad.windows?.['7d']?.cpa) }}>
+        {fmtCurrency(ad.windows?.['7d']?.cpa)}
+      </span>
+      <span style={{ color: ad.windows?.['7d']?.roas >= 2.5 ? COLOURS.green : ad.windows?.['7d']?.roas >= 1.5 ? COLOURS.yellow : COLOURS.red }}>
+        {ad.windows?.['7d']?.roas ? ad.windows['7d'].roas.toFixed(2) + 'x' : '--'}
+      </span>
+      <span style={{ color: (ad.windows?.['7d']?.frequency || 0) > 4 ? COLOURS.red : COLOURS.muted }}>
+        {ad.windows?.['7d']?.frequency?.toFixed(1) || '--'}
+      </span>
+    </div>
+  )
+}
+
+// ── Creative Generator Panel ──────────────────────────────────────────────
+
+function CreativeGenerator({ show, onClose, angle, setAngle, product, setProduct, adsetId, setAdsetId, variants, loading, onGenerate, adsets }) {
+  if (!show) return null
+
+  return (
+    <div className="ads-dark-overlay" onClick={onClose}>
+      <div className="ads-dark-modal ads-dark-modal-wide" onClick={e => e.stopPropagation()} style={{ maxWidth: 700 }}>
+        <div className="ads-dark-modal-header">
+          <h3 className="ads-dark-modal-title">Generate Ad Copy</h3>
+          <button className="ads-dark-btn-icon" onClick={onClose}>X</button>
+        </div>
+
+        <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div>
+            <label style={{ display: 'block', fontSize: 11, color: COLOURS.muted, textTransform: 'uppercase', marginBottom: 4 }}>
+              Angle / Hook *
+            </label>
+            <input
+              type="text"
+              value={angle}
+              onChange={e => setAngle(e.target.value)}
+              placeholder="e.g. 'Works every time guarantee', 'Made for the gram', 'Safe for mum & bub'"
+              style={{
+                width: '100%', padding: '10px 12px', background: COLOURS.bg, border: `1px solid ${COLOURS.border}`,
+                borderRadius: 8, color: COLOURS.text, fontSize: 13
+              }}
+            />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div>
+              <label style={{ display: 'block', fontSize: 11, color: COLOURS.muted, textTransform: 'uppercase', marginBottom: 4 }}>
+                Product
+              </label>
+              <select
+                value={product}
+                onChange={e => setProduct(e.target.value)}
+                style={{
+                  width: '100%', padding: '10px 12px', background: COLOURS.bg, border: `1px solid ${COLOURS.border}`,
+                  borderRadius: 8, color: COLOURS.text, fontSize: 13
+                }}
+              >
+                <option value="">Any / All</option>
+                <option value="Confetti Cannons">Confetti Cannons</option>
+                <option value="Powder Cannons">Powder Cannons</option>
+                <option value="Bio Cannons">Bio Cannons</option>
+                <option value="Smoke Bombs">Smoke Bombs</option>
+                <option value="Extinguishers">Extinguishers</option>
+                <option value="Sports Balls">Sports Balls</option>
+                <option value="Mega Blaster">Mega Blaster</option>
+                <option value="Mini Blaster">Mini Blaster</option>
+              </select>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: 11, color: COLOURS.muted, textTransform: 'uppercase', marginBottom: 4 }}>
+                Target Ad Set
+              </label>
+              <select
+                value={adsetId}
+                onChange={e => setAdsetId(e.target.value)}
+                style={{
+                  width: '100%', padding: '10px 12px', background: COLOURS.bg, border: `1px solid ${COLOURS.border}`,
+                  borderRadius: 8, color: COLOURS.text, fontSize: 13
+                }}
+              >
+                <option value="">Select ad set...</option>
+                {(adsets || []).map(as => (
+                  <option key={as.id} value={as.id}>{as.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <button
+            className="ads-dark-btn ads-dark-btn-primary"
+            onClick={onGenerate}
+            disabled={loading || !angle}
+            style={{ alignSelf: 'flex-start' }}
+          >
+            {loading ? 'Generating...' : 'Generate 3 Variants'}
+          </button>
+
+          {/* Variants */}
+          {variants && variants.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 8 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: COLOURS.muted, textTransform: 'uppercase' }}>
+                GENERATED VARIANTS
+              </div>
+              {variants.map((v, i) => (
+                <div key={i} className="ads-dark-card" style={{ padding: 16 }}>
+                  <div style={{ fontSize: 11, color: COLOURS.muted, marginBottom: 6 }}>Variant {i + 1}</div>
+                  <div style={{ marginBottom: 8 }}>
+                    <div style={{ fontSize: 10, color: COLOURS.muted, textTransform: 'uppercase' }}>Primary Text</div>
+                    <div style={{ color: COLOURS.text, fontSize: 13, lineHeight: 1.4 }}>{v.primaryText}</div>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                    <div>
+                      <div style={{ fontSize: 10, color: COLOURS.muted, textTransform: 'uppercase' }}>Headline</div>
+                      <div style={{ color: COLOURS.text, fontSize: 13, fontWeight: 600 }}>{v.headline}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 10, color: COLOURS.muted, textTransform: 'uppercase' }}>Description</div>
+                      <div style={{ color: COLOURS.text, fontSize: 12 }}>{v.description}</div>
+                    </div>
+                  </div>
+                  <button
+                    className="ads-dark-btn-micro ads-dark-btn-ghost"
+                    style={{ marginTop: 8, fontSize: 10 }}
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${v.primaryText}\n\nHeadline: ${v.headline}\nDescription: ${v.description}`)
+                    }}
+                  >
+                    Copy to clipboard
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Main Component ──────────────────────────────────────────────────────────
 
 export default function AdsPerformanceTab() {
@@ -1517,6 +1987,21 @@ export default function AdsPerformanceTab() {
   // UI state
   const [alerts, setAlerts] = useState([])
   const [showDefinitions, setShowDefinitions] = useState(false)
+
+  // Multi-window (3d/5d/7d comparison)
+  const [multiWindow, setMultiWindow] = useState(null)
+  const [multiWindowLoading, setMultiWindowLoading] = useState(false)
+
+  // Fatigue alerts
+  const [fatigueAlerts, setFatigueAlerts] = useState([])
+
+  // Creative generator
+  const [showCopyGen, setShowCopyGen] = useState(false)
+  const [copyGenAngle, setCopyGenAngle] = useState('')
+  const [copyGenProduct, setCopyGenProduct] = useState('')
+  const [copyGenAdsetId, setCopyGenAdsetId] = useState('')
+  const [copyVariants, setCopyVariants] = useState([])
+  const [copyGenLoading, setCopyGenLoading] = useState(false)
 
   // ── Data Fetching ─────────────────────────────────────────────────────────
 
@@ -1657,6 +2142,58 @@ export default function AdsPerformanceTab() {
     setHealthLoading(false)
   }, [])
 
+  const fetchMultiWindow = useCallback(async () => {
+    setMultiWindowLoading(true)
+    try {
+      const res = await fetch(`${API}/multi-window`)
+      const json = await res.json()
+      if (json.ok) setMultiWindow(json)
+    } catch (err) {
+      console.error('Multi-window error:', err)
+    }
+    setMultiWindowLoading(false)
+  }, [])
+
+  const fetchFatigueAlerts = useCallback(async () => {
+    try {
+      const res = await fetch(`${API}/fatigue-alerts`)
+      const json = await res.json()
+      if (json.ok) setFatigueAlerts(json.alerts || [])
+    } catch (err) {
+      console.error('Fatigue alerts error:', err)
+    }
+  }, [])
+
+  const ackFatigueAlert = useCallback(async (alertId) => {
+    try {
+      await fetch(`${API}/fatigue-alerts/${alertId}/ack`, { method: 'POST' })
+      setFatigueAlerts(prev => prev.filter(a => a.id !== alertId))
+    } catch (err) {
+      console.error('Ack alert error:', err)
+    }
+  }, [])
+
+  const generateCopy = useCallback(async () => {
+    setCopyGenLoading(true)
+    setCopyVariants([])
+    try {
+      const res = await fetch(`${API}/generate-copy`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          angle: copyGenAngle,
+          product: copyGenProduct,
+          adsetId: copyGenAdsetId,
+        })
+      })
+      const json = await res.json()
+      if (json.ok) setCopyVariants(json.variants || [])
+    } catch (err) {
+      console.error('Copy gen error:', err)
+    }
+    setCopyGenLoading(false)
+  }, [copyGenAngle, copyGenProduct, copyGenAdsetId])
+
   const requestVerdict = useCallback(async (campaign) => {
     try {
       const shopifyData = truth ? {
@@ -1689,6 +2226,8 @@ export default function AdsPerformanceTab() {
 
   useEffect(() => {
     fetchScalePath()
+    fetchMultiWindow()
+    fetchFatigueAlerts()
     // Try to load cached AI rec
     const cached = sessionStorage.getItem('ads-ai-rec')
     if (cached) {
@@ -1717,7 +2256,9 @@ export default function AdsPerformanceTab() {
     fetchProfitability()
     fetchBreakdown()
     fetchScalePath()
-  }, [fetchPerformance, fetchTruth, fetchProfitability, fetchBreakdown, fetchScalePath])
+    fetchMultiWindow()
+    fetchFatigueAlerts()
+  }, [fetchPerformance, fetchTruth, fetchProfitability, fetchBreakdown, fetchScalePath, fetchMultiWindow, fetchFatigueAlerts])
 
   // ── Derived Data ──────────────────────────────────────────────────────────
 
@@ -1754,6 +2295,9 @@ export default function AdsPerformanceTab() {
         </div>
       )}
 
+      {/* Fatigue Alerts */}
+      <FatigueAlertsBanner alerts={fatigueAlerts} onAck={ackFatigueAlert} />
+
       {/* Alerts */}
       <AlertBar
         alerts={alerts}
@@ -1765,6 +2309,20 @@ export default function AdsPerformanceTab() {
 
       {/* Spend vs Revenue Chart */}
       <SpendChart breakdown={breakdown} loading={breakdownLoading} />
+
+      {/* Multi-Window Performance (3d/5d/7d) */}
+      <MultiWindowOverview data={multiWindow} loading={multiWindowLoading} onRefresh={fetchMultiWindow} />
+
+      {/* Creative Generator Button */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+        <button
+          className="ads-dark-btn ads-dark-btn-accent"
+          onClick={() => setShowCopyGen(true)}
+          style={{ fontSize: 12 }}
+        >
+          + New Creative
+        </button>
+      </div>
 
       {/* Campaign Table */}
       <CampaignTable
@@ -1785,6 +2343,22 @@ export default function AdsPerformanceTab() {
 
       {/* Scale Path Calculator */}
       <ScalePathCalc scalePath={scalePath} loading={scaleLoading} />
+
+      {/* Creative Generator Modal */}
+      <CreativeGenerator
+        show={showCopyGen}
+        onClose={() => setShowCopyGen(false)}
+        angle={copyGenAngle}
+        setAngle={setCopyGenAngle}
+        product={copyGenProduct}
+        setProduct={setCopyGenProduct}
+        adsetId={copyGenAdsetId}
+        setAdsetId={setCopyGenAdsetId}
+        variants={copyVariants}
+        loading={copyGenLoading}
+        onGenerate={generateCopy}
+        adsets={(multiWindow?.campaigns || []).flatMap(c => c.adsets || [])}
+      />
 
       {/* Modals */}
       {showDefinitions && <MetricDefinitions onClose={() => setShowDefinitions(false)} />}

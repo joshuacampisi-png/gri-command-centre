@@ -10,7 +10,8 @@ import {
 } from './meta-api.js'
 import {
   saveCampaigns, saveAdSets, saveAds, upsertAdSnapshot, upsertAdSetSnapshot,
-  logFlywheelEvent, getCampaigns as getStoredCampaigns, deduplicateAlerts
+  logFlywheelEvent, getCampaigns as getStoredCampaigns, deduplicateAlerts,
+  getAdActivations, getAdSetSnapshots, updateAdActivationImpact
 } from './flywheel-store.js'
 import {
   evaluateKillRules, evaluateScaleRules, calculateAovIntelligence, FLYWHEEL
@@ -252,6 +253,59 @@ function classifyFormat(name) {
 
 // ── Schedule All Flywheel Crons ─────────────────────────────────────────────
 
+// ── Activation Impact Measurement ──────────────────────────────────────────
+// Checks all 'tracking' activations and computes before/after CPA/ROAS/frequency.
+
+async function measureActivationImpacts() {
+  const activations = getAdActivations('tracking')
+  if (!activations.length) return
+
+  console.log(`[Flywheel] Measuring impact for ${activations.length} active ad activations...`)
+
+  for (const activation of activations) {
+    const daysSince = Math.floor((Date.now() - new Date(activation.activatedAt).getTime()) / 86400000)
+    const baseline = activation.baseline || {}
+
+    for (const window of ['3d', '5d', '7d']) {
+      const windowDays = parseInt(window)
+      if (daysSince < windowDays) continue
+      if (activation.impact[window]) continue // already measured
+
+      // Get adset snapshots for the window period after activation
+      const snapshots = getAdSetSnapshots(activation.adSetId, windowDays)
+      if (!snapshots.length) continue
+
+      const totalSpend = snapshots.reduce((s, r) => s + (r.spend || 0), 0)
+      const totalPurchases = snapshots.reduce((s, r) => s + (r.purchases || 0), 0)
+      const totalRevenue = snapshots.reduce((s, r) => s + (r.revenue || 0), 0)
+      const avgFreq = snapshots.reduce((s, r) => s + (r.frequency || 0), 0) / snapshots.length
+
+      const currentCpa = totalPurchases > 0 ? totalSpend / totalPurchases : 0
+      const currentRoas = totalSpend > 0 ? totalRevenue / totalSpend : 0
+
+      const cpaDelta = baseline.cpa > 0 ? currentCpa - baseline.cpa : 0
+      const roasDelta = baseline.roas > 0 ? currentRoas - baseline.roas : 0
+
+      let cpaDirection = 'neutral'
+      if (cpaDelta < -2) cpaDirection = 'improved'
+      else if (cpaDelta > 2) cpaDirection = 'degraded'
+
+      updateAdActivationImpact(activation.id, window, {
+        cpa: +currentCpa.toFixed(2),
+        roas: +currentRoas.toFixed(2),
+        frequency: +avgFreq.toFixed(2),
+        delta: {
+          cpa: +cpaDelta.toFixed(2),
+          roas: +roasDelta.toFixed(2),
+          cpaDirection
+        }
+      })
+
+      console.log(`[Flywheel] ${activation.adName} ${window} impact: CPA $${currentCpa.toFixed(2)} (${cpaDirection} vs $${baseline.cpa.toFixed(2)})`)
+    }
+  }
+}
+
 export function startFlywheelCrons() {
   console.log('[Flywheel Cron] Starting flywheel scheduled jobs...')
 
@@ -276,8 +330,11 @@ export function startFlywheelCrons() {
   // Creative brief generation: every Friday at 5pm AEST
   cron.schedule('0 17 * * 5', safeRun('creative-brief', generateCreativeBrief), { timezone: 'Australia/Brisbane' })
 
-  // Outcome measurement: daily at 10am AEST
-  cron.schedule('0 10 * * *', safeRun('outcome-measurement', measureActionOutcomes), { timezone: 'Australia/Brisbane' })
+  // Outcome measurement + activation impact: daily at 10am AEST
+  cron.schedule('0 10 * * *', safeRun('outcome-measurement', async () => {
+    await measureActionOutcomes()
+    await measureActivationImpacts()
+  }), { timezone: 'Australia/Brisbane' })
 
   // Daily backup: 1am AEST every day (before any other jobs run)
   cron.schedule('0 1 * * *', safeRun('daily-backup', async () => {
