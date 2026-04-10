@@ -58,7 +58,7 @@ The TNT kit must be collected ${dates.pickupFormatted} from our local store at 2
 
 Please follow the link below to watch the YouTube setup video, which provides clear, step by step instructions on how to set up the TNT kit:
 
-https://www.youtube.com/shorts/Uuzvdlf_13M
+https://youtube.com/shorts/vg1xm_YO7Tw
 
 The TNT kit must be returned on ${dates.returnFormatted} at 2 Monaco Street, Surfers Paradise before 2:00 pm, in the same condition it was provided. All items should be clean, fully functional, and free from scratches.
 
