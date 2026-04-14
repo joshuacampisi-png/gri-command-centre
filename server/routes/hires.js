@@ -490,6 +490,27 @@ router.post('/:id/mark-picked-up', (req, res) => {
   res.json({ ok: true, hire: updated });
 });
 
+// POST /api/hires/reset-contract — emergency reset contract status (auth-free)
+router.post('/reset-contract', (req, res) => {
+  try {
+    const { orderNumber } = req.body;
+    if (!orderNumber) return res.status(400).json({ error: 'orderNumber required' });
+    const normalised = orderNumber.replace(/^#/, '');
+    const hire = getAll().find(h => h.orderNumber === `#${normalised}` || h.orderNumber === normalised);
+    if (!hire) return res.status(404).json({ error: `No hire found for order ${orderNumber}` });
+    update(hire.id, {
+      contractStatus: 'sent',
+      contractSignedAt: null,
+      contractSignatureUrl: null,
+      status: hire.bondStatus === 'paid' ? 'contract_sent' : hire.status,
+    });
+    console.log(`[hires] Contract reset for ${hire.orderNumber}`);
+    res.json({ ok: true, orderNumber: hire.orderNumber, contractStatus: 'sent' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /api/hires/resend-contract-by-order — look up by order number, resend contract
 // Auth-free so it can be called externally to fix broken links
 // Pass { testEmail: "you@example.com" } to send to a different address first (for testing)
