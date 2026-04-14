@@ -492,14 +492,25 @@ router.post('/:id/mark-picked-up', (req, res) => {
 
 // POST /api/hires/resend-contract-by-order — look up by order number, resend contract
 // Auth-free so it can be called externally to fix broken links
+// Pass { testEmail: "you@example.com" } to send to a different address first (for testing)
 router.post('/resend-contract-by-order', async (req, res) => {
   try {
-    const { orderNumber } = req.body;
+    const { orderNumber, testEmail } = req.body;
     if (!orderNumber) return res.status(400).json({ error: 'orderNumber required' });
     const normalised = orderNumber.replace(/^#/, '');
     const hire = getAll().find(h => h.orderNumber === `#${normalised}` || h.orderNumber === normalised);
     if (!hire) return res.status(404).json({ error: `No hire found for order ${orderNumber}` });
     if (hire.bondStatus !== 'paid') return res.status(400).json({ error: `Bond not paid yet for ${hire.orderNumber}` });
+
+    if (testEmail) {
+      // Send to test email without updating hire status
+      const baseUrl = process.env.BASE_URL || `http://127.0.0.1:${process.env.PORT || 8787}`;
+      const orderNum = (hire.orderNumber || '').replace(/^#/, '');
+      const signingUrl = `${baseUrl}/api/contract/${orderNum}/sign`;
+      const testHire = { ...hire, customerEmail: testEmail };
+      await sendHireEmail('contract', testHire, signingUrl);
+      return res.json({ ok: true, testEmail, orderNumber: hire.orderNumber, signingUrl, note: 'Test email sent — hire status NOT updated' });
+    }
 
     const result = await sendContractInternal(hire);
     res.json({ ok: true, hireId: hire.id, orderNumber: hire.orderNumber, signingUrl: result.signingUrl });
