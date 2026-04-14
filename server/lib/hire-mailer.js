@@ -1,21 +1,26 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 import { getHireDates } from './date-helpers.js';
 
-let resendClient = null;
+let gmailTransport = null;
 
-function getClient() {
-  if (!resendClient) {
-    if (!process.env.RESEND_API_KEY) {
-      throw new Error('RESEND_API_KEY environment variable is not set');
+function getTransport() {
+  if (!gmailTransport) {
+    const user = process.env.GMAIL_USER;
+    const pass = process.env.GMAIL_APP_PASSWORD;
+    if (!user || !pass) {
+      throw new Error('GMAIL_USER or GMAIL_APP_PASSWORD not set — cannot send hire emails');
     }
-    resendClient = new Resend(process.env.RESEND_API_KEY);
+    gmailTransport = nodemailer.createTransport({
+      service: 'gmail',
+      auth: { user, pass },
+    });
   }
-  return resendClient;
+  return gmailTransport;
 }
 
 function getFromAddress() {
   const name = process.env.GMAIL_FROM_NAME || 'Gender Reveal Ideas';
-  const email = process.env.RESEND_FROM_EMAIL || 'hello@genderrevealideas.com.au';
+  const email = process.env.GMAIL_USER || 'hello@genderrevealideas.com.au';
   return `${name} <${email}>`;
 }
 
@@ -173,7 +178,7 @@ const TEMPLATES = {
 };
 
 /**
- * Send an email to a hire customer via Resend HTTP API.
+ * Send an email to a hire customer via Gmail SMTP.
  * Falls back to Telegram notification if sending fails.
  * @param {string} type - confirmation | bond_link | refund | withheld | contract
  * @param {object} hire - the hire record
@@ -187,9 +192,11 @@ export async function sendHireEmail(type, hire, extraData) {
   const { subject, text } = builder(hire, extraData);
 
   try {
+    const transport = getTransport();
     const fromAddr = getFromAddress();
-    const bcc = process.env.RESEND_FROM_EMAIL || 'hello@genderrevealideas.com.au';
-    const { data, error } = await getClient().emails.send({
+    const bcc = process.env.GMAIL_USER || 'hello@genderrevealideas.com.au';
+
+    const info = await transport.sendMail({
       from: fromAddr,
       to: hire.customerEmail,
       bcc,
@@ -197,14 +204,8 @@ export async function sendHireEmail(type, hire, extraData) {
       text,
     });
 
-    if (error) {
-      console.error(`[hire-mailer] Resend error for ${type} to ${hire.customerEmail}:`, error);
-      await telegramFallback(type, hire, subject, text, error.message || 'Resend API error');
-      return { messageId: `telegram-fallback-${Date.now()}` };
-    }
-
-    console.log(`[hire-mailer] Sent ${type} email to ${hire.customerEmail} — messageId: ${data.id}`);
-    return { messageId: data.id };
+    console.log(`[hire-mailer] Sent ${type} email to ${hire.customerEmail} — messageId: ${info.messageId}`);
+    return { messageId: info.messageId };
   } catch (err) {
     console.error(`[hire-mailer] Send failed for ${type} to ${hire.customerEmail}:`, err.message);
     await telegramFallback(type, hire, subject, text, err.message);
