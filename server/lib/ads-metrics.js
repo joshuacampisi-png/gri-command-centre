@@ -23,7 +23,7 @@ export const GRI_ADS = {
   scaleMER: 6.0,
   breakevenROAS: 2.50,
   dailyMetaSpend: 210,
-  dailyGoogleSpend: 200,
+  dailyGoogleSpend: 275,
   monthlyAgency: 0,
   // Payment processing (Shopify Payments standard)
   paymentProcessingRate: 0.026,

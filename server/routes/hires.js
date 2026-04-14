@@ -157,12 +157,10 @@ router.post('/sync', async (_req, res) => {
             bondAlreadyPaid = true
             console.log(`[hires/sync] Bond already paid for ${orderName} — payment ${match.id}`)
 
-            // Auto-send contract
+            // Auto-send contract (use order number in URL — stable across environments)
             const updatedHire = getById(hire.id)
-            const baseUrl = process.env.BASE_URL || `http://127.0.0.1:${process.env.PORT || 8787}`
             try {
-              await sendHireEmail('contract', updatedHire, `${baseUrl}/api/contract/${hire.id}/sign`)
-              update(hire.id, { contractStatus: 'sent', contractSentAt: new Date().toISOString(), status: 'contract_sent' })
+              await sendContractInternal(updatedHire)
               console.log(`[hires/sync] Contract auto-sent for ${orderName}`)
             } catch (ce) { console.error(`[hires/sync] Contract send failed:`, ce.message) }
           }
@@ -231,13 +229,11 @@ router.post('/reconcile-payments', async (_req, res) => {
         })
         console.log(`[reconcile] Matched ${hire.orderNumber} to payment ${match.id}`)
 
-        // Auto-send contract if not already sent
+        // Auto-send contract if not already sent (uses order number URL via sendContractInternal)
         const updatedHire = getById(hire.id)
         if (updatedHire.contractStatus !== 'sent' && updatedHire.contractStatus !== 'signed') {
-          const baseUrl = process.env.BASE_URL || `http://127.0.0.1:${process.env.PORT || 8787}`
           try {
-            await sendHireEmail('contract', updatedHire, `${baseUrl}/api/contract/${hire.id}/sign`)
-            update(hire.id, { contractStatus: 'sent', contractSentAt: new Date().toISOString(), status: 'contract_sent' })
+            await sendContractInternal(updatedHire)
           } catch (e) { console.error(`[reconcile] Contract failed for ${hire.orderNumber}:`, e.message) }
         }
 
@@ -385,7 +381,9 @@ router.post('/:id/mark-bond-paid', async (req, res) => {
  */
 async function sendContractInternal(hire) {
   const baseUrl = process.env.BASE_URL || `http://127.0.0.1:${process.env.PORT || 8787}`;
-  const signingUrl = `${baseUrl}/api/contract/${hire.id}/sign`;
+  // Use order number (stable across environments) instead of hire.id (environment-specific)
+  const orderNum = (hire.orderNumber || '').replace(/^#/, '');
+  const signingUrl = `${baseUrl}/api/contract/${orderNum}/sign`;
 
   await sendHireEmail('contract', hire, signingUrl);
 
@@ -395,7 +393,7 @@ async function sendContractInternal(hire) {
     status: hire.status === 'bond_paid' ? 'contract_sent' : hire.status,
   });
 
-  console.log(`[hires] Contract sent for hire ${hire.id} — signing URL: ${signingUrl}`);
+  console.log(`[hires] Contract sent for hire ${hire.id} (order ${hire.orderNumber}) — signing URL: ${signingUrl}`);
   return { signingUrl };
 }
 

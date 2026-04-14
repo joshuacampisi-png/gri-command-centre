@@ -530,6 +530,68 @@ export function GoogleAdsAgentTab() {
         </div>
       )}
 
+      {/* Daily spend summary — always visible when campaigns loaded */}
+      {campaigns?.totals && (
+        <section className="gads-daily-spend">
+          <div className="gads-daily-spend-item">
+            <div className="gads-daily-spend-platform">
+              <GoogleLogo size={18} />
+              <span>Google Ads</span>
+            </div>
+            <div className="gads-daily-spend-numbers">
+              <div className="gads-daily-spend-set">
+                <span className="gads-daily-spend-label">Set daily budget</span>
+                <span className="gads-daily-spend-value mono">{fmtAud(campaigns.totals.dailyBudgetAud)}</span>
+              </div>
+              <div className="gads-daily-spend-actual">
+                <span className="gads-daily-spend-label">Avg daily spend ({campaigns.window?.days || 30}d)</span>
+                <span className="gads-daily-spend-value mono" style={{
+                  color: (campaigns.totals.spendAud / (campaigns.window?.days || 30)) > campaigns.totals.dailyBudgetAud * 1.1
+                    ? G.red
+                    : G.green
+                }}>
+                  {fmtAud(campaigns.totals.spendAud / (campaigns.window?.days || 30))}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="gads-daily-spend-divider" />
+          <div className="gads-daily-spend-item">
+            <div className="gads-daily-spend-platform">
+              <span style={{ fontSize: 16 }}>📱</span>
+              <span>Meta Ads</span>
+            </div>
+            <div className="gads-daily-spend-numbers">
+              <div className="gads-daily-spend-set">
+                <span className="gads-daily-spend-label">Set daily budget</span>
+                <span className="gads-daily-spend-value mono">$210</span>
+              </div>
+            </div>
+          </div>
+          <div className="gads-daily-spend-divider" />
+          <div className="gads-daily-spend-item gads-daily-spend-total">
+            <div className="gads-daily-spend-platform">
+              <span style={{ fontSize: 16 }}>💰</span>
+              <span>Combined</span>
+            </div>
+            <div className="gads-daily-spend-numbers">
+              <div className="gads-daily-spend-set">
+                <span className="gads-daily-spend-label">Total daily budget</span>
+                <span className="gads-daily-spend-value mono" style={{ color: G.blue, fontSize: '1.1rem' }}>
+                  {fmtAud(campaigns.totals.dailyBudgetAud + 210)}
+                </span>
+              </div>
+              <div className="gads-daily-spend-actual">
+                <span className="gads-daily-spend-label">Monthly run rate</span>
+                <span className="gads-daily-spend-value mono">
+                  {fmtAud((campaigns.totals.dailyBudgetAud + 210) * 30.4)}
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Metrics strip — live, dynamic window */}
       {summary && (
         <section className="gads-metrics">
@@ -2795,6 +2857,68 @@ const styleSheet = `
 }
 
 /* ── Metrics strip ──────────────────────────────────────────────────────── */
+
+/* ── Daily Spend Summary ────────────────────────────────────────────────── */
+
+.gads-daily-spend {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border);
+  padding: 0;
+}
+.gads-daily-spend-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 14px 24px;
+}
+.gads-daily-spend-total {
+  background: rgba(66,133,244,0.06);
+}
+.gads-daily-spend-platform {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-soft);
+  white-space: nowrap;
+  min-width: 110px;
+}
+.gads-daily-spend-numbers {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+.gads-daily-spend-set,
+.gads-daily-spend-actual {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.gads-daily-spend-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 500;
+}
+.gads-daily-spend-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.gads-daily-spend-divider {
+  width: 1px;
+  background: var(--border);
+  align-self: stretch;
+}
 
 .gads-metrics {
   position: relative;
