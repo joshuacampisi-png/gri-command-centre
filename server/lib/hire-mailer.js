@@ -1,25 +1,50 @@
 import nodemailer from 'nodemailer';
 import { getHireDates } from './date-helpers.js';
 
-let gmailTransport = null;
+let _transport = null;
+let _provider = null;
 
+/**
+ * Auto-detect email provider: Gmail SMTP or Resend SMTP.
+ * Railway has RESEND_API_KEY; local dev has GMAIL_USER + GMAIL_APP_PASSWORD.
+ * Both work via nodemailer — just different transports.
+ */
 function getTransport() {
-  if (!gmailTransport) {
-    const user = process.env.GMAIL_USER;
-    const pass = process.env.GMAIL_APP_PASSWORD;
-    if (!user || !pass) {
-      throw new Error('GMAIL_USER or GMAIL_APP_PASSWORD not set — cannot send hire emails');
-    }
-    gmailTransport = nodemailer.createTransport({
+  if (_transport) return _transport;
+
+  const gmailUser = process.env.GMAIL_USER;
+  const gmailPass = process.env.GMAIL_APP_PASSWORD;
+  const resendKey = process.env.RESEND_API_KEY;
+
+  if (gmailUser && gmailPass) {
+    _provider = 'gmail';
+    _transport = nodemailer.createTransport({
       service: 'gmail',
-      auth: { user, pass },
+      auth: { user: gmailUser, pass: gmailPass },
     });
+  } else if (resendKey) {
+    _provider = 'resend';
+    _transport = nodemailer.createTransport({
+      host: 'smtp.resend.com',
+      port: 465,
+      secure: true,
+      auth: { user: 'resend', pass: resendKey },
+    });
+  } else {
+    throw new Error('No email provider configured — set GMAIL_USER+GMAIL_APP_PASSWORD or RESEND_API_KEY');
   }
-  return gmailTransport;
+
+  console.log(`[hire-mailer] Using ${_provider} transport`);
+  return _transport;
 }
 
 function getFromAddress() {
   const name = process.env.GMAIL_FROM_NAME || 'Gender Reveal Ideas';
+  if (_provider === 'resend') {
+    // Resend requires a verified sender domain
+    const email = process.env.RESEND_FROM_EMAIL || process.env.GMAIL_USER || 'hello@genderrevealideas.com.au';
+    return `${name} <${email}>`;
+  }
   const email = process.env.GMAIL_USER || 'hello@genderrevealideas.com.au';
   return `${name} <${email}>`;
 }
@@ -178,7 +203,7 @@ const TEMPLATES = {
 };
 
 /**
- * Send an email to a hire customer via Gmail SMTP.
+ * Send an email to a hire customer via Gmail SMTP or Resend SMTP.
  * Falls back to Telegram notification if sending fails.
  * @param {string} type - confirmation | bond_link | refund | withheld | contract
  * @param {object} hire - the hire record
@@ -194,7 +219,7 @@ export async function sendHireEmail(type, hire, extraData) {
   try {
     const transport = getTransport();
     const fromAddr = getFromAddress();
-    const bcc = process.env.GMAIL_USER || 'hello@genderrevealideas.com.au';
+    const bcc = process.env.GMAIL_USER || process.env.RESEND_FROM_EMAIL || 'hello@genderrevealideas.com.au';
 
     const info = await transport.sendMail({
       from: fromAddr,
@@ -204,7 +229,7 @@ export async function sendHireEmail(type, hire, extraData) {
       text,
     });
 
-    console.log(`[hire-mailer] Sent ${type} email to ${hire.customerEmail} — messageId: ${info.messageId}`);
+    console.log(`[hire-mailer] Sent ${type} email via ${_provider} to ${hire.customerEmail} — messageId: ${info.messageId}`);
     return { messageId: info.messageId };
   } catch (err) {
     console.error(`[hire-mailer] Send failed for ${type} to ${hire.customerEmail}:`, err.message);
