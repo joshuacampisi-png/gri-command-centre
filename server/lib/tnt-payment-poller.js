@@ -86,6 +86,22 @@ export function startTNTPaymentPoller() {
   }, { timezone: 'Australia/Brisbane' })
 
   console.log('[TNT-Poller] Payment poller started (every 5 min)')
+
+  // Boot-time sync: pull any missing TNT orders from Shopify + reconcile Square payments
+  setTimeout(async () => {
+    try {
+      const baseUrl = `http://127.0.0.1:${process.env.PORT || 8787}`
+      const syncRes = await fetch(`${baseUrl}/api/hires/sync`, { method: 'POST' })
+      const syncData = await syncRes.json()
+      console.log(`[TNT-Poller] Boot sync: created=${syncData.created}, skipped=${syncData.skipped}`)
+
+      const reconcileRes = await fetch(`${baseUrl}/api/hires/reconcile-payments`, { method: 'POST' })
+      const reconcileData = await reconcileRes.json()
+      console.log(`[TNT-Poller] Boot reconcile: matched=${reconcileData.reconciled}`)
+    } catch (e) {
+      console.error('[TNT-Poller] Boot sync failed:', e.message)
+    }
+  }, 15000) // 15s after boot to let server fully start
 }
 
 export function stopTNTPaymentPoller() {
