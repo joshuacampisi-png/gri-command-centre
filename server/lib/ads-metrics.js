@@ -24,7 +24,7 @@ export const GRI_ADS = {
   breakevenROAS: 2.50,
   dailyMetaSpend: 210,
   dailyGoogleSpend: 200,
-  monthlyAgency: 2200,
+  monthlyAgency: 0,
   // Payment processing (Shopify Payments standard)
   paymentProcessingRate: 0.026,
   paymentProcessingFixed: 0.30,

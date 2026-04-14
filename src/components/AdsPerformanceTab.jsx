@@ -19,7 +19,7 @@ const GRI = {
   scaleMER: 6.0,
   dailyMetaSpend: 210,
   dailyGoogleSpend: 200,
-  monthlyAgency: 2200,
+  monthlyAgency: 0,
   // Framework thresholds
   fovCacGreen: 3.0,
   fovCacAmber: 1.0,
