@@ -119,11 +119,26 @@ app.use(cors())
 // Only active when DASHBOARD_PASSWORD is set in .env
 const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD
 if (DASHBOARD_PASSWORD && DASHBOARD_PASSWORD !== 'changeme') {
+  // Public paths — no auth required, no WWW-Authenticate header sent
+  const PUBLIC_PREFIXES = [
+    '/api/shopify/webhook', '/api/square/webhook', '/api/shopify/oauth',
+    '/api/telegram-bot/webhook', '/api/ig-reply-bot/', '/api/flywheel/webhook',
+    '/api/ads/google-spend/webhook', '/api/calendar', '/calendar',
+    '/calendar-videos', '/instagram-media', '/api/contract',
+    '/api/hires/sync', '/api/hires/reconcile-payments', '/api/hires/health',
+    '/api/hires/resend-contract-by-order',
+  ]
+  const PUBLIC_EXACT = [
+    '/api/instagram/disk-usage', '/api/instagram/cleanup-media',
+    '/api/ads/debug', '/api/ads/performance',
+  ]
+  function isPublicPath(p) {
+    if (PUBLIC_EXACT.includes(p)) return true
+    return PUBLIC_PREFIXES.some(prefix => p.startsWith(prefix))
+  }
+
   app.use((req, res, next) => {
-    // Allow webhooks, calendar API, and standalone calendar page through without auth
-    if (req.path.startsWith('/api/shopify/webhook') || req.path.startsWith('/api/square/webhook') || req.path.startsWith('/api/shopify/oauth') || req.path.startsWith('/api/telegram-bot/webhook') || req.path.startsWith('/api/ig-reply-bot/') || req.path.startsWith('/api/flywheel/webhook') || req.path.startsWith('/api/ads/google-spend/webhook') || req.path.startsWith('/api/calendar') || req.path.startsWith('/calendar') || req.path.startsWith('/calendar-videos') || req.path.startsWith('/instagram-media') || req.path.startsWith('/api/contract') || req.path === '/api/instagram/disk-usage' || req.path === '/api/instagram/cleanup-media' || req.path === '/api/ads/debug' || req.path === '/api/ads/performance' || req.path === '/api/hires/sync' || req.path === '/api/hires/reconcile-payments' || req.path === '/api/hires/health' || req.path === '/api/hires/resend-contract-by-order') {
-      return next()
-    }
+    if (isPublicPath(req.path)) return next()
     const auth = req.headers.authorization
     if (!auth || !auth.startsWith('Basic ')) {
       res.setHeader('WWW-Authenticate', 'Basic realm="Command Centre"')
@@ -138,6 +153,13 @@ if (DASHBOARD_PASSWORD && DASHBOARD_PASSWORD !== 'changeme') {
     }
     next()
   })
+
+  // Customer-facing contract pages: explicitly clear any cached auth prompts
+  app.use('/api/contract', (_req, res, next) => {
+    res.removeHeader('WWW-Authenticate')
+    next()
+  })
+
   console.log('🔒 Dashboard password protection: ACTIVE')
 }
 // Capture raw body for Shopify webhook HMAC verification
