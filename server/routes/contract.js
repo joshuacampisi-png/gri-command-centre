@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { getById, update } from '../lib/hire-store.js';
+import { getAll, getById, update } from '../lib/hire-store.js';
 import { generateContractPdf } from '../lib/contract-generator.js';
 import { getHireDates } from '../lib/date-helpers.js';
 import { notifyTNTEvent } from '../lib/tnt-telegram.js';
@@ -16,11 +16,27 @@ mkdirSync(CONTRACTS_DIR, { recursive: true });
 const router = Router();
 
 /**
+ * Find a hire by ID first, then fall back to order number lookup.
+ * This handles cases where the email was sent with a different hire ID
+ * (e.g. local sync vs Railway sync creating different IDs for the same order).
+ */
+function findHire(idOrOrder) {
+  // Direct ID match
+  let hire = getById(idOrOrder);
+  if (hire) return hire;
+  // Fallback: try as order number (#12040 or 12040)
+  const all = getAll();
+  const normalised = idOrOrder.replace(/^#/, '');
+  hire = all.find(h => h.orderNumber === `#${normalised}` || h.orderNumber === normalised || h.id === idOrOrder);
+  return hire || null;
+}
+
+/**
  * GET /api/contract/:hireId/sign
  * Serves a standalone HTML signing page (not React).
  */
 router.get('/:hireId/sign', (req, res) => {
-  const hire = getById(req.params.hireId);
+  const hire = findHire(req.params.hireId);
   if (!hire) return res.status(404).send('Hire not found');
 
   const dates = getHireDates(hire.eventDate);
@@ -338,7 +354,7 @@ router.get('/:hireId/sign', (req, res) => {
       errEl.style.display = 'none';
 
       try {
-        var res = await fetch('/api/contract/${hire.id}/sign', {
+        var res = await fetch('/api/contract/' + encodeURIComponent('${hire.id}') + '/sign', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ signature: sig })
@@ -373,7 +389,7 @@ router.get('/:hireId/sign', (req, res) => {
  * Accepts { signature } and records the signing.
  */
 router.post('/:hireId/sign', async (req, res) => {
-  const hire = getById(req.params.hireId);
+  const hire = findHire(req.params.hireId);
   if (!hire) return res.status(404).json({ ok: false, error: 'Hire not found' });
 
   const { signature } = req.body;
@@ -418,7 +434,7 @@ router.post('/:hireId/sign', async (req, res) => {
  */
 router.get('/:hireId/pdf', async (req, res) => {
   try {
-    const hire = getById(req.params.hireId);
+    const hire = findHire(req.params.hireId);
     if (!hire) return res.status(404).json({ error: 'Hire not found' });
 
     // Serve saved file if it exists, otherwise generate fresh

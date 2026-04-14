@@ -492,4 +492,23 @@ router.post('/:id/mark-picked-up', (req, res) => {
   res.json({ ok: true, hire: updated });
 });
 
+// POST /api/hires/resend-contract-by-order — look up by order number, resend contract
+// Auth-free so it can be called externally to fix broken links
+router.post('/resend-contract-by-order', async (req, res) => {
+  try {
+    const { orderNumber } = req.body;
+    if (!orderNumber) return res.status(400).json({ error: 'orderNumber required' });
+    const normalised = orderNumber.replace(/^#/, '');
+    const hire = getAll().find(h => h.orderNumber === `#${normalised}` || h.orderNumber === normalised);
+    if (!hire) return res.status(404).json({ error: `No hire found for order ${orderNumber}` });
+    if (hire.bondStatus !== 'paid') return res.status(400).json({ error: `Bond not paid yet for ${hire.orderNumber}` });
+
+    const result = await sendContractInternal(hire);
+    res.json({ ok: true, hireId: hire.id, orderNumber: hire.orderNumber, signingUrl: result.signingUrl });
+  } catch (err) {
+    console.error('[hires] Resend contract by order error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;
