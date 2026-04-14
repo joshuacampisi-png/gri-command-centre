@@ -219,8 +219,55 @@ router.post('/cleanup-media', (_req, res) => {
   res.json({ ok: true, deleted, freedMB: Math.round(freedBytes / 1048576 * 10) / 10 })
 })
 
+// Auto-cleanup orphaned media before upload to prevent disk-full errors
+async function autoCleanupBeforeUpload() {
+  const posts = loadPosts().filter(p => !p._archived)
+  const activeUrls = new Set()
+  for (const p of posts) {
+    for (const u of (p.mediaUrls || [])) {
+      const match = u.match(/\/instagram-media\/(.+)$/)
+      if (match) activeUrls.add(match[1])
+    }
+  }
+  let deleted = 0, freedBytes = 0
+  try {
+    const files = readdirSync(MEDIA_DIR)
+    for (const f of files) {
+      if (!activeUrls.has(f)) {
+        try {
+          const fp = join(MEDIA_DIR, f)
+          const size = statSync(fp).size
+          unlinkSync(fp)
+          deleted++
+          freedBytes += size
+        } catch {}
+      }
+    }
+  } catch {}
+  // Also delete media for published posts (already on Instagram, no need to keep)
+  for (const p of posts) {
+    if (p.status === 'PUBLISHED' && p.mediaUrls?.length) {
+      for (const u of p.mediaUrls) {
+        const match = u.match(/\/instagram-media\/(.+)$/)
+        if (match) {
+          try {
+            const fp = join(MEDIA_DIR, match[1])
+            const size = statSync(fp).size
+            unlinkSync(fp)
+            deleted++
+            freedBytes += size
+          } catch {}
+        }
+      }
+    }
+  }
+  if (deleted > 0) console.log(`[IG Upload] Pre-upload cleanup: freed ${Math.round(freedBytes / 1048576)}MB (${deleted} files)`)
+}
+
 // Upload media files (images or video)
-router.post('/upload', (req, res) => {
+router.post('/upload', async (req, res) => {
+  // Auto-cleanup before upload to maximise available space
+  await autoCleanupBeforeUpload()
   upload.array('media', 10)(req, res, (err) => {
     if (err) {
       console.error('[IG Upload] Multer error:', err.message)

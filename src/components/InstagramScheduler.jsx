@@ -211,11 +211,27 @@ export default function InstagramScheduler() {
   // ── New post ───────────────────────────────────────────────────────────────
 
   function newPost(date) {
-    // Default to 10am AEST on the selected day
-    // The calendar day key is in AEST format from fmtDate, so use it directly
     const dayKey = date ? fmtDate(date) : fmtDate(new Date())
-    // 10am AEST = 00:00 UTC (AEST is UTC+10)
-    const scheduledAtUTC = new Date(`${dayKey}T00:00:00.000Z`)
+    const existingPosts = postsByDate[dayKey] || []
+
+    // If day already has posts, ask if they want to add another
+    if (existingPosts.length > 0) {
+      const action = window.confirm(
+        `This day already has ${existingPosts.length} post${existingPosts.length > 1 ? 's' : ''}.\n\nClick OK to add another post, or Cancel to view existing.`
+      )
+      if (!action) {
+        // Open the first existing post instead
+        setDrawer(existingPosts[0])
+        setCaptionVariants(null)
+        return
+      }
+    }
+
+    // Stagger time: 10am for 1st post, 2pm for 2nd, 6pm for 3rd (AEST)
+    const hourOffsets = [0, 4, 8] // hours after 10am AEST (00:00 UTC)
+    const offset = hourOffsets[Math.min(existingPosts.length, hourOffsets.length - 1)]
+    const scheduledAtUTC = new Date(`${dayKey}T${String(offset).padStart(2, '0')}:00:00.000Z`)
+
     setDrawer({
       id: uid(),
       type: 'image',
@@ -270,9 +286,12 @@ export default function InstagramScheduler() {
         }
       } catch { /* Non-fatal */ }
 
-      // 10am AEST on the dropped day = 00:00 UTC
+      // Stagger times: 10am, 2pm, 6pm AEST for multiple posts on same day
       const dayKey = fmtDate(day)
-      const scheduledAtUTC = new Date(`${dayKey}T00:00:00.000Z`)
+      const existingPosts = postsByDate[dayKey] || []
+      const hourOffsets = [0, 4, 8]
+      const offset = hourOffsets[Math.min(existingPosts.length, hourOffsets.length - 1)]
+      const scheduledAtUTC = new Date(`${dayKey}T${String(offset).padStart(2, '0')}:00:00.000Z`)
       const post = {
         id: uid(),
         type: postType,
