@@ -223,19 +223,52 @@ function parseImageTags(body) {
 }
 
 // ── Inject generated image URLs into article HTML ────────────
+// Pairs desktop + mobile tags by placement into a single <picture>
+// element so browsers render only one image per viewport.
 
 function injectImages(body, imageMap) {
   let result = body
 
+  // Group imageMap entries by placement
+  const byPlacement = {}
   for (const [key, data] of Object.entries(imageMap)) {
     if (!data?.imageUrl || !data?.raw) continue
-
-    const imgHtml = `<img src="${data.imageUrl}" alt="${data.alt || ''}" loading="lazy" style="width:100%;height:auto;border-radius:8px;margin:1rem 0;" />`
-    result = result.replace(data.raw, imgHtml)
+    const dashIdx = key.lastIndexOf('-')
+    if (dashIdx === -1) continue
+    const placement = key.slice(0, dashIdx)
+    const variant = key.slice(dashIdx + 1) // 'desktop' | 'mobile'
+    if (!byPlacement[placement]) byPlacement[placement] = {}
+    byPlacement[placement][variant] = data
   }
 
-  // Clean up any remaining unparsed image tags
-  result = result.replace(/\[IMAGE_(DESKTOP|MOBILE):.*?\]/g, '')
+  for (const [placement, variants] of Object.entries(byPlacement)) {
+    const desktop = variants.desktop
+    const mobile = variants.mobile
+    const alt = (desktop?.alt || mobile?.alt || '').replace(/"/g, '&quot;')
+    const isHero = placement === 'hero'
+    const loading = isHero ? 'eager' : 'lazy'
+    const fetchPriority = isHero ? ' fetchpriority="high"' : ''
+
+    if (desktop && mobile) {
+      // Pair into a single <picture> element
+      const pictureHtml = `<picture>
+  <source media="(max-width: 767px)" srcset="${mobile.imageUrl}">
+  <img src="${desktop.imageUrl}" alt="${alt}" width="1200" height="675" loading="${loading}"${fetchPriority} style="width:100%;height:auto;border-radius:8px;margin:1rem 0;">
+</picture>`
+      // Replace desktop tag with the picture, strip the mobile tag entirely
+      result = result.replace(desktop.raw, pictureHtml)
+      result = result.replace(mobile.raw, '')
+    } else if (desktop) {
+      const imgHtml = `<img src="${desktop.imageUrl}" alt="${alt}" width="1200" height="675" loading="${loading}"${fetchPriority} style="width:100%;height:auto;border-radius:8px;margin:1rem 0;">`
+      result = result.replace(desktop.raw, imgHtml)
+    } else if (mobile) {
+      const imgHtml = `<img src="${mobile.imageUrl}" alt="${alt}" width="1080" height="1920" loading="${loading}"${fetchPriority} style="width:100%;height:auto;border-radius:8px;margin:1rem 0;">`
+      result = result.replace(mobile.raw, imgHtml)
+    }
+  }
+
+  // Clean up any remaining unparsed image tags (failed generations, orphans)
+  result = result.replace(/\[IMAGE_(DESKTOP|MOBILE):[^\]]*\]\s*\n?/g, '')
 
   return result
 }
