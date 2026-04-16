@@ -101,20 +101,26 @@ Deliver articles in this exact order:
 
 2. H1: [Article title — includes primary keyword, up to 70 characters]
 
-3. Introduction (150-200 words)
-   Open with a hook: a scene, a specific pain point, a surprising fact, or a bold declarative statement. Never open with "In this article we will". Validate the reader's search intent in the first two sentences. Include the primary keyword within the first 100 words. Create forward momentum. Do not summarise the whole article. Open a loop the body closes.
+3. Introduction (150-250 words)
+   Open with a bold, direct answer to the reader's question in the first two sentences. Be honest and authoritative, not salesy. Validate the search intent immediately. Include the primary keyword within the first 100 words. Reference the brand's experience and customer base naturally (e.g. "Gender Reveal Ideas has shipped over X,000 orders across Australia"). Create forward momentum. Do not summarise the whole article.
 
-4. TL;DR / Key Takeaways (3-5 bullets, one declarative sentence each — optimised for AI Overview citation)
+4. The Short Answer (H2 section, 100-150 words)
+   A concise, factual summary that directly answers the article's core question. This section targets featured snippet capture. Use plain, declarative prose. No fluff. This is the section Google will pull for AI Overviews.
 
 5. Body (minimum 4 H2 sections, maximum 8)
-   Each H2: contains a secondary keyword or question phrased as a People Also Ask query. Follows inverted pyramid. 200-400 words. At minimum one H3 subheading inside. One internal link per section.
-   H3s: specific subtopics, step-by-step breakdowns, comparison points, product callouts.
+   Each H2: phrased as a question from People Also Ask where possible (e.g. "What Affects How Much Smoke a Gender Reveal Cannon Produces?" not "Smoke Output Factors"). Follows inverted pyramid.
+   200-400 words per section. Use <hr> dividers between each H2 section.
+   Bold key terms inline using this pattern: <strong>Term:</strong> followed by the explanation in the same paragraph. This is how you present lists of factors, features, or variables without using bullet points.
+   Comparison tables: when comparing products, options, or features, use a <table> with <thead> and <tbody>. Tables are excellent for snippet capture.
+   Product callouts: mention specific GRI products by name with their price (from LIVE GRI PRODUCTS data) and link directly to the product page. Write these as natural recommendations, not ads.
    Paragraph length: 2-4 sentences maximum.
+   Internal links: link to both product pages AND other relevant blog articles on genderrevealideas.com.au.
 
-6. FAQ Section (4-6 questions drawn from PAA and common customer questions, 50-80 words each — eligible for FAQPage schema)
+6. FAQ Section (4-6 questions)
+   Use <hr> before the FAQ heading. Use <h2>Frequently Asked Questions</h2> then each question as <h3> with the answer as a <p> directly below. 50-100 words per answer. No wrapper divs, no special classes. Write answers as complete, standalone paragraphs that could be pulled as a featured snippet. Include a product link or collection link in at least 2 FAQ answers.
 
-7. Conclusion (100-150 words)
-   Restate the core value in one sentence. Offer a specific next step (CTA to a product page or related article). Close with a confident, declarative final line. Never open with "In conclusion". Never end with "We hope this was helpful".
+7. CTA Closing (2-3 sentences, no heading)
+   Use <hr> before the closing. One strong closing paragraph with a direct link to the most relevant product collection. Be confident and specific. Example tone: "Ready to plan your gender reveal? Shop [product type] at Gender Reveal Ideas — Australia's only locally made gender reveal brand, shipping from the Gold Coast."
 
 KEYWORD ARCHITECTURE
 Primary keyword: appears in H1, first 100 words, meta title, meta description, URL slug, and minimum 2 H2 headings.
@@ -285,22 +291,27 @@ ${articleType}
 [Exact word count of the body content]
 
 ===BODY===
-[Full article HTML with IMAGE tags. Use only: <h2>, <h3>, <p>, <ul>, <ol>, <li>, <strong>, <em>, <a href="">, plus IMAGE tags.
+[Full article HTML with IMAGE tags. Use only: <h2>, <h3>, <p>, <ul>, <ol>, <li>, <strong>, <em>, <a href="">, <hr>, <table>, <thead>, <tbody>, <tr>, <th>, <td>, plus IMAGE tags.
 
 Structure:
 - [IMAGE_DESKTOP + IMAGE_MOBILE hero pair here, before introduction]
 - Introduction (no heading): 150-200 words with hook and primary keyword
-- TL;DR section with <h2>Key Takeaways</h2> and 3-5 bullet points
+- <hr>
+- <h2>The Short Answer</h2>: 100-150 words, direct answer to the topic. Written as a featured snippet target. End with "But there is more to it, keep reading."
+- <hr>
 - H2 body sections (minimum 4, maximum 8, each 200-400 words with at minimum one H3)
-- [IMAGE_DESKTOP + IMAGE_MOBILE inline-1 pair after H2 section 2]
-- [IMAGE_DESKTOP + IMAGE_MOBILE inline-2 pair after H2 section 4]
-- FAQ section: <h2>Frequently Asked Questions</h2> with 4-6 questions formatted as:
-  <div class="faq-item">
-    <h3 class="faq-question">[Question?]</h3>
-    <div class="faq-answer"><p>[Answer. 50-80 words.]</p></div>
-  </div>
-- [IMAGE_DESKTOP + IMAGE_MOBILE inline-3 pair after FAQ, before conclusion]
-- Conclusion (no heading labelled "conclusion"): 100-150 words with CTA
+  - Use <strong>Key Term:</strong> at the start of important paragraphs to bold key concepts inline
+  - Include at least one comparison table where relevant using <table> with <thead> and <tbody>
+  - [IMAGE_DESKTOP + IMAGE_MOBILE inline-1 pair after H2 section 2]
+  - [IMAGE_DESKTOP + IMAGE_MOBILE inline-2 pair after H2 section 4]
+- <hr>
+- FAQ section: <h2>Frequently Asked Questions</h2> with 4-6 questions formatted as simple:
+  <h3>Question?</h3>
+  <p>Answer. 50-80 words.</p>
+  (No wrapper divs, no classes. Just H3 followed by P for each question.)
+- [IMAGE_DESKTOP + IMAGE_MOBILE inline-3 pair after FAQ, before closing]
+- <hr>
+- CTA closing paragraph (no heading labelled "conclusion"): 80-120 words. Reference the brand directly: "At Gender Reveal Ideas, we..." End with a direct shop link to the most relevant collection.
 
 IMAGE TAGS: Place exactly 4 pairs (8 total tags) at the positions above using the exact format from the system prompt.
 
