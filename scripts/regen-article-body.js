@@ -72,10 +72,10 @@ const EXISTING_IMAGES = [
   },
 ]
 
-const SHOPIFY_DOMAIN = process.env.SHOPIFY_DOMAIN || 'bdd19a-3.myshopify.com'
-const SHOPIFY_TOKEN = process.env.SHOPIFY_ADMIN_TOKEN
+const SHOPIFY_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN || process.env.SHOPIFY_DOMAIN || 'bdd19a-3.myshopify.com'
+const SHOPIFY_TOKEN = process.env.SHOPIFY_ADMIN_ACCESS_TOKEN || process.env.SHOPIFY_ADMIN_TOKEN
 if (!SHOPIFY_TOKEN) {
-  console.error('Missing SHOPIFY_ADMIN_TOKEN in env (.env file)')
+  console.error('Missing SHOPIFY_ADMIN_ACCESS_TOKEN in env (.env file)')
   process.exit(1)
 }
 

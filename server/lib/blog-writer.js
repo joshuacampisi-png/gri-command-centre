@@ -111,11 +111,16 @@ PRODUCT CATEGORIES — NEVER MIX THESE UP
 - Best for bigger groups who want a continuous cloud moment
 - Never call these "cannons"
 
-**CANNONS (pop / burst products)** — Bio-Cannon, Confetti Cannon, Powder Cannon
-- Handheld tubes, held between the hands
-- Twist or trigger once, single-burst pop moment
+**CANNONS (pop / burst products)** — come in only TWO fill types
+- Handheld tubes, held between the hands, twist or trigger once for a single-burst pop
 - Spec language: **pop distance** (e.g., 8m pop) — NEVER "spray time" (cannons don't spray, they pop)
-- Best for the dramatic single-shot reveal moment
+- Both cannon types use the same hardware and fire the same distance and power
+- The ONLY two types are:
+  1. **Powder Cannon** — shoots coloured powder, punchy instant cloud, hang time is 1 second SHORTER than confetti
+  2. **Confetti Cannon** — shoots bio-degradable confetti, hangs in the air about 1 second LONGER than powder because the confetti floats down gently
+- HANG TIME RULE: the difference between powder and confetti is small, roughly 1 second. Do NOT invent dramatic multi-second gaps (e.g. "10-15 vs 30-45 seconds" is WRONG). Frame it as: "confetti floats for about 1 second longer thanks to the bio-degradable paper drifting in the air". Never quote specific second counts beyond that. Keep it qualitative: confetti = longer float, powder = punchy instant cloud.
+- "Bio-Cannon" is GRI's brand name for the cannon range and applies to BOTH the powder and confetti variants. Do NOT describe Bio-Cannon as a third separate cannon type. Do NOT invent extra cannon variants.
+- When a cannon article compares cannons, it's always Powder Cannon vs Confetti Cannon, and hang time is the differentiator (pop distance is the same for both).
 - Never call these "blasters"
 
 **SMOKE BOMBS** — separate category, coloured smoke grenades, pull-wire activated, 30-60 second smoke output
