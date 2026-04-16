@@ -20,6 +20,10 @@ const ARTICLE_ID = 'gid://shopify/Article/566281535577'
 const KEYWORD = 'gender reveal cannon'
 const ARTICLE_TYPE = 'buying_guide'
 
+// Lock the handle so regens don't keep churning the URL (SEO-hostile).
+// Set to null to let the model pick a fresh handle.
+const LOCKED_HANDLE = 'gender-reveal-cannon-guide-australia'
+
 // CSS block injected at the top of the article body so callouts render beautifully
 // without requiring any theme changes. Uses GRI brand colours.
 const CALLOUT_CSS = `<style>
@@ -139,7 +143,7 @@ async function main() {
         id: ARTICLE_ID,
         article: {
           title: article.title,
-          handle: article.handle || undefined,
+          handle: LOCKED_HANDLE || article.handle || undefined,
           body,
           summary: article.excerpt || undefined,
           image: {
