@@ -398,6 +398,10 @@ export default function BlogWriterTab() {
   const [selectedImages, setSelectedImages] = useState({}) // { 'hero-desktop': true, 'inline-1-mobile': true, ... }
   const [imagesApplied, setImagesApplied] = useState(false)
 
+  // Autopublish state
+  const [autopublish, setAutopublish] = useState(null)
+  const [triggeringAutopublish, setTriggeringAutopublish] = useState(false)
+
   // Save session to backend (called at key milestones)
   const saveSession = useCallback((overrides = {}) => {
     const state = {
@@ -433,6 +437,10 @@ export default function BlogWriterTab() {
     fetch('/api/blog-writer/image-config')
       .then(r => r.json())
       .then(d => { if (d.ok) setHasFal(d.hasFal) })
+      .catch(() => {})
+    fetch('/api/blog-autopublish/status')
+      .then(r => r.json())
+      .then(d => { if (d.ok) setAutopublish(d) })
       .catch(() => {})
 
     // Restore session if one exists
@@ -1274,6 +1282,62 @@ export default function BlogWriterTab() {
                 value={finalOutput}
                 readOnly
               />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Autopublish Status */}
+      {autopublish && !isRunning && (
+        <div className="bw-autopublish">
+          <div className="bw-autopublish-header">
+            <h3 className="bw-history-title">Daily Autopublish</h3>
+            <div className="bw-autopublish-badge" style={{ background: autopublish.active ? '#34d399' : '#ef4444', color: '#000', padding: '2px 10px', borderRadius: 12, fontSize: 12, fontWeight: 600 }}>
+              {autopublish.active ? 'ACTIVE' : 'INACTIVE'}
+            </div>
+          </div>
+          <div className="bw-autopublish-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 12 }}>
+            <div className="bw-meta-row">
+              <span className="bw-meta-label">Next keyword</span>
+              <span className="bw-meta-value">{autopublish.nextKeyword}</span>
+            </div>
+            <div className="bw-meta-row">
+              <span className="bw-meta-label">Type</span>
+              <span className="bw-meta-value">{autopublish.nextType}</span>
+            </div>
+            <div className="bw-meta-row">
+              <span className="bw-meta-label">Published</span>
+              <span className="bw-meta-value">{autopublish.publishedCount} / {autopublish.totalKeywords}</span>
+            </div>
+            <div className="bw-meta-row">
+              <span className="bw-meta-label">Remaining</span>
+              <span className="bw-meta-value">{autopublish.remainingCount} keywords</span>
+            </div>
+          </div>
+          <button
+            className="btn-primary"
+            style={{ fontSize: 13, padding: '6px 16px' }}
+            disabled={triggeringAutopublish}
+            onClick={async () => {
+              setTriggeringAutopublish(true)
+              try {
+                await fetch('/api/blog-autopublish/run-now', { method: 'POST' })
+                setSuccessMsg('Autopublish pipeline triggered. Check Telegram for results.')
+              } catch {}
+              setTimeout(() => setTriggeringAutopublish(false), 5000)
+            }}
+          >
+            {triggeringAutopublish ? 'Running...' : 'Publish Now'}
+          </button>
+          {autopublish.lastRun && (
+            <div style={{ marginTop: 10, fontSize: 12, color: '#888' }}>
+              Last run: {autopublish.lastRun.status === 'success' ? '✅' : '❌'} {autopublish.lastRun.keyword}
+              {autopublish.lastRun.liveUrl && (
+                <> — <a href={autopublish.lastRun.liveUrl} target="_blank" rel="noreferrer" style={{ color: '#60a5fa' }}>view</a></>
+              )}
+              {autopublish.lastRun.publishedAt && (
+                <> — {new Date(autopublish.lastRun.publishedAt).toLocaleDateString('en-AU')}</>
+              )}
             </div>
           )}
         </div>

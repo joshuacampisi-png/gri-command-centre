@@ -301,7 +301,7 @@ router.post('/review-image', async (req, res) => {
     const contentType = imgRes.headers.get('content-type') || 'image/jpeg'
 
     const message = await callClaude({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 800,
       system: `You are a brand image QA reviewer for Gender Reveal Ideas (genderrevealideas.com.au), a Gold Coast Australia DTC e-commerce brand selling gender reveal smoke bombs, powder cannons, confetti cannons, balloon boxes, and party kits.
 
@@ -329,6 +329,9 @@ SCORING CRITERIA:
 3. Composition quality (well composed for the aspect ratio?)
 4. Brand alignment (warm, joyful, celebratory, not clinical or stock-photo?)
 5. Prompt adherence (does the scene match what was requested?)
+6. Colour accuracy (are the revealed colours vivid pink or blue? Is powder/smoke/confetti the right colour and visible?)
+7. Face and skin realism (no AI artifacts on faces, no extra fingers, natural skin tones, no uncanny valley)
+8. Product match (does the product in the image match 1:1 with a real GRI product from the DNA above? Wrong shape or wrong branding = automatic fail)
 
 Respond in EXACTLY this JSON format, nothing else:
 {
@@ -339,11 +342,14 @@ Respond in EXACTLY this JSON format, nothing else:
 }
 
 Rules:
-- Score 1-10. Pass threshold is 6.
-- If score >= 6, set pass: true
-- If score < 6, set pass: false and provide refinedPrompt
+- Score 1-10. Pass threshold is 7.
+- If score >= 7, set pass: true
+- If score < 7, set pass: false and provide refinedPrompt
 - Keep issues array short (max 3 items)
-- refinedPrompt should be a complete replacement prompt, not a diff`,
+- refinedPrompt should be a complete replacement prompt, not a diff
+- Product accuracy is KING: if the product shape, colour, or branding is wrong, cap the score at 4 regardless of how good the rest of the image is
+- Face artifacts (extra fingers, melted features, uncanny skin) = cap score at 5
+- Wrong reveal colour (blue when it should be pink, or vice versa) = cap score at 3`,
       messages: [{
         role: 'user',
         content: [
@@ -378,6 +384,149 @@ Rules:
     console.error('[BlogWriterRoute] Image QA error:', err.message)
     return res.status(500).json({ ok: false, error: err.message })
   }
+})
+
+// POST /api/blog-writer/generate-image-with-qa
+// Generates an image and retries up to 5 times until QA passes (score >= 7)
+router.post('/generate-image-with-qa', async (req, res) => {
+  const { prompt, aspectRatio, referenceImageUrls, keyword, placement, alt } = req.body
+
+  if (!prompt) return res.status(400).json({ ok: false, error: 'prompt required' })
+  if (!aspectRatio) return res.status(400).json({ ok: false, error: 'aspectRatio required' })
+
+  if (!hasFalConfig()) {
+    return res.status(400).json({ ok: false, error: 'Fal.ai credentials missing. Add FAL_KEY to environment variables.' })
+  }
+
+  const MAX_ATTEMPTS = 5
+  let currentPrompt = prompt
+  let lastReview = null
+  let lastImageUrl = null
+  const attempts = []
+
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    console.log(`[generate-image-with-qa] Attempt ${attempt}/${MAX_ATTEMPTS} for ${placement || 'unknown'} (${aspectRatio})`)
+
+    try {
+      // Generate image
+      const searchKeyword = keyword || currentPrompt.slice(0, 50)
+      let finalRefs = []
+      let tier = 'none'
+
+      const providedRefs = (referenceImageUrls || []).filter(url =>
+        url && (url.includes('cdn.shopify.com') || url.includes('shopifycdn'))
+      )
+
+      if (providedRefs.length > 0) {
+        finalRefs = providedRefs
+        tier = '1-shopify-provided'
+      } else {
+        const { images: shopifyImages, matchedProducts } = await getProductImagesForKeyword(searchKeyword, 4)
+        if (shopifyImages.length > 0) {
+          finalRefs = shopifyImages
+          tier = '1-shopify-registry'
+        }
+      }
+
+      if (finalRefs.length === 0) {
+        const webImages = await searchWebForProductImages(searchKeyword, 4)
+        if (webImages.length > 0) {
+          finalRefs = webImages
+          tier = '2-web-search'
+        }
+      }
+
+      if (finalRefs.length === 0) tier = '3-text-only'
+
+      const result = await generateImage({ prompt: currentPrompt, aspectRatio, referenceImageUrls: finalRefs })
+      lastImageUrl = result.imageUrl
+
+      // QA the image
+      const imgRes = await fetch(result.imageUrl)
+      if (!imgRes.ok) throw new Error(`Failed to fetch image for QA: ${imgRes.status}`)
+
+      const buffer = await imgRes.arrayBuffer()
+      const base64 = Buffer.from(buffer).toString('base64')
+      const contentType = imgRes.headers.get('content-type') || 'image/jpeg'
+
+      const message = await callClaude({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 800,
+        system: `You are a strict brand image QA reviewer for Gender Reveal Ideas. Score images 1-10. Pass threshold is 7. Product accuracy is KING — wrong product = cap at 4. Face artifacts = cap at 5. Wrong reveal colour = cap at 3.
+
+EXACT PRODUCT APPEARANCE:
+- MEGA BLASTER: White steel fire extinguisher shape, brass/gold valve, red gauge, chrome handle, "MEGA BLASTER" teal cloud logo
+- MINI BLASTER: White cylindrical bottle, black twist-top, "MINI BLASTER" teal/red cloud logo
+- BIO-CANNON: Long hot pink tube, "BIO-CANNON" white text, black twist top
+- SMOKE BOMBS: Grey/silver metallic canister, wire pull-ring on top
+- BASKETBALL: White box, orange basketball graphic, "GENDER REVEAL BASKETBALL" pink text
+
+Respond in JSON only: {"score": N, "pass": bool, "issues": [...], "refinedPrompt": "...only if score < 7"}`,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: contentType, data: base64 } },
+            { type: 'text', text: `Review this image. Prompt: "${currentPrompt}". Placement: ${placement || 'unknown'}. Alt: "${alt || 'N/A'}"` },
+          ],
+        }],
+      }, 'blog-image-qa-auto')
+
+      const rawText = message.content[0].text
+      const jsonMatch = rawText.match(/\{[\s\S]*\}/)
+      if (!jsonMatch) throw new Error('Could not parse QA response')
+
+      lastReview = JSON.parse(jsonMatch[0])
+
+      attempts.push({
+        attempt,
+        imageUrl: result.imageUrl,
+        requestId: result.requestId,
+        tier,
+        prompt: currentPrompt,
+        score: lastReview.score,
+        pass: lastReview.pass,
+        issues: lastReview.issues,
+      })
+
+      console.log(`[generate-image-with-qa] Attempt ${attempt}: score ${lastReview.score}/10, pass: ${lastReview.pass}`)
+
+      if (lastReview.pass) {
+        return res.json({
+          ok: true,
+          imageUrl: result.imageUrl,
+          requestId: result.requestId,
+          tier,
+          review: lastReview,
+          attempts,
+          totalAttempts: attempt,
+        })
+      }
+
+      // Use refined prompt for next attempt if provided
+      if (lastReview.refinedPrompt) {
+        currentPrompt = lastReview.refinedPrompt
+      }
+    } catch (err) {
+      console.error(`[generate-image-with-qa] Attempt ${attempt} error:`, err.message)
+      attempts.push({ attempt, error: err.message })
+    }
+  }
+
+  // All attempts failed QA — return the best scoring one
+  const bestAttempt = attempts
+    .filter(a => a.score != null)
+    .sort((a, b) => b.score - a.score)[0]
+
+  return res.json({
+    ok: true,
+    imageUrl: bestAttempt?.imageUrl || lastImageUrl,
+    requestId: bestAttempt?.requestId,
+    tier: bestAttempt?.tier || 'unknown',
+    review: lastReview,
+    attempts,
+    totalAttempts: MAX_ATTEMPTS,
+    warning: `Best score was ${bestAttempt?.score || 'N/A'}/10 after ${MAX_ATTEMPTS} attempts`,
+  })
 })
 
 // GET /api/blog-writer/session — restore working state after tab switch / refresh

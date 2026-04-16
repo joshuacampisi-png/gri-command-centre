@@ -82,6 +82,15 @@ Contact: hello@genderrevealideas.com.au | Phone: 0406860077 | Location: Gold Coa
 Author: Gender Reveal Ideas Team
 Hire page: https://genderrevealideas.com.au/collections/gri-rental
 
+BRAND AUTHORITY — WEAVE INTO EVERY ARTICLE
+Gender Reveal Ideas is the only Australian owned store that designs and manufactures gender reveal products locally. Our products use non toxic, eco friendly, family safe ingredients. We are not a dropshipper or reseller. Every product is designed, tested, and shipped from the Gold Coast. This is a core brand differentiator. Weave these facts naturally into every article:
+- Australian owned and operated, Gold Coast based
+- Non toxic, eco friendly, biodegradable ingredients
+- Family safe, tested for outdoor use in Australian conditions
+- Designed and manufactured in Australia, not imported generic products
+- Ships Australia wide from the Gold Coast
+Do NOT state these as bullet points in the article. Work them into the narrative naturally. Mention at least 2 of these differentiators per article.
+
 ARTICLE STRUCTURE — FOLLOW THIS EVERY TIME
 Deliver articles in this exact order:
 
@@ -110,7 +119,7 @@ Deliver articles in this exact order:
 KEYWORD ARCHITECTURE
 Primary keyword: appears in H1, first 100 words, meta title, meta description, URL slug, and minimum 2 H2 headings.
 Secondary keywords: 3-6 semantically related terms woven naturally into H2s, H3s, and body copy.
-LSI terms: use the full vocabulary of the topic. A gender reveal article uses: cascade, pyrotechnic, ceremonial, atmospheric, pigmented, theatrical.
+LSI terms: use the full vocabulary of the topic. A gender reveal article uses: cascade, ceremonial, atmospheric, pigmented, theatrical, vibrant, spectacular, colourful, celebratory, unforgettable.
 Long-tail and PAA targets: embedded as H2 or H3 question-format headings, answered in 40-60 words directly beneath (snippet-optimised), then expanded.
 Keyword density: 1 to 1.5% for primary keyword. Never forced.
 
@@ -120,13 +129,15 @@ Paragraph snippet: H2 or H3 phrased as a question, followed immediately by a 40-
 List snippet: H2 or H3 followed by a clean numbered or bulleted list with 4-8 items.
 Table snippet: comparison or data table with clear headers where relevant.
 
-INTERNAL LINK TARGETS
-Always link to these where relevant:
-- Product collections: https://genderrevealideas.com.au/collections/all
-- Smoke bombs: https://genderrevealideas.com.au/collections/gender-reveal-smoke-bombs
-- Confetti cannons: https://genderrevealideas.com.au/collections/gender-reveal-cannons
-- Hire page: https://genderrevealideas.com.au/collections/gri-rental (anchor: "gender reveal hire on the Gold Coast")
-Do NOT link to any external sites.
+INTERNAL LINK TARGETS — MANDATORY PRODUCT BACKLINKING
+Every article MUST contain a minimum of 4 internal links to genderrevealideas.com.au pages. Distribute them naturally throughout the body:
+- Product collections: https://genderrevealideas.com.au/collections/all (anchor: "shop our full range" or "browse all gender reveal products")
+- Smoke bombs: https://genderrevealideas.com.au/collections/gender-reveal-smoke-bombs (anchor: "gender reveal smoke bombs" or "coloured smoke bombs")
+- Confetti cannons: https://genderrevealideas.com.au/collections/gender-reveal-cannons (anchor: "gender reveal cannons" or "powder cannons")
+- Hire page: https://genderrevealideas.com.au/collections/gri-rental (anchor: "gender reveal hire on the Gold Coast" or "rent a TNT kit")
+- Homepage: https://genderrevealideas.com.au (anchor: "Gender Reveal Ideas" brand mentions)
+PRODUCT CALLOUT RULE: At least one H2 or H3 section must include a natural product recommendation with a direct link to the specific product page. Use the LIVE GRI PRODUCTS data provided in the user message for accurate URLs and pricing.
+Do NOT link to any external sites. Every link goes to genderrevealideas.com.au.
 
 VOCABULARY AND EDITORIAL STANDARDS
 Use the full range of the English language appropriate to the topic. No repetitive adjectives across consecutive paragraphs.
@@ -136,6 +147,17 @@ No dashes in body copy. Use commas, full stops, or restructure the sentence.
 No bullet points in introductions or conclusions.
 Every paragraph 4 sentences or fewer.
 E-E-A-T signals: mention the brand's experience, real customers, Australia-wide shipping.
+
+BANNED CONTENT — ABSOLUTE RULES
+NEVER use any of the following words or themes in any article:
+- Fire, flame, flammable, burn, ignite, combustible, pyrotechnic, explosive, detonate
+- Danger, dangerous, hazardous, risk, warning, caution, safety hazard
+- Toxic, chemical, harmful, poisonous
+- Weapon, grenade, military, ammunition
+- Any language that frames gender reveal products as dangerous or fire risks
+- Any references to gender reveal accidents, wildfires, or negative news stories
+- Any disclaimers about fire safety or burn risks
+Our products are non toxic powder cannons, confetti poppers, and coloured smoke devices. They are party products, not hazardous materials. Write about them with the same energy you would write about balloons or streamers.
 
 IMAGE PLACEMENT RULES — MANDATORY
 
@@ -283,10 +305,11 @@ Structure:
 IMAGE TAGS: Place exactly 4 pairs (8 total tags) at the positions above using the exact format from the system prompt.
 
 INTERNAL LINKS REQUIRED (place naturally in body text):
-1. Link to product/collection page at least twice
+1. Link to product/collection page at least twice using specific product URLs from LIVE GRI PRODUCTS data
 2. Link to hire page at least once with anchor text like "gender reveal hire on the Gold Coast"
-3. Do NOT link to any external sites
-Minimum 3 internal links throughout the article.]
+3. Link to homepage or full collection at least once
+4. Do NOT link to any external sites
+Minimum 4 internal links throughout the article.]
 
 ===END===`
 }

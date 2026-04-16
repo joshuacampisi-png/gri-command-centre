@@ -153,6 +153,208 @@ async function setArticleSEOMetafields(domain, token, articleGlobalId, seoTitle,
   }
 }
 
+// ── Step 3: Upload featured image via staged upload ──────────
+
+async function uploadFeaturedImage(domain, token, imageUrl) {
+  if (!imageUrl) return null
+
+  console.log(`[ShopifyPublisher] Uploading featured image: ${imageUrl.slice(0, 80)}...`)
+
+  // Step 3a: Create staged upload target
+  const stagedMutation = `
+    mutation StagedUploadsCreate($input: [StagedUploadInput!]!) {
+      stagedUploadsCreate(input: $input) {
+        stagedTargets {
+          url
+          resourceUrl
+          parameters {
+            name
+            value
+          }
+        }
+        userErrors {
+          field
+          message
+        }
+      }
+    }
+  `
+
+  const stagedRes = await fetch(gqlEndpoint(domain), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Shopify-Access-Token': token },
+    body: JSON.stringify({
+      query: stagedMutation,
+      variables: {
+        input: [{
+          resource: 'IMAGE',
+          filename: `blog-featured-${Date.now()}.jpg`,
+          mimeType: 'image/jpeg',
+          httpMethod: 'PUT',
+        }],
+      },
+    }),
+  })
+
+  const stagedData = await stagedRes.json()
+  const target = stagedData.data?.stagedUploadsCreate?.stagedTargets?.[0]
+  if (!target) {
+    console.warn('[ShopifyPublisher] Failed to create staged upload target')
+    return null
+  }
+
+  // Step 3b: Download the image from fal.ai URL
+  const imgRes = await fetch(imageUrl, { signal: AbortSignal.timeout(30000) })
+  if (!imgRes.ok) {
+    console.warn(`[ShopifyPublisher] Failed to download image: ${imgRes.status}`)
+    return null
+  }
+  const imgBuffer = await imgRes.arrayBuffer()
+
+  // Step 3c: Upload to Shopify's staged URL
+  const uploadUrl = target.url
+  const uploadRes = await fetch(uploadUrl, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'image/jpeg' },
+    body: imgBuffer,
+  })
+
+  if (!uploadRes.ok) {
+    console.warn(`[ShopifyPublisher] Staged upload failed: ${uploadRes.status}`)
+    return null
+  }
+
+  // Step 3d: Create the file in Shopify
+  const fileCreateMutation = `
+    mutation FileCreate($files: [FileCreateInput!]!) {
+      fileCreate(files: $files) {
+        files {
+          id
+          alt
+          createdAt
+        }
+        userErrors {
+          field
+          message
+        }
+      }
+    }
+  `
+
+  const fileRes = await fetch(gqlEndpoint(domain), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Shopify-Access-Token': token },
+    body: JSON.stringify({
+      query: fileCreateMutation,
+      variables: {
+        files: [{
+          originalSource: target.resourceUrl,
+          contentType: 'IMAGE',
+        }],
+      },
+    }),
+  })
+
+  const fileData = await fileRes.json()
+  const file = fileData.data?.fileCreate?.files?.[0]
+  if (!file) {
+    console.warn('[ShopifyPublisher] fileCreate failed:', fileData.data?.fileCreate?.userErrors)
+    return null
+  }
+
+  console.log(`[ShopifyPublisher] File created: ${file.id}`)
+
+  // Step 3e: Poll until file is READY (max 30s)
+  const fileId = file.id
+  for (let i = 0; i < 15; i++) {
+    await new Promise(r => setTimeout(r, 2000))
+
+    const pollQuery = `
+      query FileStatus($id: ID!) {
+        node(id: $id) {
+          ... on MediaImage {
+            id
+            fileStatus
+            image {
+              url
+            }
+          }
+        }
+      }
+    `
+
+    const pollRes = await fetch(gqlEndpoint(domain), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Shopify-Access-Token': token },
+      body: JSON.stringify({ query: pollQuery, variables: { id: fileId } }),
+    })
+
+    const pollData = await pollRes.json()
+    const status = pollData.data?.node?.fileStatus
+    const imageNodeUrl = pollData.data?.node?.image?.url
+
+    if (status === 'READY' && imageNodeUrl) {
+      console.log(`[ShopifyPublisher] Featured image READY: ${imageNodeUrl.slice(0, 80)}...`)
+      return { fileId, imageUrl: imageNodeUrl }
+    }
+
+    if (status === 'FAILED') {
+      console.warn('[ShopifyPublisher] File processing FAILED')
+      return null
+    }
+  }
+
+  console.warn('[ShopifyPublisher] File processing timed out')
+  return null
+}
+
+// ── Step 4: Set featured image on article ──────────────────────
+
+async function setArticleFeaturedImage(domain, token, articleGlobalId, imageUrl) {
+  const mutation = `
+    mutation ArticleUpdate($id: ID!, $article: ArticleUpdateInput!) {
+      articleUpdate(id: $id, article: $article) {
+        article {
+          id
+          image {
+            url
+          }
+        }
+        userErrors {
+          field
+          message
+        }
+      }
+    }
+  `
+
+  const res = await fetch(gqlEndpoint(domain), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Shopify-Access-Token': token },
+    body: JSON.stringify({
+      query: mutation,
+      variables: {
+        id: articleGlobalId,
+        article: {
+          image: {
+            src: imageUrl,
+          },
+        },
+      },
+    }),
+  })
+
+  const data = await res.json()
+  const errors = data.data?.articleUpdate?.userErrors || []
+  if (errors.length) {
+    console.warn('[ShopifyPublisher] Set featured image warnings:', errors.map(e => e.message).join(', '))
+    return false
+  }
+
+  console.log(`[ShopifyPublisher] ✅ Featured image set on article`)
+  return true
+}
+
 // ── Main publish function ──────────────────────────────────────
 
 export async function publishToShopify(payload) {
@@ -187,11 +389,23 @@ export async function publishToShopify(payload) {
     console.log(`[ShopifyPublisher] ✅ SEO metafields set`)
   }
 
+  // Step 3+4: Upload and set featured image (if provided)
+  if (payload.featuredImageUrl) {
+    try {
+      const uploaded = await uploadFeaturedImage(domain, token, payload.featuredImageUrl)
+      if (uploaded) {
+        await setArticleFeaturedImage(domain, token, article.id, uploaded.imageUrl)
+      }
+    } catch (err) {
+      console.warn(`[ShopifyPublisher] Featured image failed (non-fatal): ${err.message}`)
+    }
+  }
+
   return {
     shopifyId:   article.id,
     title:       article.title,
-    handle:      article.handle,      // use returned handle (may differ if conflict)
-    liveUrl:     article._liveUrl,    // constructed from blog + article handle
+    handle:      article.handle,
+    liveUrl:     article._liveUrl,
     publishedAt: article.publishedAt,
   }
 }

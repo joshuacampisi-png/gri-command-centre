@@ -50,6 +50,7 @@ import { startGadsAgentCrons } from './lib/gads-agent-cron.js'
 import { startIGReplyBotCron } from './lib/ig-reply-bot/cron.js'
 import { startFatigueAlertCron } from './lib/fatigue-alert-cron.js'
 import { startTNTPaymentPoller } from './lib/tnt-payment-poller.js'
+import { startBlogAutopublishCron, runAutopublish, getAutopublishStatus } from './lib/blog-autopublish.js'
 import { seedVolumeFromRepo } from './lib/volume-seed.js'
 
 // ── VOLUME SEED ──
@@ -287,6 +288,16 @@ app.get('/api/env-debug', (_req, res) => {
 // Claude usage safety dashboard
 app.get('/api/claude-usage', (_req, res) => res.json(getUsageSummary()))
 
+// Blog autopublish status + manual trigger
+app.get('/api/blog-autopublish/status', (_req, res) => {
+  res.json({ ok: true, ...getAutopublishStatus() })
+})
+app.post('/api/blog-autopublish/run-now', async (_req, res) => {
+  res.json({ ok: true, message: 'Autopublish pipeline started. Check Telegram for results.' })
+  // Run async — don't block the response
+  runAutopublish().catch(e => console.error('[Autopublish] Manual run failed:', e.message))
+})
+
 // Manual poll trigger
 app.post('/api/poll-now', async (_req, res) => {
   const result = await triggerPoll()
@@ -481,6 +492,9 @@ const server = app.listen(env.port, '0.0.0.0', () => {
 
   // Ad fatigue alerts — checks every 4 hours, pings Telegram on transitions
   startFatigueAlertCron()
+
+  // Blog autopublish — generates and publishes 1 blog per day at 6am AEST
+  startBlogAutopublishCron()
 
   console.log('✅ Server running — auto Telegram messages: DISABLED')
   console.log('🔒 Crash recovery: ACTIVE')
