@@ -5,7 +5,7 @@
  * POST /api/blog-writer/scrape-web      — scrape web for lifestyle reference images
  * POST /api/blog-writer/generate       — generate article from keyword + scrape context
  * POST /api/blog-writer/publish        — publish generated article to Shopify
- * POST /api/blog-writer/generate-image — generate single image via Fal.ai FLUX
+ * POST /api/blog-writer/generate-image — generate single image via Nano Banana Pro
  * POST /api/blog-writer/review-image   — Claude vision QA review of generated image
  * GET  /api/blog-writer/session        — restore working state
  * PUT  /api/blog-writer/session        — save working state

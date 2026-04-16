@@ -3,7 +3,7 @@
  * ─────────────────────────────────────────────────────────────
  * Stage 1 of the blog image pipeline. Scrapes the brand's own
  * website for product images and the open web for lifestyle
- * reference images. Provides visual anchors for Fal.ai FLUX
+ * reference images. Provides visual anchors for Nano Banana Pro
  * image generation.
  * ─────────────────────────────────────────────────────────────
  */

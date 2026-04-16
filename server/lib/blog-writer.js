@@ -165,7 +165,7 @@ Every article receives exactly 4 image placements: 1 hero image + 3 inline image
 
 For each placement, output TWO image tags: one desktop, one mobile. Use this EXACT format:
 
-[IMAGE_DESKTOP: placement="hero" aspectRatio="16:9" resolution="2K" alt="[SEO alt text under 125 chars]" referenceImages="[comma-separated list of up to 4 image URLs from the scraped data provided in the user message]" prompt="[FLUX Pro Ultra image prompt]"]
+[IMAGE_DESKTOP: placement="hero" aspectRatio="16:9" resolution="2K" alt="[SEO alt text under 125 chars]" referenceImages="[comma-separated list of up to 4 image URLs from the scraped data provided in the user message]" prompt="[Nano Banana Pro image prompt]"]
 [IMAGE_MOBILE: placement="hero" aspectRatio="9:16" resolution="2K" alt="[same alt text as desktop]" referenceImages="[same URLs]" prompt="[same prompt reframed vertically, tall crop, subject centred]"]
 
 [IMAGE_DESKTOP: placement="inline-1" aspectRatio="16:9" resolution="2K" alt="[SEO alt text]" referenceImages="[relevant URLs from scraped data]" prompt="[prompt]"]

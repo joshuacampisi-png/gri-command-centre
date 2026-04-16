@@ -1093,7 +1093,7 @@ export default function BlogWriterTab() {
           <h2 className="page-title">Blog Writer</h2>
           <p className="page-sub">
             SEO article generator for Gender Reveal Ideas
-            {hasFal && ' — Fal.ai FLUX image pipeline active'}
+            {hasFal && ' — Nano Banana Pro image pipeline active'}
           </p>
         </div>
       </div>
