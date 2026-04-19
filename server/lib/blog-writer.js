@@ -69,6 +69,28 @@ async function fetchProductContext(keyword) {
   }
 }
 
+// ── Best-seller context (used by autopublish pipeline) ───────
+
+function buildBestSellerContext(bestSellers) {
+  if (!bestSellers || bestSellers.length === 0) return ''
+  const lines = bestSellers.slice(0, 12).map(p => {
+    const price = p.price ? `A$${Number(p.price).toFixed(0)}` : 'POA'
+    const units = p.unitsSold60d ? ` · ${p.unitsSold60d} sold/60d` : ''
+    return `- ${p.title} (${price})${units} → ${p.url}`
+  })
+  return `\nLIVE GRI BEST-SELLERS (last 60 days — USE THESE for product links and recommendations — these are the products actually selling right now):\n${lines.join('\n')}\n`
+}
+
+// ── Verified-quotes context (from GRI YouTube transcripts) ───
+
+function buildQuoteContext(quotes) {
+  if (!quotes || quotes.length === 0) return ''
+  const lines = quotes.slice(0, 6).map(q => {
+    return `- "${q.quote}" — ${q.speaker} (source: ${q.videoUrl})`
+  })
+  return `\nVERIFIED GRI QUOTES (from the team's own YouTube videos — weave 1-2 of these into the article naturally as <blockquote> or "As Michael puts it..." attributions. DO NOT fabricate quotes. If none fit the article, skip entirely — do not invent):\n${lines.join('\n')}\n`
+}
+
 // ── System prompt ─────────────────────────────────────────────
 
 function buildSystemPrompt() {
@@ -457,7 +479,14 @@ TONE REMINDERS:
 - Short warm paragraphs. Plain English. Year 7-8 reading level.
 - Weave family-owned + eco-friendly + family-safe naturally (at least 2 of the 3 per article)
 - Zero technical jargon. Say "lasts 15 seconds" not "sustained emission".
-- Celebratory, reassuring, directional.]
+- Celebratory, reassuring, directional.
+
+COMPLETION RULES (CRITICAL):
+- You MUST finish the entire article including the FAQ section, the inline-3 image pair, the CTA closing paragraph, AND the FAQPage JSON-LD schema block.
+- The article MUST end with a fully-closed sentence — no mid-word or mid-sentence cutoffs.
+- The very last line MUST be a complete </script> closing tag from the FAQPage schema OR a fully-ended </p>.
+- If you are running low on output budget, shorten body sections — NEVER skip the FAQ, CTA, or schema.
+- After writing everything, output the literal ===END=== marker on its own line to signal completion.]
 
 ===END===`
 }
@@ -652,14 +681,20 @@ export async function generateBlogArticle(keyword, options = {}) {
 
   console.log(`[BlogWriter] Generating ${articleType} article for "${keyword}"`)
 
-  const productContext = await fetchProductContext(keyword)
+  // If autopublish pipeline pre-fetched best-sellers, use those verbatim.
+  // Otherwise fall back to legacy fetchProductContext title-search.
+  const productContext = options.bestSellers?.length
+    ? buildBestSellerContext(options.bestSellers)
+    : await fetchProductContext(keyword)
   const scrapeContext = buildScrapeContext(options.brandScrape, options.webRefs)
   const feedbackContext = await buildFeedbackContext()
-  const prompt = buildArticlePrompt(keyword, articleType, productContext, scrapeContext) + feedbackContext
+  const quoteContext = buildQuoteContext(options.verifiedQuotes)
+  const briefContext = options.brief ? `\nEDITORIAL BRIEF (follow these specific requirements):\n${options.brief}\n` : ''
+  const prompt = buildArticlePrompt(keyword, articleType, productContext, scrapeContext) + quoteContext + briefContext + feedbackContext
 
   const message = await callClaude({
     model: 'claude-sonnet-4-20250514',
-    max_tokens: 8000,
+    max_tokens: 16000,
     system: buildSystemPrompt(),
     messages: [{ role: 'user', content: prompt }],
   }, 'blog-writer')

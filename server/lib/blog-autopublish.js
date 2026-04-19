@@ -1,17 +1,19 @@
 /**
- * Blog Autopublish Pipeline
+ * Blog Autopublish Pipeline (v2 — evidence-backed)
  * ─────────────────────────────────────────────────────────────
- * Fully autonomous daily blog publishing:
- * 1. Pick a trending keyword (rotate through keyword pool)
- * 2. Scrape brand site + web for reference images
- * 3. Generate article via Claude Sonnet
- * 4. Generate 4 image pairs (desktop + mobile) with QA retry
- * 5. Inject images into article HTML
- * 6. Set hero desktop as featured image
- * 7. Publish to Shopify
- * 8. Send Telegram notification to Josh
+ * Daily 06:00 AEST. Each step logs per-stage status. Any failure
+ * blocks publish and stores the draft + reason for the dashboard.
  *
- * Runs daily at 6am AEST (20:00 UTC previous day).
+ * Pipeline:
+ *  1. Topic pick          — manual queue first, else keyword pool
+ *  2. YouTube evidence    — GRI channel transcripts → verified quotes
+ *  3. Best-sellers        — Shopify top 100 (60d, active-only)
+ *  4. Write article       — Sonnet with real quotes + real products
+ *  5. Generate images     — FAL + Haiku vision QA (7/10 pass)
+ *  6. Validate links      — HEAD checks + slug auto-repair + block on dead
+ *  7. Validate content    — regex + Haiku placeholder / fabricated-quote scan
+ *  8. Publish to Shopify  — author byline + schema + hero image
+ *  9. Telegram            — failure by default; success if BLOG_NOTIFY_SUCCESS=1
  * ─────────────────────────────────────────────────────────────
  */
 
@@ -24,15 +26,21 @@ import { scrapeBrandSite, scrapeWebReferences } from './scraper.js'
 import { getProductImagesForKeyword, searchWebForProductImages } from './product-images.js'
 import { dataFile } from './data-dir.js'
 import { env } from './env.js'
+import { getTopBestSellers, filterRelevantToKeyword } from './shopify-bestsellers.js'
+import { getRelevantTranscripts } from './youtube-transcripts.js'
+import { extractQuotes } from './quote-extractor.js'
+import { validateAndRepairLinks } from './link-validator.js'
+import { validateContent } from './content-qa.js'
+import { recordFailure } from './blog-failure-store.js'
+import { peekNext as peekTopic, popNext as popTopic, recordPublished } from './blog-topic-queue.js'
 
 const STATE_FILE = dataFile('blog-autopublish-state.json')
 const HISTORY_FILE = dataFile('blog-writer-history.json')
 const MAX_IMAGE_ATTEMPTS = 5
 
-// ── Keyword pool ─────────────────────────────────────────────
+// ── Keyword pool (fallback when manual queue is empty) ──────
 
 const KEYWORD_POOL = [
-  // High-intent product keywords
   { keyword: 'gender reveal smoke bombs australia', type: 'buying_guide' },
   { keyword: 'gender reveal confetti cannon', type: 'buying_guide' },
   { keyword: 'gender reveal powder cannon', type: 'comparison' },
@@ -79,27 +87,38 @@ function saveState(state) {
   catch (e) { console.error('[Autopublish] Failed to save state:', e.message) }
 }
 
-// ── Pick next keyword ────────────────────────────────────────
+// ── Topic selection ──────────────────────────────────────────
 
-function pickNextKeyword(state) {
+function pickFromPool(state) {
   const published = new Set(state.publishedKeywords || [])
-
-  // Find next unpublished keyword
   for (let i = 0; i < KEYWORD_POOL.length; i++) {
     const idx = (state.lastKeywordIndex + 1 + i) % KEYWORD_POOL.length
     const entry = KEYWORD_POOL[idx]
     if (!published.has(entry.keyword)) {
-      return { ...entry, index: idx }
+      return { ...entry, index: idx, source: 'pool' }
     }
   }
-
-  // All keywords used — reset and start over
-  console.log('[Autopublish] All keywords exhausted, resetting pool')
+  console.log('[Autopublish] All pool keywords exhausted, resetting')
   state.publishedKeywords = []
-  return { ...KEYWORD_POOL[0], index: 0 }
+  return { ...KEYWORD_POOL[0], index: 0, source: 'pool' }
 }
 
-// ── Image generation with QA retry ───────────────────────────
+function pickTopic(state) {
+  // Manual queue wins
+  const manual = peekTopic()
+  if (manual) {
+    return {
+      keyword: manual.keyword,
+      type: manual.articleType || 'informational',
+      brief: manual.brief || '',
+      source: 'manual-queue',
+      index: -1,
+    }
+  }
+  return pickFromPool(state)
+}
+
+// ── Image generation with QA retry (unchanged core logic) ────
 
 async function generateImageWithQA(prompt, aspectRatio, referenceImageUrls, keyword, placement, alt) {
   let currentPrompt = prompt
@@ -110,7 +129,6 @@ async function generateImageWithQA(prompt, aspectRatio, referenceImageUrls, keyw
     try {
       console.log(`[Autopublish] Image ${placement} (${aspectRatio}) attempt ${attempt}/${MAX_IMAGE_ATTEMPTS}`)
 
-      // Resolve reference images
       let finalRefs = []
       const providedRefs = (referenceImageUrls || []).filter(url =>
         url && (url.includes('cdn.shopify.com') || url.includes('shopifycdn'))
@@ -121,9 +139,8 @@ async function generateImageWithQA(prompt, aspectRatio, referenceImageUrls, keyw
       } else {
         const searchKw = keyword || currentPrompt.slice(0, 50)
         const { images: shopifyImages } = await getProductImagesForKeyword(searchKw, 4)
-        if (shopifyImages.length > 0) {
-          finalRefs = shopifyImages
-        } else {
+        if (shopifyImages.length > 0) finalRefs = shopifyImages
+        else {
           const webImages = await searchWebForProductImages(searchKw, 4)
           if (webImages.length > 0) finalRefs = webImages
         }
@@ -131,10 +148,8 @@ async function generateImageWithQA(prompt, aspectRatio, referenceImageUrls, keyw
 
       const result = await generateImage({ prompt: currentPrompt, aspectRatio, referenceImageUrls: finalRefs })
 
-      // QA the image
       const imgRes = await fetch(result.imageUrl, { signal: AbortSignal.timeout(30000) })
       if (!imgRes.ok) throw new Error(`Failed to fetch image: ${imgRes.status}`)
-
       const buffer = await imgRes.arrayBuffer()
       const base64 = Buffer.from(buffer).toString('base64')
       const contentType = imgRes.headers.get('content-type') || 'image/jpeg'
@@ -183,7 +198,6 @@ Respond in JSON only: {"score": N, "pass": bool, "issues": [...], "refinedPrompt
     }
   }
 
-  // Return best attempt even if it didn't pass
   if (bestResult) {
     console.log(`[Autopublish] Image ${placement}: best score ${bestScore}/10 after ${MAX_IMAGE_ATTEMPTS} attempts`)
     return { imageUrl: bestResult.imageUrl, score: bestScore, attempts: MAX_IMAGE_ATTEMPTS }
@@ -192,22 +206,19 @@ Respond in JSON only: {"score": N, "pass": bool, "issues": [...], "refinedPrompt
   return null
 }
 
-// ── Parse image tags from article body ───────────────────────
+// ── Image tag parsing / injection (unchanged from v1) ────────
 
 function parseImageTags(body) {
   const regex = /\[IMAGE_(DESKTOP|MOBILE):\s*(.*?)\]/g
   const images = []
   let match
-
   while ((match = regex.exec(body)) !== null) {
     const variant = match[1].toLowerCase()
     const attrs = match[2]
-
     const get = (key) => {
       const m = attrs.match(new RegExp(`${key}="([^"]*?)"`))
       return m ? m[1] : ''
     }
-
     images.push({
       variant,
       placement: get('placement'),
@@ -218,29 +229,21 @@ function parseImageTags(body) {
       raw: match[0],
     })
   }
-
   return images
 }
 
-// ── Inject generated image URLs into article HTML ────────────
-// Pairs desktop + mobile tags by placement into a single <picture>
-// element so browsers render only one image per viewport.
-
 function injectImages(body, imageMap) {
   let result = body
-
-  // Group imageMap entries by placement
   const byPlacement = {}
   for (const [key, data] of Object.entries(imageMap)) {
     if (!data?.imageUrl || !data?.raw) continue
     const dashIdx = key.lastIndexOf('-')
     if (dashIdx === -1) continue
     const placement = key.slice(0, dashIdx)
-    const variant = key.slice(dashIdx + 1) // 'desktop' | 'mobile'
+    const variant = key.slice(dashIdx + 1)
     if (!byPlacement[placement]) byPlacement[placement] = {}
     byPlacement[placement][variant] = data
   }
-
   for (const [placement, variants] of Object.entries(byPlacement)) {
     const desktop = variants.desktop
     const mobile = variants.mobile
@@ -250,12 +253,10 @@ function injectImages(body, imageMap) {
     const fetchPriority = isHero ? ' fetchpriority="high"' : ''
 
     if (desktop && mobile) {
-      // Pair into a single <picture> element
       const pictureHtml = `<picture>
   <source media="(max-width: 767px)" srcset="${mobile.imageUrl}">
   <img src="${desktop.imageUrl}" alt="${alt}" width="1200" height="675" loading="${loading}"${fetchPriority} style="width:100%;height:auto;border-radius:8px;margin:1rem 0;">
 </picture>`
-      // Replace desktop tag with the picture, strip the mobile tag entirely
       result = result.replace(desktop.raw, pictureHtml)
       result = result.replace(mobile.raw, '')
     } else if (desktop) {
@@ -266,34 +267,32 @@ function injectImages(body, imageMap) {
       result = result.replace(mobile.raw, imgHtml)
     }
   }
-
-  // Clean up any remaining unparsed image tags (failed generations, orphans)
   result = result.replace(/\[IMAGE_(DESKTOP|MOBILE):[^\]]*\]\s*\n?/g, '')
-
   return result
 }
 
-// ── Telegram notification ────────────────────────────────────
+// ── Telegram ─────────────────────────────────────────────────
 
-async function notifyTelegram(article, liveUrl, imageCount, duration) {
+async function notifySuccess(article, liveUrl, stats) {
+  // Only send success notifications when explicitly opted in
+  if (process.env.BLOG_NOTIFY_SUCCESS !== '1') return
   const token = env.telegram?.botToken || process.env.TELEGRAM_BOT_TOKEN
   const chatId = env.telegram?.joshChatId || process.env.TELEGRAM_JOSH_CHAT_ID
-  if (!token || !chatId) {
-    console.warn('[Autopublish] No Telegram config, skipping notification')
-    return
-  }
+  if (!token || !chatId) return
 
-  const mins = Math.round(duration / 60000)
+  const mins = Math.round(stats.durationMs / 60000)
   const aest = new Date().toLocaleString('en-AU', { timeZone: 'Australia/Brisbane' })
-
   const msg = [
     `📝 *NEW BLOG PUBLISHED*`,
     ``,
     `Title: ${article.title}`,
     `Keyword: ${article.primaryKeyword}`,
     `Words: ${article.wordCount}`,
-    `SEO Score: ${article.checklistScore}/${article.checklistTotal}`,
-    `Images: ${imageCount} generated`,
+    `SEO: ${article.checklistScore}/${article.checklistTotal}`,
+    `Images: ${stats.imageCount}`,
+    `Quotes: ${stats.quoteCount} verified`,
+    `Links: ${stats.linksChecked} checked, ${stats.linkRepairs} repaired`,
+    `Best-sellers used: ${stats.bestSellerCount}`,
     `Time: ${mins} minutes`,
     ``,
     `🔗 ${liveUrl}`,
@@ -306,130 +305,211 @@ async function notifyTelegram(article, liveUrl, imageCount, duration) {
     await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: msg,
-        parse_mode: 'Markdown',
-        disable_web_page_preview: false,
-      }),
+      body: JSON.stringify({ chat_id: chatId, text: msg, parse_mode: 'Markdown', disable_web_page_preview: false }),
     })
-    console.log('[Autopublish] Telegram notification sent')
   } catch (e) {
-    console.error('[Autopublish] Telegram notification failed:', e.message)
+    console.error('[Autopublish] Telegram success notification failed:', e.message)
   }
+}
+
+async function notifyFailure(stage, keyword, reason, extras = '') {
+  const token = env.telegram?.botToken || process.env.TELEGRAM_BOT_TOKEN
+  const chatId = env.telegram?.joshChatId || process.env.TELEGRAM_JOSH_CHAT_ID
+  if (!token || !chatId) return
+  const msg = [
+    `⚠️ *BLOG AUTOPUBLISH BLOCKED*`,
+    ``,
+    `Stage: ${stage}`,
+    `Keyword: ${keyword}`,
+    `Reason: ${reason}`,
+    extras,
+    ``,
+    `Check /blog/failures in the dashboard to review and republish.`,
+    `— Pablo Escobot`,
+  ].filter(Boolean).join('\n')
+  try {
+    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text: msg, parse_mode: 'Markdown' }),
+    })
+  } catch {}
 }
 
 // ── Main pipeline ────────────────────────────────────────────
 
-export async function runAutopublish() {
+export async function runAutopublish(options = {}) {
   const startTime = Date.now()
   const state = loadState()
+  const dryRun = options.dryRun === true
 
   console.log('[Autopublish] ═══════════════════════════════════════')
-  console.log('[Autopublish] Starting autonomous blog publish pipeline')
+  console.log(`[Autopublish] Starting v2 pipeline${dryRun ? ' [DRY-RUN]' : ''}`)
 
-  // Pre-flight checks
-  if (!process.env.ANTHROPIC_API_KEY) {
-    console.error('[Autopublish] BLOCKED: No ANTHROPIC_API_KEY')
-    return { ok: false, error: 'ANTHROPIC_API_KEY not configured' }
-  }
-  if (!hasShopifyPublishConfig()) {
-    console.error('[Autopublish] BLOCKED: Shopify publish config incomplete')
-    return { ok: false, error: 'Shopify publish config incomplete' }
-  }
-  if (!hasFalConfig()) {
-    console.error('[Autopublish] BLOCKED: No FAL_KEY for image generation')
-    return { ok: false, error: 'FAL_KEY not configured' }
-  }
+  // Pre-flight
+  if (!process.env.ANTHROPIC_API_KEY) return blockedPreflight('ANTHROPIC_API_KEY not configured')
+  if (!hasShopifyPublishConfig()) return blockedPreflight('Shopify publish config incomplete')
+  if (!hasFalConfig()) return blockedPreflight('FAL_KEY not configured')
 
-  // 1. Pick keyword
-  const pick = pickNextKeyword(state)
-  console.log(`[Autopublish] Keyword: "${pick.keyword}" (${pick.type})`)
+  // Step 1: topic
+  const pick = options.overrideTopic || pickTopic(state)
+  console.log(`[Autopublish] [1/9] Topic: "${pick.keyword}" (${pick.type}, source=${pick.source})`)
+
+  const stageTimers = {}
+  const timer = (stage) => { stageTimers[stage] = Date.now() }
+  const done = (stage) => { stageTimers[stage] = Date.now() - stageTimers[stage] }
 
   try {
-    // 2. Scrape for reference images
-    console.log('[Autopublish] Scraping brand site and web for reference images...')
+    // Step 2: YouTube evidence
+    timer('youtube')
+    console.log('[Autopublish] [2/9] Pulling YouTube transcripts + quotes...')
+    let verifiedQuotes = []
+    try {
+      const transcripts = await getRelevantTranscripts(pick.keyword, 4)
+      verifiedQuotes = await extractQuotes(transcripts, pick.keyword, 4)
+    } catch (e) {
+      console.warn('[Autopublish] YouTube evidence step non-fatal error:', e.message)
+    }
+    done('youtube')
+    console.log(`[Autopublish] [2/9] ${verifiedQuotes.length} verified quotes`)
+
+    // Step 3: Best-sellers
+    timer('bestsellers')
+    console.log('[Autopublish] [3/9] Fetching live Shopify best-sellers...')
+    let bestSellers = []
+    try {
+      const topAll = await getTopBestSellers(100, 60)
+      bestSellers = filterRelevantToKeyword(topAll, pick.keyword, 12)
+    } catch (e) {
+      console.warn('[Autopublish] Best-sellers step non-fatal error:', e.message)
+    }
+    done('bestsellers')
+    console.log(`[Autopublish] [3/9] ${bestSellers.length} best-sellers matched`)
+
+    // Reference image scrape (legacy, non-fatal)
     let brandScrape = null
     let webRefs = null
+    try { brandScrape = await scrapeBrandSite(pick.keyword) } catch {}
+    try { webRefs = await scrapeWebReferences(pick.keyword) } catch {}
 
-    try {
-      brandScrape = await scrapeBrandSite(pick.keyword)
-    } catch (e) {
-      console.warn('[Autopublish] Brand scrape failed (non-fatal):', e.message)
-    }
-
-    try {
-      webRefs = await scrapeWebReferences(pick.keyword)
-    } catch (e) {
-      console.warn('[Autopublish] Web scrape failed (non-fatal):', e.message)
-    }
-
-    // 3. Generate article
-    console.log('[Autopublish] Generating article via Claude Sonnet...')
+    // Step 4: Article generation
+    timer('article')
+    console.log('[Autopublish] [4/9] Generating article via Sonnet...')
     const article = await generateBlogArticle(pick.keyword, {
       articleType: pick.type,
+      brief: pick.brief,
       brandScrape,
       webRefs,
+      bestSellers,
+      verifiedQuotes,
     })
+    done('article')
+    console.log(`[Autopublish] [4/9] "${article.title}" — ${article.wordCount}w, SEO ${article.checklistScore}/${article.checklistTotal}`)
 
-    console.log(`[Autopublish] Article generated: "${article.title}" — ${article.wordCount} words, SEO ${article.checklistScore}/${article.checklistTotal}`)
-
-    // 4. Parse image tags from article body
+    // Step 5: Images (skippable for structural smoke tests)
+    timer('images')
     const imageTags = parseImageTags(article.body_html)
-    console.log(`[Autopublish] Found ${imageTags.length} image tags to generate`)
-
-    // 5. Generate images with QA (process sequentially to manage API load)
     const imageMap = {}
     let imageCount = 0
     let featuredImageUrl = null
-
-    for (const tag of imageTags) {
-      const key = `${tag.placement}-${tag.variant}`
-      const result = await generateImageWithQA(
-        tag.prompt,
-        tag.aspectRatio,
-        tag.referenceImages,
-        pick.keyword,
-        tag.placement,
-        tag.alt,
-      )
-
-      if (result) {
-        imageMap[key] = { ...result, raw: tag.raw, alt: tag.alt }
-        imageCount++
-
-        // Use hero desktop as featured image
-        if (tag.placement === 'hero' && tag.variant === 'desktop') {
-          featuredImageUrl = result.imageUrl
+    if (options.skipImages) {
+      console.log('[Autopublish] [5/9] Skipping image generation (skipImages=true)')
+      // Strip image tags so downstream link + QA validators see clean HTML
+      article.body_html = article.body_html.replace(/\[IMAGE_(DESKTOP|MOBILE):[^\]]*\]\s*\n?/g, '')
+    } else {
+      console.log('[Autopublish] [5/9] Generating images with QA...')
+      for (const tag of imageTags) {
+        const key = `${tag.placement}-${tag.variant}`
+        const result = await generateImageWithQA(
+          tag.prompt, tag.aspectRatio, tag.referenceImages, pick.keyword, tag.placement, tag.alt,
+        )
+        if (result) {
+          imageMap[key] = { ...result, raw: tag.raw, alt: tag.alt }
+          imageCount++
+          if (tag.placement === 'hero' && tag.variant === 'desktop') featuredImageUrl = result.imageUrl
         }
+      }
+      article.body_html = injectImages(article.body_html, imageMap)
+    }
+    done('images')
+    console.log(`[Autopublish] [5/9] ${imageCount}/${imageTags.length} images generated, featured=${!!featuredImageUrl}`)
+
+    // Step 6: Link validation
+    timer('links')
+    console.log('[Autopublish] [6/9] Validating links (HEAD + repair)...')
+    const linkResult = await validateAndRepairLinks(article.body_html, { allowExternal: true })
+    if (!linkResult.ok) {
+      return handleFailure({
+        startTime, state, pick, stage: 'link-validation',
+        reason: `Dead links: ${linkResult.deadLinks.map(d => `${d.url} (${d.status})`).join(', ').slice(0, 400)}`,
+        issues: linkResult.deadLinks,
+        article,
+        dryRun,
+      })
+    }
+    article.body_html = linkResult.body
+    done('links')
+    console.log(`[Autopublish] [6/9] ${linkResult.totalChecked} links OK, ${linkResult.repairs.length} repaired`)
+
+    // Step 7: Content QA
+    timer('contentqa')
+    console.log('[Autopublish] [7/9] Running content QA (regex + Haiku)...')
+    const qa = await validateContent(article.body_html, verifiedQuotes, bestSellers, { skipHaiku: false })
+    if (!qa.ok) {
+      return handleFailure({
+        startTime, state, pick, stage: 'content-qa',
+        reason: `Content issues: ${qa.issues.join(' | ').slice(0, 400)}`,
+        issues: qa.issues,
+        article,
+        dryRun,
+      })
+    }
+    done('contentqa')
+    console.log('[Autopublish] [7/9] Content QA passed')
+
+    if (dryRun) {
+      console.log('[Autopublish] [DRY-RUN] Skipping publish + state save')
+      const duration = Date.now() - startTime
+      return {
+        ok: true,
+        dryRun: true,
+        keyword: pick.keyword,
+        title: article.title,
+        wordCount: article.wordCount,
+        seoScore: `${article.checklistScore}/${article.checklistTotal}`,
+        imagesGenerated: imageCount,
+        imagesTotal: imageTags.length,
+        quotesUsed: verifiedQuotes.length,
+        bestSellersMatched: bestSellers.length,
+        linksChecked: linkResult.totalChecked,
+        linkRepairs: linkResult.repairs.length,
+        durationMs: duration,
+        stageTimers,
       }
     }
 
-    console.log(`[Autopublish] Generated ${imageCount}/${imageTags.length} images`)
+    // Step 8: Shopify publish
+    timer('publish')
+    console.log('[Autopublish] [8/9] Publishing to Shopify...')
+    const result = await publishToShopify({ ...article, featuredImageUrl })
+    done('publish')
+    console.log(`[Autopublish] [8/9] Published: ${result.liveUrl}`)
 
-    // 6. Inject image URLs into article HTML
-    const finalBody = injectImages(article.body_html, imageMap)
-    article.body_html = finalBody
-
-    // 7. Publish to Shopify
-    console.log('[Autopublish] Publishing to Shopify...')
-    const publishPayload = {
-      ...article,
-      featuredImageUrl,
+    // Update state
+    if (pick.source === 'manual-queue') {
+      popTopic()
+      recordPublished(pick.keyword, pick.type, { title: article.title, liveUrl: result.liveUrl })
+    } else {
+      state.lastKeywordIndex = pick.index
+      if (!state.publishedKeywords) state.publishedKeywords = []
+      state.publishedKeywords.push(pick.keyword)
     }
-    const result = await publishToShopify(publishPayload)
-
-    console.log(`[Autopublish] ✅ Published: ${result.liveUrl}`)
-
-    // 8. Update state
-    state.lastKeywordIndex = pick.index
-    if (!state.publishedKeywords) state.publishedKeywords = []
-    state.publishedKeywords.push(pick.keyword)
 
     const duration = Date.now() - startTime
     const runRecord = {
       keyword: pick.keyword,
       articleType: pick.type,
+      topicSource: pick.source,
       title: article.title,
       handle: article.handle,
       wordCount: article.wordCount,
@@ -437,8 +517,13 @@ export async function runAutopublish() {
       imagesGenerated: imageCount,
       imagesTotal: imageTags.length,
       featuredImage: !!featuredImageUrl,
+      quotesUsed: verifiedQuotes.length,
+      bestSellersMatched: bestSellers.length,
+      linksChecked: linkResult.totalChecked,
+      linkRepairs: linkResult.repairs.length,
       liveUrl: result.liveUrl,
       shopifyId: result.shopifyId,
+      stageTimers,
       durationMs: duration,
       publishedAt: new Date().toISOString(),
       status: 'success',
@@ -446,15 +531,12 @@ export async function runAutopublish() {
 
     if (!state.runs) state.runs = []
     state.runs.unshift(runRecord)
-    state.runs = state.runs.slice(0, 60) // Keep last 60 runs
+    state.runs = state.runs.slice(0, 60)
     saveState(state)
 
-    // Save to blog writer history too
     try {
       let history = []
-      if (existsSync(HISTORY_FILE)) {
-        history = JSON.parse(readFileSync(HISTORY_FILE, 'utf-8'))
-      }
+      if (existsSync(HISTORY_FILE)) history = JSON.parse(readFileSync(HISTORY_FILE, 'utf-8'))
       history.unshift({
         id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
         keyword: pick.keyword,
@@ -474,54 +556,68 @@ export async function runAutopublish() {
       })
       writeFileSync(HISTORY_FILE, JSON.stringify(history, null, 2))
     } catch (e) {
-      console.warn('[Autopublish] Failed to update history:', e.message)
+      console.warn('[Autopublish] History save failed:', e.message)
     }
 
-    // 9. Telegram notification
-    await notifyTelegram(article, result.liveUrl, imageCount, duration)
+    // Step 9: Telegram (only on success if opted in; always on failure)
+    await notifySuccess(article, result.liveUrl, {
+      imageCount,
+      quoteCount: verifiedQuotes.length,
+      linksChecked: linkResult.totalChecked,
+      linkRepairs: linkResult.repairs.length,
+      bestSellerCount: bestSellers.length,
+      durationMs: duration,
+    })
 
     console.log('[Autopublish] ═══════════════════════════════════════')
     console.log(`[Autopublish] Pipeline complete in ${Math.round(duration / 1000)}s`)
-
     return { ok: true, ...runRecord }
 
   } catch (err) {
-    const duration = Date.now() - startTime
-    console.error(`[Autopublish] Pipeline FAILED for "${pick.keyword}":`, err.message)
-
-    // Log failure
-    const failRecord = {
-      keyword: pick.keyword,
-      articleType: pick.type,
-      error: err.message,
-      durationMs: duration,
-      publishedAt: new Date().toISOString(),
-      status: 'failed',
-    }
-    if (!state.runs) state.runs = []
-    state.runs.unshift(failRecord)
-    state.runs = state.runs.slice(0, 60)
-    saveState(state)
-
-    // Notify Josh of failure
-    const token = env.telegram?.botToken || process.env.TELEGRAM_BOT_TOKEN
-    const chatId = env.telegram?.joshChatId || process.env.TELEGRAM_JOSH_CHAT_ID
-    if (token && chatId) {
-      try {
-        await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: chatId,
-            text: `⚠️ *BLOG AUTOPUBLISH FAILED*\n\nKeyword: ${pick.keyword}\nError: ${err.message}\n\n— Pablo Escobot`,
-            parse_mode: 'Markdown',
-          }),
-        })
-      } catch {}
-    }
-
-    return { ok: false, error: err.message, ...failRecord }
+    return handleFailure({
+      startTime, state, pick, stage: 'exception',
+      reason: err.message,
+      stack: err.stack,
+      dryRun,
+    })
   }
+}
+
+function blockedPreflight(reason) {
+  console.error(`[Autopublish] BLOCKED: ${reason}`)
+  notifyFailure('preflight', '—', reason).catch(() => {})
+  return { ok: false, error: reason }
+}
+
+function handleFailure({ startTime, state, pick, stage, reason, issues = [], article, stack, dryRun }) {
+  const duration = Date.now() - startTime
+  console.error(`[Autopublish] ❌ BLOCKED at ${stage}: ${reason}`)
+
+  const record = {
+    keyword: pick.keyword,
+    articleType: pick.type,
+    topicSource: pick.source,
+    stage,
+    reason,
+    issues,
+    stack: stack?.split('\n').slice(0, 6).join('\n'),
+    durationMs: duration,
+    title: article?.title || null,
+    draft: article?.body_html || null,
+  }
+
+  recordFailure(record)
+
+  if (!state.runs) state.runs = []
+  state.runs.unshift({ ...record, status: 'failed', publishedAt: new Date().toISOString() })
+  state.runs = state.runs.slice(0, 60)
+  saveState(state)
+
+  notifyFailure(stage, pick.keyword, reason,
+    issues?.length ? `\nIssues:\n- ${issues.slice(0, 5).map(i => typeof i === 'string' ? i : JSON.stringify(i)).join('\n- ')}` : '',
+  ).catch(() => {})
+
+  return { ok: false, stage, reason, issues, durationMs: duration, dryRun: !!dryRun }
 }
 
 // ── Cron scheduler ───────────────────────────────────────────
@@ -535,29 +631,20 @@ function msUntilNextUTC(utcHour, utcMinute = 0) {
 }
 
 let active = false
-
 export function startBlogAutopublishCron() {
   if (active) return
   active = true
-
-  console.log('[Autopublish Cron] Blog autopublish scheduler active, daily at 6am AEST')
-
-  // Daily at 6am AEST = 20:00 UTC (previous day)
+  console.log('[Autopublish Cron] Scheduler active — daily at 6am AEST')
   const schedule = () => {
-    const ms = msUntilNextUTC(20, 0)
+    const ms = msUntilNextUTC(20, 0) // 20:00 UTC = 06:00 AEST
     const next = new Date(Date.now() + ms)
     console.log(`[Autopublish Cron] Next run: ${next.toLocaleString('en-AU', { timeZone: 'Australia/Brisbane' })} AEST`)
-
     setTimeout(async () => {
-      try {
-        await runAutopublish()
-      } catch (e) {
-        console.error('[Autopublish Cron] Unhandled error:', e.message)
-      }
+      try { await runAutopublish() }
+      catch (e) { console.error('[Autopublish Cron] Unhandled:', e.message) }
       schedule()
     }, ms)
   }
-
   schedule()
 }
 
@@ -565,12 +652,15 @@ export function startBlogAutopublishCron() {
 
 export function getAutopublishStatus() {
   const state = loadState()
-  const nextKeyword = pickNextKeyword({ ...state })
+  const manualNext = peekTopic()
+  const nextFromPool = pickFromPool({ ...state })
+  const nextTopic = manualNext
+    ? { keyword: manualNext.keyword, type: manualNext.articleType, source: 'manual-queue' }
+    : { keyword: nextFromPool.keyword, type: nextFromPool.type, source: 'pool' }
 
   return {
     active,
-    nextKeyword: nextKeyword.keyword,
-    nextType: nextKeyword.type,
+    next: nextTopic,
     totalKeywords: KEYWORD_POOL.length,
     publishedCount: (state.publishedKeywords || []).length,
     remainingCount: KEYWORD_POOL.length - (state.publishedKeywords || []).length,

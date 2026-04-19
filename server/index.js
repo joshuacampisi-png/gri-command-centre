@@ -292,10 +292,47 @@ app.get('/api/claude-usage', (_req, res) => res.json(getUsageSummary()))
 app.get('/api/blog-autopublish/status', (_req, res) => {
   res.json({ ok: true, ...getAutopublishStatus() })
 })
-app.post('/api/blog-autopublish/run-now', async (_req, res) => {
-  res.json({ ok: true, message: 'Autopublish pipeline started. Check Telegram for results.' })
+app.post('/api/blog-autopublish/run-now', async (req, res) => {
+  const dryRun = req.body?.dryRun === true
+  res.json({ ok: true, message: `Autopublish pipeline started${dryRun ? ' [DRY-RUN]' : ''}. Check Telegram for results.` })
   // Run async — don't block the response
-  runAutopublish().catch(e => console.error('[Autopublish] Manual run failed:', e.message))
+  runAutopublish({ dryRun }).catch(e => console.error('[Autopublish] Manual run failed:', e.message))
+})
+
+// Blog autopublish: failures dashboard
+import('./lib/blog-failure-store.js').then(({ listFailures, getFailure, clearFailure }) => {
+  app.get('/api/blog-autopublish/failures', (_req, res) => {
+    res.json({ ok: true, failures: listFailures(50) })
+  })
+  app.get('/api/blog-autopublish/failures/:id', (req, res) => {
+    const item = getFailure(req.params.id)
+    if (!item) return res.status(404).json({ ok: false, error: 'Not found' })
+    res.json({ ok: true, failure: item })
+  })
+  app.delete('/api/blog-autopublish/failures/:id', (req, res) => {
+    clearFailure(req.params.id)
+    res.json({ ok: true })
+  })
+})
+
+// Blog autopublish: manual topic queue
+import('./lib/blog-topic-queue.js').then(({ addTopic, listQueue, listDone, removeTopic }) => {
+  app.get('/api/blog-autopublish/queue', (_req, res) => {
+    res.json({ ok: true, queue: listQueue(), done: listDone(30) })
+  })
+  app.post('/api/blog-autopublish/queue', (req, res) => {
+    try {
+      const { keyword, articleType, brief } = req.body || {}
+      const result = addTopic({ keyword, articleType, brief })
+      res.json({ ok: true, ...result })
+    } catch (e) {
+      res.status(400).json({ ok: false, error: e.message })
+    }
+  })
+  app.delete('/api/blog-autopublish/queue/:keyword', (req, res) => {
+    const remaining = removeTopic(req.params.keyword)
+    res.json({ ok: true, remaining })
+  })
 })
 
 // Manual poll trigger
