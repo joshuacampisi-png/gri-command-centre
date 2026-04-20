@@ -138,6 +138,10 @@ if (DASHBOARD_PASSWORD && DASHBOARD_PASSWORD !== 'changeme') {
     '/api/hires/reset-contract',
     '/sign/',
     '/signed',
+    '/company-logos',
+    '/favicon',
+    '/robots.txt',
+    '/manifest.json',
   ]
   const PUBLIC_EXACT = [
     '/api/instagram/disk-usage', '/api/instagram/cleanup-media',
