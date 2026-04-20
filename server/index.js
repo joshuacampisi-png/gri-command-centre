@@ -1,5 +1,7 @@
 import express from 'express'
 import cors from 'cors'
+import { verifyOrderToken } from './lib/contract-signing-token.js'
+import { getAll as getAllHires } from './lib/hire-store.js'
 import dashboardRoutes from './routes/dashboard.js'
 import calendarRoutes from './routes/calendar.js'
 import telegramIntakeRoutes from './routes/telegram-intake.js'
@@ -196,34 +198,30 @@ if (DASHBOARD_PASSWORD && DASHBOARD_PASSWORD !== 'changeme') {
 // This path lives OUTSIDE /api/ so browsers that have cached Basic auth
 // challenges on /api/* don't replay prompts here. The token is HMAC-SHA256
 // of orderNumber + expiry, so URLs can't be guessed or reused after expiry.
-import('./lib/contract-signing-token.js').then(({ verifyOrderToken }) => {
-  import('./lib/hire-store.js').then(({ getAll }) => {
-    app.get('/sign/:orderNumber/:token', (req, res, next) => {
-      const { orderNumber, token } = req.params
-      const v = verifyOrderToken(orderNumber, token)
-      if (!v.ok) {
-        return res.status(403).type('html').send(
-          `<h1>Link expired or invalid</h1><p>Please contact Gender Reveal Ideas on 0406860077 to get a fresh signing link.</p>`
-        )
-      }
-      const hire = getAll().find(h => h.orderNumber === `#${orderNumber}` || h.orderNumber === orderNumber)
-      if (!hire) return res.status(404).send('Hire not found')
-      // Rewrite to the existing contract GET route so we reuse the HTML
-      req.url = `/api/contract/${encodeURIComponent(hire.id)}/sign`
-      next()
-    })
+app.get('/sign/:orderNumber/:token', (req, res, next) => {
+  const { orderNumber, token } = req.params
+  const v = verifyOrderToken(orderNumber, token)
+  if (!v.ok) {
+    return res.status(403).type('html').send(
+      `<!doctype html><meta charset="utf-8"><title>Link expired</title><div style="font-family:system-ui;max-width:500px;margin:60px auto;padding:24px"><h1>Link expired or invalid</h1><p>Please contact Gender Reveal Ideas on 0406860077 to get a fresh signing link.</p></div>`
+    )
+  }
+  const hire = getAllHires().find(h => h.orderNumber === `#${orderNumber}` || h.orderNumber === orderNumber)
+  if (!hire) return res.status(404).send('Hire not found')
+  // Rewrite to the existing contract GET route so we reuse the HTML
+  req.url = `/api/contract/${encodeURIComponent(hire.id)}/sign`
+  next()
+})
 
-    // Token-verified signing submission
-    app.post('/sign/:orderNumber/:token', express.json(), (req, res, next) => {
-      const { orderNumber, token } = req.params
-      const v = verifyOrderToken(orderNumber, token)
-      if (!v.ok) return res.status(403).json({ ok: false, error: 'Token invalid or expired' })
-      const hire = getAll().find(h => h.orderNumber === `#${orderNumber}` || h.orderNumber === orderNumber)
-      if (!hire) return res.status(404).json({ ok: false, error: 'Hire not found' })
-      req.url = `/api/contract/${encodeURIComponent(hire.id)}/sign`
-      next()
-    })
-  })
+// Token-verified signing submission — re-use /api/contract/:id/sign handler
+app.post('/sign/:orderNumber/:token', express.json(), (req, res, next) => {
+  const { orderNumber, token } = req.params
+  const v = verifyOrderToken(orderNumber, token)
+  if (!v.ok) return res.status(403).json({ ok: false, error: 'Token invalid or expired' })
+  const hire = getAllHires().find(h => h.orderNumber === `#${orderNumber}` || h.orderNumber === orderNumber)
+  if (!hire) return res.status(404).json({ ok: false, error: 'Hire not found' })
+  req.url = `/api/contract/${encodeURIComponent(hire.id)}/sign`
+  next()
 })
 // Capture raw body for Shopify webhook HMAC verification
 app.use('/api/shopify/webhook', express.json({
@@ -515,6 +513,8 @@ app.get('/calendar', async (_req, res) => {
 if (existsSync(distPath)) {
   app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api')) return next()
+    // Customer-facing signing URLs are handled by app-level routes, not the SPA
+    if (req.path.startsWith('/sign/') || req.path === '/sign' || req.path.startsWith('/signed')) return next()
     res.sendFile(join(distPath, 'index.html'))
   })
 }
