@@ -277,7 +277,7 @@ router.post('/orders-create', async (req, res) => {
  */
 router.post('/import-order', async (req, res) => {
   try {
-    const { orderNumber } = req.body;
+    const { orderNumber, historical } = req.body;
     if (!orderNumber) {
       return res.status(400).json({ error: 'orderNumber required (e.g. "1050" or "#GRI-1050")' });
     }
@@ -297,6 +297,13 @@ router.post('/import-order', async (req, res) => {
       return res.status(404).json({ error: `No order found matching "${orderNumber}"` });
     }
 
+    // historical=true → backfill path: create the hire record WITHOUT sending emails,
+    // without creating a bond payment link, and mark it as completed/returned so the
+    // dashboard shows the record but no further automation fires.
+    if (historical === true) {
+      return importHistoricalOrder(orders[0], res);
+    }
+
     const result = await processOrder(orders[0]);
     res.json(result);
   } catch (err) {
@@ -304,6 +311,53 @@ router.post('/import-order', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// Historical backfill — no emails, no Square link, hire flagged as already completed.
+async function importHistoricalOrder(order, res) {
+  const tntItems = findTNTLineItems(order);
+  if (tntItems.length === 0) {
+    return res.status(400).json({ error: 'Order has no TNT items' });
+  }
+  const orderName = order.name || `#${order.order_number}`;
+  if (getAll().some(h => h.orderNumber === orderName)) {
+    return res.json({ created: false, reason: `Hire already exists for ${orderName}` });
+  }
+  const customer = order.customer || {};
+  const shipping = order.shipping_address || order.billing_address || {};
+  const customerName = `${customer.first_name || shipping.first_name || ''} ${customer.last_name || shipping.last_name || ''}`.trim() || 'Unknown';
+  const customerEmail = order.contact_email || customer.email || order.email || '';
+  const customerPhone = shipping.phone || customer.phone || order.phone || '';
+  const eventDate = extractEventDate(order) || '';
+  const kitQty = tntItems.reduce((s, i) => s + (i.quantity || 1), 0);
+  const revenue = tntItems.reduce((s, i) => s + parseFloat(i.price || 0) * (i.quantity || 1), 0);
+
+  const hire = create({
+    orderNumber: orderName,
+    customerName,
+    customerEmail,
+    customerPhone,
+    eventDate,
+    kitQty,
+    revenue,
+  });
+
+  const { update } = await import('../lib/hire-store.js');
+  update(hire.id, {
+    status: 'returned',
+    bondStatus: 'paid',
+    bondPaymentId: 'historical_backfill',
+    bondPaidAt: order.created_at,
+    contractStatus: 'signed',
+    contractSentAt: order.created_at,
+    contractSignedAt: order.created_at,
+    emailSent: true,
+    historical: true,
+    historicalBackfillAt: new Date().toISOString(),
+  });
+
+  console.log(`[shopify-webhook] HISTORICAL backfill: ${orderName} (${customerName}) — no emails sent`);
+  res.json({ created: true, historical: true, orderNumber: orderName, customerName, hireId: hire.id });
+}
 
 /**
  * GET /api/shopify/webhook/recent-orders
