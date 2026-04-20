@@ -626,6 +626,46 @@ router.post('/resend-pre-bond-by-order', async (req, res) => {
   }
 });
 
+// POST /api/hires/mark-bond-paid-by-order — manually mark bond as paid
+// for a hire matched by order number + auto-send the contract email.
+// Use this when Square webhook didn't fire but you've confirmed payment.
+// Body: { orderNumber, paymentId? }
+router.post('/mark-bond-paid-by-order', async (req, res) => {
+  try {
+    const { orderNumber, paymentId } = req.body || {};
+    if (!orderNumber) return res.status(400).json({ error: 'orderNumber required' });
+    const normalised = String(orderNumber).replace(/^#/, '');
+    const hire = getAll().find(h => h.orderNumber === `#${normalised}` || h.orderNumber === normalised);
+    if (!hire) return res.status(404).json({ error: `No hire for order ${normalised}` });
+    if (hire.bondStatus === 'paid') {
+      return res.json({ ok: true, alreadyPaid: true, orderNumber: hire.orderNumber, bondPaidAt: hire.bondPaidAt });
+    }
+
+    const pid = paymentId || 'manual_' + Date.now().toString(36);
+    const updated = update(hire.id, {
+      status: 'bond_paid',
+      bondStatus: 'paid',
+      bondPaymentId: pid,
+      bondPaidAt: new Date().toISOString(),
+    });
+
+    notifyTNTEvent('bond_paid', getById(hire.id)).catch(() => {});
+
+    let contract = null;
+    try {
+      const r = await sendContractInternal(updated);
+      contract = { sent: true, signingUrl: r.signingUrl };
+    } catch (e) {
+      contract = { sent: false, error: e.message };
+    }
+
+    res.json({ ok: true, orderNumber: hire.orderNumber, bondPaymentId: pid, contract });
+  } catch (err) {
+    console.error('[hires] Mark bond paid by order error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/hires/last-webhook — inspect what Shopify last sent the webhook
 // Reads the raw payload dump the webhook saves for every request
 router.get('/last-webhook', (_req, res) => {

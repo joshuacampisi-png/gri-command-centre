@@ -129,6 +129,7 @@ if (DASHBOARD_PASSWORD && DASHBOARD_PASSWORD !== 'changeme') {
     '/api/hires/sync', '/api/hires/reconcile-payments', '/api/hires/health',
     '/api/hires/resend-contract-by-order',
     '/api/hires/resend-pre-bond-by-order',
+    '/api/hires/mark-bond-paid-by-order',
     '/api/hires/diag-by-order',
     '/api/hires/last-webhook',
     '/api/hires/reset-contract',
