@@ -128,6 +128,9 @@ if (DASHBOARD_PASSWORD && DASHBOARD_PASSWORD !== 'changeme') {
     '/calendar-videos', '/instagram-media', '/api/contract',
     '/api/hires/sync', '/api/hires/reconcile-payments', '/api/hires/health',
     '/api/hires/resend-contract-by-order',
+    '/api/hires/resend-pre-bond-by-order',
+    '/api/hires/diag-by-order',
+    '/api/hires/last-webhook',
     '/api/hires/reset-contract',
   ]
   const PUBLIC_EXACT = [

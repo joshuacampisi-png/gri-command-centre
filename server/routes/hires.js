@@ -541,4 +541,112 @@ router.post('/resend-contract-by-order', async (req, res) => {
   }
 });
 
+// ────────────────────────────────────────────────────────────
+// Public diagnostic + recovery endpoints
+// No auth — these let Josh (or me) fix stuck hires when the UI
+// can't be reached. Return the hire state and allow resending
+// confirmation + bond-link emails that the webhook may have missed.
+// ────────────────────────────────────────────────────────────
+
+// GET /api/hires/diag-by-order/:orderNumber — inspect a hire's state
+router.get('/diag-by-order/:orderNumber', (req, res) => {
+  const normalised = String(req.params.orderNumber || '').replace(/^#/, '');
+  const hire = getAll().find(h => h.orderNumber === `#${normalised}` || h.orderNumber === normalised);
+  if (!hire) return res.status(404).json({ ok: false, error: `No hire for order ${normalised}` });
+  // Redact payment link tokens — return only booleans + status flags
+  res.json({
+    ok: true,
+    hire: {
+      id: hire.id,
+      orderNumber: hire.orderNumber,
+      customerName: hire.customerName,
+      customerEmail: hire.customerEmail,
+      eventDate: hire.eventDate,
+      kitQty: hire.kitQty,
+      revenue: hire.revenue,
+      status: hire.status,
+      emailSent: !!hire.emailSent,
+      bondStatus: hire.bondStatus,
+      bondPaid: !!hire.bondPaid,
+      bondPaymentLinkExists: !!hire.bondPaymentUrl,
+      contractStatus: hire.contractStatus,
+      contractSentAt: hire.contractSentAt,
+      contractSignedAt: hire.contractSignedAt,
+      createdAt: hire.createdAt,
+    },
+  });
+});
+
+// POST /api/hires/resend-pre-bond-by-order — resend confirmation + bond link email
+// Body: { orderNumber, testEmail? } — use this when webhook fired but emails failed
+router.post('/resend-pre-bond-by-order', async (req, res) => {
+  try {
+    const { orderNumber, testEmail } = req.body || {};
+    if (!orderNumber) return res.status(400).json({ error: 'orderNumber required' });
+    const normalised = String(orderNumber).replace(/^#/, '');
+    const hire = getAll().find(h => h.orderNumber === `#${normalised}` || h.orderNumber === normalised);
+    if (!hire) return res.status(404).json({ error: `No hire for order ${normalised}` });
+
+    const target = testEmail ? { ...hire, customerEmail: testEmail } : hire;
+    const results = { confirmation: null, bondLink: null };
+
+    // 1. Confirmation email (requires eventDate)
+    try {
+      if (!target.eventDate) {
+        results.confirmation = { ok: false, skipped: 'no event date on hire' };
+      } else {
+        const r = await sendHireEmail('confirmation', target);
+        results.confirmation = { ok: true, messageId: r.messageId };
+        if (!testEmail) update(hire.id, { emailSent: true });
+      }
+    } catch (e) {
+      results.confirmation = { ok: false, error: e.message };
+    }
+
+    // 2. Bond payment link email — create a fresh Square link if we don't have one
+    try {
+      let payUrl = hire.bondPaymentUrl;
+      if (!payUrl) {
+        const link = await createBondPaymentLink(hire);
+        payUrl = link.url;
+        if (!testEmail) {
+          update(hire.id, { bondPaymentUrl: link.url, bondPaymentLinkId: link.paymentLinkId });
+        }
+      }
+      const r = await sendHireEmail('bond_link', target, payUrl);
+      results.bondLink = { ok: true, messageId: r.messageId };
+    } catch (e) {
+      results.bondLink = { ok: false, error: e.message };
+    }
+
+    res.json({ ok: true, orderNumber: hire.orderNumber, testEmail: testEmail || null, results });
+  } catch (err) {
+    console.error('[hires] Resend pre-bond error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/hires/last-webhook — inspect what Shopify last sent the webhook
+// Reads the raw payload dump the webhook saves for every request
+router.get('/last-webhook', (_req, res) => {
+  try {
+    const p = join(__dirname, '..', '..', 'data', 'last-webhook-payload.json');
+    if (!existsSync(p)) return res.json({ ok: false, reason: 'No webhook payload recorded yet' });
+    const fs = require('fs');
+    const raw = JSON.parse(fs.readFileSync(p, 'utf8'));
+    res.json({
+      ok: true,
+      orderName: raw.name,
+      orderId: raw.id,
+      email: raw.email,
+      createdAt: raw.created_at,
+      lineItems: (raw.line_items || []).map(li => ({ product_id: li.product_id, title: li.title, qty: li.quantity })),
+      noteAttributes: raw.note_attributes || [],
+      lineItemProperties: (raw.line_items || []).flatMap(li => (li.properties || []).map(p => ({ item: li.title, name: p.name, value: p.value }))),
+    });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
 export default router;
