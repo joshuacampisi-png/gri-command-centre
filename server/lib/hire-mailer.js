@@ -202,9 +202,37 @@ const TEMPLATES = {
   contract: buildContractEmail,
 };
 
+// Send via Resend's native HTTP API — far more reliable than SMTP on
+// Railway/serverless runtimes, which frequently block outbound port 465.
+// Returns { messageId } on success, throws on hard failure so the
+// caller's try/catch fires telegramFallback.
+async function sendViaResendHttp({ from, to, bcc, subject, text }) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) throw new Error('RESEND_API_KEY not set');
+
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ from, to, bcc, subject, text }),
+    signal: AbortSignal.timeout(15000),
+  });
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(`Resend HTTP ${res.status}: ${body.message || body.error || JSON.stringify(body).slice(0, 200)}`);
+  }
+  return { messageId: body.id || `resend-${Date.now()}` };
+}
+
 /**
- * Send an email to a hire customer via Gmail SMTP or Resend SMTP.
- * Falls back to Telegram notification if sending fails.
+ * Send an email to a hire customer.
+ * Preferred path: Resend HTTP API (if RESEND_API_KEY is set).
+ * Fallback: Gmail SMTP or Resend SMTP via nodemailer.
+ * Last resort: Telegram notification to Josh with the full message.
+ *
  * @param {string} type - confirmation | bond_link | refund | withheld | contract
  * @param {object} hire - the hire record
  * @param {*} [extraData] - payment URL for bond_link, signing URL for contract
@@ -215,12 +243,26 @@ export async function sendHireEmail(type, hire, extraData) {
   if (!builder) throw new Error(`Unknown email type: ${type}`);
 
   const { subject, text } = builder(hire, extraData);
+  const bcc = process.env.GMAIL_USER || process.env.RESEND_FROM_EMAIL || 'hello@genderrevealideas.com.au';
 
+  // ── Primary: Resend HTTP API ────────────────────────────────
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const fromName = process.env.GMAIL_FROM_NAME || 'Gender Reveal Ideas';
+      const fromEmail = process.env.RESEND_FROM_EMAIL || process.env.GMAIL_USER || 'hello@genderrevealideas.com.au';
+      const from = `${fromName} <${fromEmail}>`;
+      const result = await sendViaResendHttp({ from, to: hire.customerEmail, bcc, subject, text });
+      console.log(`[hire-mailer] Sent ${type} email via Resend HTTP to ${hire.customerEmail} — id: ${result.messageId}`);
+      return result;
+    } catch (err) {
+      console.error(`[hire-mailer] Resend HTTP failed for ${type} to ${hire.customerEmail}: ${err.message} — falling back to SMTP`);
+    }
+  }
+
+  // ── Fallback: nodemailer SMTP ───────────────────────────────
   try {
     const transport = getTransport();
     const fromAddr = getFromAddress();
-    const bcc = process.env.GMAIL_USER || process.env.RESEND_FROM_EMAIL || 'hello@genderrevealideas.com.au';
-
     const info = await transport.sendMail({
       from: fromAddr,
       to: hire.customerEmail,
@@ -228,11 +270,10 @@ export async function sendHireEmail(type, hire, extraData) {
       subject,
       text,
     });
-
-    console.log(`[hire-mailer] Sent ${type} email via ${_provider} to ${hire.customerEmail} — messageId: ${info.messageId}`);
+    console.log(`[hire-mailer] Sent ${type} email via ${_provider} SMTP to ${hire.customerEmail} — messageId: ${info.messageId}`);
     return { messageId: info.messageId };
   } catch (err) {
-    console.error(`[hire-mailer] Send failed for ${type} to ${hire.customerEmail}:`, err.message);
+    console.error(`[hire-mailer] SMTP send failed for ${type} to ${hire.customerEmail}:`, err.message);
     await telegramFallback(type, hire, subject, text, err.message);
     return { messageId: `telegram-fallback-${Date.now()}` };
   }
