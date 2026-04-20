@@ -626,6 +626,36 @@ router.post('/resend-pre-bond-by-order', async (req, res) => {
   }
 });
 
+// POST /api/hires/convert-to-historical-by-order — flip a hire to historical state
+// (event already happened, no further automation). NO emails sent, NO contract fired.
+// Use when a past-event hire slipped through the normal flow.
+router.post('/convert-to-historical-by-order', async (req, res) => {
+  try {
+    const { orderNumber } = req.body || {};
+    if (!orderNumber) return res.status(400).json({ error: 'orderNumber required' });
+    const normalised = String(orderNumber).replace(/^#/, '');
+    const hire = getAll().find(h => h.orderNumber === `#${normalised}` || h.orderNumber === normalised);
+    if (!hire) return res.status(404).json({ error: `No hire for order ${normalised}` });
+
+    update(hire.id, {
+      status: 'returned',
+      bondStatus: 'paid',
+      bondPaymentId: hire.bondPaymentId || 'historical_backfill',
+      bondPaidAt: hire.bondPaidAt || hire.createdAt,
+      contractStatus: 'signed',
+      contractSentAt: hire.contractSentAt || hire.createdAt,
+      contractSignedAt: hire.contractSignedAt || hire.createdAt,
+      emailSent: true,
+      historical: true,
+      historicalBackfillAt: new Date().toISOString(),
+    });
+
+    res.json({ ok: true, orderNumber: hire.orderNumber, customerName: hire.customerName });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /api/hires/mark-bond-paid-by-order — manually mark bond as paid
 // for a hire matched by order number + auto-send the contract email.
 // Use this when Square webhook didn't fire but you've confirmed payment.
