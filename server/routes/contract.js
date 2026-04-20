@@ -7,6 +7,7 @@ import { generateContractPdf } from '../lib/contract-generator.js';
 import { getHireDates } from '../lib/date-helpers.js';
 import { notifyTNTEvent } from '../lib/tnt-telegram.js';
 import { verifyOrderToken } from '../lib/contract-signing-token.js';
+import { getGriLogoDataUri } from '../lib/gri-logo-data-uri.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const CONTRACTS_DIR = join(__dirname, '..', '..', 'data', 'contracts');
@@ -230,7 +231,7 @@ router.get('/:hireId/sign', (req, res) => {
 <body>
   <div class="container">
     <div class="brand">
-      <img src="https://genderrevealideas.com.au/cdn/shop/files/GRI_Logo_Horizontal_Transparent_v2.png?v=1704592121&width=460" alt="Gender Reveal Ideas" />
+      <img src="${getGriLogoDataUri()}" alt="Gender Reveal Ideas" />
     </div>
 
     <div class="title-block">
