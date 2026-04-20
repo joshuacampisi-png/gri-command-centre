@@ -7,6 +7,7 @@ import { createBondPaymentLink, refundBondPayment } from '../lib/square-client.j
 import { sendHireEmail } from '../lib/hire-mailer.js';
 import { notifyTNTEvent } from '../lib/tnt-telegram.js';
 import { env } from '../lib/env.js';
+import { buildSigningUrl } from '../lib/contract-signing-token.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const router = Router();
@@ -380,10 +381,10 @@ router.post('/:id/mark-bond-paid', async (req, res) => {
  * Internal helper to generate signing URL, send contract email, and update hire.
  */
 async function sendContractInternal(hire) {
-  const baseUrl = process.env.BASE_URL || `http://127.0.0.1:${process.env.PORT || 8787}`;
-  // Use order number (stable across environments) instead of hire.id (environment-specific)
+  // New token-signed URL format lives outside /api/ so it doesn't inherit
+  // any Basic-auth cache state on the dashboard domain. Safe for customers.
   const orderNum = (hire.orderNumber || '').replace(/^#/, '');
-  const signingUrl = `${baseUrl}/api/contract/${orderNum}/sign`;
+  const signingUrl = buildSigningUrl(orderNum);
 
   await sendHireEmail('contract', hire, signingUrl);
 
@@ -525,9 +526,8 @@ router.post('/resend-contract-by-order', async (req, res) => {
 
     if (testEmail) {
       // Send to test email without updating hire status
-      const baseUrl = process.env.BASE_URL || `http://127.0.0.1:${process.env.PORT || 8787}`;
       const orderNum = (hire.orderNumber || '').replace(/^#/, '');
-      const signingUrl = `${baseUrl}/api/contract/${orderNum}/sign`;
+      const signingUrl = buildSigningUrl(orderNum);
       const testHire = { ...hire, customerEmail: testEmail };
       await sendHireEmail('contract', testHire, signingUrl);
       return res.json({ ok: true, testEmail, orderNumber: hire.orderNumber, signingUrl, note: 'Test email sent — hire status NOT updated' });

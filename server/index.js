@@ -134,6 +134,8 @@ if (DASHBOARD_PASSWORD && DASHBOARD_PASSWORD !== 'changeme') {
     '/api/hires/diag-by-order',
     '/api/hires/last-webhook',
     '/api/hires/reset-contract',
+    '/sign/',
+    '/signed',
   ]
   const PUBLIC_EXACT = [
     '/api/instagram/disk-usage', '/api/instagram/cleanup-media',
@@ -144,7 +146,19 @@ if (DASHBOARD_PASSWORD && DASHBOARD_PASSWORD !== 'changeme') {
     return PUBLIC_PREFIXES.some(prefix => p.startsWith(prefix))
   }
 
+  // Hosts that should NEVER be auth-gated (for customer-facing subdomains
+  // like contracts.genderrevealideas.com.au when Josh sets up the CNAME).
+  // Matches are hostname prefixes.
+  const NO_AUTH_HOSTS = ['contracts.', 'sign.', 'signing.']
+
   app.use((req, res, next) => {
+    // 1. Customer-facing hostnames bypass auth entirely
+    const host = (req.headers.host || '').toLowerCase()
+    if (NO_AUTH_HOSTS.some(h => host.startsWith(h))) {
+      res.removeHeader('WWW-Authenticate')
+      return next()
+    }
+    // 2. Public paths bypass auth
     if (isPublicPath(req.path)) return next()
     const auth = req.headers.authorization
     if (!auth || !auth.startsWith('Basic ')) {
@@ -166,9 +180,51 @@ if (DASHBOARD_PASSWORD && DASHBOARD_PASSWORD !== 'changeme') {
     res.removeHeader('WWW-Authenticate')
     next()
   })
+  app.use('/sign', (_req, res, next) => {
+    res.removeHeader('WWW-Authenticate')
+    next()
+  })
+  app.use('/signed', (_req, res, next) => {
+    res.removeHeader('WWW-Authenticate')
+    next()
+  })
 
   console.log('🔒 Dashboard password protection: ACTIVE')
 }
+
+// Token-verified signing URLs: /sign/:orderNumber/:token
+// This path lives OUTSIDE /api/ so browsers that have cached Basic auth
+// challenges on /api/* don't replay prompts here. The token is HMAC-SHA256
+// of orderNumber + expiry, so URLs can't be guessed or reused after expiry.
+import('./lib/contract-signing-token.js').then(({ verifyOrderToken }) => {
+  import('./lib/hire-store.js').then(({ getAll }) => {
+    app.get('/sign/:orderNumber/:token', (req, res, next) => {
+      const { orderNumber, token } = req.params
+      const v = verifyOrderToken(orderNumber, token)
+      if (!v.ok) {
+        return res.status(403).type('html').send(
+          `<h1>Link expired or invalid</h1><p>Please contact Gender Reveal Ideas on 0406860077 to get a fresh signing link.</p>`
+        )
+      }
+      const hire = getAll().find(h => h.orderNumber === `#${orderNumber}` || h.orderNumber === orderNumber)
+      if (!hire) return res.status(404).send('Hire not found')
+      // Rewrite to the existing contract GET route so we reuse the HTML
+      req.url = `/api/contract/${encodeURIComponent(hire.id)}/sign`
+      next()
+    })
+
+    // Token-verified signing submission
+    app.post('/sign/:orderNumber/:token', express.json(), (req, res, next) => {
+      const { orderNumber, token } = req.params
+      const v = verifyOrderToken(orderNumber, token)
+      if (!v.ok) return res.status(403).json({ ok: false, error: 'Token invalid or expired' })
+      const hire = getAll().find(h => h.orderNumber === `#${orderNumber}` || h.orderNumber === orderNumber)
+      if (!hire) return res.status(404).json({ ok: false, error: 'Hire not found' })
+      req.url = `/api/contract/${encodeURIComponent(hire.id)}/sign`
+      next()
+    })
+  })
+})
 // Capture raw body for Shopify webhook HMAC verification
 app.use('/api/shopify/webhook', express.json({
   verify: (req, _res, buf) => { req.rawBody = buf.toString('utf8'); }

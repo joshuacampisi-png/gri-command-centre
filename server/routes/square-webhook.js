@@ -4,6 +4,7 @@ import { getAll, getById, update } from '../lib/hire-store.js';
 import { sendHireEmail } from '../lib/hire-mailer.js';
 import { notifyTNTEvent } from '../lib/tnt-telegram.js';
 import { env } from '../lib/env.js';
+import { buildSigningUrl } from '../lib/contract-signing-token.js';
 
 const router = Router();
 
@@ -13,8 +14,8 @@ const JOSH_CHAT = '8040702286';
  * Send contract email after bond is paid.
  */
 async function sendContractAfterBond(hire) {
-  const baseUrl = process.env.BASE_URL || `http://127.0.0.1:${process.env.PORT || 8787}`;
-  const signingUrl = `${baseUrl}/api/contract/${hire.id}/sign`;
+  const orderNum = (hire.orderNumber || '').replace(/^#/, '');
+  const signingUrl = buildSigningUrl(orderNum);
 
   await sendHireEmail('contract', hire, signingUrl);
 

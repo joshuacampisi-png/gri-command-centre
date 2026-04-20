@@ -51,8 +51,9 @@ async function checkPendingBonds() {
 
       // Auto-send contract
       const updatedHire = getById(hire.id)
-      const baseUrl = process.env.BASE_URL || process.env.RAILWAY_PUBLIC_URL || `http://127.0.0.1:${process.env.PORT || 8787}`
-      const signingUrl = `${baseUrl}/api/contract/${hire.id}/sign`
+      const { buildSigningUrl } = await import('./contract-signing-token.js')
+      const orderNum = (hire.orderNumber || '').replace(/^#/, '')
+      const signingUrl = buildSigningUrl(orderNum)
 
       try {
         await sendHireEmail('contract', updatedHire, signingUrl)
