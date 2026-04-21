@@ -142,6 +142,7 @@ if (DASHBOARD_PASSWORD && DASHBOARD_PASSWORD !== 'changeme') {
     '/favicon',
     '/robots.txt',
     '/manifest.json',
+    '/api/shopify/shipping-costs-diag',
   ]
   const PUBLIC_EXACT = [
     '/api/instagram/disk-usage', '/api/instagram/cleanup-media',

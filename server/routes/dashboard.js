@@ -311,12 +311,19 @@ function loadShippingCosts() {
 }
 
 function saveShippingCosts(data) {
+  // Throws on any write failure so the POST handler can return ok:false.
+  // Previously errors were swallowed and the response still said ok:true —
+  // so a failed write looked identical to a successful one client-side and
+  // the amount appeared to vanish on refresh.
   writeFileSync(SHIPPING_COSTS_FILE, JSON.stringify(data, null, 2))
+  // Round-trip read to verify the write actually landed on disk.
+  const verify = JSON.parse(readFileSync(SHIPPING_COSTS_FILE, 'utf8'))
+  return verify
 }
 
 router.get('/shopify/shipping-costs', (_req, res) => {
   const costs = loadShippingCosts()
-  res.json({ ok: true, costs })
+  res.json({ ok: true, costs, file: SHIPPING_COSTS_FILE })
 })
 
 router.post('/shopify/shipping-costs', (req, res) => {
@@ -324,10 +331,43 @@ router.post('/shopify/shipping-costs', (req, res) => {
   if (!weekStart || cost === undefined) {
     return res.status(400).json({ ok: false, error: 'weekStart and cost required' })
   }
-  const costs = loadShippingCosts()
-  costs[weekStart] = { cost: parseFloat(cost) || 0, updatedAt: new Date().toISOString() }
-  saveShippingCosts(costs)
-  res.json({ ok: true, costs })
+  try {
+    const costs = loadShippingCosts()
+    const parsed = parseFloat(cost)
+    if (Number.isNaN(parsed)) {
+      return res.status(400).json({ ok: false, error: `Invalid cost: ${cost}` })
+    }
+    costs[weekStart] = { cost: parsed, updatedAt: new Date().toISOString() }
+    const verified = saveShippingCosts(costs)
+    if (!verified[weekStart] || verified[weekStart].cost !== parsed) {
+      return res.status(500).json({ ok: false, error: 'Write did not persist — file round-trip mismatch', file: SHIPPING_COSTS_FILE })
+    }
+    console.log(`[shipping-costs] Saved ${weekStart} = $${parsed} → ${SHIPPING_COSTS_FILE}`)
+    return res.json({ ok: true, costs: verified, file: SHIPPING_COSTS_FILE })
+  } catch (e) {
+    console.error('[shipping-costs] Save error:', e.message, e.stack)
+    return res.status(500).json({ ok: false, error: e.message, file: SHIPPING_COSTS_FILE })
+  }
+})
+
+// Public diag — verify persistence on Railway without dashboard auth
+router.get('/shopify/shipping-costs-diag', (_req, res) => {
+  try {
+    const exists = existsSync(SHIPPING_COSTS_FILE)
+    const costs = loadShippingCosts()
+    const size = exists ? readFileSync(SHIPPING_COSTS_FILE, 'utf8').length : 0
+    res.json({
+      ok: true,
+      file: SHIPPING_COSTS_FILE,
+      exists,
+      size,
+      weekCount: Object.keys(costs).length,
+      volumeMountPath: process.env.RAILWAY_VOLUME_MOUNT_PATH || '(none)',
+      sample: Object.entries(costs).slice(0, 5),
+    })
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message })
+  }
 })
 
 router.delete('/shopify/shipping-costs', (req, res) => {

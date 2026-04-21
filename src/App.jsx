@@ -236,7 +236,16 @@ function OverviewPage({ data, company }) {
 
   const saveShippingCost = async () => {
     const { from } = getWedTueWeek(shippingWeekOffset)
-    const cost = parseFloat(shippingCostInput) || 0
+    const raw = (shippingCostInput ?? '').toString().trim()
+    if (raw === '') {
+      alert('Enter a shipping cost amount first.')
+      return
+    }
+    const cost = parseFloat(raw)
+    if (Number.isNaN(cost) || cost < 0) {
+      alert(`"${raw}" isn't a valid amount.`)
+      return
+    }
     setShippingCostSaving(true)
     try {
       const res = await fetch('/api/shopify/shipping-costs', {
@@ -245,11 +254,18 @@ function OverviewPage({ data, company }) {
         body: JSON.stringify({ weekStart: from, cost })
       })
       const d = await res.json()
-      if (d.ok) setShippingCosts(d.costs)
+      if (res.ok && d.ok) {
+        setShippingCosts(d.costs)
+      } else {
+        console.error('Shipping cost save failed:', d)
+        alert(`Save failed: ${d.error || 'unknown error'} (HTTP ${res.status})`)
+      }
     } catch (e) {
       console.error('Save shipping cost error:', e)
+      alert(`Save failed: ${e.message}`)
+    } finally {
+      setShippingCostSaving(false)
     }
-    setShippingCostSaving(false)
   }
 
   const clearShippingCost = async () => {
