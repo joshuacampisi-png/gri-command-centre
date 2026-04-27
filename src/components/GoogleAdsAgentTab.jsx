@@ -90,7 +90,19 @@ function GoogleLogo({ size = 38 }) {
 // ═══════════════════════════════════════════════════════════════════════════
 
 export function GoogleAdsAgentTab() {
-  const [activeTab, setActiveTab]   = useState('findings')
+  const [activeTab, setActiveTab]   = useState('engine')
+  const [engine, setEngine]         = useState(null)
+  const [engineLoading, setEngineLoading] = useState(false)
+  const [engineError, setEngineError] = useState(null)
+  const [engineRefreshedAt, setEngineRefreshedAt] = useState(null)
+  const [engineSendingTg, setEngineSendingTg] = useState(false)
+  const [searchTerms, setSearchTerms] = useState(null)
+  const [productHealth, setProductHealth] = useState(null)
+  const [activeTests, setActiveTests] = useState([])
+  const [anomalies, setAnomalies] = useState(null)
+  const [pacing, setPacing] = useState(null)
+  const [heatmap, setHeatmap] = useState(null)
+  const [engineFramework, setEngineFramework] = useState(null)
   const [status, setStatus]         = useState(null)
   const [recs, setRecs]             = useState([])
   const [needsReview, setNeedsReview] = useState([]) // preflight-blocked cards
@@ -157,6 +169,68 @@ export function GoogleAdsAgentTab() {
   }, [])
 
   useEffect(() => { fetchAll() }, [fetchAll])
+
+  // ── Engine fetcher ─────────────────────────────────────────────────────
+  const fetchEngine = useCallback(async ({ fresh = false } = {}) => {
+    setEngineLoading(true)
+    setEngineError(null)
+    try {
+      const r = await fetch(`${API}/engine${fresh ? '?fresh=1' : ''}`).then(x => x.json())
+      if (r.ok) {
+        setEngine(r.snapshot)
+        setEngineRefreshedAt(new Date().toISOString())
+      } else {
+        setEngineError(r.error || 'Engine fetch failed')
+      }
+    } catch (err) {
+      setEngineError(err.message)
+    } finally {
+      setEngineLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (activeTab !== 'engine') return
+    fetchEngine()
+    fetchEngineExtras()
+    const t = setInterval(() => { fetchEngine(); fetchEngineExtras() }, 5 * 60 * 1000)
+    return () => clearInterval(t)
+  }, [activeTab, fetchEngine])
+
+  const fetchEngineExtras = useCallback(async ({ fresh = false } = {}) => {
+    try {
+      const q = fresh ? '?fresh=1' : ''
+      const [st, ph, tests, anom, pac, heat, fw] = await Promise.all([
+        fetch(`${API}/engine/search-terms${q}`).then(r => r.json()).catch(() => null),
+        fetch(`${API}/engine/product-health${q}`).then(r => r.json()).catch(() => null),
+        fetch(`${API}/engine/tests`).then(r => r.json()).catch(() => null),
+        fetch(`${API}/engine/anomalies${q}`).then(r => r.json()).catch(() => null),
+        fetch(`${API}/engine/pacing${q}`).then(r => r.json()).catch(() => null),
+        fetch(`${API}/engine/heatmap${q}`).then(r => r.json()).catch(() => null),
+        fetch(`${API}/framework-metrics?days=30`).then(r => r.json()).catch(() => null),
+      ])
+      if (st?.ok) setSearchTerms(st.data)
+      if (ph?.ok) setProductHealth(ph.data)
+      if (tests?.ok) setActiveTests(tests.tests || [])
+      if (anom?.ok) setAnomalies(anom.data)
+      if (pac?.ok) setPacing(pac.data)
+      if (heat?.ok) setHeatmap(heat.data)
+      if (fw?.ok) setEngineFramework(fw.metrics)
+    } catch (err) { /* silent */ }
+  }, [])
+
+  async function sendEngineToTelegram() {
+    setEngineSendingTg(true)
+    try {
+      const r = await fetch(`${API}/engine/send-telegram`, { method: 'POST' }).then(x => x.json())
+      if (r.ok && r.result?.ok) showToast('ok', 'Engine debrief sent to Telegram')
+      else showToast('error', r.result?.reason || r.error || 'Telegram send failed')
+    } catch (err) {
+      showToast('error', err.message)
+    } finally {
+      setEngineSendingTg(false)
+    }
+  }
 
   // Re-fetch campaigns + summary when the metrics window changes
   async function fetchMetricsForWindow(days) {
@@ -416,6 +490,7 @@ export function GoogleAdsAgentTab() {
   }, [headlineRecs])
 
   const TABS = [
+    { key: 'engine',    label: '🚦 Engine' },
     { key: 'findings',  label: 'Findings', count: headlineRecs.length + (zeroImpressionGroup ? 1 : 0) },
     { key: 'needs-review', label: 'Needs Review', count: needsReview.length },
     { key: 'campaigns', label: 'Campaigns', count: campaigns?.campaigns?.length || 0 },
@@ -645,6 +720,24 @@ export function GoogleAdsAgentTab() {
       </nav>
 
       <div className="gads-panel">
+        {activeTab === 'engine' && (
+          <EnginePanel
+            engine={engine}
+            loading={engineLoading}
+            error={engineError}
+            refreshedAt={engineRefreshedAt}
+            onRefresh={() => { fetchEngine({ fresh: true }); fetchEngineExtras({ fresh: true }) }}
+            onSendTelegram={sendEngineToTelegram}
+            sendingTg={engineSendingTg}
+            searchTerms={searchTerms}
+            productHealth={productHealth}
+            activeTests={activeTests}
+            anomalies={anomalies}
+            pacing={pacing}
+            heatmap={heatmap}
+            framework={engineFramework}
+          />
+        )}
         {activeTab === 'findings' && (
           <ActionsPanel
             recs={filteredRecs}
@@ -4477,4 +4570,768 @@ const styleSheet = `
   .gads-title { font-size: 34px; }
   .gads-potential-value { font-size: 26px; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ENGINE PANEL — single-glance dashboard
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.engine-root { display: flex; flex-direction: column; gap: 24px; }
+
+.engine-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px; background: rgba(255,255,255,0.02);
+}
+.engine-toolbar-left { display: flex; flex-direction: column; gap: 4px; }
+.engine-toolbar-title {
+  font-family: Fraunces, serif; font-size: 22px; font-weight: 500;
+  letter-spacing: -0.01em; color: #f4f4f6;
+}
+.engine-toolbar-sub { font-size: 12px; color: #8b8f9c; font-family: 'IBM Plex Sans', sans-serif; }
+.engine-toolbar-right { display: flex; gap: 10px; }
+.engine-btn {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+  color: #f4f4f6; padding: 8px 14px; border-radius: 8px; cursor: pointer;
+  font-size: 12px; font-family: 'IBM Plex Sans', sans-serif; font-weight: 500;
+  transition: background 120ms;
+}
+.engine-btn:hover { background: rgba(255,255,255,0.08); }
+.engine-btn.primary { background: #4285F4; border-color: #4285F4; color: white; }
+.engine-btn.primary:hover { background: #3373db; }
+.engine-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.engine-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+}
+.engine-stat {
+  padding: 16px; border-radius: 12px;
+  background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.06);
+}
+.engine-stat-label { font-size: 11px; color: #8b8f9c; text-transform: uppercase; letter-spacing: 0.06em; }
+.engine-stat-value { font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 500; margin-top: 6px; color: #f4f4f6; }
+.engine-stat-sub { font-size: 11px; color: #6c7079; margin-top: 4px; font-family: 'IBM Plex Sans', sans-serif; }
+.engine-stat.green { border-left: 3px solid #34A853; }
+.engine-stat.red { border-left: 3px solid #EA4335; }
+.engine-stat.yellow { border-left: 3px solid #FBBC04; }
+.engine-stat.blue { border-left: 3px solid #4285F4; }
+
+.engine-section {
+  padding: 18px 20px; border-radius: 14px;
+  background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
+}
+.engine-section-title {
+  font-family: Fraunces, serif; font-size: 16px; font-weight: 500;
+  color: #f4f4f6; margin-bottom: 14px; letter-spacing: -0.01em;
+  display: flex; justify-content: space-between; align-items: baseline;
+}
+.engine-section-meta { font-size: 11px; color: #6c7079; font-family: 'IBM Plex Sans', sans-serif; font-weight: 400; }
+
+.engine-camp-row {
+  display: grid; grid-template-columns: 1.6fr 90px 90px 90px 90px 90px;
+  gap: 10px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 13px; align-items: center;
+}
+.engine-camp-row.header { color: #6c7079; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+.engine-camp-name { font-weight: 500; color: #f4f4f6; }
+.engine-camp-name .status-pill {
+  font-size: 10px; padding: 2px 7px; border-radius: 4px; margin-left: 6px;
+  font-family: 'IBM Plex Sans', sans-serif; font-weight: 500;
+}
+.engine-camp-name .status-pill.enabled { background: rgba(52,168,83,0.15); color: #34A853; }
+.engine-camp-name .status-pill.paused  { background: rgba(255,255,255,0.06); color: #8b8f9c; }
+.engine-camp-num { font-family: 'JetBrains Mono', monospace; text-align: right; }
+.engine-camp-num.green { color: #34A853; }
+.engine-camp-num.red { color: #EA4335; }
+.engine-camp-num.yellow { color: #FBBC04; }
+
+.engine-recovery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.engine-recovery-row {
+  display: grid; grid-template-columns: 1.4fr 80px 80px 110px;
+  gap: 8px; padding: 8px 12px; border-radius: 8px;
+  background: rgba(255,255,255,0.02); font-size: 12px; align-items: center;
+}
+.engine-recovery-title { font-size: 12px; color: #f4f4f6; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.engine-recovery-num { font-family: 'JetBrains Mono', monospace; text-align: right; color: #c9ccd3; }
+.engine-recovery-bar {
+  height: 6px; border-radius: 3px; background: rgba(255,255,255,0.06); overflow: hidden;
+  position: relative;
+}
+.engine-recovery-bar-fill {
+  height: 100%; transition: width 600ms ease-out;
+}
+.engine-recovery-bar-fill.recovered { background: #34A853; }
+.engine-recovery-bar-fill.recovering { background: #FBBC04; }
+.engine-recovery-bar-fill.not-recovered { background: #EA4335; }
+.engine-recovery-bar-fill.no-data { background: #6c7079; }
+
+.engine-trigger {
+  display: grid; grid-template-columns: 1fr auto auto;
+  gap: 14px; padding: 12px 14px; border-radius: 8px;
+  background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
+  margin-bottom: 8px; align-items: center;
+}
+.engine-trigger.ready { border-color: #FBBC04; background: rgba(251,188,4,0.05); }
+.engine-trigger-title { font-weight: 500; color: #f4f4f6; font-size: 13px; }
+.engine-trigger-desc { font-size: 11px; color: #8b8f9c; margin-top: 2px; }
+.engine-trigger-days { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #c9ccd3; }
+.engine-trigger-status {
+  font-size: 10px; padding: 4px 8px; border-radius: 4px; font-family: 'IBM Plex Sans', sans-serif;
+}
+.engine-trigger-status.watch { background: rgba(66,133,244,0.15); color: #4285F4; }
+.engine-trigger-status.ready { background: rgba(251,188,4,0.18); color: #FBBC04; }
+
+.engine-mover {
+  display: grid; grid-template-columns: 1fr 90px 80px;
+  gap: 8px; padding: 6px 10px; border-radius: 6px;
+  font-size: 12px; align-items: center;
+}
+.engine-mover:nth-child(odd) { background: rgba(255,255,255,0.015); }
+.engine-mover-title { color: #c9ccd3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.engine-mover-num { font-family: 'JetBrains Mono', monospace; text-align: right; }
+.engine-mover-num.up { color: #34A853; }
+.engine-mover-num.down { color: #EA4335; }
+
+.engine-change {
+  display: grid; grid-template-columns: 90px 1fr;
+  gap: 12px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 12px;
+}
+.engine-change:last-child { border-bottom: none; }
+.engine-change-date { color: #6c7079; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+.engine-change-content { display: flex; flex-direction: column; gap: 2px; }
+.engine-change-title { color: #f4f4f6; font-weight: 500; }
+.engine-change-detail { color: #8b8f9c; font-size: 11px; }
+.engine-change-incident { color: #EA4335; }
+.engine-change-revert   { color: #FBBC04; }
+.engine-change-pause    { color: #8b8f9c; }
+.engine-change-config   { color: #4285F4; }
+
+.engine-spark {
+  display: flex; gap: 3px; align-items: flex-end; height: 50px; padding-top: 8px;
+}
+.engine-spark-bar {
+  flex: 1; min-width: 8px; border-radius: 3px 3px 0 0; transition: opacity 120ms;
+  position: relative;
+}
+.engine-spark-bar:hover { opacity: 0.7; }
+.engine-spark-bar.weekend { opacity: 0.5; }
+
+.engine-loading, .engine-error {
+  text-align: center; padding: 40px; color: #8b8f9c; font-size: 14px;
+}
+.engine-error { color: #EA4335; }
+
+@media (max-width: 1100px) {
+  .engine-grid { grid-template-columns: repeat(2, 1fr); }
+  .engine-recovery-grid { grid-template-columns: 1fr; }
+}
 `
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  EnginePanel — single-glance dashboard
+// ═══════════════════════════════════════════════════════════════════════════
+
+function EnginePanel({ engine, loading, error, refreshedAt, onRefresh, onSendTelegram, sendingTg, searchTerms, productHealth, activeTests, anomalies, pacing, heatmap, framework }) {
+  if (loading && !engine) return <div className="engine-loading">Loading the Engine…</div>
+  if (error) return <div className="engine-error">{error}</div>
+  if (!engine) return <div className="engine-loading">No data</div>
+
+  const fmt$ = (n) => '$' + Math.round(n || 0).toLocaleString('en-AU')
+  const fmtRoas = (r) => (r || 0).toFixed(2) + 'x'
+  const fmtPct = (p) => (p == null ? '—' : Math.round(p * 100) + '%')
+
+  const today = engine.today
+  const yest = engine.yesterday
+  const w7 = engine.windows.last7
+  const w30 = engine.windows.last30
+
+  const roasColour = (r) => r >= 3 ? 'green' : r >= 2.13 ? 'yellow' : 'red'
+
+  return (
+    <div className="engine-root">
+      {/* Toolbar */}
+      <div className="engine-toolbar">
+        <div className="engine-toolbar-left">
+          <div className="engine-toolbar-title">🚦 GRI Dominance Engine</div>
+          <div className="engine-toolbar-sub">
+            {refreshedAt ? `Refreshed ${new Date(refreshedAt).toLocaleTimeString('en-AU')}` : '—'}
+            {engine.fromCache && ' · cached'}
+            {' · '}Daily 6am AEST → Telegram
+          </div>
+        </div>
+        <div className="engine-toolbar-right">
+          <button className="engine-btn" disabled={loading} onClick={onRefresh}>
+            {loading ? 'Refreshing…' : 'Refresh'}
+          </button>
+          <button className="engine-btn primary" disabled={sendingTg} onClick={onSendTelegram}>
+            {sendingTg ? 'Sending…' : '📲 Send to Telegram'}
+          </button>
+        </div>
+      </div>
+
+      {/* ─── LAYER 1 — PROFITABILITY SCOREBOARD ─────────────────────────
+           Per Corey Wilton framework: ALWAYS lead with CM$.
+           This is the bottom line, not channel ROAS. */}
+      {framework && framework.layer1 && (
+        <div className="engine-section" style={{
+          borderColor: framework.layer1.cm.status === 'red' ? '#EA4335' : framework.layer1.cm.status === 'amber' ? '#FBBC04' : '#34A853',
+          background: framework.layer1.cm.status === 'red' ? 'rgba(234,67,53,0.06)' : 'rgba(52,168,83,0.04)',
+          borderLeft: `4px solid ${framework.layer1.cm.status === 'red' ? '#EA4335' : framework.layer1.cm.status === 'amber' ? '#FBBC04' : '#34A853'}`,
+        }}>
+          <div className="engine-section-title">
+            🏁 Layer 1 — Profitability Scoreboard (30d)
+            <span className="engine-section-meta">CM$ · Cost of Delivery · The bottom line — never lead with anything else</span>
+          </div>
+          <div className="engine-grid">
+            <div className={`engine-stat ${framework.layer1.cm.status === 'red' ? 'red' : framework.layer1.cm.status === 'amber' ? 'yellow' : 'green'}`} style={{ gridColumn: 'span 2' }}>
+              <div className="engine-stat-label">Contribution Margin (CM$)</div>
+              <div className="engine-stat-value" style={{ fontSize: 36 }}>
+                {framework.layer1.cm.value < 0 ? '−' : ''}${Math.abs(Math.round(framework.layer1.cm.value || 0)).toLocaleString('en-AU')}
+              </div>
+              <div className="engine-stat-sub">
+                {framework.layer1.cm.value < 0 ? '🚨 LOSING ' : ''}${Math.abs(Math.round(framework.layer1.cm.perDay || 0)).toLocaleString('en-AU')}/day · Net Sales − Cost of Delivery − Ad Spend
+              </div>
+            </div>
+            <div className="engine-stat">
+              <div className="engine-stat-label">Cost of Delivery</div>
+              <div className="engine-stat-value">${Math.round(framework.layer1.costOfDelivery.total || 0).toLocaleString('en-AU')}</div>
+              <div className="engine-stat-sub">COGS ${Math.round(framework.layer1.costOfDelivery.cogs || 0).toLocaleString('en-AU')} · Ship ${Math.round(framework.layer1.costOfDelivery.shipping || 0).toLocaleString('en-AU')} · Fees ${Math.round(framework.layer1.costOfDelivery.paymentFees || 0).toLocaleString('en-AU')}</div>
+            </div>
+            <div className="engine-stat">
+              <div className="engine-stat-label">Blended Ad Spend</div>
+              <div className="engine-stat-value">${Math.round(framework.spend.blended || 0).toLocaleString('en-AU')}</div>
+              <div className="engine-stat-sub">Google ${Math.round(framework.spend.google || 0).toLocaleString('en-AU')} · Meta ${Math.round(framework.spend.meta || 0).toLocaleString('en-AU')}</div>
+            </div>
+          </div>
+          {framework.layer1.cm.status === 'red' && (
+            <div style={{ marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(234,67,53,0.1)', fontSize: 12, color: '#EA4335' }}>
+              <strong>🚨 CM$ NEGATIVE.</strong> The business is losing money after Cost of Delivery + Ad Spend. Channel ROAS is misleading right now — every other metric is noise until CM$ is positive. This is THE Layer 1 truth Corey Wilton's framework demands as the first thing you see.
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ─── LAYER 3 — CUSTOMER ACQUISITION ──────────────────────────── */}
+      {framework && framework.layer3 && (
+        <div className="engine-section">
+          <div className="engine-section-title">
+            👤 Layer 3 — Customer Acquisition (30d)
+            <span className="engine-section-meta">nCAC · FOV/CAC · aMER · New Customer Count — the truth about acquisition</span>
+          </div>
+          <div className="engine-grid">
+            <div className={`engine-stat ${framework.layer3.ncac.status === 'red' ? 'red' : framework.layer3.ncac.status === 'amber' ? 'yellow' : 'green'}`}>
+              <div className="engine-stat-label">nCAC (true)</div>
+              <div className="engine-stat-value">${Math.round(framework.layer3.ncac.value || 0).toLocaleString('en-AU')}</div>
+              <div className="engine-stat-sub">
+                Baseline ${Math.round(framework.layer3.ncac.historicalAvg || 0)} · Spend ÷ NEW customers · {framework.layer3.ncac.value > framework.layer3.ncac.historicalAvg * 2 ? '🚨 2× baseline' : framework.layer3.ncac.value > framework.layer3.ncac.historicalAvg * 1.45 ? '⚠ 45% above' : 'within range'}
+              </div>
+            </div>
+            <div className={`engine-stat ${framework.layer3.fovCac.status === 'red' ? 'red' : framework.layer3.fovCac.status === 'amber' ? 'yellow' : 'green'}`}>
+              <div className="engine-stat-label">FOV/CAC</div>
+              <div className="engine-stat-value">{(framework.layer3.fovCac.value || 0).toFixed(2)}×</div>
+              <div className="engine-stat-sub">
+                {framework.layer3.fovCac.value < 1 ? '🚨 First order doesn\'t cover acquisition' : framework.layer3.fovCac.value < 3 ? 'Marginal — needs LTV' : '✅ Profitable on first order'}
+              </div>
+            </div>
+            <div className={`engine-stat ${framework.layer3.aMer.status === 'red' ? 'red' : framework.layer3.aMer.status === 'amber' ? 'yellow' : 'green'}`}>
+              <div className="engine-stat-label">aMER (Acquisition MER)</div>
+              <div className="engine-stat-value">{(framework.layer3.aMer.value || 0).toFixed(2)}×</div>
+              <div className="engine-stat-sub">
+                New-customer revenue ÷ ad spend · {framework.layer3.aMer.value < 2 ? '🚨 ads re-converting existing customers' : framework.layer3.aMer.value < 5 ? 'borderline acquisition' : '✅ healthy acquisition'}
+              </div>
+            </div>
+            <div className={`engine-stat ${framework.layer3.newCustomerCount.trend === 'red' ? 'red' : framework.layer3.newCustomerCount.trend === 'amber' ? 'yellow' : 'green'}`}>
+              <div className="engine-stat-label">New Customers (30d)</div>
+              <div className="engine-stat-value">{framework.layer3.newCustomerCount.total}</div>
+              <div className="engine-stat-sub">{(framework.layer3.newCustomerCount.dailyAvg || 0).toFixed(1)}/day · WoW {framework.layer3.newCustomerCount.wowChangePct >= 0 ? '+' : ''}{framework.layer3.newCustomerCount.wowChangePct}%</div>
+            </div>
+          </div>
+
+          {/* FOV/CAC pause-trigger banner */}
+          {framework.layer3.fovCac.value < 1 && (
+            <div style={{ marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(234,67,53,0.1)', fontSize: 12, color: '#EA4335' }}>
+              <strong>🚨 FOV/CAC PAUSE GATE.</strong> First-order gross profit ({(framework.layer3.fovCac.value || 0).toFixed(2)}×) doesn't cover acquisition cost. Per framework: {'<'}1.0× for 3 consecutive days = pause-and-investigate trigger. Customer must return for the unit economics to work — verify LTGP justifies it before continuing spend.
+            </div>
+          )}
+
+          {/* Shrinking sponge alert */}
+          {framework.layer3.ncac.status === 'red' && framework.layer3.aMer.value < 2 && (
+            <div style={{ marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(251,188,4,0.08)', fontSize: 12, color: '#FBBC04' }}>
+              <strong>⚠ Shrinking sponge pattern.</strong> nCAC elevated AND aMER below 2× — ad spend is mostly re-converting existing customers, not acquiring new ones. Total ROAS will look fine until existing customer pool is exhausted, then it collapses.
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ─── LAYER 2 — BUSINESS METRICS ───────────────────────────── */}
+      {framework && framework.customer && framework.spend && (
+        <div className="engine-section">
+          <div className="engine-section-title">
+            🏢 Layer 2 — Business
+            <span className="engine-section-meta">Top-line health — revenue, AOV, MER, repeat rate</span>
+          </div>
+          <div className="engine-grid">
+            <div className="engine-stat blue">
+              <div className="engine-stat-label">New Customer Revenue</div>
+              <div className="engine-stat-value">${Math.round(framework.customer.newRevenue || 0).toLocaleString('en-AU')}</div>
+              <div className="engine-stat-sub">From {framework.customer.newCount} new customers</div>
+            </div>
+            <div className="engine-stat blue">
+              <div className="engine-stat-label">First-Order AOV</div>
+              <div className="engine-stat-value">${Math.round(framework.customer.firstOrderAov || 0)}</div>
+              <div className="engine-stat-sub">First-time buyers — separate from blended AOV</div>
+            </div>
+            <div className="engine-stat blue">
+              <div className="engine-stat-label">Repeat Rate</div>
+              <div className="engine-stat-value">{(framework.customer.repeatRate || 0).toFixed(1)}%</div>
+              <div className="engine-stat-sub">{framework.customer.repeatCustomers}/{framework.customer.totalUnique} customers returning</div>
+            </div>
+            <div className="engine-stat blue">
+              <div className="engine-stat-label">Daily Avg Blended Spend</div>
+              <div className="engine-stat-value">${Math.round(framework.spend.dailyAvg || 0)}</div>
+              <div className="engine-stat-sub">Across all paid channels</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Channel header — visually demote everything below this divider as Layer 4 */}
+      <div style={{ padding: '6px 12px', fontSize: 11, color: '#6c7079', textTransform: 'uppercase', letterSpacing: '0.1em', borderTop: '1px dashed rgba(255,255,255,0.08)', marginTop: 6 }}>
+        ─── Layer 4 below — channel diagnostics (proxy indicators only, never the decision metric) ───
+      </div>
+
+      {/* Anomaly alert banner — top priority if any anomalies */}
+      {anomalies && anomalies.counts.total > 0 && (
+        <div className="engine-section" style={{ borderColor: anomalies.counts.critical > 0 ? '#EA4335' : '#FBBC04', background: anomalies.counts.critical > 0 ? 'rgba(234,67,53,0.05)' : 'rgba(251,188,4,0.05)' }}>
+          <div className="engine-section-title">
+            🚨 Anomalies — {anomalies.dayOfWeek} {anomalies.yesterday}
+            <span className="engine-section-meta">
+              {anomalies.counts.critical} critical · {anomalies.counts.high} high · {anomalies.counts.medium} medium
+            </span>
+          </div>
+          {anomalies.campaigns.map((a) => (
+            <div key={a.campaignId} style={{ marginBottom: 10, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.2)' }}>
+              <div style={{ fontWeight: 500, color: '#f4f4f6', fontSize: 13 }}>{a.campaignName}</div>
+              {a.flags.map((f, i) => {
+                const colour = f.severity === 'critical' ? '#EA4335' : f.severity === 'high' ? '#FBBC04' : '#4285F4'
+                return (
+                  <div key={i} style={{ fontSize: 12, color: '#c9ccd3', marginTop: 4, paddingLeft: 12, borderLeft: `2px solid ${colour}` }}>
+                    <span style={{ color: colour, fontWeight: 500, textTransform: 'uppercase', fontSize: 10, marginRight: 6 }}>{f.severity}</span>
+                    {f.message}
+                  </div>
+                )
+              })}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Pacing — month-to-date with projected month-end */}
+      {pacing && (
+        <div className="engine-section">
+          <div className="engine-section-title">
+            📅 Monthly Pacing — {pacing.month}
+            <span className="engine-section-meta">
+              Day {pacing.dayOfMonth}/{pacing.daysInMonth} ({pacing.monthProgress}% through)
+            </span>
+          </div>
+          <div className="engine-grid">
+            <div className="engine-stat blue">
+              <div className="engine-stat-label">MTD Spend</div>
+              <div className="engine-stat-value">${Math.round(pacing.account.spendMtd).toLocaleString('en-AU')}</div>
+              <div className="engine-stat-sub">vs ${Math.round(pacing.account.expectedMtd).toLocaleString('en-AU')} expected</div>
+            </div>
+            <div className="engine-stat green">
+              <div className="engine-stat-label">MTD Value</div>
+              <div className="engine-stat-value">${Math.round(pacing.account.valMtd).toLocaleString('en-AU')}</div>
+              <div className="engine-stat-sub">{pacing.account.convMtd.toFixed(0)} conv · {pacing.account.roas.toFixed(2)}x ROAS</div>
+            </div>
+            <div className={`engine-stat ${pacing.account.pacingPct >= 90 && pacing.account.pacingPct <= 110 ? 'green' : pacing.account.pacingPct > 110 ? 'red' : 'yellow'}`}>
+              <div className="engine-stat-label">Pacing</div>
+              <div className="engine-stat-value">{pacing.account.pacingPct}%</div>
+              <div className="engine-stat-sub">of expected MTD</div>
+            </div>
+            <div className="engine-stat blue">
+              <div className="engine-stat-label">Projected Month End</div>
+              <div className="engine-stat-value">${Math.round(pacing.account.projectedMonthEnd).toLocaleString('en-AU')}</div>
+              <div className="engine-stat-sub">Target ${Math.round(pacing.account.targetMonthBudget).toLocaleString('en-AU')}</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Top stats — Today + 7d + 30d */}
+      <div className="engine-grid">
+        <div className={`engine-stat ${roasColour(today.roas)}`}>
+          <div className="engine-stat-label">Today (so far)</div>
+          <div className="engine-stat-value">{fmtRoas(today.roas)}</div>
+          <div className="engine-stat-sub">{fmt$(today.spend)} spend · {fmt$(today.val)} value · {(today.conv || 0).toFixed(0)} conv</div>
+        </div>
+        {yest && (
+          <div className={`engine-stat ${roasColour(yest.roas)}`}>
+            <div className="engine-stat-label">Yesterday ({yest.dow})</div>
+            <div className="engine-stat-value">{fmtRoas(yest.roas)}</div>
+            <div className="engine-stat-sub">{fmt$(yest.spend)} → {fmt$(yest.val)} · {(yest.conv || 0).toFixed(0)} conv</div>
+          </div>
+        )}
+        <div className={`engine-stat ${roasColour(w7.roas)}`}>
+          <div className="engine-stat-label">7-day rolling</div>
+          <div className="engine-stat-value">{fmtRoas(w7.roas)}</div>
+          <div className="engine-stat-sub">{fmt$(w7.spend)} → {fmt$(w7.val)} · {(w7.conv || 0).toFixed(0)} conv</div>
+        </div>
+        <div className={`engine-stat ${roasColour(w30.roas)}`}>
+          <div className="engine-stat-label">30-day rolling</div>
+          <div className="engine-stat-value">{fmtRoas(w30.roas)}</div>
+          <div className="engine-stat-sub">{fmt$(w30.spend)} → {fmt$(w30.val)} · {(w30.conv || 0).toFixed(0)} conv</div>
+        </div>
+      </div>
+
+      {/* IS strip */}
+      <div className="engine-grid">
+        <div className="engine-stat blue">
+          <div className="engine-stat-label">Search IS Got</div>
+          <div className="engine-stat-value">{fmtPct(engine.accountIs.searchIs)}</div>
+          <div className="engine-stat-sub">Weighted across enabled campaigns (30d)</div>
+        </div>
+        <div className="engine-stat red">
+          <div className="engine-stat-label">Lost IS — Rank</div>
+          <div className="engine-stat-value">{fmtPct(engine.accountIs.lostRank)}</div>
+          <div className="engine-stat-sub">Quality / relevance / bid issues</div>
+        </div>
+        <div className="engine-stat yellow">
+          <div className="engine-stat-label">Lost IS — Budget</div>
+          <div className="engine-stat-value">{fmtPct(engine.accountIs.lostBudget)}</div>
+          <div className="engine-stat-sub">Budget capping out</div>
+        </div>
+        <div className="engine-stat blue">
+          <div className="engine-stat-label">Daily Budget</div>
+          <div className="engine-stat-value">{fmt$(engine.totalDailyBudget)}</div>
+          <div className="engine-stat-sub">Sum of enabled campaign budgets</div>
+        </div>
+      </div>
+
+      {/* 30-day daily ROAS sparkline */}
+      <div className="engine-section">
+        <div className="engine-section-title">
+          30-day ROAS by day
+          <span className="engine-section-meta">faded = weekend</span>
+        </div>
+        <div className="engine-spark">
+          {engine.daily.map((d) => {
+            const isWeekend = d.dow === 'Sat' || d.dow === 'Sun'
+            const colour = d.roas >= 3 ? '#34A853' : d.roas >= 2.13 ? '#FBBC04' : '#EA4335'
+            const maxRoas = Math.max(...engine.daily.map(x => x.roas), 4)
+            const heightPct = Math.max(4, (d.roas / maxRoas) * 100)
+            return (
+              <div
+                key={d.date}
+                className={`engine-spark-bar ${isWeekend ? 'weekend' : ''}`}
+                style={{ background: colour, height: `${heightPct}%` }}
+                title={`${d.date} ${d.dow}: ${d.roas.toFixed(2)}x · ${fmt$(d.val)} value`}
+              />
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Campaigns */}
+      <div className="engine-section">
+        <div className="engine-section-title">Campaigns (30d)</div>
+        <div className="engine-camp-row header">
+          <div>Campaign</div>
+          <div style={{ textAlign: 'right' }}>Budget</div>
+          <div style={{ textAlign: 'right' }}>Spend</div>
+          <div style={{ textAlign: 'right' }}>Value</div>
+          <div style={{ textAlign: 'right' }}>ROAS</div>
+          <div style={{ textAlign: 'right' }}>Lost Rank</div>
+        </div>
+        {engine.campaigns.filter(c => c.spend > 0 || c.status === 'ENABLED').map(c => (
+          <div className="engine-camp-row" key={c.id}>
+            <div className="engine-camp-name">
+              {c.name}
+              <span className={`status-pill ${c.status === 'ENABLED' ? 'enabled' : 'paused'}`}>{c.status}</span>
+            </div>
+            <div className="engine-camp-num">{fmt$(c.budget)}/d</div>
+            <div className="engine-camp-num">{fmt$(c.spend)}</div>
+            <div className="engine-camp-num">{fmt$(c.val)}</div>
+            <div className={`engine-camp-num ${c.roas >= 3 ? 'green' : c.roas >= 2.13 ? 'yellow' : 'red'}`}>{fmtRoas(c.roas)}</div>
+            <div className="engine-camp-num">{fmtPct(c.lostRank)}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Recovery tracker — Apr 14 catastrophic 12 */}
+      <div className="engine-section">
+        <div className="engine-section-title">
+          Apr 14 Surgery Recovery
+          <span className="engine-section-meta">12 catastrophic products · 7d post-revert vs pre-Apr-14</span>
+        </div>
+        <div className="engine-recovery-grid">
+          {engine.recovery.map(r => {
+            const pct = r.recoveryPct == null ? 0 : Math.min(100, r.recoveryPct)
+            return (
+              <div className="engine-recovery-row" key={r.title}>
+                <div className="engine-recovery-title" title={r.title}>{r.title}</div>
+                <div className="engine-recovery-num">{Math.round(r.pre.imp)} → {Math.round(r.post.imp)}</div>
+                <div className="engine-recovery-num">
+                  {r.recoveryPct == null ? '—' : `${r.recoveryPct}%`}
+                </div>
+                <div className="engine-recovery-bar">
+                  <div className={`engine-recovery-bar-fill ${r.status}`} style={{ width: `${pct}%` }} />
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Watch triggers */}
+      <div className="engine-section">
+        <div className="engine-section-title">Watch Triggers</div>
+        {engine.triggers.map(t => (
+          <div className={`engine-trigger ${t.ready ? 'ready' : ''}`} key={t.id}>
+            <div>
+              <div className="engine-trigger-title">{t.title}</div>
+              <div className="engine-trigger-desc">{t.description}</div>
+            </div>
+            <div className="engine-trigger-days">
+              Day {t.daysSince}{t.daysUntilCheck > 0 ? ` · ${t.daysUntilCheck}d to check` : ''}
+            </div>
+            <div className={`engine-trigger-status ${t.ready ? 'ready' : 'watch'}`}>
+              {t.ready ? 'READY' : 'WATCH'}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Movers / fallers */}
+      <div className="engine-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
+        <div className="engine-section">
+          <div className="engine-section-title">Top Movers (7d vs prior 7d)</div>
+          {engine.movers.topMovers.length === 0 && <div style={{ color: '#6c7079', fontSize: 12 }}>No data</div>}
+          {engine.movers.topMovers.map((p, i) => (
+            <div className="engine-mover" key={p.title + i}>
+              <div className="engine-mover-title">{p.title}</div>
+              <div className="engine-mover-num up">{p.valDelta >= 0 ? '+' : ''}{fmt$(p.valDelta)}</div>
+              <div className="engine-mover-num">{p.valPct >= 0 ? '+' : ''}{p.valPct}%</div>
+            </div>
+          ))}
+        </div>
+        <div className="engine-section">
+          <div className="engine-section-title">Top Fallers</div>
+          {engine.movers.topFallers.length === 0 && <div style={{ color: '#6c7079', fontSize: 12 }}>No data</div>}
+          {engine.movers.topFallers.map((p, i) => (
+            <div className="engine-mover" key={p.title + i}>
+              <div className="engine-mover-title">{p.title}</div>
+              <div className="engine-mover-num down">{fmt$(p.valDelta)}</div>
+              <div className="engine-mover-num">{p.valPct}%</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Search Terms Miner — green/yellow/red opportunity tagging */}
+      {searchTerms && (
+        <div className="engine-section">
+          <div className="engine-section-title">
+            🔍 Search Terms Intelligence
+            <span className="engine-section-meta">
+              {searchTerms.window?.days}d · {searchTerms.totals?.uniqueTerms} unique terms · {searchTerms.counts?.green}🟢 {searchTerms.counts?.yellow}🟡 {searchTerms.counts?.red}🔴
+            </span>
+          </div>
+          <div className="engine-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+            <div>
+              <div style={{ fontSize: 11, color: '#34A853', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>🟢 Winning ({searchTerms.greens.length})</div>
+              {searchTerms.greens.slice(0, 8).map((t, i) => (
+                <div key={i} style={{ fontSize: 12, padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', color: '#c9ccd3' }}>
+                  <div style={{ fontWeight: 500, color: '#f4f4f6' }}>{t.term}</div>
+                  <div style={{ fontSize: 10, color: '#6c7079', fontFamily: 'JetBrains Mono, monospace' }}>{t.reason}</div>
+                </div>
+              ))}
+            </div>
+            <div>
+              <div style={{ fontSize: 11, color: '#FBBC04', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>🟡 Title gap ({searchTerms.yellows.length})</div>
+              {searchTerms.yellows.slice(0, 8).map((t, i) => (
+                <div key={i} style={{ fontSize: 12, padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', color: '#c9ccd3' }}>
+                  <div style={{ fontWeight: 500, color: '#f4f4f6' }}>{t.term}</div>
+                  <div style={{ fontSize: 10, color: '#6c7079', fontFamily: 'JetBrains Mono, monospace' }}>{t.reason}</div>
+                </div>
+              ))}
+            </div>
+            <div>
+              <div style={{ fontSize: 11, color: '#EA4335', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>🔴 Negative candidates ({searchTerms.reds.length})</div>
+              {searchTerms.reds.slice(0, 8).map((t, i) => (
+                <div key={i} style={{ fontSize: 12, padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', color: '#c9ccd3' }}>
+                  <div style={{ fontWeight: 500, color: '#f4f4f6' }}>{t.term}</div>
+                  <div style={{ fontSize: 10, color: '#6c7079', fontFamily: 'JetBrains Mono, monospace' }}>{t.reason}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Shopify Product Health */}
+      {productHealth && (
+        <div className="engine-section">
+          <div className="engine-section-title">
+            🩺 Shopify Product Health
+            <span className="engine-section-meta">
+              {productHealth.totalProducts} products · avg {productHealth.avgScore}/100
+            </span>
+          </div>
+          <div className="engine-grid">
+            <div className="engine-stat green">
+              <div className="engine-stat-label">Excellent (≥85)</div>
+              <div className="engine-stat-value">{productHealth.buckets.excellent}</div>
+            </div>
+            <div className="engine-stat blue">
+              <div className="engine-stat-label">Good (65-84)</div>
+              <div className="engine-stat-value">{productHealth.buckets.good}</div>
+            </div>
+            <div className="engine-stat yellow">
+              <div className="engine-stat-label">Weak (40-64)</div>
+              <div className="engine-stat-value">{productHealth.buckets.weak}</div>
+            </div>
+            <div className="engine-stat red">
+              <div className="engine-stat-label">Critical (&lt;40)</div>
+              <div className="engine-stat-value">{productHealth.buckets.critical}</div>
+            </div>
+          </div>
+          <div style={{ marginTop: 14, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+            <div>
+              <div style={{ fontSize: 11, color: '#8b8f9c', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Top issues catalogue-wide</div>
+              {productHealth.topIssues.map((iss, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', fontSize: 12 }}>
+                  <span style={{ color: '#c9ccd3' }}>{iss.issue}</span>
+                  <span style={{ fontFamily: 'JetBrains Mono, monospace', color: '#FBBC04' }}>{iss.count} · {iss.pct}%</span>
+                </div>
+              ))}
+            </div>
+            <div>
+              <div style={{ fontSize: 11, color: '#8b8f9c', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Worst products (lowest health)</div>
+              {productHealth.worst.slice(0, 8).map((p, i) => (
+                <div key={i} style={{ padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', fontSize: 12 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: '#c9ccd3' }}>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 240 }}>{p.title}</span>
+                    <span style={{ fontFamily: 'JetBrains Mono, monospace', color: p.health.pct < 40 ? '#EA4335' : '#FBBC04' }}>{p.health.pct}/100</span>
+                  </div>
+                  <div style={{ fontSize: 10, color: '#6c7079' }}>{p.health.issues.slice(0, 2).join(' · ')}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Active Tests */}
+      <div className="engine-section">
+        <div className="engine-section-title">
+          🧪 Active Tests
+          <span className="engine-section-meta">
+            {activeTests.filter(t => t.status === 'active').length} running
+          </span>
+        </div>
+        {activeTests.length === 0 ? (
+          <div style={{ color: '#6c7079', fontSize: 12, padding: '16px 0' }}>
+            No active tests. Tests created via the API will appear here. Each test follows the no-bulk rule (≤3 products) and the 7-day evaluation window.
+          </div>
+        ) : (
+          activeTests.map(t => (
+            <div key={t.id} className="engine-trigger" style={{ borderColor: t.status === 'won' ? '#34A853' : t.status === 'lost' ? '#EA4335' : 'rgba(255,255,255,0.06)' }}>
+              <div>
+                <div className="engine-trigger-title">{t.name}</div>
+                <div className="engine-trigger-desc">
+                  {t.products.length} product{t.products.length === 1 ? '' : 's'} · metric: {t.metric} · hypothesis: {t.hypothesis || '—'}
+                </div>
+              </div>
+              <div className="engine-trigger-days">
+                Day {t.daysIn}/{t.durationDays}
+              </div>
+              <div className={`engine-trigger-status ${t.readyToJudge ? 'ready' : 'watch'}`}>
+                {t.status.toUpperCase()}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Hour × Day heatmap */}
+      {heatmap && (
+        <div className="engine-section">
+          <div className="engine-section-title">
+            🔥 Hour × Day Heatmap — ROAS
+            <span className="engine-section-meta">
+              {heatmap.window.days}d · brighter green = higher ROAS · grey = no spend
+            </span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '40px repeat(24, 1fr)', gap: 2, fontSize: 9, fontFamily: 'JetBrains Mono, monospace' }}>
+            <div></div>
+            {Array.from({ length: 24 }, (_, h) => (
+              <div key={h} style={{ textAlign: 'center', color: '#6c7079', padding: '4px 0' }}>{h}</div>
+            ))}
+            {heatmap.days.map((dayName, d) => (
+              <>
+                <div key={`label-${d}`} style={{ display: 'flex', alignItems: 'center', color: '#8b8f9c', paddingRight: 6, justifyContent: 'flex-end' }}>{dayName}</div>
+                {Array.from({ length: 24 }, (_, h) => {
+                  const cell = heatmap.grid[d][h]
+                  if (cell.spend < 0.5) {
+                    return <div key={`${d}-${h}`} style={{ background: 'rgba(255,255,255,0.02)', minHeight: 22, borderRadius: 2 }} title={`${dayName} ${h}:00 — no spend`} />
+                  }
+                  // colour by ROAS
+                  const intensity = Math.min(1, cell.roas / 5)
+                  const colour = cell.roas >= 3 ? `rgba(52,168,83,${0.3 + intensity * 0.7})` :
+                                 cell.roas >= 2.13 ? `rgba(251,188,4,${0.3 + intensity * 0.7})` :
+                                 `rgba(234,67,53,${0.4 + (1-intensity) * 0.5})`
+                  return (
+                    <div
+                      key={`${d}-${h}`}
+                      style={{ background: colour, minHeight: 22, borderRadius: 2, cursor: 'help' }}
+                      title={`${dayName} ${h}:00 — $${cell.spend.toFixed(0)} spend · ${cell.roas.toFixed(2)}x ROAS · ${cell.conv.toFixed(0)} conv`}
+                    />
+                  )
+                })}
+              </>
+            ))}
+          </div>
+          <div style={{ marginTop: 14, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+            <div>
+              <div style={{ fontSize: 11, color: '#34A853', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>🏆 Top hours by ROAS</div>
+              {heatmap.topHours.map((c, i) => (
+                <div key={i} style={{ fontSize: 12, padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', color: '#c9ccd3', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>{c.dowName} {c.hour}:00</span>
+                  <span style={{ fontFamily: 'JetBrains Mono, monospace', color: '#34A853' }}>{c.roas.toFixed(2)}x · ${c.spend.toFixed(0)}</span>
+                </div>
+              ))}
+            </div>
+            <div>
+              <div style={{ fontSize: 11, color: '#EA4335', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>🪦 Dead hours (ROAS &lt; 1x)</div>
+              {heatmap.deadHours.length === 0 ? (
+                <div style={{ fontSize: 12, color: '#6c7079', padding: '6px 0' }}>None — every spending hour breaks even</div>
+              ) : heatmap.deadHours.map((c, i) => (
+                <div key={i} style={{ fontSize: 12, padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', color: '#c9ccd3', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>{c.dowName} {c.hour}:00</span>
+                  <span style={{ fontFamily: 'JetBrains Mono, monospace', color: '#EA4335' }}>{c.roas.toFixed(2)}x · ${c.spend.toFixed(0)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Recent changes log */}
+      <div className="engine-section">
+        <div className="engine-section-title">Recent Changes</div>
+        {engine.recentChanges.map((c, i) => (
+          <div className="engine-change" key={i}>
+            <div className="engine-change-date">{c.date}</div>
+            <div className="engine-change-content">
+              <div className={`engine-change-title engine-change-${c.type}`}>{c.title}</div>
+              <div className="engine-change-detail">{c.detail}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}

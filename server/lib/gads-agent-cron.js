@@ -17,6 +17,9 @@ import {
 import { runAccuracyChecks } from './gads-agent-revert.js'
 import { isGadsConfigured, pingGads } from './gads-client.js'
 import { refreshAutoContext } from './gads-agent-context.js'
+import { buildEngineSnapshot, formatEngineForTelegram } from './gads-dominance-engine.js'
+import { sendTelegramMessage } from '../connectors/telegram.js'
+import { env } from './env.js'
 
 // ── Crash-safe wrapper ──────────────────────────────────────────────────────
 
@@ -132,6 +135,41 @@ export async function runAccuracyCheckJob() {
   return result
 }
 
+/**
+ * Engine debrief — sends GRI Dominance Engine snapshot to Josh's Telegram.
+ * Called daily at 6am AEST.
+ */
+export async function runEngineTelegramDebrief() {
+  if (!isGadsConfigured()) return { skipped: true, reason: 'gads not configured' }
+  const chatId = process.env.TELEGRAM_JOSH_CHAT_ID || env.telegram?.joshChatId
+  if (!chatId) return { skipped: true, reason: 'TELEGRAM_JOSH_CHAT_ID not set' }
+
+  const snapshot = await buildEngineSnapshot({ skipCache: true })
+  let framework = null
+  try {
+    const { getFrameworkMetrics } = await import('./gads-agent-framework-metrics.js')
+    framework = await getFrameworkMetrics(30)
+  } catch (e) {
+    console.warn('[engine-debrief] framework metrics failed:', e.message)
+  }
+  const text = formatEngineForTelegram(snapshot, framework)
+
+  // Telegram message limit is 4096 chars — truncate safely
+  const safe = text.length > 3900 ? text.slice(0, 3900) + '\n…(truncated)' : text
+
+  // Use Markdown parse mode for *bold* etc. The connector's sendTelegramMessage
+  // doesn't take parse_mode — call telegramCall directly via fetch fallback.
+  // Simpler: just send as plain text (Telegram renders * and _ literally
+  // without parse_mode), so we strip markdown for the simple connector.
+  const plain = safe
+    .replace(/\*([^*]+)\*/g, '$1')
+    .replace(/_([^_]+)_/g, '$1')
+
+  const result = await sendTelegramMessage({ chatId, text: plain })
+  logAudit('engine_debrief_sent', { chatId, ok: result.ok, len: plain.length }, null, 'agent')
+  return { ok: result.ok, len: plain.length }
+}
+
 // ── Schedule everything ─────────────────────────────────────────────────────
 
 export function startGadsAgentCrons() {
@@ -147,6 +185,9 @@ export function startGadsAgentCrons() {
 
   // Daily deep audit + briefing at 6am AEST
   cron.schedule('0 6 * * *', safeRun('daily-briefing', runDailyBriefingJob), { timezone: TZ })
+
+  // Daily Engine debrief to Josh's Telegram at 6am AEST
+  cron.schedule('0 6 * * *', safeRun('engine-telegram-debrief', runEngineTelegramDebrief), { timezone: TZ })
 
   // Daily accuracy check + revert sweep at 7am AEST
   cron.schedule('0 7 * * *', safeRun('daily-accuracy-check', runAccuracyCheckJob), { timezone: TZ })
@@ -179,5 +220,5 @@ export function startGadsAgentCrons() {
     }
   }, 10_000)
 
-  console.log('[GadsAgentCron] Scheduled: hourly scan (6am-9pm), overnight scan (10pm,2am), daily briefing (6am), accuracy check (7am) — all AEST')
+  console.log('[GadsAgentCron] Scheduled: hourly scan (6am-9pm), overnight scan (10pm,2am), daily briefing (6am), engine telegram debrief (6am), accuracy check (7am) — all AEST')
 }

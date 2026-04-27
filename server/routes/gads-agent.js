@@ -30,8 +30,133 @@ import {
 } from '../lib/gads-agent-context.js'
 import { executeRevert } from '../lib/gads-agent-revert.js'
 import { getFrameworkMetrics } from '../lib/gads-agent-framework-metrics.js'
+import { buildEngineSnapshot, formatEngineForTelegram } from '../lib/gads-dominance-engine.js'
+import { buildSearchTermsMine } from '../lib/engine-search-terms.js'
+import { buildProductHealth } from '../lib/engine-product-health.js'
+import { listTests, createTest, updateTest, addTestNote, deleteTest, annotateTest } from '../lib/engine-tests-store.js'
+import { detectAnomalies } from '../lib/engine-anomaly.js'
+import { buildPacing } from '../lib/engine-pacing.js'
+import { buildHeatmap } from '../lib/engine-heatmap.js'
 
 const router = Router()
+
+// ── Engine — single-glance dashboard data ──────────────────────────────────
+
+router.get('/engine', async (req, res) => {
+  try {
+    const skipCache = req.query.fresh === '1' || req.query.fresh === 'true'
+    const snapshot = await buildEngineSnapshot({ skipCache })
+    res.json({ ok: true, snapshot })
+  } catch (err) {
+    console.error('[gads-agent/engine] failed:', err)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+router.get('/engine/telegram-preview', async (_req, res) => {
+  try {
+    const snapshot = await buildEngineSnapshot({ skipCache: false })
+    const text = formatEngineForTelegram(snapshot)
+    res.json({ ok: true, text })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+router.post('/engine/send-telegram', async (_req, res) => {
+  try {
+    const { runEngineTelegramDebrief } = await import('../lib/gads-agent-cron.js')
+    const result = await runEngineTelegramDebrief()
+    res.json({ ok: true, result })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// Search Terms Miner — green/yellow/red tagging of last 30d search terms
+router.get('/engine/search-terms', async (req, res) => {
+  try {
+    const skipCache = req.query.fresh === '1'
+    const days = Number(req.query.days) || 30
+    const data = await buildSearchTermsMine({ skipCache, days })
+    res.json({ ok: true, data })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// Shopify Product Health Score
+router.get('/engine/product-health', async (req, res) => {
+  try {
+    const skipCache = req.query.fresh === '1'
+    const data = await buildProductHealth({ skipCache })
+    res.json({ ok: true, data })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// Active tests CRUD
+router.get('/engine/tests', (_req, res) => {
+  const tests = listTests().map(annotateTest)
+  res.json({ ok: true, tests })
+})
+
+router.post('/engine/tests', (req, res) => {
+  try {
+    const test = createTest(req.body || {})
+    res.json({ ok: true, test: annotateTest(test) })
+  } catch (err) {
+    res.status(400).json({ ok: false, error: err.message })
+  }
+})
+
+router.patch('/engine/tests/:id', (req, res) => {
+  const t = updateTest(req.params.id, req.body || {})
+  if (!t) return res.status(404).json({ ok: false, error: 'not found' })
+  res.json({ ok: true, test: annotateTest(t) })
+})
+
+router.post('/engine/tests/:id/note', (req, res) => {
+  const t = addTestNote(req.params.id, req.body?.note || '')
+  if (!t) return res.status(404).json({ ok: false, error: 'not found' })
+  res.json({ ok: true, test: annotateTest(t) })
+})
+
+router.delete('/engine/tests/:id', (req, res) => {
+  deleteTest(req.params.id)
+  res.json({ ok: true })
+})
+
+// Anomaly detector
+router.get('/engine/anomalies', async (req, res) => {
+  try {
+    const data = await detectAnomalies({ skipCache: req.query.fresh === '1' })
+    res.json({ ok: true, data })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// Pacing
+router.get('/engine/pacing', async (req, res) => {
+  try {
+    const data = await buildPacing({ skipCache: req.query.fresh === '1' })
+    res.json({ ok: true, data })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+// Hour x Day heatmap
+router.get('/engine/heatmap', async (req, res) => {
+  try {
+    const data = await buildHeatmap({ skipCache: req.query.fresh === '1', days: Number(req.query.days) || 28 })
+    res.json({ ok: true, data })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
 
 // ── Status / health ─────────────────────────────────────────────────────────
 
