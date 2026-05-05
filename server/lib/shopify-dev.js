@@ -198,6 +198,23 @@ export async function setCollectionMetaDescription(handle, description) {
   return { id: collection.id, handle, description, updated: !!data[type] }
 }
 
+// Update collection body HTML (the description content rendered above the product grid)
+export async function updateCollectionBodyHtml(handle, bodyHtml) {
+  const result = await getCollectionByHandle(handle)
+  if (!result) throw new Error(`Collection not found: ${handle}`)
+  const { type, collection } = result
+  const data = await shopifyAdminFetch(`/${type}s/${collection.id}.json`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      [type]: {
+        id: collection.id,
+        body_html: bodyHtml
+      }
+    })
+  })
+  return { id: collection.id, handle, updated: !!data[type] }
+}
+
 // Set collection SEO title (meta title)
 export async function setCollectionSeoTitle(handle, seoTitle) {
   const result = await getCollectionByHandle(handle)

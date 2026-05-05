@@ -7,8 +7,15 @@ async function api(path, opts = {}) {
     headers: { "Content-Type": "application/json" },
     ...opts,
   });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || res.statusText);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const err = new Error(data.error || res.statusText);
+    err.code = data.code || null;
+    err.hint = data.hint || null;
+    err.bondPaymentId = data.bondPaymentId || null;
+    err.payload = data;
+    throw err;
+  }
   return data;
 }
 
@@ -412,14 +419,37 @@ export default function TNTDashboard() {
     finally { setActionLoading(false); }
   };
 
-  const handleReturn = async (decision) => {
+  const handleReturn = async (decision, opts = {}) => {
     setActionLoading(true);
     try {
-      await api(`/${returnHire.id}/process-return`, { method: "POST", body: JSON.stringify({ decision }) });
-      showToast(decision === "refund" ? "Bond refunded, email sent" : "Bond withheld, customer notified");
+      const r = await api(`/${returnHire.id}/process-return`, {
+        method: "POST",
+        body: JSON.stringify({ decision, forceManual: !!opts.forceManual }),
+      });
+      if (decision === "refund") {
+        if (r.manual) {
+          showToast("Marked refunded_manual — refund the customer in Square dashboard yourself", "warn");
+        } else if (r.refundStatus === "PENDING") {
+          showToast("Square accepted refund (PENDING) — money lands in 2-10 business days");
+        } else {
+          showToast("Bond refunded, email sent");
+        }
+      } else {
+        showToast("Bond withheld, customer notified");
+      }
       setReturnHire(null);
       await loadHires();
-    } catch (err) { showToast(err.message, "error"); }
+    } catch (err) {
+      // Refund-specific errors give the operator an escape hatch
+      if (err.code === "NO_SQUARE_PAYMENT" || err.code === "SQUARE_REFUND_FAILED") {
+        const msg = `${err.message}\n\n${err.hint || ""}\n\nClick OK to mark this hire as "refunded_manual" (you handle the refund in Square dashboard). Click Cancel to abort.`;
+        if (window.confirm(msg)) {
+          return handleReturn("refund", { forceManual: true });
+        }
+      } else {
+        showToast(err.message, "error");
+      }
+    }
     finally { setActionLoading(false); }
   };
 

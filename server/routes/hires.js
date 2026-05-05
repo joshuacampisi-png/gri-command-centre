@@ -3,7 +3,7 @@ import { existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { getAll, getById, create, update, clearAll } from '../lib/hire-store.js';
-import { createBondPaymentLink, refundBondPayment } from '../lib/square-client.js';
+import { createBondPaymentLink, refundBondPayment, isRealSquarePaymentId, getRefund, getPayment } from '../lib/square-client.js';
 import { sendHireEmail } from '../lib/hire-mailer.js';
 import { notifyTNTEvent } from '../lib/tnt-telegram.js';
 import { env } from '../lib/env.js';
@@ -250,6 +250,98 @@ router.post('/reconcile-payments', async (_req, res) => {
   }
 })
 
+// GET /api/hires/refund-audit — for every hire we believe is refunded,
+// reconcile against the Square Refunds API and report the truth. Public so
+// Josh can hit it without auth from anywhere.
+//
+// Optional ?fix=1 — patch hire records so bondOutcome reflects the live
+// Square status (refunded / refund_pending / refund_failed).
+router.get('/refund-audit', async (req, res) => {
+  try {
+    const fix = req.query.fix === '1' || req.query.fix === 'true';
+    const hires = getAll();
+    const candidates = hires.filter(h =>
+      h.bondOutcome === 'refunded' ||
+      h.bondOutcome === 'refund_pending' ||
+      h.bondOutcome === 'refund_failed' ||
+      h.refundId
+    );
+
+    const results = [];
+    for (const h of candidates) {
+      const row = {
+        orderNumber: h.orderNumber,
+        customerName: h.customerName,
+        bondOutcome: h.bondOutcome,
+        bondPaymentId: h.bondPaymentId,
+        refundId: h.refundId || null,
+        liveSquareStatus: null,
+        actualMoneyMoved: null,
+        verdict: null,
+      };
+
+      if (!isRealSquarePaymentId(h.bondPaymentId)) {
+        row.verdict = 'PLACEHOLDER_PAYMENT_ID — never refundable via API. Money moved status unknown unless refunded manually in Square dashboard.';
+        results.push(row);
+        continue;
+      }
+
+      // Strategy A: if we have a refundId, look it up directly
+      if (h.refundId) {
+        try {
+          const r = await getRefund(h.refundId);
+          row.liveSquareStatus = r.status;
+          row.actualMoneyMoved = r.status === 'COMPLETED';
+          row.verdict = r.status === 'COMPLETED' ? 'REFUNDED OK'
+                      : r.status === 'PENDING' ? 'PENDING — money will move within 2–10 days'
+                      : `${r.status} — NO MONEY MOVED. ${r.reason || ''}`.trim();
+        } catch (e) {
+          row.verdict = `Square getRefund failed: ${e.message}`;
+        }
+      } else if (h.bondPaymentId) {
+        // Strategy B: no refundId stored — pull payment and inspect refunded_money
+        try {
+          const p = await getPayment(h.bondPaymentId);
+          const refundedCents = p.refunded_money?.amount || 0;
+          row.liveSquareStatus = p.status;
+          row.actualMoneyMoved = refundedCents > 0;
+          row.verdict = refundedCents > 0
+            ? `Payment shows $${(refundedCents/100).toFixed(2)} refunded`
+            : 'NO REFUND ON RECORD AT SQUARE — system marked refunded locally but no money moved';
+        } catch (e) {
+          row.verdict = `Square getPayment failed: ${e.message}`;
+        }
+      }
+
+      // Optional auto-fix: patch hire record to match live Square truth
+      if (fix && row.liveSquareStatus) {
+        const patch = { refundStatus: row.liveSquareStatus, refundCheckedAt: new Date().toISOString() };
+        if (row.liveSquareStatus === 'COMPLETED') patch.bondOutcome = 'refunded';
+        else if (row.liveSquareStatus === 'PENDING') patch.bondOutcome = 'refund_pending';
+        else if (row.liveSquareStatus === 'FAILED' || row.liveSquareStatus === 'REJECTED') patch.bondOutcome = 'refund_failed';
+        update(h.id, patch);
+        row.fixed = true;
+      }
+
+      results.push(row);
+    }
+
+    const summary = {
+      total: results.length,
+      okRefunded: results.filter(r => r.actualMoneyMoved === true).length,
+      pending: results.filter(r => r.liveSquareStatus === 'PENDING').length,
+      failed: results.filter(r => r.liveSquareStatus === 'FAILED' || r.liveSquareStatus === 'REJECTED').length,
+      noMoneyMoved: results.filter(r => r.actualMoneyMoved === false).length,
+      placeholder: results.filter(r => /PLACEHOLDER/.test(r.verdict || '')).length,
+    };
+
+    res.json({ ok: true, summary, results });
+  } catch (err) {
+    console.error('[hires/refund-audit] error:', err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // GET /api/hires/contracts — signed contracts register (MUST be before /:id)
 router.get('/contracts', (_req, res) => {
   const hires = getAll();
@@ -413,49 +505,132 @@ router.post('/:id/send-contract', async (req, res) => {
 });
 
 // POST /api/hires/:id/process-return — mark returned + refund or withhold + send email
+//
+// REFUND SAFETY RULES (added 2026-05-05 after refunds-not-hitting-bank bug):
+//   1. NEVER mark a hire `refunded` until Square confirms the refund call
+//      succeeded. A network error, fake bondPaymentId, or Square FAILED/REJECTED
+//      response MUST surface as a 4xx/5xx so the operator sees the real error.
+//   2. NEVER send the customer-facing "your refund is on the way" email until
+//      Square accepted the refund (status PENDING or COMPLETED).
+//   3. If Square returns PENDING, mark the hire `refund_pending`. The
+//      refund.updated webhook + the audit endpoint flip it to `refunded` once
+//      Square reports COMPLETED.
+//   4. To force a refund through despite a missing/fake payment ID, the
+//      operator can pass { decision: "refund", forceManual: true } and the
+//      hire is recorded as `refunded_manual` with a clear flag — Josh handles
+//      the actual money movement in the Square dashboard.
 router.post('/:id/process-return', async (req, res) => {
   try {
     const hire = getById(req.params.id);
     if (!hire) return res.status(404).json({ error: 'Hire not found' });
 
-    const { decision } = req.body;
+    const { decision, forceManual } = req.body || {};
     if (!decision || !['refund', 'withhold'].includes(decision)) {
       return res.status(400).json({ error: 'decision must be "refund" or "withhold"' });
     }
 
-    const updates = {
-      status: decision === 'refund' ? 'returned' : 'withheld',
-      bondOutcome: decision === 'refund' ? 'refunded' : 'withheld',
-      returnedAt: new Date().toISOString(),
-      bondOutcomeAt: new Date().toISOString(),
-    };
+    const now = new Date().toISOString();
 
-    // Attempt Square refund if refunding and we have a real payment ID
-    if (decision === 'refund' && hire.bondPaymentId && !hire.bondPaymentId.startsWith('sq_terminal_')) {
+    // ── WITHHOLD branch ────────────────────────────────────────────
+    if (decision === 'withhold') {
+      const updated = update(hire.id, {
+        status: 'withheld',
+        bondOutcome: 'withheld',
+        returnedAt: now,
+        bondOutcomeAt: now,
+      });
       try {
-        const bondCents = (hire.kitQty || 1) >= 2 ? 40000 : 20000;
-        const refund = await refundBondPayment(hire.bondPaymentId, bondCents);
-        updates.refundId = refund.refundId;
-        console.log(`[hires] Square refund processed: ${refund.refundId}`);
-      } catch (refundErr) {
-        console.error('[hires] Square refund failed (continuing):', refundErr.message);
+        await sendHireEmail('withheld', updated);
+      } catch (emailErr) {
+        console.error('[hires] Withheld email failed:', emailErr.message);
       }
+      return res.json({ ok: true, hire: updated });
     }
 
-    const updated = update(hire.id, updates);
+    // ── REFUND branch ──────────────────────────────────────────────
+    const bondCents = (hire.kitQty || 1) >= 2 ? 40000 : 20000;
 
-    // Send appropriate email
+    // 1. Manual override path: operator confirms they will refund in Square dashboard
+    if (forceManual) {
+      const updated = update(hire.id, {
+        status: 'returned',
+        bondOutcome: 'refunded_manual',
+        returnedAt: now,
+        bondOutcomeAt: now,
+        refundId: null,
+        refundManualNote: 'Operator marked refunded manually — money moved outside this system',
+      });
+      // No customer email — operator handles communication when they refund manually
+      return res.json({
+        ok: true,
+        hire: updated,
+        manual: true,
+        warning: 'Hire marked refunded_manual. NO Square refund was sent and NO email went to the customer. Process the refund in the Square dashboard and email the customer yourself.'
+      });
+    }
+
+    // 2. Pre-flight: must have a real Square payment ID
+    if (!isRealSquarePaymentId(hire.bondPaymentId)) {
+      return res.status(409).json({
+        ok: false,
+        code: 'NO_SQUARE_PAYMENT',
+        error: `Cannot auto-refund: bondPaymentId is "${hire.bondPaymentId || 'empty'}" which is a placeholder, not a real Square payment ID.`,
+        hint: 'Refund this customer in the Square dashboard, then re-submit with { decision: "refund", forceManual: true } to mark the hire refunded_manual.',
+        bondPaymentId: hire.bondPaymentId || null,
+      });
+    }
+
+    // 3. Call Square Refunds API. Any throw bubbles up as a real error.
+    let refund;
     try {
-      const emailType = decision === 'refund' ? 'refund' : 'withheld';
-      await sendHireEmail(emailType, updated);
-    } catch (emailErr) {
-      console.error('[hires] Return email failed:', emailErr.message);
+      refund = await refundBondPayment(hire.bondPaymentId, bondCents);
+    } catch (refundErr) {
+      console.error('[hires] Square refund FAILED — hire NOT marked refunded:', refundErr.message);
+      return res.status(502).json({
+        ok: false,
+        code: 'SQUARE_REFUND_FAILED',
+        error: refundErr.message,
+        squareErrors: refundErr.squareErrors || null,
+        bondPaymentId: hire.bondPaymentId,
+        hint: 'No money was moved and the customer was NOT emailed. Fix the underlying issue (often: bond was paid >365 days ago, payment was already refunded, or Square balance is insufficient) or refund manually with forceManual:true.'
+      });
     }
 
-    res.json({ hire: updated });
+    console.log(`[hires] Square refund accepted: ${refund.refundId} status=${refund.status}`);
+
+    // 4. Persist outcome based on actual Square status
+    const isCompleted = refund.status === 'COMPLETED';
+    const updated = update(hire.id, {
+      status: 'returned',
+      bondOutcome: isCompleted ? 'refunded' : 'refund_pending',
+      returnedAt: now,
+      bondOutcomeAt: now,
+      refundId: refund.refundId,
+      refundStatus: refund.status,
+      refundCheckedAt: now,
+    });
+
+    // 5. Email customer ONLY if Square actually accepted the refund. The
+    //    refund.updated webhook will flip refund_pending → refunded later;
+    //    we still email up-front because PENDING is Square's normal initial
+    //    state for card refunds and the money WILL move (2-10 business days).
+    try {
+      await sendHireEmail('refund', updated);
+    } catch (emailErr) {
+      console.error('[hires] Refund email failed (refund itself succeeded):', emailErr.message);
+    }
+
+    return res.json({
+      ok: true,
+      hire: updated,
+      refundStatus: refund.status,
+      note: isCompleted
+        ? 'Refund completed by Square. Funds typically appear in the buyer card within 2-10 business days.'
+        : 'Refund accepted by Square as PENDING. We will flip this to "refunded" automatically when Square confirms (refund.updated webhook).'
+    });
   } catch (err) {
     console.error('[hires] Process return error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ ok: false, error: err.message });
   }
 });
 

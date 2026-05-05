@@ -43,6 +43,53 @@ router.post('/', async (req, res) => {
 
     console.log(`[square-webhook] Received event: ${eventType}`);
 
+    // ── Refund events ────────────────────────────────────────────────
+    // Square fires refund.created → refund.updated as the refund moves
+    // PENDING → COMPLETED (or FAILED/REJECTED). We MUST listen so a refund
+    // that fails after we already told the customer it was on the way gets
+    // flagged for Josh, instead of being silently invisible.
+    if (eventType === 'refund.created' || eventType === 'refund.updated') {
+      const refund = event.data?.object?.refund;
+      if (!refund) {
+        console.log('[square-webhook] No refund data in event');
+        return;
+      }
+      const refundId = refund.id;
+      const refundStatus = refund.status; // PENDING | COMPLETED | FAILED | REJECTED
+      const paymentId = refund.payment_id;
+
+      console.log(`[square-webhook] Refund ${refundId} payment=${paymentId} status=${refundStatus}`);
+
+      const hires = getAll();
+      const hire = hires.find(h =>
+        h.refundId === refundId ||
+        (h.bondPaymentId && h.bondPaymentId === paymentId)
+      );
+      if (!hire) {
+        console.log(`[square-webhook] No matching hire for refund ${refundId}`);
+        return;
+      }
+
+      const now = new Date().toISOString();
+      const patch = { refundStatus, refundCheckedAt: now, refundId };
+      if (refundStatus === 'COMPLETED') {
+        patch.bondOutcome = 'refunded';
+        patch.bondOutcomeAt = patch.bondOutcomeAt || now;
+      } else if (refundStatus === 'FAILED' || refundStatus === 'REJECTED') {
+        patch.bondOutcome = 'refund_failed';
+        patch.refundFailureReason = refund.reason || `Square reported ${refundStatus}`;
+      } else if (refundStatus === 'PENDING') {
+        patch.bondOutcome = 'refund_pending';
+      }
+      update(hire.id, patch);
+
+      // Telegram alert if the refund actually failed
+      if (refundStatus === 'FAILED' || refundStatus === 'REJECTED') {
+        notifyTNTEvent('refund_failed', { ...getById(hire.id), refundId, refundStatus }).catch(() => {});
+      }
+      return;
+    }
+
     if (eventType === 'payment.completed' || eventType === 'payment.updated') {
       const payment = event.data?.object?.payment;
       if (!payment) {

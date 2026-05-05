@@ -15,5 +15,737 @@
       "snapshots": 301
     },
     "timestamp": "2026-04-02T22:16:07.124Z"
+  },
+  {
+    "id": "1e1525ef-d2a5-4a75-82be-d5866a4da8db",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-04-04T07:20:01.682Z"
+  },
+  {
+    "id": "475c9dd6-ec1b-4220-a265-f8a315cf4365",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120233436381360711",
+      "campaignName": "GRI - Local (TNT Hire)",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-04T07:20:02.714Z"
+  },
+  {
+    "id": "ef2d55e4-5453-4c9e-99d4-2b71a8d86e88",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120226215760060711",
+      "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-04T07:20:06.562Z"
+  },
+  {
+    "id": "88eb4796-fb55-4119-a46c-168febb9f172",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120216057846380711",
+      "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-04T07:20:10.183Z"
+  },
+  {
+    "id": "3c066b9b-fa32-41b7-ad04-1e0442829334",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120211361720620711",
+      "campaignName": "GRI  - AUS Wide [Lookalike Targeting]",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-04T07:20:13.897Z"
+  },
+  {
+    "id": "e5271a9b-8f5c-4e30-8109-18035a31aeb9",
+    "type": "meta_sync_complete",
+    "detail": {
+      "campaigns": 4,
+      "adSets": 0,
+      "ads": 0,
+      "snapshots": 0
+    },
+    "timestamp": "2026-04-04T07:20:13.904Z"
+  },
+  {
+    "id": "9974c61d-fd46-4bb2-9979-1edce3fdc397",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-04-04T07:22:38.102Z"
+  },
+  {
+    "id": "07800b0d-5699-484d-9a82-95fa1724b968",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120233436381360711",
+      "campaignName": "GRI - Local (TNT Hire)",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-04T07:22:39.091Z"
+  },
+  {
+    "id": "6886832c-dd9e-4eb1-b28a-77a127431c8f",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120226215760060711",
+      "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-04T07:22:42.597Z"
+  },
+  {
+    "id": "34e866dd-1f38-4a14-96d6-9d7527626e78",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120216057846380711",
+      "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-04T07:22:46.303Z"
+  },
+  {
+    "id": "18099121-3f14-4653-b097-5d28e872f5a5",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120211361720620711",
+      "campaignName": "GRI  - AUS Wide [Lookalike Targeting]",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-04T07:22:49.842Z"
+  },
+  {
+    "id": "23dc5d62-b091-4230-af1d-624902da57b0",
+    "type": "meta_sync_complete",
+    "detail": {
+      "campaigns": 4,
+      "adSets": 0,
+      "ads": 0,
+      "snapshots": 0
+    },
+    "timestamp": "2026-04-04T07:22:49.846Z"
+  },
+  {
+    "id": "e384d8e5-9182-41b0-abce-7f817180af37",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-04-04T10:14:20.495Z"
+  },
+  {
+    "id": "3c265268-9bf8-4cbb-a448-2aafef178593",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120233436381360711",
+      "campaignName": "GRI - Local (TNT Hire)",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-04T10:14:21.907Z"
+  },
+  {
+    "id": "c35d31d1-14c3-4aa9-80c5-f95f09870bd0",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120226215760060711",
+      "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-04T10:14:25.547Z"
+  },
+  {
+    "id": "18bccca9-03ef-406b-969d-1b735418527f",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120216057846380711",
+      "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-04T10:14:29.067Z"
+  },
+  {
+    "id": "6868d359-e2f4-407d-9219-d01743a695fe",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120211361720620711",
+      "campaignName": "GRI  - AUS Wide [Lookalike Targeting]",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-04T10:14:32.597Z"
+  },
+  {
+    "id": "1a2ccf45-bb4e-45dc-9e7c-27aa4234d7b1",
+    "type": "meta_sync_complete",
+    "detail": {
+      "campaigns": 4,
+      "adSets": 0,
+      "ads": 0,
+      "snapshots": 0
+    },
+    "timestamp": "2026-04-04T10:14:32.601Z"
+  },
+  {
+    "id": "45d8a2a8-e588-4107-b734-09e98d1648a9",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-04-04T10:25:11.398Z"
+  },
+  {
+    "id": "0ff4899a-c19a-44e8-84d2-387c3531432a",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-04-04T10:27:00.207Z"
+  },
+  {
+    "id": "962ee4bf-bd61-4c5f-8704-f69a871cf5ef",
+    "type": "meta_sync_complete",
+    "detail": {
+      "campaigns": 4,
+      "adSets": 23,
+      "ads": 216,
+      "snapshots": 275
+    },
+    "timestamp": "2026-04-04T10:29:16.227Z"
+  },
+  {
+    "id": "9a8ceb21-0832-47ae-9c9d-7ab49b61c949",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-04-05T01:43:55.753Z"
+  },
+  {
+    "id": "20506f50-7186-450c-886b-cba4c0b94d7e",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120233436381360711",
+      "campaignName": "GRI - Local (TNT Hire)",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-05T01:43:56.735Z"
+  },
+  {
+    "id": "d57ea983-6cb4-4715-b8ad-a2358d42036a",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120226215760060711",
+      "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-05T01:44:00.192Z"
+  },
+  {
+    "id": "b52f8961-6c02-4220-9f47-a607207c27fd",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120216057846380711",
+      "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-05T01:44:03.749Z"
+  },
+  {
+    "id": "344e0c41-1ccc-4180-ab6c-03b78c7ce459",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120211361720620711",
+      "campaignName": "GRI  - AUS Wide [Lookalike Targeting]",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-05T01:44:07.187Z"
+  },
+  {
+    "id": "6aa5b083-e12f-4fed-8a3f-9d1f3ff6cab8",
+    "type": "meta_sync_complete",
+    "detail": {
+      "campaigns": 4,
+      "adSets": 0,
+      "ads": 0,
+      "snapshots": 0
+    },
+    "timestamp": "2026-04-05T01:44:07.191Z"
+  },
+  {
+    "id": "8c9fd891-f547-444f-9473-9fd81ec3da59",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-04-05T01:53:28.204Z"
+  },
+  {
+    "id": "2c7b8d22-58dc-40bd-89a2-d84eed839b4a",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120233436381360711",
+      "campaignName": "GRI - Local (TNT Hire)",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-05T01:53:29.881Z"
+  },
+  {
+    "id": "26697363-1e42-4e33-b691-2c37eac8c75e",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120226215760060711",
+      "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-05T01:53:33.367Z"
+  },
+  {
+    "id": "2a9ac348-725b-4a29-a9db-363e38e562a3",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120216057846380711",
+      "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-05T01:53:36.900Z"
+  },
+  {
+    "id": "e0f90ab8-b1ca-4fb7-abf1-cf8d134b21ac",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120211361720620711",
+      "campaignName": "GRI  - AUS Wide [Lookalike Targeting]",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-05T01:53:40.365Z"
+  },
+  {
+    "id": "3309c147-0497-4aed-9faf-1eba38128bf7",
+    "type": "meta_sync_complete",
+    "detail": {
+      "campaigns": 4,
+      "adSets": 0,
+      "ads": 0,
+      "snapshots": 0
+    },
+    "timestamp": "2026-04-05T01:53:40.368Z"
+  },
+  {
+    "id": "6380d83b-6389-43d5-92db-79f4c47400a0",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-04-05T02:03:51.304Z"
+  },
+  {
+    "id": "557ea321-213c-4571-ac51-c7b336c15042",
+    "type": "meta_sync_complete",
+    "detail": {
+      "campaigns": 4,
+      "adSets": 23,
+      "ads": 216,
+      "snapshots": 266
+    },
+    "timestamp": "2026-04-05T02:05:49.333Z"
+  },
+  {
+    "id": "18e75795-4867-4139-8641-25ddcdc42fa4",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-04-05T02:36:46.020Z"
+  },
+  {
+    "id": "4971694a-1348-4bfa-b987-ae5661dda9bd",
+    "type": "meta_sync_complete",
+    "detail": {
+      "campaigns": 4,
+      "adSets": 23,
+      "ads": 216,
+      "snapshots": 267
+    },
+    "timestamp": "2026-04-05T02:38:41.961Z"
+  },
+  {
+    "id": "a7280e0d-8c20-4143-ac2b-c400b1600b59",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-04-05T06:59:16.767Z"
+  },
+  {
+    "id": "8c91bcf1-ffb1-4a91-b585-d07f7d41afa0",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-04-05T07:16:28.415Z"
+  },
+  {
+    "id": "b215eb8e-5140-4e2f-b577-2a686172c2fe",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-04-05T08:07:33.230Z"
+  },
+  {
+    "id": "a37d68bb-62b6-4af5-9538-27b4364c846c",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120211361720620711",
+      "campaignName": "GRI  - AUS Wide [Lookalike Targeting]",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-05T08:07:57.161Z"
+  },
+  {
+    "id": "792758f6-555b-44ff-a8b7-b77593f53802",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-04-05T08:22:35.535Z"
+  },
+  {
+    "id": "2c7a2e77-8a7d-4ff4-99a7-c5d34415f4c2",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-04-05T08:26:42.540Z"
+  },
+  {
+    "id": "d90aa260-f2ca-4408-8200-2f894f356688",
+    "type": "meta_sync_complete",
+    "detail": {
+      "campaigns": 4,
+      "adSets": 23,
+      "ads": 216,
+      "snapshots": 270
+    },
+    "timestamp": "2026-04-05T08:28:43.796Z"
+  },
+  {
+    "id": "f4f032f2-f3dd-4cb8-8542-d81866f03800",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-04-05T09:22:50.061Z"
+  },
+  {
+    "id": "713753ef-bce5-4a9a-aaa0-7de4f7d01109",
+    "type": "meta_sync_complete",
+    "detail": {
+      "campaigns": 4,
+      "adSets": 23,
+      "ads": 216,
+      "snapshots": 271
+    },
+    "timestamp": "2026-04-05T09:24:46.707Z"
+  },
+  {
+    "id": "312dc2da-bdd3-419e-9510-1d5cc3b6ce67",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-04-05T09:28:22.053Z"
+  },
+  {
+    "id": "00267ebf-c5d0-49a0-87f2-4d503e55f5e0",
+    "type": "meta_sync_complete",
+    "detail": {
+      "campaigns": 4,
+      "adSets": 23,
+      "ads": 216,
+      "snapshots": 271
+    },
+    "timestamp": "2026-04-05T09:30:16.869Z"
+  },
+  {
+    "id": "c7b0fb27-10a4-4f64-a418-428d2117f4be",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-04-05T09:31:57.698Z"
+  },
+  {
+    "id": "39774ba0-dfd8-43e3-9e1c-d681e3315f4a",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120233436381360711",
+      "campaignName": "GRI - Local (TNT Hire)",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-05T09:31:58.750Z"
+  },
+  {
+    "id": "9d48b372-4cc4-4cf8-a4c9-37f86b9f1343",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120226215760060711",
+      "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-05T09:32:02.245Z"
+  },
+  {
+    "id": "2bee1b7e-dcb8-4e22-b0b9-cc84d9c7c292",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120216057846380711",
+      "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-05T09:32:05.694Z"
+  },
+  {
+    "id": "71c837a5-27fe-4138-b5c5-0f00d8a80d0f",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120211361720620711",
+      "campaignName": "GRI  - AUS Wide [Lookalike Targeting]",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-05T09:32:09.099Z"
+  },
+  {
+    "id": "ba83f2c2-756e-47ce-9ddf-631f49c6c328",
+    "type": "meta_sync_complete",
+    "detail": {
+      "campaigns": 4,
+      "adSets": 0,
+      "ads": 0,
+      "snapshots": 0
+    },
+    "timestamp": "2026-04-05T09:32:09.102Z"
+  },
+  {
+    "id": "da7ecf38-0f4a-4251-9ba4-3462444a3615",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-04-05T10:00:00.044Z"
+  },
+  {
+    "id": "802442f4-d882-4eaf-9fda-6e3f7e09a238",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-04-05T10:04:37.392Z"
+  },
+  {
+    "id": "47e04176-1e7b-41ec-9356-85f653362ed2",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120233436381360711",
+      "campaignName": "GRI - Local (TNT Hire)",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-05T10:04:38.434Z"
+  },
+  {
+    "id": "f0a47cec-08d4-4bba-bde6-ecde37ecea72",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120226215760060711",
+      "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-05T10:04:41.933Z"
+  },
+  {
+    "id": "a5413eb4-ca40-490e-9683-dec672f4faf7",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120216057846380711",
+      "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-05T10:04:45.411Z"
+  },
+  {
+    "id": "5b2e216d-e24b-4236-956f-8c44ddd864e1",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120211361720620711",
+      "campaignName": "GRI  - AUS Wide [Lookalike Targeting]",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-05T10:04:48.835Z"
+  },
+  {
+    "id": "ca977c86-632f-4207-aef7-d21f54b44db1",
+    "type": "meta_sync_complete",
+    "detail": {
+      "campaigns": 4,
+      "adSets": 0,
+      "ads": 0,
+      "snapshots": 0
+    },
+    "timestamp": "2026-04-05T10:04:48.838Z"
+  },
+  {
+    "id": "0c8007f1-047c-4f9b-81e3-ea9fa79ea6ff",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-04-05T21:02:54.816Z"
+  },
+  {
+    "id": "03f415c7-e314-4a65-8482-3c024c5e40bb",
+    "type": "meta_sync_complete",
+    "detail": {
+      "campaigns": 4,
+      "adSets": 23,
+      "ads": 216,
+      "snapshots": 273
+    },
+    "timestamp": "2026-04-05T21:04:51.990Z"
+  },
+  {
+    "id": "fce43e1c-2546-4a35-b90f-278877730ddd",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-04-05T22:27:04.305Z"
+  },
+  {
+    "id": "8ff525e1-6d06-4429-8d88-d43d3e1d3057",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-04-05T22:28:04.229Z"
+  },
+  {
+    "id": "8ebfa659-f828-445f-a56c-6c8c21e4c4c6",
+    "type": "meta_sync_complete",
+    "detail": {
+      "campaigns": 4,
+      "adSets": 23,
+      "ads": 216,
+      "snapshots": 273
+    },
+    "timestamp": "2026-04-05T22:30:06.453Z"
+  },
+  {
+    "id": "5e59a107-0e31-4035-a789-7c67170686a3",
+    "type": "error",
+    "detail": "Decision engine failed: Cannot create property 'max_tokens' on string 'You are the AI marketing agent for Gender Reveal Ideas. You analyse live Meta Ads data and produce specific, actionable recommendations.\n\nYou must output valid JSON only. No markdown, no explanation outside the JSON.\n\nFor each recommendation, output this structure:\n{\n  \"actions\": [\n    {\n      \"action_type\": \"pause_ad|scale_budget|create_brief|flag_for_review|swap_creative\",\n      \"action_title\": \"Short title shown to Josh\",\n      \"action_summary\": \"One sentence plain English summary\",\n      \"ai_reasoning\": \"Full reasoning with data points. Why this action, why now.\",\n      \"ai_confidence\": 1-10,\n      \"expected_outcome\": \"What will happen if approved\",\n      \"risk_level\": \"low|medium|high\",\n      \"entity_name\": \"Name of campaign/ad set/ad affected\",\n      \"entity_id\": \"Meta ID if available\",\n      \"entity_type\": \"campaign|ad_set|ad\",\n      \"execution_payload\": { \"method\": \"pauseAd|updateAdSetBudget|etc\", \"params\": {} }\n    }\n  ]\n}\n\nRules:\n- Maximum 5 actions per cycle\n- Confidence below 6 gets a caution badge\n- High risk actions (kill campaign, budget over $50 increase) need extra justification\n- Budget increases must be exactly 15% (never exceed 20%)\n- If performance is stable and on target, it is valid to recommend zero actions\n- If you have no data, recommend \"flag_for_review\" with a request to wait for more data\n- Learn from previous decision outcomes. If similar actions failed before, explain why this time is different.\n- All dollar amounts in AUD'",
+    "timestamp": "2026-04-05T23:00:00.085Z"
+  },
+  {
+    "id": "517234cb-8bfa-413a-82fc-80810cadc1a1",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-04-16T04:00:00.083Z"
+  },
+  {
+    "id": "535b033b-8972-430d-ae6d-36bc1ae308d8",
+    "type": "meta_sync_complete",
+    "detail": {
+      "campaigns": 4,
+      "adSets": 24,
+      "ads": 219,
+      "snapshots": 166
+    },
+    "timestamp": "2026-04-16T04:02:04.643Z"
+  },
+  {
+    "id": "81bad957-2712-4859-bb86-4fcdad34b15e",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-04-27T10:00:00.030Z"
+  },
+  {
+    "id": "f15cee34-2f37-4763-84dd-58a3300924b7",
+    "type": "meta_sync_complete",
+    "detail": {
+      "campaigns": 4,
+      "adSets": 24,
+      "ads": 220,
+      "snapshots": 145
+    },
+    "timestamp": "2026-04-27T10:02:04.159Z"
+  },
+  {
+    "id": "7550082b-ecd5-4562-9c33-3190760a33bb",
+    "type": "error",
+    "detail": "Decision engine failed: Cannot create property 'max_tokens' on string 'You are the AI marketing agent for Gender Reveal Ideas. You analyse live Meta Ads data and produce specific, actionable recommendations.\n\nYou must output valid JSON only. No markdown, no explanation outside the JSON.\n\nFor each recommendation, output this structure:\n{\n  \"actions\": [\n    {\n      \"action_type\": \"pause_ad|scale_budget|create_brief|flag_for_review|swap_creative\",\n      \"action_title\": \"Short title shown to Josh\",\n      \"action_summary\": \"One sentence plain English summary\",\n      \"ai_reasoning\": \"Full reasoning with data points. Why this action, why now.\",\n      \"ai_confidence\": 1-10,\n      \"expected_outcome\": \"What will happen if approved\",\n      \"risk_level\": \"low|medium|high\",\n      \"entity_name\": \"Name of campaign/ad set/ad affected\",\n      \"entity_id\": \"Meta ID if available\",\n      \"entity_type\": \"campaign|ad_set|ad\",\n      \"execution_payload\": { \"method\": \"pauseAd|updateAdSetBudget|etc\", \"params\": {} }\n    }\n  ]\n}\n\nRules:\n- Maximum 5 actions per cycle\n- Confidence below 6 gets a caution badge\n- High risk actions (kill campaign, budget over $50 increase) need extra justification\n- Budget increases must be exactly 15% (never exceed 20%)\n- If performance is stable and on target, it is valid to recommend zero actions\n- If you have no data, recommend \"flag_for_review\" with a request to wait for more data\n- Learn from previous decision outcomes. If similar actions failed before, explain why this time is different.\n- All dollar amounts in AUD'",
+    "timestamp": "2026-04-27T11:00:00.106Z"
+  },
+  {
+    "id": "8fd9ceab-fbd8-4a94-9b89-89ee8bf0621e",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-04-28T22:00:00.068Z"
+  },
+  {
+    "id": "4fd76e60-abb9-4773-b685-293c46ad30d8",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120226215760060711",
+      "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-28T22:00:07.955Z"
+  },
+  {
+    "id": "74768a6b-f0c8-4c36-bc0f-a4c91975d092",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120216057846380711",
+      "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-28T22:00:11.712Z"
+  },
+  {
+    "id": "f93b1206-3563-4506-b4a4-d709b89c8696",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120211361720620711",
+      "campaignName": "GRI  - AUS Wide [Lookalike Targeting]",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-04-28T22:00:15.395Z"
+  },
+  {
+    "id": "1987c72b-5832-4899-b96d-0c1b8a912a10",
+    "type": "meta_sync_complete",
+    "detail": {
+      "campaigns": 4,
+      "adSets": 1,
+      "ads": 11,
+      "snapshots": 36
+    },
+    "timestamp": "2026-04-28T22:00:23.126Z"
+  },
+  {
+    "id": "7b35a9bb-f08b-4602-a8d2-cc46dd1f9637",
+    "type": "error",
+    "detail": "Decision engine failed: Cannot create property 'max_tokens' on string 'You are the AI marketing agent for Gender Reveal Ideas. You analyse live Meta Ads data and produce specific, actionable recommendations.\n\nYou must output valid JSON only. No markdown, no explanation outside the JSON.\n\nFor each recommendation, output this structure:\n{\n  \"actions\": [\n    {\n      \"action_type\": \"pause_ad|scale_budget|create_brief|flag_for_review|swap_creative\",\n      \"action_title\": \"Short title shown to Josh\",\n      \"action_summary\": \"One sentence plain English summary\",\n      \"ai_reasoning\": \"Full reasoning with data points. Why this action, why now.\",\n      \"ai_confidence\": 1-10,\n      \"expected_outcome\": \"What will happen if approved\",\n      \"risk_level\": \"low|medium|high\",\n      \"entity_name\": \"Name of campaign/ad set/ad affected\",\n      \"entity_id\": \"Meta ID if available\",\n      \"entity_type\": \"campaign|ad_set|ad\",\n      \"execution_payload\": { \"method\": \"pauseAd|updateAdSetBudget|etc\", \"params\": {} }\n    }\n  ]\n}\n\nRules:\n- Maximum 5 actions per cycle\n- Confidence below 6 gets a caution badge\n- High risk actions (kill campaign, budget over $50 increase) need extra justification\n- Budget increases must be exactly 15% (never exceed 20%)\n- If performance is stable and on target, it is valid to recommend zero actions\n- If you have no data, recommend \"flag_for_review\" with a request to wait for more data\n- Learn from previous decision outcomes. If similar actions failed before, explain why this time is different.\n- All dollar amounts in AUD'",
+    "timestamp": "2026-04-28T23:00:00.054Z"
+  },
+  {
+    "id": "d3c6ee3b-9001-4e13-a324-4932fd2d926a",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-04-29T04:00:00.038Z"
+  },
+  {
+    "id": "8df0d63d-763f-45f9-b8af-c3f40830ea29",
+    "type": "meta_sync_complete",
+    "detail": {
+      "campaigns": 4,
+      "adSets": 24,
+      "ads": 220,
+      "snapshots": 134
+    },
+    "timestamp": "2026-04-29T04:02:01.320Z"
+  },
+  {
+    "id": "f4259b44-3884-4892-af21-a6f0df7c0f54",
+    "type": "error",
+    "detail": "Decision engine failed: Cannot create property 'max_tokens' on string 'You are the AI marketing agent for Gender Reveal Ideas. You analyse live Meta Ads data and produce specific, actionable recommendations.\n\nYou must output valid JSON only. No markdown, no explanation outside the JSON.\n\nFor each recommendation, output this structure:\n{\n  \"actions\": [\n    {\n      \"action_type\": \"pause_ad|scale_budget|create_brief|flag_for_review|swap_creative\",\n      \"action_title\": \"Short title shown to Josh\",\n      \"action_summary\": \"One sentence plain English summary\",\n      \"ai_reasoning\": \"Full reasoning with data points. Why this action, why now.\",\n      \"ai_confidence\": 1-10,\n      \"expected_outcome\": \"What will happen if approved\",\n      \"risk_level\": \"low|medium|high\",\n      \"entity_name\": \"Name of campaign/ad set/ad affected\",\n      \"entity_id\": \"Meta ID if available\",\n      \"entity_type\": \"campaign|ad_set|ad\",\n      \"execution_payload\": { \"method\": \"pauseAd|updateAdSetBudget|etc\", \"params\": {} }\n    }\n  ]\n}\n\nRules:\n- Maximum 5 actions per cycle\n- Confidence below 6 gets a caution badge\n- High risk actions (kill campaign, budget over $50 increase) need extra justification\n- Budget increases must be exactly 15% (never exceed 20%)\n- If performance is stable and on target, it is valid to recommend zero actions\n- If you have no data, recommend \"flag_for_review\" with a request to wait for more data\n- Learn from previous decision outcomes. If similar actions failed before, explain why this time is different.\n- All dollar amounts in AUD'",
+    "timestamp": "2026-04-29T05:00:00.124Z"
+  },
+  {
+    "id": "e50668a2-2365-4559-a356-8d44745c1f89",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-04-30T04:00:00.079Z"
+  },
+  {
+    "id": "d7c312e1-defc-436d-88d3-3191fe78a628",
+    "type": "meta_sync_complete",
+    "detail": {
+      "campaigns": 4,
+      "adSets": 24,
+      "ads": 220,
+      "snapshots": 134
+    },
+    "timestamp": "2026-04-30T04:02:05.402Z"
+  },
+  {
+    "id": "3e781ade-17fe-4147-8e99-f9a712efc086",
+    "type": "error",
+    "detail": "Decision engine failed: Cannot create property 'max_tokens' on string 'You are the AI marketing agent for Gender Reveal Ideas. You analyse live Meta Ads data and produce specific, actionable recommendations.\n\nYou must output valid JSON only. No markdown, no explanation outside the JSON.\n\nFor each recommendation, output this structure:\n{\n  \"actions\": [\n    {\n      \"action_type\": \"pause_ad|scale_budget|create_brief|flag_for_review|swap_creative\",\n      \"action_title\": \"Short title shown to Josh\",\n      \"action_summary\": \"One sentence plain English summary\",\n      \"ai_reasoning\": \"Full reasoning with data points. Why this action, why now.\",\n      \"ai_confidence\": 1-10,\n      \"expected_outcome\": \"What will happen if approved\",\n      \"risk_level\": \"low|medium|high\",\n      \"entity_name\": \"Name of campaign/ad set/ad affected\",\n      \"entity_id\": \"Meta ID if available\",\n      \"entity_type\": \"campaign|ad_set|ad\",\n      \"execution_payload\": { \"method\": \"pauseAd|updateAdSetBudget|etc\", \"params\": {} }\n    }\n  ]\n}\n\nRules:\n- Maximum 5 actions per cycle\n- Confidence below 6 gets a caution badge\n- High risk actions (kill campaign, budget over $50 increase) need extra justification\n- Budget increases must be exactly 15% (never exceed 20%)\n- If performance is stable and on target, it is valid to recommend zero actions\n- If you have no data, recommend \"flag_for_review\" with a request to wait for more data\n- Learn from previous decision outcomes. If similar actions failed before, explain why this time is different.\n- All dollar amounts in AUD'",
+    "timestamp": "2026-05-02T23:00:00.060Z"
   }
 ]

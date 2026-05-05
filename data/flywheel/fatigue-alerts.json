@@ -1,0 +1,593 @@
+[
+  {
+    "id": "fatigue-120238073906700711-1777358711809",
+    "adId": "120238073906700711",
+    "adName": "TNT Hire | Bris & GC | Video | TNT Hire Process",
+    "campaignName": "GRI - Local (TNT Hire)",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 40,
+    "signals": [
+      "Running 89 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": 14,
+    "frequency": 1.459374,
+    "acknowledged": false,
+    "createdAt": "2026-04-28T06:45:11.809Z"
+  },
+  {
+    "id": "fatigue-120232764647370711-1777358713286",
+    "adId": "120232764647370711",
+    "adName": "R6 | Lookalikes | Cannons Catalogue Slideshow + Tagged Products",
+    "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 40,
+    "signals": [
+      "Running 200 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 1.258993,
+    "acknowledged": false,
+    "createdAt": "2026-04-28T06:45:13.286Z"
+  },
+  {
+    "id": "fatigue-120232497076720711-1777358714690",
+    "adId": "120232497076720711",
+    "adName": "Advantage+ Remarketing - Bundles Catalogue",
+    "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "DEAD",
+    "score": 5,
+    "signals": [
+      "Critical frequency: 5.7",
+      "CPA rising +31%",
+      "Running 207 days (shelf life ~14d)"
+    ],
+    "recommendation": "Kill this ad immediately. Replace with fresh creative.",
+    "daysRemaining": null,
+    "frequency": 5.697465,
+    "acknowledged": false,
+    "createdAt": "2026-04-28T06:45:14.690Z"
+  },
+  {
+    "id": "fatigue-120226215760050711-1777358715207",
+    "adId": "120226215760050711",
+    "adName": "Advantage+ Remarketing - All Products 1",
+    "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "DEAD",
+    "score": 20,
+    "signals": [
+      "Critical frequency: 5.2",
+      "Running 307 days (shelf life ~14d)"
+    ],
+    "recommendation": "Kill this ad immediately. Replace with fresh creative.",
+    "daysRemaining": null,
+    "frequency": 5.15439,
+    "acknowledged": false,
+    "createdAt": "2026-04-28T06:45:15.207Z"
+  },
+  {
+    "id": "fatigue-120231803419130711-1777358715863",
+    "adId": "120231803419130711",
+    "adName": "Smoke Bomb - USP Video - Bea",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 40,
+    "signals": [
+      "Running 223 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 1.275591,
+    "acknowledged": false,
+    "createdAt": "2026-04-28T06:45:15.863Z"
+  },
+  {
+    "id": "fatigue-120229551711390711-1777358716477",
+    "adId": "120229551711390711",
+    "adName": "Child Safe, Non Toxic Video",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 40,
+    "signals": [
+      "Running 263 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 1.253363,
+    "acknowledged": false,
+    "createdAt": "2026-04-28T06:45:16.477Z"
+  },
+  {
+    "id": "fatigue-120238247207880711-1777358716997",
+    "adId": "120238247207880711",
+    "adName": "R6 | Adrenaline Interest | Video | Dry Ice How-To",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 40,
+    "signals": [
+      "Running 84 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 1.333333,
+    "acknowledged": false,
+    "createdAt": "2026-04-28T06:45:16.997Z"
+  },
+  {
+    "id": "fatigue-120229551711420711-1777358717513",
+    "adId": "120229551711420711",
+    "adName": "Mega Blaster Reveal Compliation Video",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "DEAD",
+    "score": 20,
+    "signals": [
+      "CTR declining -15%",
+      "Running 263 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Kill this ad immediately. Replace with fresh creative.",
+    "daysRemaining": null,
+    "frequency": 1.252591,
+    "acknowledged": false,
+    "createdAt": "2026-04-28T06:45:17.513Z"
+  },
+  {
+    "id": "fatigue-120232304752420711-1777358718033",
+    "adId": "120232304752420711",
+    "adName": "R6 | Adrenaline Interest | Video | Mega Blaster Customer Reel",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 40,
+    "signals": [
+      "Running 211 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 1.137931,
+    "acknowledged": false,
+    "createdAt": "2026-04-28T06:45:18.033Z"
+  },
+  {
+    "id": "fatigue-120231473448190711-1777358718543",
+    "adId": "120231473448190711",
+    "adName": "Cannons 6 Colours - Video v02",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 40,
+    "signals": [
+      "Running 230 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 1.258621,
+    "acknowledged": false,
+    "createdAt": "2026-04-28T06:45:18.543Z"
+  },
+  {
+    "id": "fatigue-120233738228290711-1777358719061",
+    "adId": "120233738228290711",
+    "adName": "R6 | Viral Moments | Video | UGC Mega Blaster Video",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 40,
+    "signals": [
+      "Running 182 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 1.269048,
+    "acknowledged": false,
+    "createdAt": "2026-04-28T06:45:19.061Z"
+  },
+  {
+    "id": "fatigue-120232406346080711-1777358719597",
+    "adId": "120232406346080711",
+    "adName": "R6 | Viral Moments | Video | Pokeball Reel",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 40,
+    "signals": [
+      "Running 209 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 1.166667,
+    "acknowledged": false,
+    "createdAt": "2026-04-28T06:45:19.597Z"
+  },
+  {
+    "id": "fatigue-120238073732840711-1777422454751",
+    "adId": "120238073732840711",
+    "adName": "TNT Hire | Bris & GC | Video | TNT Compiliation",
+    "campaignName": "GRI - Local (TNT Hire)",
+    "previousStatus": "WATCH",
+    "currentStatus": "FATIGUING",
+    "score": 40,
+    "signals": [
+      "Running 89 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.89"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 1.592056,
+    "acknowledged": false,
+    "createdAt": "2026-04-29T00:27:34.751Z"
+  },
+  {
+    "id": "fatigue-120229935790060711-1777422456298",
+    "adId": "120229935790060711",
+    "adName": "Gender Reveal Reel Video",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 40,
+    "signals": [
+      "Running 256 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 1.260054,
+    "acknowledged": false,
+    "createdAt": "2026-04-29T00:27:36.298Z"
+  },
+  {
+    "id": "fatigue-120231803428310711-1777422457762",
+    "adId": "120231803428310711",
+    "adName": "Mega Blaster September Video",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 30,
+    "signals": [
+      "CTR declining -16%",
+      "CPA spiked +88%",
+      "Running 223 days (shelf life ~14d)"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": 4,
+    "frequency": 1.55703,
+    "acknowledged": false,
+    "createdAt": "2026-04-29T00:27:37.762Z"
+  },
+  {
+    "id": "fatigue-120232304752400711-1777422458297",
+    "adId": "120232304752400711",
+    "adName": "R6 | Viral Moments | Video | Mega Blaster Customer Reel",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 45,
+    "signals": [
+      "CTR crashed -36%",
+      "Running 211 days (shelf life ~14d)"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 1.489164,
+    "acknowledged": false,
+    "createdAt": "2026-04-29T00:27:38.297Z"
+  },
+  {
+    "id": "fatigue-120238073732840711-1777436853701",
+    "adId": "120238073732840711",
+    "adName": "TNT Hire | Bris & GC | Video | TNT Compiliation",
+    "campaignName": "GRI - Local (TNT Hire)",
+    "previousStatus": "FATIGUING",
+    "currentStatus": "DEAD",
+    "score": 10,
+    "signals": [
+      "CPA spiked +272%",
+      "Running 90 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.89"
+    ],
+    "recommendation": "Kill this ad immediately. Replace with fresh creative.",
+    "daysRemaining": null,
+    "frequency": 1.591189,
+    "acknowledged": false,
+    "createdAt": "2026-04-29T04:27:33.702Z"
+  },
+  {
+    "id": "fatigue-120227095577490711-1777456375180",
+    "adId": "120227095577490711",
+    "adName": "Cannons Catalogue",
+    "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+    "previousStatus": "WATCH",
+    "currentStatus": "FATIGUING",
+    "score": 35,
+    "signals": [
+      "Rising frequency: 2.7",
+      "CPA spiked +42%",
+      "Running 294 days (shelf life ~14d)"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": 11,
+    "frequency": 2.683519,
+    "acknowledged": false,
+    "createdAt": "2026-04-29T09:52:55.180Z"
+  },
+  {
+    "id": "fatigue-120227095577490711-1777522298468",
+    "adId": "120227095577490711",
+    "adName": "Cannons Catalogue",
+    "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+    "previousStatus": "FATIGUING",
+    "currentStatus": "DEAD",
+    "score": 15,
+    "signals": [
+      "Rising frequency: 2.7",
+      "CTR declining -21%",
+      "CPA spiked +59%",
+      "Running 295 days (shelf life ~14d)"
+    ],
+    "recommendation": "Kill this ad immediately. Replace with fresh creative.",
+    "daysRemaining": 60,
+    "frequency": 2.689856,
+    "acknowledged": false,
+    "createdAt": "2026-04-30T04:11:38.468Z"
+  },
+  {
+    "id": "fatigue-120229935790060711-1777522299992",
+    "adId": "120229935790060711",
+    "adName": "Gender Reveal Reel Video",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "FATIGUING",
+    "currentStatus": "DEAD",
+    "score": 5,
+    "signals": [
+      "CTR crashed -92%",
+      "Running 257 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Kill this ad immediately. Replace with fresh creative.",
+    "daysRemaining": null,
+    "frequency": 1.257453,
+    "acknowledged": false,
+    "createdAt": "2026-04-30T04:11:39.992Z"
+  },
+  {
+    "id": "fatigue-120232304752400711-1777522301409",
+    "adId": "120232304752400711",
+    "adName": "R6 | Viral Moments | Video | Mega Blaster Customer Reel",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "FATIGUING",
+    "currentStatus": "DEAD",
+    "score": 5,
+    "signals": [
+      "CTR crashed -76%",
+      "Running 213 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.61"
+    ],
+    "recommendation": "Kill this ad immediately. Replace with fresh creative.",
+    "daysRemaining": null,
+    "frequency": 1.464059,
+    "acknowledged": false,
+    "createdAt": "2026-04-30T04:11:41.409Z"
+  },
+  {
+    "id": "fatigue-120232406346080711-1777522301923",
+    "adId": "120232406346080711",
+    "adName": "R6 | Viral Moments | Video | Pokeball Reel",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "FATIGUING",
+    "currentStatus": "DEAD",
+    "score": 5,
+    "signals": [
+      "CTR crashed -100%",
+      "Running 210 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Kill this ad immediately. Replace with fresh creative.",
+    "daysRemaining": null,
+    "frequency": 1.197183,
+    "acknowledged": false,
+    "createdAt": "2026-04-30T04:11:41.923Z"
+  },
+  {
+    "id": "fatigue-120241510164500711-1777586789962",
+    "adId": "120241510164500711",
+    "adName": "TNT Hire | Bris & GC | Pink Plume Static Apr 21",
+    "campaignName": "GRI - Local (TNT Hire)",
+    "previousStatus": "WATCH",
+    "currentStatus": "FATIGUING",
+    "score": 25,
+    "signals": [
+      "Rising frequency: 2.6",
+      "CTR declining -26%",
+      "ROAS below breakeven: 0.87"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": 0,
+    "frequency": 2.599153,
+    "acknowledged": false,
+    "createdAt": "2026-04-30T22:06:29.962Z"
+  },
+  {
+    "id": "fatigue-120233438019120711-1777586791376",
+    "adId": "120233438019120711",
+    "adName": "TNT Hire | Bris & GC | Interests | Product/Image 2",
+    "campaignName": "GRI - Local (TNT Hire)",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 40,
+    "signals": [
+      "Running 190 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 1.281046,
+    "acknowledged": false,
+    "createdAt": "2026-04-30T22:06:31.376Z"
+  },
+  {
+    "id": "fatigue-120231803419130711-1777762882098",
+    "adId": "120231803419130711",
+    "adName": "Smoke Bomb - USP Video - Bea",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "FATIGUING",
+    "currentStatus": "DEAD",
+    "score": 5,
+    "signals": [
+      "CTR crashed -45%",
+      "Running 227 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Kill this ad immediately. Replace with fresh creative.",
+    "daysRemaining": 1,
+    "frequency": 1.394203,
+    "acknowledged": false,
+    "createdAt": "2026-05-02T23:01:22.098Z"
+  },
+  {
+    "id": "fatigue-120231803716560711-1777762883592",
+    "adId": "120231803716560711",
+    "adName": "R6 | Party & Event Segment | Video | Smoke Bomb September – Copy",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 30,
+    "signals": [
+      "CTR declining -15%",
+      "CPA spiked +53%",
+      "Running 227 days (shelf life ~14d)"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": 11,
+    "frequency": 1.308824,
+    "acknowledged": false,
+    "createdAt": "2026-05-02T23:01:23.592Z"
+  },
+  {
+    "id": "fatigue-120232304752430711-1777762884956",
+    "adId": "120232304752430711",
+    "adName": "R6 | Brazilian Audience | Video | Mega Blaster Customer Reel",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 45,
+    "signals": [
+      "CTR crashed -31%",
+      "Running 215 days (shelf life ~14d)"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 1.327401,
+    "acknowledged": false,
+    "createdAt": "2026-05-02T23:01:24.956Z"
+  },
+  {
+    "id": "fatigue-120241894584090711-1777891153197",
+    "adId": "120241894584090711",
+    "adName": "NEW LP | MEGA | STATIC",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "WATCH",
+    "currentStatus": "FATIGUING",
+    "score": 40,
+    "signals": [
+      "CTR declining -17%",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": 3,
+    "frequency": 2.107372,
+    "acknowledged": false,
+    "createdAt": "2026-05-04T10:39:13.197Z"
+  },
+  {
+    "id": "fatigue-120227095577490711-1777959432795",
+    "adId": "120227095577490711",
+    "adName": "Cannons Catalogue",
+    "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+    "previousStatus": "WATCH",
+    "currentStatus": "FATIGUING",
+    "score": 35,
+    "signals": [
+      "Rising frequency: 2.7",
+      "CPA spiked +75%",
+      "Running 300 days (shelf life ~14d)"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": 21,
+    "frequency": 2.695174,
+    "acknowledged": false,
+    "createdAt": "2026-05-05T05:37:12.795Z"
+  },
+  {
+    "id": "fatigue-120231473448190711-1777959433891",
+    "adId": "120231473448190711",
+    "adName": "Cannons 6 Colours - Video v02",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "FATIGUING",
+    "currentStatus": "DEAD",
+    "score": 20,
+    "signals": [
+      "CTR declining -16%",
+      "Running 237 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Kill this ad immediately. Replace with fresh creative.",
+    "daysRemaining": null,
+    "frequency": 1.373534,
+    "acknowledged": false,
+    "createdAt": "2026-05-05T05:37:13.891Z"
+  },
+  {
+    "id": "fatigue-120231756287270711-1777959434941",
+    "adId": "120231756287270711",
+    "adName": "R6 | Party & Event Segment | Video | Smoke Bomb September",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "WATCH",
+    "currentStatus": "FATIGUING",
+    "score": 40,
+    "signals": [
+      "Running 231 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.91"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": 14,
+    "frequency": 1.331557,
+    "acknowledged": false,
+    "createdAt": "2026-05-05T05:37:14.941Z"
+  },
+  {
+    "id": "fatigue-120232304752400711-1777959435417",
+    "adId": "120232304752400711",
+    "adName": "R6 | Viral Moments | Video | Mega Blaster Customer Reel",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 40,
+    "signals": [
+      "Running 218 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 1.215716,
+    "acknowledged": false,
+    "createdAt": "2026-05-05T05:37:15.417Z"
+  }
+]

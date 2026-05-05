@@ -136,6 +136,7 @@ if (DASHBOARD_PASSWORD && DASHBOARD_PASSWORD !== 'changeme') {
     '/api/hires/diag-by-order',
     '/api/hires/last-webhook',
     '/api/hires/reset-contract',
+    '/api/hires/refund-audit',
     '/sign/',
     '/signed',
     '/company-logos',

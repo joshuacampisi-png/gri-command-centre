@@ -55,10 +55,43 @@ export async function createBondPaymentLink(hire) {
 }
 
 /**
+ * Recognise placeholder / non-Square payment IDs. Square real IDs are
+ * 25–32 char base32-style strings (e.g. "abCdEfGh1234567890ABCDEfg").
+ * Anything else is something we generated locally and CANNOT be refunded
+ * via the Square API.
+ */
+export function isRealSquarePaymentId(paymentId) {
+  if (!paymentId || typeof paymentId !== 'string') return false;
+  const fakePrefixes = ['sq_terminal_', 'manual_', 'historical_', 'historical_backfill', 'test_'];
+  if (fakePrefixes.some(p => paymentId.startsWith(p))) return false;
+  if (paymentId === 'historical_backfill') return false;
+  // Real Square payment IDs are 20+ chars, alphanumeric. Reject obvious junk.
+  if (paymentId.length < 20) return false;
+  if (!/^[A-Za-z0-9_-]+$/.test(paymentId)) return false;
+  return true;
+}
+
+/**
  * Refund a Square payment by payment ID.
- * Returns { refundId, status }
+ * Returns { refundId, status, raw } where status is one of:
+ *   PENDING   — Square is still processing (can take hours, up to 14 days for cards)
+ *   COMPLETED — money has been sent back to the buyer
+ *   FAILED    — refund failed, no money moved
+ *   REJECTED  — refund rejected by Square / card network, no money moved
+ *
+ * IMPORTANT: callers MUST treat anything other than COMPLETED/PENDING as a
+ * failure, and must NOT tell the customer they have been refunded until the
+ * status reaches COMPLETED (typically via the refund.updated webhook).
  */
 export async function refundBondPayment(paymentId, amountCents = 20000) {
+  if (!isRealSquarePaymentId(paymentId)) {
+    throw new Error(
+      `Cannot refund: bondPaymentId "${paymentId}" is a local placeholder, not a real Square payment ID. ` +
+      `This happens when the bond was marked paid manually or as a historical backfill. ` +
+      `Process the refund manually in the Square dashboard.`
+    );
+  }
+
   const idempotencyKey = crypto.randomUUID();
 
   const body = {
@@ -80,14 +113,47 @@ export async function refundBondPayment(paymentId, amountCents = 20000) {
   const data = await res.json();
 
   if (!res.ok) {
-    const errMsg = data.errors?.map(e => e.detail).join('; ') || res.statusText;
-    throw new Error(`Square refund failed: ${errMsg}`);
+    const errMsg = data.errors?.map(e => `${e.code || ''}: ${e.detail || ''}`.trim()).join('; ') || res.statusText;
+    const err = new Error(`Square refund API rejected request: ${errMsg}`);
+    err.squareErrors = data.errors || [];
+    err.httpStatus = res.status;
+    throw err;
+  }
+
+  const refund = data.refund || {};
+  const status = refund.status; // PENDING | COMPLETED | FAILED | REJECTED
+
+  if (status === 'FAILED' || status === 'REJECTED') {
+    const err = new Error(
+      `Square refund returned ${status}. Reason: ${refund.reason || 'no reason given'}. ` +
+      `No money has been moved. Check the Square dashboard.`
+    );
+    err.refundId = refund.id;
+    err.status = status;
+    throw err;
   }
 
   return {
-    refundId: data.refund.id,
-    status: data.refund.status,
+    refundId: refund.id,
+    status, // PENDING or COMPLETED
+    amountCents: refund.amount_money?.amount,
+    raw: refund,
   };
+}
+
+/**
+ * Look up a refund by ID — used by webhook + audit endpoints to confirm
+ * the actual current status with Square (not just what we cached locally).
+ */
+export async function getRefund(refundId) {
+  const res = await fetch(`${BASE_URL}/v2/refunds/${refundId}`, {
+    headers: headers(),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(`Square get refund failed: ${data.errors?.[0]?.detail || res.statusText}`);
+  }
+  return data.refund;
 }
 
 /**
