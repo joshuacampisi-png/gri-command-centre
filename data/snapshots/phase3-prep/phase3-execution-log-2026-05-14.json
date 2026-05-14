@@ -1,0 +1,69 @@
+{
+  "startedAt": "2026-05-14T02:01:42.703Z",
+  "customerId": "9431746480",
+  "changes": [
+    {
+      "campaignId": "21113841118",
+      "name": "GRI PMAX | All Products",
+      "expected": 2.2,
+      "before": {
+        "id": "21113841118",
+        "name": "GRI PMAX | All Products",
+        "bidStrategyType": 11,
+        "currentTRoas": null
+      },
+      "mutation_result": "customers/9431746480/campaigns/21113841118",
+      "after": {
+        "id": "21113841118",
+        "name": "GRI PMAX | All Products",
+        "bidStrategyType": 11,
+        "currentTRoas": 2.2
+      },
+      "status": "OK"
+    },
+    {
+      "campaignId": "22841772135",
+      "name": "GRI PMAX | Bundles",
+      "expected": 1.9,
+      "before": {
+        "id": "22841772135",
+        "name": "GRI PMAX | Bundles",
+        "bidStrategyType": 11,
+        "currentTRoas": null
+      },
+      "mutation_result": "customers/9431746480/campaigns/22841772135",
+      "after": {
+        "id": "22841772135",
+        "name": "GRI PMAX | Bundles",
+        "bidStrategyType": 11,
+        "currentTRoas": 1.9
+      },
+      "status": "OK"
+    },
+    {
+      "campaignId": "21511998936",
+      "name": "GRI PMAX | Cannon & Powder Reveals",
+      "expected": 1.7,
+      "before": {
+        "id": "21511998936",
+        "name": "GRI PMAX | Cannon & Powder Reveals",
+        "bidStrategyType": 11,
+        "currentTRoas": 2
+      },
+      "mutation_result": "customers/9431746480/campaigns/21511998936",
+      "after": {
+        "id": "21511998936",
+        "name": "GRI PMAX | Cannon & Powder Reveals",
+        "bidStrategyType": 11,
+        "currentTRoas": 1.7
+      },
+      "status": "OK"
+    }
+  ],
+  "completedAt": "2026-05-14T02:02:12.469Z",
+  "summary": {
+    "total": 3,
+    "successful": 3,
+    "failed": 0
+  }
+}

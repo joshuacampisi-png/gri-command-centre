@@ -1,0 +1,740 @@
+{
+  "ranAt": "2026-05-06T02:20:16.202Z",
+  "phase": "Path C — Hybrid Revert (productType+seoTitle to empty, keep custom_label_0 + GPC)",
+  "totalAttempted": 43,
+  "successful": 43,
+  "failed": 0,
+  "results": [
+    {
+      "id": "7808613056601",
+      "title": "4x Bundle Pack Gender Reveal Smoke Bombs",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Smoke Bombs Pack",
+        "seoTitle": "4x Pack Gender Reveal Smoke Bombs Bundle Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "7877241602137",
+      "title": "Gender Reveal Cannon & Extinguisher Double Bundle 🎉",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Cannon & Extinguisher",
+        "seoTitle": "Gender Reveal Powder Cannon & Extinguisher Bundle Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "7781664882777",
+      "title": "Gender Reveal Powder Extinguisher Bundle",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Powder Extinguisher",
+        "seoTitle": "Gender Reveal Powder Extinguisher Bundle Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "2781"
+      }
+    },
+    {
+      "id": "8122469023833",
+      "title": "The Race Day Reveal Bundle",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Sports",
+        "seoTitle": "Gender Reveal Race Day Sports Bundle Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "7988691927129",
+      "title": "TNT Gender Reveal Self Hire",
+      "before": {
+        "productType": "Gender Reveal > TNT Hire",
+        "seoTitle": "TNT Gender Reveal Self Hire Kit Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "7487467880537",
+      "title": "148 Piece Gender Reveal/ Baby Shower Luxury Balloon Kit",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Balloon Kit",
+        "seoTitle": "148 Piece Gender Reveal Baby Shower Luxury Balloon Kit Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "2587"
+      }
+    },
+    {
+      "id": "7513391530073",
+      "title": "4 Pack - Gender Reveal Confetti & Powder XL Cannon Bundle",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Cannon Pack",
+        "seoTitle": "4 Pack Gender Reveal Confetti & Powder XL Cannon Bundle Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "7513392283737",
+      "title": "4 Pack - Gender Reveal Powder Cannon BIO XL Bundle",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Cannon Pack",
+        "seoTitle": "4 Pack Gender Reveal Powder Cannon BIO XL Bundle Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "7526235144281",
+      "title": "Mega Reveal Gender Party Bundle",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Premium",
+        "seoTitle": "Mega Gender Reveal Party Bundle Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "7538953420889",
+      "title": "87 Piece Nature Gender Reveal/ Baby Shower Luxury Balloon Kit",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Balloon Kit",
+        "seoTitle": "87 Piece Gender Reveal Nature Baby Shower Luxury Balloon Kit Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "2587"
+      }
+    },
+    {
+      "id": "7668213088345",
+      "title": "4 Pack - Gender Reveal Confetti Cannon XL BIO Bundle",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Cannon Pack",
+        "seoTitle": "4 Pack Gender Reveal Confetti Cannon XL BIO Bundle Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "7697474584665",
+      "title": "Double Gender Reveal Smoke & Cannon Bundle 🎉",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Smoke & Cannon",
+        "seoTitle": "Double Gender Reveal Smoke & Cannon Bundle Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "7767077519449",
+      "title": "Gender Reveal Mega Smoke & Cannon Effect Bundle 🎉",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Smoke & Cannon",
+        "seoTitle": "Gender Reveal Mega Smoke & Cannon Effect Bundle Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "7809558380633",
+      "title": "💥Double MEGA Powder Extinguisher & Gender Reveal Cannon Bundle",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Cannon & Extinguisher",
+        "seoTitle": "Double MEGA Powder Extinguisher & Gender Reveal Cannon Bundle Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "2781"
+      }
+    },
+    {
+      "id": "7812050452569",
+      "title": "AFL Gender Reveal Ball & Cannon Family Bundle",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Sports",
+        "seoTitle": "AFL Gender Reveal Ball & Cannon Family Bundle Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "7812052123737",
+      "title": "Golf Gender Reveal Cannon & Ball Family Bundle",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Sports",
+        "seoTitle": "Golf Gender Reveal Cannon & Ball Family Bundle Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "7812052516953",
+      "title": "Gender Reveal Soccer & Cannon Family Bundle",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Sports",
+        "seoTitle": "Gender Reveal Soccer & Cannon Family Bundle Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "7823504244825",
+      "title": "Gender Reveal/ Baby Shower Party Box Set",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Party Box",
+        "seoTitle": "Gender Reveal Baby Shower Party Box Set Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "7899285848153",
+      "title": "Gender Reveal Poké Ball 2 pack",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Cannon Pack",
+        "seoTitle": "Gender Reveal Poke Ball 2 Pack Powder Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "7899676442713",
+      "title": "PRANK 2 Pack Gender Reveal Cannon",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Cannon Pack",
+        "seoTitle": "PRANK 2 Pack Gender Reveal Cannon Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "7899680374873",
+      "title": "PRANK 4 Pack Gender Reveal Cannon",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Cannon Pack",
+        "seoTitle": "PRANK 4 Pack Gender Reveal Cannon Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "7919388655705",
+      "title": "Quad Family Gender Reveal Extinguisher Bundle",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Powder Extinguisher",
+        "seoTitle": "Quad Family Gender Reveal Extinguisher Bundle Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "2781"
+      }
+    },
+    {
+      "id": "7923370491993",
+      "title": "Gender-Geddon | Australia's Largest Gender Reveal Bundle",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Premium",
+        "seoTitle": "Gender-Geddon Australia's Largest Gender Reveal Mega Bundle"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "7926990504025",
+      "title": "Value Gender Reveal Decoration Set",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Decorations",
+        "seoTitle": "Value Gender Reveal Decoration Set Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "2587"
+      }
+    },
+    {
+      "id": "7927054434393",
+      "title": "Basic Gender Reveal Decoration Set",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Decorations",
+        "seoTitle": "Basic Gender Reveal Decoration Set Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "2587"
+      }
+    },
+    {
+      "id": "7927056367705",
+      "title": "Family Gender Reveal Decoration Set",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Decorations",
+        "seoTitle": "Family Gender Reveal Decoration Set Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "2587"
+      }
+    },
+    {
+      "id": "7980864766041",
+      "title": "Gender Reveal AFL Sports Bundle",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Sports",
+        "seoTitle": "Gender Reveal AFL Sports Bundle Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "7989373206617",
+      "title": "4 Pack - Purple Party Powder Cannon BIO XL Bundle",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Cannon Pack",
+        "seoTitle": "4 Pack Gender Reveal Purple Party Powder Cannon BIO XL Bundle Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "7989373468761",
+      "title": "4 Pack - Green Party Powder Cannon BIO XL Bundle",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Cannon Pack",
+        "seoTitle": "4 Pack Gender Reveal Green Party Powder Cannon BIO XL Bundle Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "7989373665369",
+      "title": "4 Pack - Orange Party Powder Cannon BIO XL Bundle",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Cannon Pack",
+        "seoTitle": "4 Pack Gender Reveal Orange Party Powder Cannon BIO XL Bundle Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "8004093673561",
+      "title": "Full Gender Reveal Back Drop Kit",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Decorations",
+        "seoTitle": "Full Gender Reveal Back Drop Kit Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "2587"
+      }
+    },
+    {
+      "id": "8045356941401",
+      "title": "Gender Reveal Mum & Dad Feature Pack",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Premium",
+        "seoTitle": "Gender Reveal Mum & Dad Feature Pack Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "8121593200729",
+      "title": "Backyard Celebration Bundle",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Premium",
+        "seoTitle": "Backyard Celebration Gender Reveal Bundle Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "8121617678425",
+      "title": "The Grandparent Moment Bundle",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Premium",
+        "seoTitle": "Grandparent Moment Gender Reveal Bundle Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "8121655066713",
+      "title": "Game Day Gender Reveal Bundle",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Sports",
+        "seoTitle": "Game Day Gender Reveal Sports Bundle Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "8121690128473",
+      "title": "Double Trouble Twins Reveal Bundle",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Premium",
+        "seoTitle": "Double Trouble Twins Gender Reveal Bundle Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "8122484981849",
+      "title": "The Blaster & Smoke Reveal Kit",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Smoke & Cannon",
+        "seoTitle": "Gender Reveal Blaster & Smoke Reveal Kit Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "8122490454105",
+      "title": "The Low Mess Indoor Reveal Bundle",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Premium",
+        "seoTitle": "Low Mess Indoor Gender Reveal Bundle Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "8122500808793",
+      "title": "The Scratch & Reveal Party Bundle",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Premium",
+        "seoTitle": "Scratch & Reveal Gender Reveal Party Bundle Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "8124506341465",
+      "title": "Exclusive Reveal Bundle",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Premium",
+        "seoTitle": "Exclusive Gender Reveal Bundle Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "8129167622233",
+      "title": "2 Pack - Gender Reveal Confetti & Powder XL Cannon Bundle",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Cannon Pack",
+        "seoTitle": "2 Pack Gender Reveal Confetti & Powder XL Cannon Bundle Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "8129169260633",
+      "title": "2 Pack - Gender Reveal Powder XL Cannon Bundle",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Cannon Pack",
+        "seoTitle": "2 Pack Gender Reveal Powder XL Cannon Bundle Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "8129170014297",
+      "title": "2 Pack - Gender Reveal Confetti XL Cannon Bundle",
+      "before": {
+        "productType": "Gender Reveal > Bundles > Cannon Pack",
+        "seoTitle": "2 Pack Gender Reveal Confetti XL Cannon Bundle Pink Blue Australia"
+      },
+      "after": {
+        "productType": "",
+        "seoTitle": ""
+      },
+      "status": "OK",
+      "metafields_intact": {
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    }
+  ]
+}

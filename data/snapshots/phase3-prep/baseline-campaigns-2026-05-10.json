@@ -1,0 +1,50 @@
+[
+  {
+    "campaignId": "21094179575",
+    "name": "GRI | Search | Cannons",
+    "status": 2,
+    "bidStrategyTypeCode": 11,
+    "targetRoas": null,
+    "targetCpaMicros": null,
+    "budgetId": "13431293752",
+    "budgetAUD": 30,
+    "budgetMicros": "30000000",
+    "budgetName": "GRI | Search | Cannons"
+  },
+  {
+    "campaignId": "21113841118",
+    "name": "GRI PMAX | All Products",
+    "status": 2,
+    "bidStrategyTypeCode": 11,
+    "targetRoas": null,
+    "targetCpaMicros": null,
+    "budgetId": "13437546672",
+    "budgetAUD": 150,
+    "budgetMicros": "150000000",
+    "budgetName": "GRI PMAX | All Products"
+  },
+  {
+    "campaignId": "21511998936",
+    "name": "GRI PMAX | Cannon & Powder Reveals",
+    "status": 2,
+    "bidStrategyTypeCode": 11,
+    "targetRoas": 2,
+    "targetCpaMicros": null,
+    "budgetId": "13787790883",
+    "budgetAUD": 40,
+    "budgetMicros": "40000000",
+    "budgetName": "GRI PMAX | Cannon & Powder Reveals"
+  },
+  {
+    "campaignId": "22841772135",
+    "name": "GRI PMAX | Bundles",
+    "status": 2,
+    "bidStrategyTypeCode": 11,
+    "targetRoas": null,
+    "targetCpaMicros": null,
+    "budgetId": "14807748208",
+    "budgetAUD": 75,
+    "budgetMicros": "75000000",
+    "budgetName": "GRI PMAX | Bundles"
+  }
+]

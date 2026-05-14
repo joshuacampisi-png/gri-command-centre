@@ -1,0 +1,166 @@
+{
+  "ranAt": "2026-05-05T10:55:48.235Z",
+  "phase": "Phase 2 — Bundle Restore (5 SKUs)",
+  "results": [
+    {
+      "id": "7808613056601",
+      "title": "4x Bundle Pack Gender Reveal Smoke Bombs",
+      "steps": [
+        {
+          "step": "productUpdate",
+          "status": "OK",
+          "productType": "Gender Reveal > Bundles > Smoke Bombs Pack",
+          "seoTitle": "4x Pack Gender Reveal Smoke Bombs Bundle Pink Blue Australia"
+        },
+        {
+          "step": "metafieldsSet",
+          "status": "OK",
+          "metafields": [
+            {
+              "key": "custom_label_0",
+              "value": "bundle_premium"
+            },
+            {
+              "key": "google_product_category",
+              "value": "5709"
+            }
+          ]
+        }
+      ],
+      "verified": {
+        "productType": "Gender Reveal > Bundles > Smoke Bombs Pack",
+        "seoTitle": "4x Pack Gender Reveal Smoke Bombs Bundle Pink Blue Australia",
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "7877241602137",
+      "title": "Gender Reveal Cannon & Extinguisher Double Bundle",
+      "steps": [
+        {
+          "step": "productUpdate",
+          "status": "OK",
+          "productType": "Gender Reveal > Bundles > Cannon & Extinguisher",
+          "seoTitle": "Gender Reveal Powder Cannon & Extinguisher Bundle Pink Blue Australia"
+        },
+        {
+          "step": "metafieldsSet",
+          "status": "OK",
+          "metafields": [
+            {
+              "key": "custom_label_0",
+              "value": "bundle_premium"
+            },
+            {
+              "key": "google_product_category",
+              "value": "5709"
+            }
+          ]
+        }
+      ],
+      "verified": {
+        "productType": "Gender Reveal > Bundles > Cannon & Extinguisher",
+        "seoTitle": "Gender Reveal Powder Cannon & Extinguisher Bundle Pink Blue Australia",
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "7781664882777",
+      "title": "Gender Reveal Powder Extinguisher Bundle",
+      "steps": [
+        {
+          "step": "productUpdate",
+          "status": "OK",
+          "productType": "Gender Reveal > Bundles > Powder Extinguisher",
+          "seoTitle": "Gender Reveal Powder Extinguisher Bundle Pink Blue Australia"
+        },
+        {
+          "step": "metafieldsSet",
+          "status": "OK",
+          "metafields": [
+            {
+              "key": "custom_label_0",
+              "value": "bundle_premium"
+            },
+            {
+              "key": "google_product_category",
+              "value": "2781"
+            }
+          ]
+        }
+      ],
+      "verified": {
+        "productType": "Gender Reveal > Bundles > Powder Extinguisher",
+        "seoTitle": "Gender Reveal Powder Extinguisher Bundle Pink Blue Australia",
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "2781"
+      }
+    },
+    {
+      "id": "8122469023833",
+      "title": "The Race Day Reveal Bundle",
+      "steps": [
+        {
+          "step": "productUpdate",
+          "status": "OK",
+          "productType": "Gender Reveal > Bundles > Sports",
+          "seoTitle": "Gender Reveal Race Day Sports Bundle Pink Blue Australia"
+        },
+        {
+          "step": "metafieldsSet",
+          "status": "OK",
+          "metafields": [
+            {
+              "key": "custom_label_0",
+              "value": "bundle_premium"
+            },
+            {
+              "key": "google_product_category",
+              "value": "5709"
+            }
+          ]
+        }
+      ],
+      "verified": {
+        "productType": "Gender Reveal > Bundles > Sports",
+        "seoTitle": "Gender Reveal Race Day Sports Bundle Pink Blue Australia",
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    },
+    {
+      "id": "7988691927129",
+      "title": "TNT Gender Reveal Self Hire",
+      "steps": [
+        {
+          "step": "productUpdate",
+          "status": "OK",
+          "productType": "Gender Reveal > TNT Hire",
+          "seoTitle": "TNT Gender Reveal Self Hire Kit Pink Blue Australia"
+        },
+        {
+          "step": "metafieldsSet",
+          "status": "OK",
+          "metafields": [
+            {
+              "key": "custom_label_0",
+              "value": "bundle_premium"
+            },
+            {
+              "key": "google_product_category",
+              "value": "5709"
+            }
+          ]
+        }
+      ],
+      "verified": {
+        "productType": "Gender Reveal > TNT Hire",
+        "seoTitle": "TNT Gender Reveal Self Hire Kit Pink Blue Australia",
+        "custom_label_0": "bundle_premium",
+        "google_product_category": "5709"
+      }
+    }
+  ]
+}

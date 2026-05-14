@@ -1,0 +1,42 @@
+{
+  "takenAt": "2026-05-05T10:54:39.555Z",
+  "purpose": "Phase 3 May 19 tROAS floor reference",
+  "campaigns": [
+    {
+      "campaignId": "21094179575",
+      "name": "GRI | Search | Cannons",
+      "bidStrategyTypeCode": 11,
+      "currentTargetRoas": null,
+      "budgetMicros": "30000000",
+      "budgetAUD": 30,
+      "budgetId": "13431293752"
+    },
+    {
+      "campaignId": "21113841118",
+      "name": "GRI PMAX | All Products",
+      "bidStrategyTypeCode": 11,
+      "currentTargetRoas": null,
+      "budgetMicros": "150000000",
+      "budgetAUD": 150,
+      "budgetId": "13437546672"
+    },
+    {
+      "campaignId": "21511998936",
+      "name": "GRI PMAX | Cannon & Powder Reveals",
+      "bidStrategyTypeCode": 11,
+      "currentTargetRoas": 2,
+      "budgetMicros": "40000000",
+      "budgetAUD": 40,
+      "budgetId": "13787790883"
+    },
+    {
+      "campaignId": "22841772135",
+      "name": "GRI PMAX | Bundles",
+      "bidStrategyTypeCode": 11,
+      "currentTargetRoas": null,
+      "budgetMicros": "75000000",
+      "budgetAUD": 75,
+      "budgetId": "14807748208"
+    }
+  ]
+}

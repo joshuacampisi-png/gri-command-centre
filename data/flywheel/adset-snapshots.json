@@ -1166,5 +1166,35 @@
     "frequency": 1.902114,
     "cpm": 13.319598,
     "createdAt": "2026-04-30T04:02:03.229Z"
+  },
+  {
+    "id": "21546c03-00b4-413b-af8c-ba01dffd0d76",
+    "adSetId": "120233437263180711",
+    "campaignId": "120233436381360711",
+    "date": "2026-05-08",
+    "spend": 346.29,
+    "impressions": 34282,
+    "purchases": 11,
+    "revenue": 0,
+    "cpa": 31.480909090909094,
+    "roas": null,
+    "frequency": 2.468284,
+    "cpm": 10.101219,
+    "createdAt": "2026-05-08T22:00:26.808Z"
+  },
+  {
+    "id": "5c6d0ed0-86f6-43f7-86f9-7181e417ebbe",
+    "adSetId": "120233437263180711",
+    "campaignId": "120233436381360711",
+    "date": "2026-05-09",
+    "spend": 350,
+    "impressions": 34011,
+    "purchases": 10,
+    "revenue": 0,
+    "cpa": 35,
+    "roas": null,
+    "frequency": 2.630191,
+    "cpm": 10.290788,
+    "createdAt": "2026-05-09T22:00:20.153Z"
   }
 ]

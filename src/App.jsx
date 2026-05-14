@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { fetchDashboard, fetchThemeAssets, fetchThemeAsset, saveThemeAsset } from './api'
 import KeywordRankings from './components/KeywordRankings'
 import CompetitorComparison from './components/CompetitorComparison'
@@ -288,11 +288,28 @@ function OverviewPage({ data, company }) {
     setShippingCostSaving(false)
   }
 
-  // Build the week buttons: current week + last 3 weeks
+  // Build week list. Quick-pick = current + last 3 weeks (kept as buttons).
+  // Dropdown = every Wed-Tue week from now back to the first Wed-Tue week
+  // that overlaps January 2026, so the team can backfill any prior week.
   const shippingWeeks = [0, -1, -2, -3].map(offset => {
-    const { wedDate, tueDate } = getWedTueWeek(offset)
-    return { offset, label: formatWeekLabel(wedDate, tueDate), isCurrent: offset === 0 }
+    const { wedDate, tueDate, from } = getWedTueWeek(offset)
+    return { offset, from, label: formatWeekLabel(wedDate, tueDate), isCurrent: offset === 0 }
   })
+
+  const allShippingWeeks = useMemo(() => {
+    const out = []
+    const JAN_1 = new Date('2026-01-01T00:00:00')
+    for (let offset = 0; offset >= -260; offset--) { // hard safety stop at ~5 years
+      const { wedDate, tueDate, from, to } = getWedTueWeek(offset)
+      out.push({ offset, from, to, label: formatWeekLabel(wedDate, tueDate) })
+      // Stop once this week's Tuesday is before Jan 1 2026 (we've covered Jan 2026)
+      if (tueDate < JAN_1) break
+    }
+    return out
+  }, [getWedTueWeek, formatWeekLabel])
+
+  const currentWeekFrom = getWedTueWeek(shippingWeekOffset).from
+  const isQuickPick = shippingWeeks.some(w => w.offset === shippingWeekOffset)
 
   // Top 5: prefer real-time trending queries, fall back to cached timeseries
   const top5 = (() => {
@@ -381,19 +398,56 @@ function OverviewPage({ data, company }) {
         {/* Shipping Revenue */}
         <div className="ov-card ov-stat-card" style={{ ...carouselCardStyle, minWidth: 280 }}>
           <h3>Shipping Revenue</h3>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-            {shippingWeeks.map(w => (
-              <button key={w.offset} onClick={() => setShippingWeekOffset(w.offset)}
-                style={{
-                  padding: '5px 10px', fontSize: 11, borderRadius: 8, cursor: 'pointer',
-                  border: shippingWeekOffset === w.offset ? '2px solid #3AB4C0' : '1px solid #e5e7eb',
-                  background: shippingWeekOffset === w.offset ? '#F0FDFA' : '#fff',
-                  color: shippingWeekOffset === w.offset ? '#0F766E' : '#555',
-                  fontWeight: shippingWeekOffset === w.offset ? 600 : 400,
-                }}>
-                {w.label}{w.isCurrent ? ' (now)' : ''}
-              </button>
-            ))}
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+            {shippingWeeks.map(w => {
+              const hasEntry = !!shippingCosts[w.from]
+              return (
+                <button key={w.offset} onClick={() => setShippingWeekOffset(w.offset)}
+                  style={{
+                    padding: '5px 10px', fontSize: 11, borderRadius: 8, cursor: 'pointer',
+                    border: shippingWeekOffset === w.offset ? '2px solid #3AB4C0' : '1px solid #e5e7eb',
+                    background: shippingWeekOffset === w.offset ? '#F0FDFA' : '#fff',
+                    color: shippingWeekOffset === w.offset ? '#0F766E' : '#555',
+                    fontWeight: shippingWeekOffset === w.offset ? 600 : 400,
+                    position: 'relative',
+                  }}>
+                  {w.label}{w.isCurrent ? ' (now)' : ''}
+                  {hasEntry && <span style={{ marginLeft: 5, color: '#10B981', fontWeight: 700 }}>✓</span>}
+                </button>
+              )
+            })}
+          </div>
+          {/* Older weeks dropdown — backfill any Wed-Tue week back to Jan 2026 */}
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 10 }}>
+            <label style={{ fontSize: 11, fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '.04em' }}>
+              Earlier weeks
+            </label>
+            <select
+              value={isQuickPick ? '' : String(shippingWeekOffset)}
+              onChange={e => {
+                const v = e.target.value
+                if (v !== '') setShippingWeekOffset(parseInt(v, 10))
+              }}
+              style={{
+                flex: 1, padding: '6px 8px', fontSize: 12, borderRadius: 8,
+                border: !isQuickPick ? '2px solid #3AB4C0' : '1px solid #e5e7eb',
+                background: !isQuickPick ? '#F0FDFA' : '#fff',
+                color: !isQuickPick ? '#0F766E' : '#555',
+                fontWeight: !isQuickPick ? 600 : 400,
+                cursor: 'pointer', outline: 'none',
+              }}>
+              <option value="">— pick a week to backfill —</option>
+              {allShippingWeeks
+                .filter(w => w.offset <= -4) // hide the 4 already shown as quick-pick buttons
+                .map(w => {
+                  const hasEntry = !!shippingCosts[w.from]
+                  return (
+                    <option key={w.offset} value={w.offset}>
+                      {w.label}{hasEntry ? '  ✓ saved' : '  — empty'}
+                    </option>
+                  )
+                })}
+            </select>
           </div>
           {shippingData ? <>
             <div style={{ fontSize: '2.4rem', fontWeight: 800, color: '#3AB4C0', marginBottom: 8 }}>

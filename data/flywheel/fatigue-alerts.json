@@ -589,5 +589,802 @@
     "frequency": 1.215716,
     "acknowledged": false,
     "createdAt": "2026-05-05T05:37:15.417Z"
+  },
+  {
+    "id": "fatigue-120241510164500711-1778037975925",
+    "adId": "120241510164500711",
+    "adName": "TNT Hire | Bris & GC | Pink Plume Static Apr 21",
+    "campaignName": "GRI - Local (TNT Hire)",
+    "previousStatus": "WATCH",
+    "currentStatus": "FATIGUING",
+    "score": 25,
+    "signals": [
+      "CTR crashed -38%",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 1.849372,
+    "acknowledged": false,
+    "createdAt": "2026-05-06T03:26:15.925Z"
+  },
+  {
+    "id": "fatigue-120240504416620711-1778037977383",
+    "adId": "120240504416620711",
+    "adName": "TNT Hire | Bris & GC | Interests | Product/Image 3",
+    "campaignName": "GRI - Local (TNT Hire)",
+    "previousStatus": "WATCH",
+    "currentStatus": "FATIGUING",
+    "score": 30,
+    "signals": [
+      "CTR declining -30%",
+      "CPA spiked +60%",
+      "Running 35 days (shelf life ~14d)"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": 47,
+    "frequency": 1.530452,
+    "acknowledged": false,
+    "createdAt": "2026-05-06T03:26:17.383Z"
+  },
+  {
+    "id": "fatigue-120241236310800711-1778037978717",
+    "adId": "120241236310800711",
+    "adName": "Josh | AI | Advantage+ Remarketing | Mega Blaster",
+    "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+    "previousStatus": "WATCH",
+    "currentStatus": "FATIGUING",
+    "score": 35,
+    "signals": [
+      "Rising frequency: 2.6",
+      "Running 21 days",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 2.601054,
+    "acknowledged": false,
+    "createdAt": "2026-05-06T03:26:18.717Z"
+  },
+  {
+    "id": "fatigue-120241178668300711-1778037979221",
+    "adId": "120241178668300711",
+    "adName": "JOSH AI | Pregnancy Journey | Video 1 | Apr 2026",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "WATCH",
+    "currentStatus": "FATIGUING",
+    "score": 40,
+    "signals": [
+      "Running 22 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 1.264392,
+    "acknowledged": false,
+    "createdAt": "2026-05-06T03:26:19.221Z"
+  },
+  {
+    "id": "fatigue-120231756287270711-1778037979721",
+    "adId": "120231756287270711",
+    "adName": "R6 | Party & Event Segment | Video | Smoke Bomb September",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "FATIGUING",
+    "currentStatus": "DEAD",
+    "score": 5,
+    "signals": [
+      "CTR crashed -32%",
+      "Running 232 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.96"
+    ],
+    "recommendation": "Kill this ad immediately. Replace with fresh creative.",
+    "daysRemaining": 3,
+    "frequency": 1.31066,
+    "acknowledged": false,
+    "createdAt": "2026-05-06T03:26:19.721Z"
+  },
+  {
+    "id": "fatigue-120240700158210711-1778071326788",
+    "adId": "120240700158210711",
+    "adName": "AI | TNT |TEST | GRI",
+    "campaignName": "GRI - Local (TNT Hire)",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 40,
+    "signals": [
+      "Running 32 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 0,
+    "acknowledged": false,
+    "createdAt": "2026-05-06T12:42:06.788Z"
+  },
+  {
+    "id": "fatigue-120226215760050711-1778071328204",
+    "adId": "120226215760050711",
+    "adName": "Advantage+ Remarketing - All Products 1",
+    "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+    "previousStatus": "FATIGUING",
+    "currentStatus": "DEAD",
+    "score": 15,
+    "signals": [
+      "High frequency: 4.5",
+      "CPA spiked +42%",
+      "Running 315 days (shelf life ~14d)"
+    ],
+    "recommendation": "Kill this ad immediately. Replace with fresh creative.",
+    "daysRemaining": null,
+    "frequency": 4.5,
+    "acknowledged": false,
+    "createdAt": "2026-05-06T12:42:08.204Z"
+  },
+  {
+    "id": "fatigue-120241178668300711-1778071329603",
+    "adId": "120241178668300711",
+    "adName": "JOSH AI | Pregnancy Journey | Video 1 | Apr 2026",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "FATIGUING",
+    "currentStatus": "DEAD",
+    "score": 20,
+    "signals": [
+      "CTR declining -17%",
+      "Running 22 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Kill this ad immediately. Replace with fresh creative.",
+    "daysRemaining": null,
+    "frequency": 1.264392,
+    "acknowledged": false,
+    "createdAt": "2026-05-06T12:42:09.603Z"
+  },
+  {
+    "id": "fatigue-120233438019120711-1778129881591",
+    "adId": "120233438019120711",
+    "adName": "TNT Hire | Bris & GC | Interests | Product/Image 2",
+    "campaignName": "GRI - Local (TNT Hire)",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "DEAD",
+    "score": 5,
+    "signals": [
+      "CTR crashed -54%",
+      "Running 197 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Kill this ad immediately. Replace with fresh creative.",
+    "daysRemaining": 2,
+    "frequency": 1.432865,
+    "acknowledged": false,
+    "createdAt": "2026-05-07T04:58:01.591Z"
+  },
+  {
+    "id": "fatigue-120233437581590711-1778129882940",
+    "adId": "120233437581590711",
+    "adName": "TNT Hire | Bris & GC | Interests | Video",
+    "campaignName": "GRI - Local (TNT Hire)",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 40,
+    "signals": [
+      "Running 197 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 0,
+    "acknowledged": false,
+    "createdAt": "2026-05-07T04:58:02.940Z"
+  },
+  {
+    "id": "fatigue-120240504416620711-1778129884338",
+    "adId": "120240504416620711",
+    "adName": "TNT Hire | Bris & GC | Interests | Product/Image 3",
+    "campaignName": "GRI - Local (TNT Hire)",
+    "previousStatus": "WATCH",
+    "currentStatus": "FATIGUING",
+    "score": 30,
+    "signals": [
+      "CTR declining -28%",
+      "CPA spiked +130%",
+      "Running 37 days (shelf life ~14d)"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 1.50778,
+    "acknowledged": false,
+    "createdAt": "2026-05-07T04:58:04.338Z"
+  },
+  {
+    "id": "fatigue-120238073906700711-1778129884829",
+    "adId": "120238073906700711",
+    "adName": "TNT Hire | Bris & GC | Video | TNT Hire Process",
+    "campaignName": "GRI - Local (TNT Hire)",
+    "previousStatus": "WATCH",
+    "currentStatus": "DEAD",
+    "score": 15,
+    "signals": [
+      "CTR crashed -36%",
+      "CPA spiked +165%",
+      "Running 98 days (shelf life ~14d)"
+    ],
+    "recommendation": "Kill this ad immediately. Replace with fresh creative.",
+    "daysRemaining": 5,
+    "frequency": 1.739918,
+    "acknowledged": false,
+    "createdAt": "2026-05-07T04:58:04.829Z"
+  },
+  {
+    "id": "fatigue-120241237521050711-1778129885326",
+    "adId": "120241237521050711",
+    "adName": "Advantage+ Remarketing - Mega Blaster",
+    "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+    "previousStatus": "WATCH",
+    "currentStatus": "FATIGUING",
+    "score": 40,
+    "signals": [
+      "Running 22 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 1.266667,
+    "acknowledged": false,
+    "createdAt": "2026-05-07T04:58:05.326Z"
+  },
+  {
+    "id": "fatigue-120229551711420711-1778129885825",
+    "adId": "120229551711420711",
+    "adName": "Mega Blaster Reveal Compliation Video",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 45,
+    "signals": [
+      "CTR crashed -40%",
+      "Running 272 days (shelf life ~14d)"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": 4,
+    "frequency": 1.549975,
+    "acknowledged": false,
+    "createdAt": "2026-05-07T04:58:05.825Z"
+  },
+  {
+    "id": "fatigue-120227095577490711-1778186598992",
+    "adId": "120227095577490711",
+    "adName": "Cannons Catalogue",
+    "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+    "previousStatus": "WATCH",
+    "currentStatus": "FATIGUING",
+    "score": 35,
+    "signals": [
+      "Rising frequency: 2.7",
+      "CPA spiked +52%",
+      "Running 302 days (shelf life ~14d)"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 2.652863,
+    "acknowledged": false,
+    "createdAt": "2026-05-07T20:43:18.992Z"
+  },
+  {
+    "id": "fatigue-120229551711420711-1778186600352",
+    "adId": "120229551711420711",
+    "adName": "Mega Blaster Reveal Compliation Video",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "FATIGUING",
+    "currentStatus": "DEAD",
+    "score": 20,
+    "signals": [
+      "CTR declining -24%",
+      "Running 272 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.81"
+    ],
+    "recommendation": "Kill this ad immediately. Replace with fresh creative.",
+    "daysRemaining": 34,
+    "frequency": 1.544576,
+    "acknowledged": false,
+    "createdAt": "2026-05-07T20:43:20.352Z"
+  },
+  {
+    "id": "fatigue-120229551711390711-1778206015130",
+    "adId": "120229551711390711",
+    "adName": "Child Safe, Non Toxic Video",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 45,
+    "signals": [
+      "CTR crashed -42%",
+      "Running 272 days (shelf life ~14d)"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": 6,
+    "frequency": 1.650564,
+    "acknowledged": false,
+    "createdAt": "2026-05-08T02:06:55.130Z"
+  },
+  {
+    "id": "fatigue-120231473448190711-1778206017209",
+    "adId": "120231473448190711",
+    "adName": "Cannons 6 Colours - Video v02",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "FATIGUING",
+    "currentStatus": "DEAD",
+    "score": 5,
+    "signals": [
+      "CTR crashed -100%",
+      "Running 240 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Kill this ad immediately. Replace with fresh creative.",
+    "daysRemaining": null,
+    "frequency": 1.33547,
+    "acknowledged": false,
+    "createdAt": "2026-05-08T02:06:57.209Z"
+  },
+  {
+    "id": "fatigue-120229935790060711-1778206018612",
+    "adId": "120229935790060711",
+    "adName": "Gender Reveal Reel Video",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 45,
+    "signals": [
+      "CTR crashed -44%",
+      "Running 265 days (shelf life ~14d)"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": 60,
+    "frequency": 1.539944,
+    "acknowledged": false,
+    "createdAt": "2026-05-08T02:06:58.612Z"
+  },
+  {
+    "id": "fatigue-120231803428310711-1778206019117",
+    "adId": "120231803428310711",
+    "adName": "Mega Blaster September Video",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 45,
+    "signals": [
+      "CTR crashed -39%",
+      "Running 232 days (shelf life ~14d)"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": 34,
+    "frequency": 1.504271,
+    "acknowledged": false,
+    "createdAt": "2026-05-08T02:06:59.117Z"
+  },
+  {
+    "id": "fatigue-120241236310800711-1778281258860",
+    "adId": "120241236310800711",
+    "adName": "Josh | AI | Advantage+ Remarketing | Mega Blaster",
+    "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+    "previousStatus": "FATIGUING",
+    "currentStatus": "DEAD",
+    "score": 5,
+    "signals": [
+      "Rising frequency: 3.2",
+      "CTR declining -18%",
+      "Running 23 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Kill this ad immediately. Replace with fresh creative.",
+    "daysRemaining": null,
+    "frequency": 3.248148,
+    "acknowledged": false,
+    "createdAt": "2026-05-08T23:00:58.860Z"
+  },
+  {
+    "id": "fatigue-120238073732840711-1778305636783",
+    "adId": "120238073732840711",
+    "adName": "TNT Hire | Bris & GC | Video | TNT Compiliation",
+    "campaignName": "GRI - Local (TNT Hire)",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "DEAD",
+    "score": 15,
+    "signals": [
+      "CTR crashed -37%",
+      "CPA spiked +209%",
+      "Running 100 days (shelf life ~14d)"
+    ],
+    "recommendation": "Kill this ad immediately. Replace with fresh creative.",
+    "daysRemaining": 45,
+    "frequency": 1.716728,
+    "acknowledged": false,
+    "createdAt": "2026-05-09T05:47:16.783Z"
+  },
+  {
+    "id": "fatigue-120241178668300711-1778305638220",
+    "adId": "120241178668300711",
+    "adName": "JOSH AI | Pregnancy Journey | Video 1 | Apr 2026",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 45,
+    "signals": [
+      "CTR crashed -68%",
+      "Running 25 days (shelf life ~14d)"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 1.22006,
+    "acknowledged": false,
+    "createdAt": "2026-05-09T05:47:18.220Z"
+  },
+  {
+    "id": "fatigue-120231803428310711-1778305639630",
+    "adId": "120231803428310711",
+    "adName": "Mega Blaster September Video",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "FATIGUING",
+    "currentStatus": "DEAD",
+    "score": 15,
+    "signals": [
+      "CTR crashed -31%",
+      "CPA spiked +312%",
+      "Running 234 days (shelf life ~14d)"
+    ],
+    "recommendation": "Kill this ad immediately. Replace with fresh creative.",
+    "daysRemaining": 49,
+    "frequency": 1.531835,
+    "acknowledged": false,
+    "createdAt": "2026-05-09T05:47:19.630Z"
+  },
+  {
+    "id": "fatigue-120242262030680711-1778407268809",
+    "adId": "120242262030680711",
+    "adName": "RT | AI | Bundles | Feel Good  │    │  Static | May 7",
+    "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+    "previousStatus": "WATCH",
+    "currentStatus": "FATIGUING",
+    "score": 45,
+    "signals": [
+      "Rising frequency: 3.0",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 2.950104,
+    "acknowledged": false,
+    "createdAt": "2026-05-10T10:01:08.809Z"
+  },
+  {
+    "id": "fatigue-120229551711390711-1778407270181",
+    "adId": "120229551711390711",
+    "adName": "Child Safe, Non Toxic Video",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 40,
+    "signals": [
+      "Running 275 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 1.666427,
+    "acknowledged": false,
+    "createdAt": "2026-05-10T10:01:10.181Z"
+  },
+  {
+    "id": "fatigue-120232304752420711-1778407271602",
+    "adId": "120232304752420711",
+    "adName": "R6 | Adrenaline Interest | Video | Mega Blaster Customer Reel",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 45,
+    "signals": [
+      "CTR crashed -55%",
+      "Running 223 days (shelf life ~14d)"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 1.451327,
+    "acknowledged": false,
+    "createdAt": "2026-05-10T10:01:11.602Z"
+  },
+  {
+    "id": "fatigue-120232764647370711-1778513720690",
+    "adId": "120232764647370711",
+    "adName": "R6 | Lookalikes | Cannons Catalogue Slideshow + Tagged Products",
+    "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 45,
+    "signals": [
+      "CTR crashed -100%",
+      "Running 213 days (shelf life ~14d)"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 1.869091,
+    "acknowledged": false,
+    "createdAt": "2026-05-11T15:35:20.690Z"
+  },
+  {
+    "id": "fatigue-120232497076720711-1778513722153",
+    "adId": "120232497076720711",
+    "adName": "Advantage+ Remarketing - Bundles Catalogue",
+    "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+    "previousStatus": "WATCH",
+    "currentStatus": "FATIGUING",
+    "score": 25,
+    "signals": [
+      "CTR crashed -49%",
+      "Running 220 days (shelf life ~14d)",
+      "Low ROAS: 1.27"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 1.998726,
+    "acknowledged": false,
+    "createdAt": "2026-05-11T15:35:22.153Z"
+  },
+  {
+    "id": "fatigue-120226215760050711-1778513723532",
+    "adId": "120226215760050711",
+    "adName": "Advantage+ Remarketing - All Products 1",
+    "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+    "previousStatus": "FATIGUING",
+    "currentStatus": "DEAD",
+    "score": 15,
+    "signals": [
+      "High frequency: 3.8",
+      "CPA spiked +762%",
+      "Running 320 days (shelf life ~14d)"
+    ],
+    "recommendation": "Kill this ad immediately. Replace with fresh creative.",
+    "daysRemaining": null,
+    "frequency": 3.809728,
+    "acknowledged": false,
+    "createdAt": "2026-05-11T15:35:23.532Z"
+  },
+  {
+    "id": "fatigue-120229551711390711-1778513724057",
+    "adId": "120229551711390711",
+    "adName": "Child Safe, Non Toxic Video",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "FATIGUING",
+    "currentStatus": "DEAD",
+    "score": 5,
+    "signals": [
+      "CTR crashed -68%",
+      "Running 276 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Kill this ad immediately. Replace with fresh creative.",
+    "daysRemaining": null,
+    "frequency": 1.536021,
+    "acknowledged": false,
+    "createdAt": "2026-05-11T15:35:24.057Z"
+  },
+  {
+    "id": "fatigue-120242240932990711-1778548712711",
+    "adId": "120242240932990711",
+    "adName": "JOSH AI | Pregnancy Journey | Founder 5 Kids | Apr 20",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "WATCH",
+    "currentStatus": "FATIGUING",
+    "score": 40,
+    "signals": [
+      "CTR declining -18%",
+      "ROAS below breakeven: 0.19"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 1.999467,
+    "acknowledged": false,
+    "createdAt": "2026-05-12T01:18:32.712Z"
+  },
+  {
+    "id": "fatigue-120242315341900711-1778652248249",
+    "adId": "120242315341900711",
+    "adName": "TEST 2 | TNT | PREGNANT TIRED",
+    "campaignName": "GRI - Local (TNT Hire)",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 35,
+    "signals": [
+      "CTR crashed -37%",
+      "CPA spiked +167%"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": 3,
+    "frequency": 2.410204,
+    "acknowledged": false,
+    "createdAt": "2026-05-13T06:04:08.249Z"
+  },
+  {
+    "id": "fatigue-120242262030680711-1778652249674",
+    "adId": "120242262030680711",
+    "adName": "RT | AI | Bundles | Feel Good  │    │  Static | May 7",
+    "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+    "previousStatus": "WATCH",
+    "currentStatus": "FATIGUING",
+    "score": 45,
+    "signals": [
+      "High frequency: 4.4",
+      "CTR declining -26%"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 4.40458,
+    "acknowledged": false,
+    "createdAt": "2026-05-13T06:04:09.674Z"
+  },
+  {
+    "id": "fatigue-120232497076720711-1778652251088",
+    "adId": "120232497076720711",
+    "adName": "Advantage+ Remarketing - Bundles Catalogue",
+    "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+    "previousStatus": "FATIGUING",
+    "currentStatus": "DEAD",
+    "score": 20,
+    "signals": [
+      "CTR declining -28%",
+      "Running 222 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Kill this ad immediately. Replace with fresh creative.",
+    "daysRemaining": 3,
+    "frequency": 1.968912,
+    "acknowledged": false,
+    "createdAt": "2026-05-13T06:04:11.088Z"
+  },
+  {
+    "id": "fatigue-120241447455530711-1778652251580",
+    "adId": "120241447455530711",
+    "adName": "JOSH AI | Pregnancy Journey | Founder 5 Kids | Apr 20",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 45,
+    "signals": [
+      "CPA rising +31%",
+      "Running 23 days (shelf life ~14d)",
+      "Low ROAS: 1.46"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 2.023262,
+    "acknowledged": false,
+    "createdAt": "2026-05-13T06:04:11.580Z"
+  },
+  {
+    "id": "fatigue-120231756287270711-1778652252112",
+    "adId": "120231756287270711",
+    "adName": "R6 | Party & Event Segment | Video | Smoke Bomb September",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 30,
+    "signals": [
+      "CTR declining -20%",
+      "CPA spiked +313%",
+      "Running 239 days (shelf life ~14d)"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": 31,
+    "frequency": 1.292849,
+    "acknowledged": false,
+    "createdAt": "2026-05-13T06:04:12.112Z"
+  },
+  {
+    "id": "fatigue-120240504416620711-1778733300849",
+    "adId": "120240504416620711",
+    "adName": "TNT Hire | Bris & GC | Interests | Product/Image 3",
+    "campaignName": "GRI - Local (TNT Hire)",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 40,
+    "signals": [
+      "Running 44 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 1.309434,
+    "acknowledged": false,
+    "createdAt": "2026-05-14T04:35:00.849Z"
+  },
+  {
+    "id": "fatigue-120238073906700711-1778733302357",
+    "adId": "120238073906700711",
+    "adName": "TNT Hire | Bris & GC | Video | TNT Hire Process",
+    "campaignName": "GRI - Local (TNT Hire)",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 40,
+    "signals": [
+      "Running 105 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.95"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 1.362143,
+    "acknowledged": false,
+    "createdAt": "2026-05-14T04:35:02.357Z"
+  },
+  {
+    "id": "fatigue-120227095577490711-1778733303719",
+    "adId": "120227095577490711",
+    "adName": "Cannons Catalogue",
+    "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+    "previousStatus": "WATCH",
+    "currentStatus": "FATIGUING",
+    "score": 45,
+    "signals": [
+      "Rising frequency: 2.7",
+      "CTR declining -28%",
+      "Running 309 days (shelf life ~14d)"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": 2,
+    "frequency": 2.659281,
+    "acknowledged": false,
+    "createdAt": "2026-05-14T04:35:03.719Z"
+  },
+  {
+    "id": "fatigue-120231803716560711-1778733304205",
+    "adId": "120231803716560711",
+    "adName": "R6 | Party & Event Segment | Video | Smoke Bomb September – Copy",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 45,
+    "signals": [
+      "CTR crashed -34%",
+      "Running 238 days (shelf life ~14d)"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": 6,
+    "frequency": 1.265393,
+    "acknowledged": false,
+    "createdAt": "2026-05-14T04:35:04.205Z"
+  },
+  {
+    "id": "fatigue-120232304752420711-1778733304696",
+    "adId": "120232304752420711",
+    "adName": "R6 | Adrenaline Interest | Video | Mega Blaster Customer Reel",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "DEAD",
+    "score": 5,
+    "signals": [
+      "CTR crashed -40%",
+      "Running 227 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Kill this ad immediately. Replace with fresh creative.",
+    "daysRemaining": null,
+    "frequency": 1.188988,
+    "acknowledged": false,
+    "createdAt": "2026-05-14T04:35:04.696Z"
+  },
+  {
+    "id": "fatigue-120229935790060711-1778733305196",
+    "adId": "120229935790060711",
+    "adName": "Gender Reveal Reel Video",
+    "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+    "previousStatus": "HEALTHY",
+    "currentStatus": "FATIGUING",
+    "score": 40,
+    "signals": [
+      "Running 271 days (shelf life ~14d)",
+      "ROAS below breakeven: 0.00"
+    ],
+    "recommendation": "Prepare replacement creative now. This ad has 1-3 days left.",
+    "daysRemaining": null,
+    "frequency": 1.336912,
+    "acknowledged": false,
+    "createdAt": "2026-05-14T04:35:05.196Z"
   }
 ]
