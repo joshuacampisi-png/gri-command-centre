@@ -36,6 +36,8 @@ import { detectWinners, detectUnderperformers } from '../lib/winner-scout.js'
 import { getShopifyTodayOrders, getShopifyOrdersRange } from '../connectors/shopify.js'
 import { GRI_ADS, calculateMER, calculateTrueCAC, calculateAMER, calculateNCAC, calculateFOVCAC, calculateCM, calculateCostOfDelivery, calculateAcquisitionMER } from '../lib/ads-metrics.js'
 import { getGoogleSpend } from '../lib/google-ads-spend.js'
+import { fetchLiveGoogleSpend } from '../lib/gads-live-spend.js'
+import { aggregateByPlatform, rollupToFlywheelBuckets } from '../lib/order-attribution.js'
 import { getIndex, classifyOrders } from '../lib/customer-index.js'
 import { calculateFatigueScore } from '../lib/fatigue-engine.js'
 import { processShopifyOrder, verifyShopifyHmac } from '../lib/flywheel-webhook.js'
@@ -55,8 +57,8 @@ router.get('/dashboard', async (req, res) => {
     const daysMap = { today: 1, '7d': 7, '14d': 14, '30d': 30 }
     const days = daysMap[range] || 1
 
-    // Parallel fetch: Shopify revenue + Meta insights + all store data
-    const [shopifyData, shopifyTodayData, metaData] = await Promise.all([
+    // Parallel fetch: Shopify revenue + Meta insights + LIVE Google Ads + all store data
+    const [shopifyData, shopifyTodayData, metaData, googleLive] = await Promise.all([
       (async () => {
         try {
           const to = new Date()
@@ -79,8 +81,16 @@ router.get('/dashboard', async (req, res) => {
         } catch (e) { return null }
       })(),
       (async () => {
-        try { return await fetchAccountInsights(metaPreset) }
-        catch (e) { return { spend: 0, purchases: 0, error: e.message } }
+        try { return { ...await fetchAccountInsights(metaPreset), ok: true, fetchedAt: new Date().toISOString() } }
+        catch (e) { return { ok: false, spend: 0, purchases: 0, error: e.message, fetchedAt: new Date().toISOString() } }
+      })(),
+      // LIVE Google Ads API via gads-client.js (replaces the broken Google
+      // Ads Script JSON-file webhook). Falls back to the legacy JSON file
+      // only if env vars aren't set on this host.
+      (async () => {
+        const live = await fetchLiveGoogleSpend(metaPreset)
+        if (live.ok) return live
+        return { ...live, _fallbackTried: false }
       })(),
     ])
 
@@ -89,7 +99,7 @@ router.get('/dashboard', async (req, res) => {
     const metaSpend = metaData.spend || 0
     const metaPurchases = metaData.purchases || 0
 
-    // Google Ads spend
+    // Google Ads spend — prefer live API, fall back to legacy JSON if not configured
     const aestNow2 = new Date(new Date().toLocaleString('en-US', { timeZone: 'Australia/Brisbane' }))
     const todayStr2 = aestNow2.toISOString().slice(0, 10)
     let gFromStr, gToStr
@@ -104,12 +114,42 @@ router.get('/dashboard', async (req, res) => {
       gFrom.setDate(gFrom.getDate() - (days - 1))
       gFromStr = gFrom.toISOString().slice(0, 10)
     }
-    const googleSpendData = getGoogleSpend(gFromStr, gToStr)
+    let googleSource = 'live_api'
+    let googleSpendData
+    if (googleLive.ok) {
+      googleSpendData = {
+        totalSpend: googleLive.spend,
+        totalConversionValue: googleLive.conversionValue,
+        totalClicks: googleLive.clicks,
+        totalImpressions: googleLive.impressions,
+        totalConversions: googleLive.conversions,
+        hasData: googleLive.spend > 0,
+        fetchedAt: googleLive.fetchedAt,
+      }
+    } else {
+      // Live API failed (or not configured) — fall back to the legacy JSON
+      // file populated by the Google Ads Script so the dashboard still
+      // shows SOMETHING. UI shows a banner when this happens.
+      googleSource = 'legacy_script_file'
+      const legacy = getGoogleSpend(gFromStr, gToStr)
+      googleSpendData = {
+        totalSpend: legacy.totalSpend || 0,
+        totalConversionValue: legacy.totalConversionValue || 0,
+        totalClicks: legacy.totalClicks || 0,
+        totalImpressions: legacy.totalImpressions || 0,
+        totalConversions: legacy.totalConversions || 0,
+        hasData: !!legacy.hasData,
+        legacyError: googleLive.error || null,
+        fetchedAt: new Date().toISOString(),
+      }
+    }
     const googleSpend = googleSpendData.totalSpend || 0
     const totalSpend = metaSpend + googleSpend
 
-    // Hero metrics (using total spend for MER, profit, nCAC)
-    const roas = metaSpend > 0 ? shopifyRevenue / metaSpend : 0
+    // Hero metrics
+    // NOTE: roas (Meta-only ROAS) is computed below using Shopify-attributed
+    // Meta revenue, not pixel revenue, so it can't be inflated by Google
+    // overlap. metaRoas / googleRoas are added separately to the response.
     const mer = calculateMER(shopifyRevenue, totalSpend)
     const cpa = shopifyOrders > 0 ? totalSpend / shopifyOrders : 0
     const aov = shopifyOrders > 0 ? shopifyRevenue / shopifyOrders : 0
@@ -157,11 +197,35 @@ router.get('/dashboard', async (req, res) => {
       console.warn('[Flywheel] nCAC calculation skipped:', e.message)
     }
 
-    // Revenue attribution breakdown
-    const metaRevenue = metaData.purchaseValue || 0
-    const googleRevenue = googleSpendData.totalConversionValue || 0
+    // ── CANONICAL REVENUE ATTRIBUTION ──────────────────────────────────
+    // We DO NOT trust Meta pixel + Google tag conversion counts simultaneously
+    // — they double-count any order that touches both platforms (organic
+    // would otherwise go negative, silently clamped). Instead we run every
+    // Shopify order through classifyOrder() (gclid / fbclid / utm / referrer)
+    // and award each order to exactly one platform.
+    //
+    // Spend stays sourced from each ad-platform API.
+    // Orders + revenue per platform come from Shopify.
+    // Organic = Shopify minus paid-attributed (a real, signed number now).
+    let attribution = { byPlatform: {}, buckets: { meta: { orders: 0, revenue: 0 }, google: { orders: 0, revenue: 0 }, organic: { orders: 0, revenue: 0 } } }
+    try {
+      const orderDetailsForAttribution = shopifyData?.orderDetails || []
+      const agg = aggregateByPlatform(orderDetailsForAttribution)
+      attribution = { byPlatform: agg.byPlatform, buckets: rollupToFlywheelBuckets(agg.byPlatform) }
+    } catch (e) {
+      console.warn('[Flywheel] Order attribution failed:', e.message)
+    }
+    const metaRevenue = attribution.buckets.meta.revenue
+    const metaOrders = attribution.buckets.meta.orders
+    const googleRevenue = attribution.buckets.google.revenue
+    const googleOrders = attribution.buckets.google.orders
+    const organicRevenue = attribution.buckets.organic.revenue
+    const organicOrders = attribution.buckets.organic.orders
+    // Meta-pixel-reported revenue is kept for reference but no longer used
+    // for any calculation — it's the source of the double-count problem.
+    const metaPixelRevenue = metaData.purchaseValue || 0
+    const googleTagRevenue = googleSpendData.totalConversionValue || 0
     const paidRevenue = metaRevenue + googleRevenue
-    const organicRevenue = Math.max(0, shopifyRevenue - paidRevenue)
 
     // Store data (instant reads)
     const campaigns = getCampaigns()
@@ -288,12 +352,22 @@ router.get('/dashboard', async (req, res) => {
         googleSpend: Math.round(googleSpend * 100) / 100,
         totalSpend: Math.round(totalSpend * 100) / 100,
         googleHasData: googleSpendData.hasData, metaPurchases,
-        // Revenue attribution
+        // ── Revenue attribution (Shopify-derived, no double-count) ──
         metaRevenue: Math.round(metaRevenue * 100) / 100,
+        metaOrders,
         googleRevenue: Math.round(googleRevenue * 100) / 100,
+        googleOrders,
         organicRevenue: Math.round(organicRevenue * 100) / 100,
-        // Metrics
-        roas: Math.round(roas * 100) / 100, mer: Math.round(mer * 100) / 100,
+        organicOrders,
+        // Pixel/tag numbers for reference / drift detection
+        metaPixelRevenue: Math.round(metaPixelRevenue * 100) / 100,
+        googleTagRevenue: Math.round(googleTagRevenue * 100) / 100,
+        // ── Per-platform ROAS (now correct) ──
+        metaRoas: metaSpend > 0 ? Math.round((metaRevenue / metaSpend) * 100) / 100 : 0,
+        googleRoas: googleSpend > 0 ? Math.round((googleRevenue / googleSpend) * 100) / 100 : 0,
+        // Legacy "roas" field = Meta ROAS (no longer the inflated blended one)
+        roas: metaSpend > 0 ? Math.round((metaRevenue / metaSpend) * 100) / 100 : 0,
+        mer: Math.round(mer * 100) / 100,
         cpa: Math.round(cpa * 100) / 100,
         ncac: ncac != null ? Math.round(ncac * 100) / 100 : null, newCustomerCount,
         aov: Math.round(aov * 100) / 100, amer: Math.round(amer * 100) / 100,
@@ -309,6 +383,20 @@ router.get('/dashboard', async (req, res) => {
         bundleRateRange: shopifyData?.bundleRate ?? null,
         bundleOrdersRange: shopifyData?.bundleOrders ?? null,
       },
+      // ── Data-source health (for UI warning banners) ──
+      apiHealth: {
+        meta: { ok: !metaData.error, error: metaData.error || null, fetchedAt: metaData.fetchedAt || null },
+        google: {
+          ok: googleLive.ok,
+          source: googleSource, // 'live_api' | 'legacy_script_file'
+          error: googleLive.error || null,
+          fetchedAt: googleSpendData.fetchedAt || null,
+          configured: googleSource === 'live_api' || googleLive._fallbackTried === false ? true : false,
+        },
+        shopify: { ok: shopifyData.ok !== false, error: shopifyData.error || null },
+        attribution: { method: 'shopify-first-party-utm-clickid', orderSampleSize: (shopifyData?.orderDetails || []).length },
+      },
+      attribution: { byPlatform: attribution.byPlatform, buckets: attribution.buckets },
       campaigns: enrichedCampaigns,
       creatives: enrichedCreatives,
       alerts, pendingActions, opportunities,

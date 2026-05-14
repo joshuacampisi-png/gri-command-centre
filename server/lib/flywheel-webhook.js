@@ -10,6 +10,7 @@ import {
 import { categoriseProduct, detectBundle, calculateAovIntelligence } from './flywheel-engine.js'
 import { indexOrderRealtime } from './customer-index.js'
 import { getAds } from './flywheel-store.js'
+import { classifyOrder } from './order-attribution.js'
 
 // ── HMAC Verification ───────────────────────────────────────────────────────
 
@@ -108,6 +109,11 @@ export function processShopifyOrder(order) {
     // Resolve creative angle from UTM content (Meta ad ID)
     const creativeAngle = resolveCreativeAngle(utms.utmContent)
 
+    // SINGLE SOURCE OF TRUTH for which platform owns this order. Used by
+    // /api/flywheel/dashboard to compute per-platform revenue + orders
+    // without double-counting Meta pixel + Google tag conversions.
+    const attribution = classifyOrder(order)
+
     // Get customer location
     const shipping = order.shipping_address || order.billing_address || {}
 
@@ -125,6 +131,12 @@ export function processShopifyOrder(order) {
       utmCampaign: utms.utmCampaign,
       utmContent: utms.utmContent,
       creativeAngle,
+      // Attribution (canonical platform credit for this order)
+      attributedPlatform: attribution.platform,
+      attributionConfidence: attribution.confidence,
+      attributionReason: attribution.reason,
+      gclid: attribution.signals.gclid,
+      fbclid: attribution.signals.fbclid,
       customerCity: shipping.city || null,
       customerState: shipping.province || shipping.state || null,
       customerCountry: shipping.country_code || 'AU',

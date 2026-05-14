@@ -244,8 +244,15 @@ export async function getShopifyOrdersRange(fromDate, toDate, { includeOrderDeta
       id: o.id,
       email: (o.contact_email || o.email || '').toLowerCase().trim(),
       aov: parseFloat(o.total_price) || 0,
+      total_price: o.total_price,
       createdAt: o.created_at,
+      created_at: o.created_at,
       name: o.name,
+      // Attribution fields — required by order-attribution.classifyOrder()
+      landing_site: o.landing_site || o.landing_site_ref || '',
+      referring_site: o.referring_site || '',
+      source_name: o.source_name || '',
+      note_attributes: o.note_attributes || [],
     }))
   }
 

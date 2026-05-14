@@ -583,8 +583,44 @@ export function AdsFlywheelTab() {
   const today = new Date()
   const dayOfWeek = today.getDay()
 
+  // Data-source health banner — surface broken integrations instead of
+  // silently showing $0. Previous Flywheel just returned zeros when the
+  // Meta API call failed or Google Ads webhook hadn't fired.
+  const apiHealth = d?.apiHealth || {}
+  const apiIssues = []
+  if (apiHealth.meta && !apiHealth.meta.ok) apiIssues.push({ src: 'Meta Ads', err: apiHealth.meta.error || 'API call failed' })
+  if (apiHealth.google && !apiHealth.google.ok) apiIssues.push({ src: 'Google Ads', err: apiHealth.google.error || 'API not configured', source: apiHealth.google.source })
+  if (apiHealth.shopify && !apiHealth.shopify.ok) apiIssues.push({ src: 'Shopify', err: apiHealth.shopify.error || 'orders fetch failed' })
+
   return (
     <div style={{ background: C.bg, color: C.text, padding: isMobile ? '12px 10px 40px' : '20px 20px 40px', minHeight: '100vh', colorScheme: 'dark' }}>
+
+      {/* ── Data-source health banner (only shown when something's broken) ── */}
+      {apiIssues.length > 0 && (
+        <div style={{
+          background: '#3A1F2A', border: `1px solid ${C.red}`, borderRadius: 10,
+          padding: '10px 14px', marginBottom: 12, fontSize: 12, color: '#FECDD3',
+        }}>
+          <div style={{ fontWeight: 700, color: C.red, marginBottom: 4, fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+            ⚠ Data source issue — numbers below may be incomplete
+          </div>
+          {apiIssues.map((iss, i) => (
+            <div key={i}>
+              <strong>{iss.src}</strong>: {iss.err}
+              {iss.source === 'legacy_script_file' && ' (falling back to Google Ads Script JSON file)'}
+            </div>
+          ))}
+        </div>
+      )}
+      {/* Attribution method line — always shown so the team knows the numbers
+          are first-party Shopify-attributed, not platform-pixel-attributed. */}
+      {apiHealth.attribution && (
+        <div style={{ fontSize: 10, color: C.muted, marginBottom: 12, opacity: 0.7 }}>
+          Attribution: Shopify first-party (UTM + gclid + fbclid) · {apiHealth.attribution.orderSampleSize} orders classified ·{' '}
+          Google: {apiHealth.google?.source === 'live_api' ? 'live API ✓' : 'script webhook (legacy)'} ·{' '}
+          Meta: {apiHealth.meta?.ok ? 'live Graph API ✓' : 'error'}
+        </div>
+      )}
 
       {/* ── 1. Header + Date Range ────────────────────────────────────────── */}
       <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'center', gap: isMobile ? 10 : 0, marginBottom: 16 }}>
@@ -692,7 +728,7 @@ export function AdsFlywheelTab() {
           return (
             <div style={{ ...card, padding: isMobile ? 14 : 18 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
-                <div style={{ fontSize: 11, color: C.muted, textTransform: 'uppercase', letterSpacing: 0.5 }}>Ad Spend</div>
+                <div style={{ fontSize: 11, color: C.muted, textTransform: 'uppercase', letterSpacing: 0.5 }}>Ad Spend &amp; ROAS</div>
                 <div style={{ fontSize: 10, color: h.googleHasData ? C.green : C.yellow }}>{h.googleHasData ? 'Both channels active' : 'Meta only'}</div>
               </div>
               <div style={{ fontSize: 28, fontWeight: 700, color: C.text, marginBottom: 14 }}>{fmt$(total)}</div>
@@ -703,28 +739,50 @@ export function AdsFlywheelTab() {
                 {googlePct > 0 && <div style={{ width: `${googlePct}%`, background: '#FBBC05', transition: 'width 0.5s' }} />}
               </div>
 
-              {/* Breakdown rows */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ width: 8, height: 8, borderRadius: 2, background: C.pink, flexShrink: 0 }} />
-                    <MetaLogo />
-                    <span style={{ fontSize: 12, color: C.text }}>Meta</span>
+              {/* Breakdown rows — spend + Shopify-attributed revenue + ROAS */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ width: 8, height: 8, borderRadius: 2, background: C.pink, flexShrink: 0 }} />
+                      <MetaLogo />
+                      <span style={{ fontSize: 12, color: C.text }}>Meta</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{fmt$(meta)}</span>
+                      <span style={{ fontSize: 11, color: C.muted, minWidth: 36, textAlign: 'right' }}>{metaPct.toFixed(0)}%</span>
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{fmt$(meta)}</span>
-                    <span style={{ fontSize: 11, color: C.muted, minWidth: 36, textAlign: 'right' }}>{metaPct.toFixed(0)}%</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: C.muted, marginTop: 3, paddingLeft: 36 }}>
+                    <span>{h.metaOrders || 0} orders → {fmt$(h.metaRevenue || 0)}</span>
+                    <span style={{ color: (h.metaRoas || 0) >= 2 ? C.green : (h.metaRoas || 0) >= 1 ? C.yellow : C.red, fontWeight: 600 }}>
+                      {(h.metaRoas || 0).toFixed(2)}x ROAS
+                    </span>
                   </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ width: 8, height: 8, borderRadius: 2, background: '#FBBC05', flexShrink: 0 }} />
-                    <GoogleLogo />
-                    <span style={{ fontSize: 12, color: C.text }}>Google</span>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ width: 8, height: 8, borderRadius: 2, background: '#FBBC05', flexShrink: 0 }} />
+                      <GoogleLogo />
+                      <span style={{ fontSize: 12, color: C.text }}>Google</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{fmt$(google)}</span>
+                      <span style={{ fontSize: 11, color: C.muted, minWidth: 36, textAlign: 'right' }}>{googlePct.toFixed(0)}%</span>
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{fmt$(google)}</span>
-                    <span style={{ fontSize: 11, color: C.muted, minWidth: 36, textAlign: 'right' }}>{googlePct.toFixed(0)}%</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: C.muted, marginTop: 3, paddingLeft: 36 }}>
+                    <span>{h.googleOrders || 0} orders → {fmt$(h.googleRevenue || 0)}</span>
+                    <span style={{ color: (h.googleRoas || 0) >= 2 ? C.green : (h.googleRoas || 0) >= 1 ? C.yellow : C.red, fontWeight: 600 }}>
+                      {(h.googleRoas || 0).toFixed(2)}x ROAS
+                    </span>
+                  </div>
+                </div>
+                <div style={{ borderTop: `1px solid ${C.border || '#2A2D38'}`, paddingTop: 6, marginTop: 2 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: C.muted }}>
+                    <span>Organic / Direct / Email</span>
+                    <span>{h.organicOrders || 0} orders → {fmt$(h.organicRevenue || 0)}</span>
                   </div>
                 </div>
               </div>

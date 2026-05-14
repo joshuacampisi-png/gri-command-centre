@@ -1,0 +1,199 @@
+{
+  "ranAt": "2026-05-14T22:06:52.656Z",
+  "upgrade": {
+    "processed": [
+      {
+        "handle": "gender-reveal-ideas-brisbane",
+        "city": "Brisbane",
+        "track": "DEFEND",
+        "steps": [
+          {
+            "step": "collectionUpdate",
+            "status": "OK"
+          },
+          {
+            "step": "metafieldsSet",
+            "status": "OK"
+          }
+        ]
+      },
+      {
+        "handle": "gender-reveal-ideas-adelaide",
+        "city": "Adelaide",
+        "track": "DEFEND",
+        "steps": [
+          {
+            "step": "collectionUpdate",
+            "status": "OK"
+          },
+          {
+            "step": "metafieldsSet",
+            "status": "OK"
+          }
+        ]
+      },
+      {
+        "handle": "gender-reveal-ideas-gold-coast",
+        "city": "Gold Coast",
+        "track": "DEFEND",
+        "steps": [
+          {
+            "step": "collectionUpdate",
+            "status": "OK"
+          },
+          {
+            "step": "metafieldsSet",
+            "status": "OK"
+          }
+        ]
+      },
+      {
+        "handle": "gender-reveal-ideas-darwin",
+        "city": "Darwin",
+        "track": "DEFEND",
+        "steps": [
+          {
+            "step": "collectionUpdate",
+            "status": "OK"
+          },
+          {
+            "step": "metafieldsSet",
+            "status": "OK"
+          }
+        ]
+      },
+      {
+        "handle": "gender-reveal-ideas-perth",
+        "city": "Perth",
+        "track": "CLIMB",
+        "steps": [
+          {
+            "step": "collectionUpdate",
+            "status": "OK"
+          },
+          {
+            "step": "metafieldsSet",
+            "status": "OK"
+          }
+        ]
+      },
+      {
+        "handle": "gender-reveal-ideas-sydney",
+        "city": "Sydney",
+        "track": "CLIMB",
+        "steps": [
+          {
+            "step": "collectionUpdate",
+            "status": "OK"
+          },
+          {
+            "step": "metafieldsSet",
+            "status": "OK"
+          }
+        ]
+      },
+      {
+        "handle": "gender-reveal-ideas-melbourne",
+        "city": "Melbourne",
+        "track": "CLIMB",
+        "steps": [
+          {
+            "step": "collectionUpdate",
+            "status": "OK"
+          },
+          {
+            "step": "metafieldsSet",
+            "status": "OK"
+          }
+        ]
+      }
+    ],
+    "errors": []
+  },
+  "create": {
+    "created": [
+      {
+        "handle": "gender-reveal-ideas-newcastle",
+        "city": "Newcastle",
+        "steps": [
+          {
+            "step": "collectionCreate",
+            "status": "OK",
+            "id": "gid://shopify/Collection/468151861337"
+          },
+          {
+            "step": "metafieldsSet",
+            "status": "OK"
+          }
+        ]
+      },
+      {
+        "handle": "gender-reveal-ideas-canberra",
+        "city": "Canberra",
+        "steps": [
+          {
+            "step": "collectionCreate",
+            "status": "OK",
+            "id": "gid://shopify/Collection/468151894105"
+          },
+          {
+            "step": "metafieldsSet",
+            "status": "OK"
+          }
+        ]
+      },
+      {
+        "handle": "gender-reveal-ideas-sunshine-coast",
+        "city": "Sunshine Coast",
+        "steps": [
+          {
+            "step": "collectionCreate",
+            "status": "OK",
+            "id": "gid://shopify/Collection/468151926873"
+          },
+          {
+            "step": "metafieldsSet",
+            "status": "OK"
+          }
+        ]
+      },
+      {
+        "handle": "gender-reveal-ideas-wollongong",
+        "city": "Wollongong",
+        "steps": [
+          {
+            "step": "collectionCreate",
+            "status": "OK",
+            "id": "gid://shopify/Collection/468151959641"
+          },
+          {
+            "step": "metafieldsSet",
+            "status": "OK"
+          }
+        ]
+      },
+      {
+        "handle": "gender-reveal-ideas-hobart",
+        "city": "Hobart",
+        "steps": [
+          {
+            "step": "collectionCreate",
+            "status": "OK",
+            "id": "gid://shopify/Collection/468152025177"
+          },
+          {
+            "step": "metafieldsSet",
+            "status": "OK"
+          }
+        ]
+      }
+    ],
+    "errors": []
+  },
+  "totals": {
+    "upgraded": 7,
+    "upgradeErrors": 0,
+    "created": 5,
+    "createErrors": 0
+  }
+}
