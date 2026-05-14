@@ -359,9 +359,20 @@ router.get('/dashboard', async (req, res) => {
         googleOrders,
         organicRevenue: Math.round(organicRevenue * 100) / 100,
         organicOrders,
-        // Pixel/tag numbers for reference / drift detection
+        // Pixel/tag numbers — what each platform claims for ITSELF, useful for
+        // matching Ads Manager and seeing the attribution gap vs first-party.
         metaPixelRevenue: Math.round(metaPixelRevenue * 100) / 100,
+        metaPixelPurchases: metaPurchases,
+        metaPixelRoas: metaSpend > 0 ? Math.round((metaPixelRevenue / metaSpend) * 100) / 100 : 0,
         googleTagRevenue: Math.round(googleTagRevenue * 100) / 100,
+        googleTagConversions: googleSpendData.totalConversions || 0,
+        googleTagRoas: googleSpend > 0 ? Math.round((googleTagRevenue / googleSpend) * 100) / 100 : 0,
+        // Attribution gap — percentage of Meta-claimed revenue that has NO
+        // first-party click ID on the corresponding Shopify order. High gap
+        // = lots of iOS / in-app-browser / view-through credit.
+        metaAttributionGapPct: metaPixelRevenue > 0
+          ? Math.round((1 - (metaRevenue / metaPixelRevenue)) * 1000) / 10
+          : 0,
         // ── Per-platform ROAS (now correct) ──
         metaRoas: metaSpend > 0 ? Math.round((metaRevenue / metaSpend) * 100) / 100 : 0,
         googleRoas: googleSpend > 0 ? Math.round((googleRevenue / googleSpend) * 100) / 100 : 0,

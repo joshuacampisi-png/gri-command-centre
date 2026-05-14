@@ -739,10 +739,11 @@ export function AdsFlywheelTab() {
                 {googlePct > 0 && <div style={{ width: `${googlePct}%`, background: '#FBBC05', transition: 'width 0.5s' }} />}
               </div>
 
-              {/* Breakdown rows — spend + Shopify-attributed revenue + ROAS */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {/* Breakdown rows — spend + dual attribution view (platform-reported vs first-party) */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {/* META */}
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <div style={{ width: 8, height: 8, borderRadius: 2, background: C.pink, flexShrink: 0 }} />
                       <MetaLogo />
@@ -753,15 +754,33 @@ export function AdsFlywheelTab() {
                       <span style={{ fontSize: 11, color: C.muted, minWidth: 36, textAlign: 'right' }}>{metaPct.toFixed(0)}%</span>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: C.muted, marginTop: 3, paddingLeft: 36 }}>
-                    <span>{h.metaOrders || 0} orders → {fmt$(h.metaRevenue || 0)}</span>
-                    <span style={{ color: (h.metaRoas || 0) >= 2 ? C.green : (h.metaRoas || 0) >= 1 ? C.yellow : C.red, fontWeight: 600 }}>
-                      {(h.metaRoas || 0).toFixed(2)}x ROAS
-                    </span>
+                  {/* Side-by-side: what Meta says vs what Shopify can verify */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, paddingLeft: 36 }}>
+                    <div style={{ background: 'rgba(225, 95, 142, 0.08)', borderRadius: 6, padding: '6px 8px', border: `1px solid rgba(225, 95, 142, 0.2)` }}>
+                      <div style={{ fontSize: 9, color: C.muted, textTransform: 'uppercase', letterSpacing: 0.3, marginBottom: 2 }}>Meta says</div>
+                      <div style={{ fontSize: 11, color: C.text, fontWeight: 600 }}>{h.metaPixelPurchases || 0} pur · {fmt$(h.metaPixelRevenue || 0)}</div>
+                      <div style={{ fontSize: 10, color: (h.metaPixelRoas || 0) >= 2 ? C.green : (h.metaPixelRoas || 0) >= 1 ? C.yellow : C.red, fontWeight: 600 }}>
+                        {(h.metaPixelRoas || 0).toFixed(2)}x ROAS
+                      </div>
+                    </div>
+                    <div style={{ background: 'rgba(58, 180, 192, 0.08)', borderRadius: 6, padding: '6px 8px', border: '1px solid rgba(58, 180, 192, 0.2)' }}>
+                      <div style={{ fontSize: 9, color: C.muted, textTransform: 'uppercase', letterSpacing: 0.3, marginBottom: 2 }}>Shopify verified</div>
+                      <div style={{ fontSize: 11, color: C.text, fontWeight: 600 }}>{h.metaOrders || 0} ord · {fmt$(h.metaRevenue || 0)}</div>
+                      <div style={{ fontSize: 10, color: (h.metaRoas || 0) >= 2 ? C.green : (h.metaRoas || 0) >= 1 ? C.yellow : C.red, fontWeight: 600 }}>
+                        {(h.metaRoas || 0).toFixed(2)}x ROAS
+                      </div>
+                    </div>
                   </div>
+                  {(h.metaAttributionGapPct || 0) > 0 && (
+                    <div style={{ fontSize: 9, color: C.muted, paddingLeft: 36, marginTop: 4, fontStyle: 'italic' }}>
+                      Attribution gap: {h.metaAttributionGapPct.toFixed(0)}% of Meta-claimed revenue has no first-party click ID
+                      {h.metaAttributionGapPct > 50 ? ' (high — iOS/in-app browser stripping fbclid)' : ''}
+                    </div>
+                  )}
                 </div>
+                {/* GOOGLE */}
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <div style={{ width: 8, height: 8, borderRadius: 2, background: '#FBBC05', flexShrink: 0 }} />
                       <GoogleLogo />
@@ -772,11 +791,21 @@ export function AdsFlywheelTab() {
                       <span style={{ fontSize: 11, color: C.muted, minWidth: 36, textAlign: 'right' }}>{googlePct.toFixed(0)}%</span>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: C.muted, marginTop: 3, paddingLeft: 36 }}>
-                    <span>{h.googleOrders || 0} orders → {fmt$(h.googleRevenue || 0)}</span>
-                    <span style={{ color: (h.googleRoas || 0) >= 2 ? C.green : (h.googleRoas || 0) >= 1 ? C.yellow : C.red, fontWeight: 600 }}>
-                      {(h.googleRoas || 0).toFixed(2)}x ROAS
-                    </span>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, paddingLeft: 36 }}>
+                    <div style={{ background: 'rgba(251, 188, 5, 0.08)', borderRadius: 6, padding: '6px 8px', border: '1px solid rgba(251, 188, 5, 0.2)' }}>
+                      <div style={{ fontSize: 9, color: C.muted, textTransform: 'uppercase', letterSpacing: 0.3, marginBottom: 2 }}>Google says</div>
+                      <div style={{ fontSize: 11, color: C.text, fontWeight: 600 }}>{(h.googleTagConversions || 0).toFixed(0)} conv · {fmt$(h.googleTagRevenue || 0)}</div>
+                      <div style={{ fontSize: 10, color: (h.googleTagRoas || 0) >= 2 ? C.green : (h.googleTagRoas || 0) >= 1 ? C.yellow : C.red, fontWeight: 600 }}>
+                        {(h.googleTagRoas || 0).toFixed(2)}x ROAS
+                      </div>
+                    </div>
+                    <div style={{ background: 'rgba(58, 180, 192, 0.08)', borderRadius: 6, padding: '6px 8px', border: '1px solid rgba(58, 180, 192, 0.2)' }}>
+                      <div style={{ fontSize: 9, color: C.muted, textTransform: 'uppercase', letterSpacing: 0.3, marginBottom: 2 }}>Shopify verified</div>
+                      <div style={{ fontSize: 11, color: C.text, fontWeight: 600 }}>{h.googleOrders || 0} ord · {fmt$(h.googleRevenue || 0)}</div>
+                      <div style={{ fontSize: 10, color: (h.googleRoas || 0) >= 2 ? C.green : (h.googleRoas || 0) >= 1 ? C.yellow : C.red, fontWeight: 600 }}>
+                        {(h.googleRoas || 0).toFixed(2)}x ROAS
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div style={{ borderTop: `1px solid ${C.border || '#2A2D38'}`, paddingTop: 6, marginTop: 2 }}>
