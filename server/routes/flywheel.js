@@ -1073,6 +1073,52 @@ router.get('/launches', async (_req, res) => {
 
 // ── Health check ────────────────────────────────────────────────────────────
 
+// Public diag — verify live API health + attribution sample without dashboard auth
+router.get('/attribution-diag', async (req, res) => {
+  try {
+    const range = req.query.range || '7d'
+    const presetMap = { today: 'today', '7d': 'last_7d', '14d': 'last_14d', '30d': 'last_30d' }
+    const preset = presetMap[range] || 'last_7d'
+    const daysMap = { today: 1, '7d': 7, '14d': 14, '30d': 30 }
+    const days = daysMap[range] || 7
+
+    const aestNow = new Date(new Date().getTime() + 10 * 3600000)
+    const aestFrom = new Date(aestNow); aestFrom.setDate(aestFrom.getDate() - (days - 1))
+    const [shop, meta, google] = await Promise.all([
+      getShopifyOrdersRange(aestFrom.toISOString().slice(0, 10), aestNow.toISOString().slice(0, 10), { includeOrderDetails: true })
+        .catch(e => ({ ok: false, error: e.message })),
+      fetchAccountInsights(preset).then(d => ({ ok: true, ...d })).catch(e => ({ ok: false, error: e.message })),
+      fetchLiveGoogleSpend(preset),
+    ])
+
+    const orders = shop?.orderDetails || []
+    const agg = aggregateByPlatform(orders)
+    const buckets = rollupToFlywheelBuckets(agg.byPlatform)
+
+    res.json({
+      ok: true,
+      range, preset, days,
+      apiHealth: {
+        meta: { ok: meta.ok, error: meta.error || null, spend: meta.spend || 0 },
+        google: { ok: google.ok, source: google.ok ? 'live_api' : 'failed', error: google.error || null, spend: google.spend || 0 },
+        shopify: { ok: shop?.ok !== false, error: shop?.error || null, orders: orders.length, revenue: shop?.revenue || 0 },
+      },
+      attribution: { byPlatform: agg.byPlatform, buckets },
+      ncacCheck: {
+        metaSpend: meta.spend || 0,
+        metaRevenue_shopifyAttributed: buckets.meta.revenue,
+        metaRoas: meta.spend > 0 ? Math.round((buckets.meta.revenue / meta.spend) * 100) / 100 : 0,
+        googleSpend: google.spend || 0,
+        googleRevenue_shopifyAttributed: buckets.google.revenue,
+        googleRoas: google.spend > 0 ? Math.round((buckets.google.revenue / google.spend) * 100) / 100 : 0,
+        organicRevenue: buckets.organic.revenue,
+      },
+    })
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message })
+  }
+})
+
 router.get('/health', (_req, res) => {
   try {
     const health = getFlywheelHealth()

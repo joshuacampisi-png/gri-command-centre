@@ -137,6 +137,7 @@ if (DASHBOARD_PASSWORD && DASHBOARD_PASSWORD !== 'changeme') {
     '/api/hires/last-webhook',
     '/api/hires/reset-contract',
     '/api/hires/refund-audit',
+    '/api/flywheel/attribution-diag',
     '/sign/',
     '/signed',
     '/company-logos',

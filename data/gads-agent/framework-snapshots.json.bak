@@ -372,5 +372,27 @@
     "googleSpend": 8706.36,
     "metaSpend": 6592.65,
     "blendedSpend": 15299.01
+  },
+  {
+    "date": "2026-05-14",
+    "computedAt": "2026-05-14T04:15:06.275Z",
+    "windowDays": 30,
+    "cm": -15299.01,
+    "cmStatus": "red",
+    "costOfDelivery": 0,
+    "ncac": 0,
+    "ncacStatus": "green",
+    "ncacHistoricalAvg": 61.31,
+    "fovCac": 0,
+    "fovCacStatus": "red",
+    "aMer": 0,
+    "aMerStatus": "red",
+    "newCustomerCount": 0,
+    "newCustomerThisWeek": 0,
+    "newCustomerLastWeek": 0,
+    "newCustomerWowChangePct": 0,
+    "googleSpend": 8706.36,
+    "metaSpend": 6592.65,
+    "blendedSpend": 15299.01
   }
 ]

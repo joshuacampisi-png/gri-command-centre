@@ -375,9 +375,9 @@
   },
   {
     "date": "2026-05-14",
-    "computedAt": "2026-05-14T04:15:06.275Z",
+    "computedAt": "2026-05-14T22:15:06.755Z",
     "windowDays": 30,
-    "cm": -15299.01,
+    "cm": -15334.56,
     "cmStatus": "red",
     "costOfDelivery": 0,
     "ncac": 0,
@@ -391,8 +391,8 @@
     "newCustomerThisWeek": 0,
     "newCustomerLastWeek": 0,
     "newCustomerWowChangePct": 0,
-    "googleSpend": 8706.36,
+    "googleSpend": 8741.91,
     "metaSpend": 6592.65,
-    "blendedSpend": 15299.01
+    "blendedSpend": 15334.56
   }
 ]

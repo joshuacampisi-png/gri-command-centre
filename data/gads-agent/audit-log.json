@@ -7586,5 +7586,75 @@
     },
     "triggeredBy": "agent",
     "createdAt": "2026-05-14T04:15:07.705Z"
+  },
+  {
+    "id": "e0ca8417-e58f-4345-9f26-690690c207c3",
+    "eventType": "scan_started",
+    "recommendationId": null,
+    "details": {
+      "timestamp": "2026-05-14T22:15:00.095Z"
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-14T22:15:00.107Z"
+  },
+  {
+    "id": "e92a32b3-a4fe-4e97-93df-cd95d1aa7658",
+    "eventType": "findings_suppressed",
+    "recommendationId": null,
+    "details": {
+      "count": 8,
+      "byReason": {
+        "suppressed: bid finding on auto-bid strategy \"MAXIMIZE_CONVERSION_VALUE\" — manual bid changes are ignored by Google": 8
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-14T22:15:08.340Z"
+  },
+  {
+    "id": "c4f059d4-8f1d-45a0-af9a-49793165dbd7",
+    "eventType": "preflight_needs_review",
+    "recommendationId": null,
+    "details": {
+      "count": 14,
+      "byVerdict": {
+        "block": 2,
+        "needs-review": 12
+      },
+      "titles": [
+        "Reallocation opportunity — \"GRI | Search | Cannons\" at 1.02x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Keyword \"gender reveal powder cannon\" bleeding — $44.08 AUD with zero conversions",
+        "Shopping product \"DIY -Gender Reveal Smoke Box Trend Pink Blue Holi Powder Australia Pink\" bleeding — $53.32 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal | Double MEGA Powder Blaster/ Extinguisher Australia | G 1 x Pink 1 x Blue\" bleeding — $44.86 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal Smoke Bombs Prank / White Smoke\" bleeding — $49.85 AUD, 0 conversions",
+        "Shopping product \"DIY Hire Gender Reveal Balloon Garland Australia | Gender Reveal Decor\" bleeding — $58.66 AUD, 0 conversions",
+        "Shopping product \"4 Pack Gender Reveal Confetti Cannon XL BIO Bundle Pink Blue Australia 2 Pink + 2 Blue\" bleeding — $40.79 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Confetti XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $54.56 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal Race Day Sports Bundle Pink Blue Australia Blue - Boy\" bleeding — $39.58 AUD, 0 conversions",
+        "Shopping product \"Toy Story Birthday Party Set (15 Person) | Party Supplies Australia\" bleeding — $43.05 AUD, 0 conversions"
+      ]
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-14T22:15:08.348Z"
+  },
+  {
+    "id": "482cdd78-92ec-429d-a23a-c75c6ec14050",
+    "eventType": "scan_completed",
+    "recommendationId": null,
+    "details": {
+      "findings": 1,
+      "newRecommendations": 0,
+      "counts": {
+        "campaigns": 4,
+        "keywords": 92,
+        "searchTerms": 20,
+        "ads": 26,
+        "zeroImpressionKeywords": 1,
+        "shoppingProducts": 291,
+        "findings": 1,
+        "needsReview": 14
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-14T22:15:08.365Z"
   }
 ]
