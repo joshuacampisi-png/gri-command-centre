@@ -126,6 +126,7 @@ function OverviewPage({ data, company }) {
   const [shippingCosts, setShippingCosts] = useState({})
   const [shippingCostInput, setShippingCostInput] = useState('')
   const [shippingCostSaving, setShippingCostSaving] = useState(false)
+  const [shippingSavedFlash, setShippingSavedFlash] = useState(false)
   const [showShippingGraph, setShowShippingGraph] = useState(false)
 
   const [trendingQueries, setTrendingQueries] = useState(null)
@@ -214,7 +215,10 @@ function OverviewPage({ data, company }) {
     }).catch(() => {})
   }, [])
 
-  // When week offset or costs change, update the input field
+  // Pre-fill the input with the saved value whenever the active week or the
+  // saved-costs map changes. After a save we ALSO set the input explicitly
+  // inside saveShippingCost() so we never depend on this effect re-firing
+  // correctly — that's what made the value appear to "disappear" before.
   useEffect(() => {
     const { from } = getWedTueWeek(shippingWeekOffset)
     const saved = shippingCosts[from]
@@ -255,7 +259,16 @@ function OverviewPage({ data, company }) {
       })
       const d = await res.json()
       if (res.ok && d.ok) {
-        setShippingCosts(d.costs)
+        // BULLETPROOF PERSISTENCE — three layers so the value never "vanishes":
+        //   1. Merge server response into local map (keeps existing weeks too,
+        //      defensive in case server ever returned a delta instead of full map).
+        //   2. Explicitly re-set the input to the just-saved value so users see
+        //      it locked in immediately, not dependent on a useEffect re-fire.
+        //   3. Flash a "Saved" badge for 2s as visible confirmation.
+        setShippingCosts(prev => ({ ...prev, ...(d.costs || {}), [from]: { cost: parsed, updatedAt: new Date().toISOString() } }))
+        setShippingCostInput(String(parsed))
+        setShippingSavedFlash(true)
+        setTimeout(() => setShippingSavedFlash(false), 2000)
       } else {
         console.error('Shipping cost save failed:', d)
         alert(`Save failed: ${d.error || 'unknown error'} (HTTP ${res.status})`)
@@ -498,8 +511,35 @@ function OverviewPage({ data, company }) {
                 const saved = shippingCosts[from]
                 if (saved) {
                   const profit = shippingData.shipping - saved.cost
+                  const savedAt = saved.updatedAt
+                    ? new Date(saved.updatedAt).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
+                    : null
                   return (
                     <div style={{ marginTop: 8 }}>
+                      {/* Persistent saved-value badge — always visible so the team
+                          can see the locked-in number at all times, independent of
+                          whatever's in the editable input field. */}
+                      <div style={{
+                        marginTop: 4, marginBottom: 6, padding: '8px 12px', borderRadius: 8,
+                        background: shippingSavedFlash ? '#DCFCE7' : '#F0FDFA',
+                        border: `1px solid ${shippingSavedFlash ? '#10B981' : '#A7F3D0'}`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        transition: 'background 0.2s, border-color 0.2s',
+                      }}>
+                        <div>
+                          <div style={{ fontSize: 10, fontWeight: 700, color: '#047857', textTransform: 'uppercase', letterSpacing: '.04em' }}>
+                            {shippingSavedFlash ? 'Saved ✓' : 'Locked In'}
+                          </div>
+                          <div style={{ fontSize: 16, fontWeight: 800, color: '#047857' }}>
+                            ${saved.cost.toFixed(2)}
+                          </div>
+                        </div>
+                        {savedAt && (
+                          <div style={{ fontSize: 10, color: '#047857', textAlign: 'right' }}>
+                            saved<br/>{savedAt}
+                          </div>
+                        )}
+                      </div>
                       <div className="kv-row">
                         <span>Profit / Loss</span>
                         <strong style={{ color: profit >= 0 ? '#10B981' : '#E43F7B' }}>
