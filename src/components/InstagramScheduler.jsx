@@ -742,59 +742,71 @@ export default function InstagramScheduler() {
                   ))}
                 </div>
 
-                {/* Upload area — file picker + drag-and-drop drop zone */}
-                <div
-                  className="ig-upload-btn-wrap"
-                  onDragOver={handleDrawerDragOver}
-                  onDragEnter={handleDrawerDragOver}
-                  onDragLeave={handleDrawerDragLeave}
-                  onDrop={handleDrawerDrop}
-                  style={{
-                    border: `2px dashed ${drawerDragOver ? '#E43F7B' : '#CBD5E1'}`,
-                    borderRadius: 10,
-                    background: drawerDragOver ? '#FFF0F5' : '#F8FAFC',
-                    padding: 14,
-                    textAlign: 'center',
-                    transition: 'all 0.15s',
+                {/* Upload area — single drop zone, click-to-browse, drag-and-drop.
+                    The native <input type="file"> is hidden absolutely so the
+                    whole zone is the click target AND drop target — no nested
+                    drop zones competing for the event. */}
+                {uploading ? (
+                  <div style={{
+                    padding: 18, border: '2px solid #E43F7B', borderRadius: 10,
+                    background: '#FFF0F5', textAlign: 'center',
                   }}>
-                  {!uploading && (
-                    <div style={{ fontSize: 12, color: drawerDragOver ? '#E43F7B' : '#64748B', marginBottom: 10, fontWeight: drawerDragOver ? 600 : 400 }}>
-                      {drawerDragOver
-                        ? '⬇ Drop to upload'
-                        : '📎 Drag image / video files here, or click to browse'}
+                    <div className="spinner" style={{ margin: '0 auto 8px' }} />
+                    <div style={{ fontSize: 13, fontWeight: 600, color: '#E43F7B' }}>
+                      Uploading... {uploadProgress > 0 ? `${uploadProgress}%` : ''}
                     </div>
-                  )}
-                  {uploading ? (
-                    <div style={{
-                      padding: 16, border: '2px solid #E43F7B', borderRadius: 10,
-                      background: '#FFF0F5', textAlign: 'center',
-                    }}>
-                      <div className="spinner" style={{ margin: '0 auto 8px' }} />
-                      <div style={{ fontSize: 13, fontWeight: 600, color: '#E43F7B' }}>
-                        Uploading... {uploadProgress > 0 ? `${uploadProgress}%` : ''}
-                      </div>
-                      {uploadProgress > 0 && (
+                    {uploadProgress > 0 && (
+                      <div style={{ height: 4, background: '#FCE7F3', borderRadius: 2, marginTop: 8, overflow: 'hidden' }}>
                         <div style={{
-                          height: 4, background: '#FCE7F3', borderRadius: 2, marginTop: 8, overflow: 'hidden',
-                        }}>
-                          <div style={{
-                            height: '100%', width: `${uploadProgress}%`, background: '#E43F7B',
-                            borderRadius: 2, transition: 'width 0.3s ease',
-                          }} />
-                        </div>
-                      )}
+                          height: '100%', width: `${uploadProgress}%`, background: '#E43F7B',
+                          borderRadius: 2, transition: 'width 0.3s ease',
+                        }} />
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <div
+                      onClick={() => fileRef.current?.click()}
+                      onDragOver={handleDrawerDragOver}
+                      onDragEnter={handleDrawerDragOver}
+                      onDragLeave={handleDrawerDragLeave}
+                      onDrop={handleDrawerDrop}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') fileRef.current?.click() }}
+                      style={{
+                        border: `2px dashed ${drawerDragOver ? '#E43F7B' : '#CBD5E1'}`,
+                        borderRadius: 10,
+                        background: drawerDragOver ? '#FFF0F5' : '#F8FAFC',
+                        padding: '24px 16px',
+                        textAlign: 'center',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s',
+                        userSelect: 'none',
+                      }}>
+                      <div style={{ fontSize: 24, marginBottom: 6, pointerEvents: 'none' }}>
+                        {drawerDragOver ? '⬇' : '📎'}
+                      </div>
+                      <div style={{ fontSize: 13, color: drawerDragOver ? '#E43F7B' : '#475569', fontWeight: drawerDragOver ? 700 : 600, pointerEvents: 'none' }}>
+                        {drawerDragOver ? 'Drop to upload' : 'Drop image / video here, or click to browse'}
+                      </div>
+                      <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 4, pointerEvents: 'none' }}>
+                        JPG · PNG · WEBP · MP4 · MOV — up to 500MB
+                      </div>
                     </div>
-                  ) : (
+                    {/* Hidden file input — opened by the wrapper onClick above.
+                        Kept out of layout so it can't compete for drag events. */}
                     <input
                       ref={fileRef}
                       type="file"
-                      accept=".jpg,.jpeg,.png,.webp,.mp4,.mov"
+                      accept="image/*,video/*"
                       multiple
                       onChange={handleUpload}
-                      className="ig-upload-input"
+                      style={{ display: 'none' }}
                     />
-                  )}
-                </div>
+                  </>
+                )}
               </div>
 
               {/* Caption */}

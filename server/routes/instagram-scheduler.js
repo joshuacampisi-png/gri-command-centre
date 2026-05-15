@@ -38,8 +38,21 @@ const upload = multer({
     }
   }),
   fileFilter: (_req, file, cb) => {
-    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/quicktime']
-    cb(null, allowed.includes(file.mimetype))
+    // Accept any image/* or video/* MIME type. The old strict whitelist
+    // (image/jpeg + png + webp + mp4 + quicktime only) silently rejected
+    // iPhone HEICs, GIFs, BMPs, and even image/jpg (a legacy MIME variant
+    // some Android cameras emit) — making uploads "succeed" with zero files
+    // and no error message. Instagram requires JPEG anyway, but we now
+    // accept everything and either convert or fail loudly downstream.
+    const mt = (file.mimetype || '').toLowerCase()
+    const ext = (file.originalname || '').toLowerCase().split('.').pop()
+    const okMime = mt.startsWith('image/') || mt.startsWith('video/')
+    const okExt = ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif', 'gif', 'bmp', 'mp4', 'mov', 'm4v', 'webm', 'avi'].includes(ext)
+    if (okMime || okExt) {
+      cb(null, true)
+    } else {
+      cb(new Error(`Unsupported file type: ${file.originalname} (${mt})`), false)
+    }
   },
   limits: { fileSize: 500 * 1024 * 1024 } // 500MB for Reels
 })
@@ -280,15 +293,21 @@ router.post('/upload', async (req, res) => {
     }
     if (!req.files || req.files.length === 0) {
       console.error('[IG Upload] No files received. Content-Type:', req.headers['content-type'])
-      return res.status(400).json({ error: 'No valid media files received. Supported: jpg, png, webp, mp4, mov' })
+      return res.status(400).json({ error: 'No valid media files received. Supported: jpg/jpeg/png/webp/heic/gif/bmp images, mp4/mov/webm/m4v video' })
     }
-    const files = req.files.map(f => ({
-      url: `/instagram-media/${f.filename}`,
-      filename: f.filename,
-      size: f.size,
-      type: f.mimetype.startsWith('image/') ? 'image' : 'video',
-      originalName: f.originalname,
-    }))
+    const VIDEO_EXTS = ['mp4', 'mov', 'm4v', 'webm', 'avi']
+    const files = req.files.map(f => {
+      const mt = (f.mimetype || '').toLowerCase()
+      const ext = (f.originalname || '').toLowerCase().split('.').pop()
+      const isVideo = mt.startsWith('video/') || VIDEO_EXTS.includes(ext)
+      return {
+        url: `/instagram-media/${f.filename}`,
+        filename: f.filename,
+        size: f.size,
+        type: isVideo ? 'video' : 'image',
+        originalName: f.originalname,
+      }
+    })
     console.log(`[IG Upload] ${files.length} file(s) uploaded:`, files.map(f => `${f.originalName} (${f.type})`).join(', '))
     res.json({ ok: true, files })
   })
