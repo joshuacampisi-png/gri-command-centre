@@ -3,9 +3,9 @@
     "adId": "120242315341900711",
     "adName": "TEST 2 | TNT | PREGNANT TIRED",
     "campaignName": "GRI - Local (TNT Hire)",
-    "score": 85,
-    "status": "HEALTHY",
-    "checkedAt": "2026-05-14T04:35:00.848Z"
+    "score": 65,
+    "status": "WATCH",
+    "checkedAt": "2026-05-15T00:37:00.616Z"
   },
   {
     "adId": "120242315070380711",
@@ -13,7 +13,7 @@
     "campaignName": "GRI - Local (TNT Hire)",
     "score": 100,
     "status": "HEALTHY",
-    "checkedAt": "2026-05-14T04:35:00.848Z"
+    "checkedAt": "2026-05-15T00:37:00.616Z"
   },
   {
     "adId": "120240700158210711",
@@ -21,7 +21,7 @@
     "campaignName": "GRI - Local (TNT Hire)",
     "score": 40,
     "status": "FATIGUING",
-    "checkedAt": "2026-05-14T04:35:00.848Z"
+    "checkedAt": "2026-05-15T00:37:00.616Z"
   },
   {
     "adId": "120241510164500711",
@@ -29,7 +29,7 @@
     "campaignName": "GRI - Local (TNT Hire)",
     "score": 80,
     "status": "HEALTHY",
-    "checkedAt": "2026-05-14T04:35:00.848Z"
+    "checkedAt": "2026-05-15T00:37:00.616Z"
   },
   {
     "adId": "120240504416620711",
@@ -37,15 +37,15 @@
     "campaignName": "GRI - Local (TNT Hire)",
     "score": 40,
     "status": "FATIGUING",
-    "checkedAt": "2026-05-14T04:35:00.849Z"
+    "checkedAt": "2026-05-15T00:37:00.616Z"
   },
   {
     "adId": "120238073906700711",
     "adName": "TNT Hire | Bris & GC | Video | TNT Hire Process",
     "campaignName": "GRI - Local (TNT Hire)",
-    "score": 40,
-    "status": "FATIGUING",
-    "checkedAt": "2026-05-14T04:35:02.357Z"
+    "score": 5,
+    "status": "DEAD",
+    "checkedAt": "2026-05-15T00:37:00.616Z"
   },
   {
     "adId": "120238073732840711",
@@ -53,15 +53,7 @@
     "campaignName": "GRI - Local (TNT Hire)",
     "score": 80,
     "status": "HEALTHY",
-    "checkedAt": "2026-05-14T04:35:03.719Z"
-  },
-  {
-    "adId": "120242634433640711",
-    "adName": "Advantage+ Remarketing - All Products 1 - V2",
-    "campaignName": "GRI - Advantage+ Catalogue (Testing)",
-    "score": 60,
-    "status": "WATCH",
-    "checkedAt": "2026-05-14T04:35:03.719Z"
+    "checkedAt": "2026-05-15T00:37:01.976Z"
   },
   {
     "adId": "120242633700230711",
@@ -69,15 +61,23 @@
     "campaignName": "GRI - Advantage+ Catalogue (Testing)",
     "score": 60,
     "status": "WATCH",
-    "checkedAt": "2026-05-14T04:35:03.719Z"
+    "checkedAt": "2026-05-15T00:37:01.976Z"
+  },
+  {
+    "adId": "120242634433640711",
+    "adName": "Advantage+ Remarketing - All Products 1 - V2",
+    "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+    "score": 60,
+    "status": "WATCH",
+    "checkedAt": "2026-05-15T00:37:01.976Z"
   },
   {
     "adId": "120241237059910711",
     "adName": "Josh | AI | Advantage+ Remarketing | Smoke Bomb",
     "campaignName": "GRI - Advantage+ Catalogue (Testing)",
-    "score": 80,
-    "status": "HEALTHY",
-    "checkedAt": "2026-05-14T04:35:03.719Z"
+    "score": 40,
+    "status": "FATIGUING",
+    "checkedAt": "2026-05-15T00:37:01.977Z"
   },
   {
     "adId": "120242262030680711",
@@ -85,7 +85,7 @@
     "campaignName": "GRI - Advantage+ Catalogue (Testing)",
     "score": 30,
     "status": "FATIGUING",
-    "checkedAt": "2026-05-14T04:35:03.719Z"
+    "checkedAt": "2026-05-15T00:37:03.328Z"
   },
   {
     "adId": "120241236310800711",
@@ -93,7 +93,7 @@
     "campaignName": "GRI - Advantage+ Catalogue (Testing)",
     "score": 40,
     "status": "FATIGUING",
-    "checkedAt": "2026-05-14T04:35:03.719Z"
+    "checkedAt": "2026-05-15T00:37:03.328Z"
   },
   {
     "adId": "120232764647370711",
@@ -101,15 +101,15 @@
     "campaignName": "GRI - Advantage+ Catalogue (Testing)",
     "score": 80,
     "status": "HEALTHY",
-    "checkedAt": "2026-05-14T04:35:03.719Z"
+    "checkedAt": "2026-05-15T00:37:03.328Z"
   },
   {
     "adId": "120227095577490711",
     "adName": "Cannons Catalogue",
     "campaignName": "GRI - Advantage+ Catalogue (Testing)",
-    "score": 45,
-    "status": "FATIGUING",
-    "checkedAt": "2026-05-14T04:35:03.719Z"
+    "score": 10,
+    "status": "DEAD",
+    "checkedAt": "2026-05-15T00:37:03.328Z"
   },
   {
     "adId": "120241895294290711",
@@ -117,39 +117,39 @@
     "campaignName": "GRI  - AUS Wide [Broad Targeting]",
     "score": 90,
     "status": "HEALTHY",
-    "checkedAt": "2026-05-14T04:35:04.205Z"
+    "checkedAt": "2026-05-15T00:37:03.861Z"
   },
   {
     "adId": "120241894584090711",
     "adName": "NEW LP | MEGA | STATIC",
     "campaignName": "GRI  - AUS Wide [Broad Targeting]",
-    "score": 70,
+    "score": 55,
     "status": "WATCH",
-    "checkedAt": "2026-05-14T04:35:04.205Z"
+    "checkedAt": "2026-05-15T00:37:03.861Z"
   },
   {
     "adId": "120241447455530711",
     "adName": "JOSH AI | Pregnancy Journey | Founder 5 Kids | Apr 20",
     "campaignName": "GRI  - AUS Wide [Broad Targeting]",
-    "score": 80,
-    "status": "HEALTHY",
-    "checkedAt": "2026-05-14T04:35:04.205Z"
+    "score": 60,
+    "status": "WATCH",
+    "checkedAt": "2026-05-15T00:37:03.861Z"
   },
   {
     "adId": "120241327604150711",
     "adName": "JOSH AI | Pregnancy Journey | SCALE VID 1",
     "campaignName": "GRI  - AUS Wide [Broad Targeting]",
-    "score": 80,
-    "status": "HEALTHY",
-    "checkedAt": "2026-05-14T04:35:04.205Z"
+    "score": 40,
+    "status": "FATIGUING",
+    "checkedAt": "2026-05-15T00:37:03.861Z"
   },
   {
     "adId": "120241178668300711",
     "adName": "JOSH AI | Pregnancy Journey | Video 1 | Apr 2026",
     "campaignName": "GRI  - AUS Wide [Broad Targeting]",
-    "score": 45,
+    "score": 40,
     "status": "FATIGUING",
-    "checkedAt": "2026-05-14T04:35:04.205Z"
+    "checkedAt": "2026-05-15T00:37:04.358Z"
   },
   {
     "adId": "120231803419130711",
@@ -157,15 +157,15 @@
     "campaignName": "GRI  - AUS Wide [Broad Targeting]",
     "score": 80,
     "status": "HEALTHY",
-    "checkedAt": "2026-05-14T04:35:04.205Z"
+    "checkedAt": "2026-05-15T00:37:04.358Z"
   },
   {
     "adId": "120231803716560711",
     "adName": "R6 | Party & Event Segment | Video | Smoke Bomb September – Copy",
     "campaignName": "GRI  - AUS Wide [Broad Targeting]",
-    "score": 45,
-    "status": "FATIGUING",
-    "checkedAt": "2026-05-14T04:35:04.205Z"
+    "score": 60,
+    "status": "WATCH",
+    "checkedAt": "2026-05-15T00:37:04.358Z"
   },
   {
     "adId": "120229551711390711",
@@ -173,7 +173,7 @@
     "campaignName": "GRI  - AUS Wide [Broad Targeting]",
     "score": 40,
     "status": "FATIGUING",
-    "checkedAt": "2026-05-14T04:35:04.696Z"
+    "checkedAt": "2026-05-15T00:37:04.358Z"
   },
   {
     "adId": "120238247207880711",
@@ -181,7 +181,7 @@
     "campaignName": "GRI  - AUS Wide [Broad Targeting]",
     "score": 40,
     "status": "FATIGUING",
-    "checkedAt": "2026-05-14T04:35:04.696Z"
+    "checkedAt": "2026-05-15T00:37:04.358Z"
   },
   {
     "adId": "120229551711420711",
@@ -189,15 +189,15 @@
     "campaignName": "GRI  - AUS Wide [Broad Targeting]",
     "score": 40,
     "status": "FATIGUING",
-    "checkedAt": "2026-05-14T04:35:04.696Z"
+    "checkedAt": "2026-05-15T00:37:04.358Z"
   },
   {
     "adId": "120232304752420711",
     "adName": "R6 | Adrenaline Interest | Video | Mega Blaster Customer Reel",
     "campaignName": "GRI  - AUS Wide [Broad Targeting]",
-    "score": 5,
-    "status": "DEAD",
-    "checkedAt": "2026-05-14T04:35:04.696Z"
+    "score": 40,
+    "status": "FATIGUING",
+    "checkedAt": "2026-05-15T00:37:04.358Z"
   },
   {
     "adId": "120231473448190711",
@@ -205,7 +205,7 @@
     "campaignName": "GRI  - AUS Wide [Broad Targeting]",
     "score": 40,
     "status": "FATIGUING",
-    "checkedAt": "2026-05-14T04:35:05.196Z"
+    "checkedAt": "2026-05-15T00:37:04.358Z"
   },
   {
     "adId": "120232304752430711",
@@ -213,7 +213,7 @@
     "campaignName": "GRI  - AUS Wide [Broad Targeting]",
     "score": 40,
     "status": "FATIGUING",
-    "checkedAt": "2026-05-14T04:35:05.196Z"
+    "checkedAt": "2026-05-15T00:37:04.358Z"
   },
   {
     "adId": "120233738228290711",
@@ -221,7 +221,7 @@
     "campaignName": "GRI  - AUS Wide [Broad Targeting]",
     "score": 40,
     "status": "FATIGUING",
-    "checkedAt": "2026-05-14T04:35:05.196Z"
+    "checkedAt": "2026-05-15T00:37:04.358Z"
   },
   {
     "adId": "120229935790060711",
@@ -229,23 +229,23 @@
     "campaignName": "GRI  - AUS Wide [Broad Targeting]",
     "score": 40,
     "status": "FATIGUING",
-    "checkedAt": "2026-05-14T04:35:05.196Z"
+    "checkedAt": "2026-05-15T00:37:04.358Z"
   },
   {
     "adId": "120231803428310711",
     "adName": "Mega Blaster September Video",
     "campaignName": "GRI  - AUS Wide [Broad Targeting]",
-    "score": 50,
+    "score": 60,
     "status": "WATCH",
-    "checkedAt": "2026-05-14T04:35:05.686Z"
+    "checkedAt": "2026-05-15T00:37:04.358Z"
   },
   {
     "adId": "120231756287270711",
     "adName": "R6 | Party & Event Segment | Video | Smoke Bomb September",
     "campaignName": "GRI  - AUS Wide [Broad Targeting]",
-    "score": 50,
-    "status": "WATCH",
-    "checkedAt": "2026-05-14T04:35:05.686Z"
+    "score": 15,
+    "status": "DEAD",
+    "checkedAt": "2026-05-15T00:37:04.358Z"
   },
   {
     "adId": "120232304752400711",
@@ -253,7 +253,7 @@
     "campaignName": "GRI  - AUS Wide [Broad Targeting]",
     "score": 80,
     "status": "HEALTHY",
-    "checkedAt": "2026-05-14T04:35:05.686Z"
+    "checkedAt": "2026-05-15T00:37:04.843Z"
   },
   {
     "adId": "120232406346080711",
@@ -261,6 +261,6 @@
     "campaignName": "GRI  - AUS Wide [Broad Targeting]",
     "score": 40,
     "status": "FATIGUING",
-    "checkedAt": "2026-05-14T04:35:05.686Z"
+    "checkedAt": "2026-05-15T00:37:04.843Z"
   }
 ]

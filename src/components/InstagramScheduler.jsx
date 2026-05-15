@@ -131,6 +131,7 @@ export default function InstagramScheduler() {
   const [calMonth, setCalMonth] = useState(aestMonth())
   const [calYear, setCalYear] = useState(aestYear())
   const [dragOver, setDragOver] = useState(null)
+  const [drawerDragOver, setDrawerDragOver] = useState(false)
   const [autoPosting, setAutoPosting] = useState(null)
   const [toast, setToast] = useState(null)
   const [scheduleInput, setScheduleInput] = useState('')
@@ -210,27 +211,32 @@ export default function InstagramScheduler() {
 
   // ── New post ───────────────────────────────────────────────────────────────
 
+  // Pick the next non-colliding scheduled time on a given day.
+  // Spreads posts 2 hours apart starting 10am AEST (00:00 UTC), and keeps
+  // bumping forward 2h per existing post — no hard cap, so the user can
+  // schedule as many posts on a single day as they want without collision.
+  function nextSlotFor(dayKey, existingPosts) {
+    // Existing scheduled hours on THIS day (UTC hour numbers)
+    const usedHours = new Set(
+      (existingPosts || [])
+        .map(p => p.scheduledAt && new Date(p.scheduledAt).getUTCHours())
+        .filter(h => h != null)
+    )
+    // Try every 2-hour slot from 00:00 UTC (10am AEST) to 22:00 UTC (8am AEST next day)
+    for (let h = 0; h < 24; h += 2) {
+      if (!usedHours.has(h)) {
+        return new Date(`${dayKey}T${String(h).padStart(2, '0')}:00:00.000Z`)
+      }
+    }
+    // Fallback: minute-stagger (unlimited posts/day, never collide)
+    const stagger = (existingPosts.length * 7) % 60
+    return new Date(`${dayKey}T08:${String(stagger).padStart(2, '0')}:00.000Z`)
+  }
+
   function newPost(date) {
     const dayKey = date ? fmtDate(date) : fmtDate(new Date())
     const existingPosts = postsByDate[dayKey] || []
-
-    // If day already has posts, ask if they want to add another
-    if (existingPosts.length > 0) {
-      const action = window.confirm(
-        `This day already has ${existingPosts.length} post${existingPosts.length > 1 ? 's' : ''}.\n\nClick OK to add another post, or Cancel to view existing.`
-      )
-      if (!action) {
-        // Open the first existing post instead
-        setDrawer(existingPosts[0])
-        setCaptionVariants(null)
-        return
-      }
-    }
-
-    // Stagger time: 10am for 1st post, 2pm for 2nd, 6pm for 3rd (AEST)
-    const hourOffsets = [0, 4, 8] // hours after 10am AEST (00:00 UTC)
-    const offset = hourOffsets[Math.min(existingPosts.length, hourOffsets.length - 1)]
-    const scheduledAtUTC = new Date(`${dayKey}T${String(offset).padStart(2, '0')}:00:00.000Z`)
+    const scheduledAtUTC = nextSlotFor(dayKey, existingPosts)
 
     setDrawer({
       id: uid(),
@@ -286,12 +292,10 @@ export default function InstagramScheduler() {
         }
       } catch { /* Non-fatal */ }
 
-      // Stagger times: 10am, 2pm, 6pm AEST for multiple posts on same day
+      // Pick the next non-colliding slot on this day (unlimited posts/day)
       const dayKey = fmtDate(day)
       const existingPosts = postsByDate[dayKey] || []
-      const hourOffsets = [0, 4, 8]
-      const offset = hourOffsets[Math.min(existingPosts.length, hourOffsets.length - 1)]
-      const scheduledAtUTC = new Date(`${dayKey}T${String(offset).padStart(2, '0')}:00:00.000Z`)
+      const scheduledAtUTC = nextSlotFor(dayKey, existingPosts)
       const post = {
         id: uid(),
         type: postType,
@@ -380,19 +384,23 @@ export default function InstagramScheduler() {
 
   // ── Media upload (drawer) ─────────────────────────────────────────────────
 
-  async function handleUpload(e) {
-    const files = e.target.files
-    if (!files || files.length === 0) return
-
-    // Validate file sizes
+  // Shared upload routine — accepts a FileList from either the file picker
+  // or a drag-and-drop event. The drag/drop wasn't supported on the drawer
+  // before, only on the calendar — fixed now so image-post drag works.
+  async function uploadFilesToDrawer(rawFiles) {
+    const files = Array.from(rawFiles || []).filter(f =>
+      f.type.startsWith('image/') || f.type.startsWith('video/')
+    )
+    if (files.length === 0) {
+      showToast('Drop image (.jpg/.png/.webp) or video (.mp4/.mov) files', 'error')
+      return
+    }
     for (const f of files) {
       if (f.size > 500 * 1024 * 1024) {
         showToast(`File "${f.name}" is too large (max 500MB)`, 'error')
-        if (fileRef.current) fileRef.current.value = ''
         return
       }
     }
-
     setUploading(true)
     setUploadProgress(0)
     try {
@@ -420,6 +428,31 @@ export default function InstagramScheduler() {
     setUploading(false)
     setUploadProgress(0)
     fetchDiskUsage()
+  }
+
+  function handleDrawerDragOver(e) {
+    e.preventDefault()
+    e.stopPropagation()
+    e.dataTransfer.dropEffect = 'copy'
+    setDrawerDragOver(true)
+  }
+  function handleDrawerDragLeave(e) {
+    e.preventDefault()
+    e.stopPropagation()
+    setDrawerDragOver(false)
+  }
+  async function handleDrawerDrop(e) {
+    e.preventDefault()
+    e.stopPropagation()
+    setDrawerDragOver(false)
+    if (uploading) return
+    await uploadFilesToDrawer(e.dataTransfer.files)
+  }
+
+  async function handleUpload(e) {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+    await uploadFilesToDrawer(files)
     if (fileRef.current) fileRef.current.value = ''
   }
 
@@ -709,8 +742,28 @@ export default function InstagramScheduler() {
                   ))}
                 </div>
 
-                {/* Upload area */}
-                <div className="ig-upload-btn-wrap">
+                {/* Upload area — file picker + drag-and-drop drop zone */}
+                <div
+                  className="ig-upload-btn-wrap"
+                  onDragOver={handleDrawerDragOver}
+                  onDragEnter={handleDrawerDragOver}
+                  onDragLeave={handleDrawerDragLeave}
+                  onDrop={handleDrawerDrop}
+                  style={{
+                    border: `2px dashed ${drawerDragOver ? '#E43F7B' : '#CBD5E1'}`,
+                    borderRadius: 10,
+                    background: drawerDragOver ? '#FFF0F5' : '#F8FAFC',
+                    padding: 14,
+                    textAlign: 'center',
+                    transition: 'all 0.15s',
+                  }}>
+                  {!uploading && (
+                    <div style={{ fontSize: 12, color: drawerDragOver ? '#E43F7B' : '#64748B', marginBottom: 10, fontWeight: drawerDragOver ? 600 : 400 }}>
+                      {drawerDragOver
+                        ? '⬇ Drop to upload'
+                        : '📎 Drag image / video files here, or click to browse'}
+                    </div>
+                  )}
                   {uploading ? (
                     <div style={{
                       padding: 16, border: '2px solid #E43F7B', borderRadius: 10,

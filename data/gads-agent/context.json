@@ -38,10 +38,10 @@
       "onlyScanEnabledCampaigns": true,
       "minDataDaysForBleedFindings": 30
     },
-    "updatedAt": "2026-05-14T22:15:04.547Z"
+    "updatedAt": "2026-05-15T00:15:04.457Z"
   },
   "auto": {
-    "discoveredAt": "2026-05-14T22:15:04.540Z",
+    "discoveredAt": "2026-05-15T00:15:04.455Z",
     "enabledCampaignIds": [
       "21113841118",
       "22841772135",
