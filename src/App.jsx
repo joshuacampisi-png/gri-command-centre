@@ -124,7 +124,9 @@ function OverviewPage({ data, company }) {
   const [shippingWeekOffset, setShippingWeekOffset] = useState(0)
   const [shippingData, setShippingData] = useState(null)
   const [shippingCosts, setShippingCosts] = useState({})
-  const [shippingCostInput, setShippingCostInput] = useState('')
+  // Two-courier shipping cost inputs (replaces the old single shippingCostInput)
+  const [auspostInput, setAuspostInput] = useState('')
+  const [startrackInput, setStartrackInput] = useState('')
   const [shippingCostSaving, setShippingCostSaving] = useState(false)
   const [shippingSavedFlash, setShippingSavedFlash] = useState(false)
   const [showShippingGraph, setShowShippingGraph] = useState(false)
@@ -215,14 +217,28 @@ function OverviewPage({ data, company }) {
     }).catch(() => {})
   }, [])
 
-  // Pre-fill the input with the saved value whenever the active week or the
-  // saved-costs map changes. After a save we ALSO set the input explicitly
-  // inside saveShippingCost() so we never depend on this effect re-firing
-  // correctly — that's what made the value appear to "disappear" before.
+  // Pre-fill the two courier inputs with the saved values whenever the active
+  // week or saved-costs map changes. Both saves explicitly set state too, so
+  // values never silently disappear. Legacy single-cost entries are mapped
+  // into the AusPost field so the team can split them after migration.
   useEffect(() => {
     const { from } = getWedTueWeek(shippingWeekOffset)
     const saved = shippingCosts[from]
-    setShippingCostInput(saved ? String(saved.cost) : '')
+    if (saved) {
+      const hasCouriers = saved.auspost != null || saved.startrack != null
+      if (hasCouriers) {
+        setAuspostInput(saved.auspost != null ? String(saved.auspost) : '')
+        setStartrackInput(saved.startrack != null ? String(saved.startrack) : '')
+      } else if (saved.cost != null) {
+        // Legacy entry — put the single number under AusPost so team can edit
+        setAuspostInput(String(saved.cost))
+        setStartrackInput('')
+      } else {
+        setAuspostInput(''); setStartrackInput('')
+      }
+    } else {
+      setAuspostInput(''); setStartrackInput('')
+    }
   }, [shippingWeekOffset, shippingCosts, getWedTueWeek])
 
   // Shipping revenue: Wed-Tue weekly fetch + auto-refresh every 30s
@@ -240,33 +256,43 @@ function OverviewPage({ data, company }) {
 
   const saveShippingCost = async () => {
     const { from } = getWedTueWeek(shippingWeekOffset)
-    const raw = (shippingCostInput ?? '').toString().trim()
-    if (raw === '') {
-      alert('Enter a shipping cost amount first.')
+    const aRaw = (auspostInput ?? '').toString().trim()
+    const sRaw = (startrackInput ?? '').toString().trim()
+    if (aRaw === '' && sRaw === '') {
+      alert('Enter at least one courier bill (AusPost or StarTrack).')
       return
     }
-    const cost = parseFloat(raw)
-    if (Number.isNaN(cost) || cost < 0) {
-      alert(`"${raw}" isn't a valid amount.`)
-      return
+    const auspost = aRaw === '' ? null : parseFloat(aRaw)
+    const startrack = sRaw === '' ? null : parseFloat(sRaw)
+    if (auspost != null && (Number.isNaN(auspost) || auspost < 0)) {
+      alert(`AusPost "${aRaw}" isn't a valid amount.`); return
+    }
+    if (startrack != null && (Number.isNaN(startrack) || startrack < 0)) {
+      alert(`StarTrack "${sRaw}" isn't a valid amount.`); return
     }
     setShippingCostSaving(true)
     try {
+      const body = { weekStart: from }
+      if (auspost != null) body.auspost = auspost
+      if (startrack != null) body.startrack = startrack
       const res = await fetch('/api/shopify/shipping-costs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ weekStart: from, cost })
+        body: JSON.stringify(body)
       })
       const d = await res.json()
       if (res.ok && d.ok) {
-        // BULLETPROOF PERSISTENCE — three layers so the value never "vanishes":
-        //   1. Merge server response into local map (keeps existing weeks too,
-        //      defensive in case server ever returned a delta instead of full map).
-        //   2. Explicitly re-set the input to the just-saved value so users see
-        //      it locked in immediately, not dependent on a useEffect re-fire.
-        //   3. Flash a "Saved" badge for 2s as visible confirmation.
-        setShippingCosts(prev => ({ ...prev, ...(d.costs || {}), [from]: { cost: parsed, updatedAt: new Date().toISOString() } }))
-        setShippingCostInput(String(parsed))
+        const total = (auspost || 0) + (startrack || 0)
+        const merged = {
+          ...((d.costs || {})[from] || {}),
+          auspost: auspost != null ? auspost : (d.costs?.[from]?.auspost ?? null),
+          startrack: startrack != null ? startrack : (d.costs?.[from]?.startrack ?? null),
+          cost: total,
+          updatedAt: new Date().toISOString(),
+        }
+        setShippingCosts(prev => ({ ...prev, ...(d.costs || {}), [from]: merged }))
+        if (auspost != null) setAuspostInput(String(auspost))
+        if (startrack != null) setStartrackInput(String(startrack))
         setShippingSavedFlash(true)
         setTimeout(() => setShippingSavedFlash(false), 2000)
       } else {
@@ -469,87 +495,111 @@ function OverviewPage({ data, company }) {
             <div className="kv-row"><span>Orders</span><strong>{shippingData.orders}</strong></div>
             <div className="kv-row"><span>Total sales</span><strong>${shippingData.revenue.toFixed(2)}</strong></div>
 
-            {/* Actual shipping cost paid */}
+            {/* Actual shipping cost paid — TWO COURIERS (AusPost + StarTrack)
+                Both bills typed in, hit Save → totals deducted from this
+                week's Shopify-collected shipping revenue → real profit/loss. */}
             <div style={{ borderTop: '1px solid #E8ECF4', marginTop: 12, paddingTop: 12 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: '#E43F7B', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>Actual Shipping Paid</div>
-              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                <span style={{ fontSize: 16, fontWeight: 700, color: '#555' }}>$</span>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  placeholder="0.00"
-                  value={shippingCostInput}
-                  onChange={e => setShippingCostInput(e.target.value)}
-                  style={{
-                    flex: 1, padding: '7px 10px', fontSize: 14, borderRadius: 8,
-                    border: '1px solid #e5e7eb', outline: 'none', fontWeight: 600,
-                  }}
-                />
+              <div style={{ fontSize: 11, fontWeight: 600, color: '#E43F7B', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 8 }}>
+                Couriers paid this week
+              </div>
+
+              {/* AusPost */}
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 6 }}>
+                <label style={{ fontSize: 11, fontWeight: 600, color: '#475569', width: 70 }}>AusPost</label>
+                <span style={{ fontSize: 14, fontWeight: 700, color: '#555' }}>$</span>
+                <input type="number" step="0.01" min="0" placeholder="0.00"
+                  value={auspostInput}
+                  onChange={e => setAuspostInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') saveShippingCost() }}
+                  style={{ flex: 1, padding: '6px 10px', fontSize: 14, borderRadius: 8, border: '1px solid #e5e7eb', outline: 'none', fontWeight: 600 }} />
+              </div>
+
+              {/* StarTrack */}
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 8 }}>
+                <label style={{ fontSize: 11, fontWeight: 600, color: '#475569', width: 70 }}>StarTrack</label>
+                <span style={{ fontSize: 14, fontWeight: 700, color: '#555' }}>$</span>
+                <input type="number" step="0.01" min="0" placeholder="0.00"
+                  value={startrackInput}
+                  onChange={e => setStartrackInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') saveShippingCost() }}
+                  style={{ flex: 1, padding: '6px 10px', fontSize: 14, borderRadius: 8, border: '1px solid #e5e7eb', outline: 'none', fontWeight: 600 }} />
+              </div>
+
+              <div style={{ display: 'flex', gap: 6 }}>
                 <button onClick={saveShippingCost} disabled={shippingCostSaving}
-                  style={{
-                    padding: '7px 14px', fontSize: 12, fontWeight: 600, borderRadius: 8,
-                    border: 'none', background: '#3AB4C0', color: '#fff', cursor: 'pointer',
-                    opacity: shippingCostSaving ? 0.6 : 1,
-                  }}>
-                  {shippingCostSaving ? 'Saving...' : 'Save'}
+                  style={{ flex: 1, padding: '8px 14px', fontSize: 12, fontWeight: 600, borderRadius: 8, border: 'none', background: '#3AB4C0', color: '#fff', cursor: 'pointer', opacity: shippingCostSaving ? 0.6 : 1 }}>
+                  {shippingCostSaving ? 'Saving…' : 'Save couriers'}
                 </button>
                 {shippingCosts[getWedTueWeek(shippingWeekOffset).from] && (
                   <button onClick={clearShippingCost} disabled={shippingCostSaving}
-                    title="Clear this week's entry"
-                    style={{
-                      padding: '7px 10px', fontSize: 14, fontWeight: 700, borderRadius: 8,
-                      border: '1px solid #e5e7eb', background: '#fff', color: '#E43F7B',
-                      cursor: 'pointer', lineHeight: 1,
-                    }}>
+                    title="Clear this week's couriers"
+                    style={{ padding: '8px 12px', fontSize: 14, fontWeight: 700, borderRadius: 8, border: '1px solid #e5e7eb', background: '#fff', color: '#E43F7B', cursor: 'pointer', lineHeight: 1 }}>
                     ✕
                   </button>
                 )}
               </div>
+
               {(() => {
                 const { from } = getWedTueWeek(shippingWeekOffset)
                 const saved = shippingCosts[from]
-                if (saved) {
-                  const profit = shippingData.shipping - saved.cost
-                  const savedAt = saved.updatedAt
-                    ? new Date(saved.updatedAt).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
-                    : null
-                  return (
-                    <div style={{ marginTop: 8 }}>
-                      {/* Persistent saved-value badge — always visible so the team
-                          can see the locked-in number at all times, independent of
-                          whatever's in the editable input field. */}
-                      <div style={{
-                        marginTop: 4, marginBottom: 6, padding: '8px 12px', borderRadius: 8,
-                        background: shippingSavedFlash ? '#DCFCE7' : '#F0FDFA',
-                        border: `1px solid ${shippingSavedFlash ? '#10B981' : '#A7F3D0'}`,
-                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                        transition: 'background 0.2s, border-color 0.2s',
-                      }}>
-                        <div>
-                          <div style={{ fontSize: 10, fontWeight: 700, color: '#047857', textTransform: 'uppercase', letterSpacing: '.04em' }}>
-                            {shippingSavedFlash ? 'Saved ✓' : 'Locked In'}
-                          </div>
-                          <div style={{ fontSize: 16, fontWeight: 800, color: '#047857' }}>
-                            ${saved.cost.toFixed(2)}
-                          </div>
+                if (!saved) return null
+                const auspost = saved.auspost != null ? saved.auspost : null
+                const startrack = saved.startrack != null ? saved.startrack : null
+                const hasCouriers = auspost != null || startrack != null
+                const totalPaid = hasCouriers ? ((auspost || 0) + (startrack || 0)) : (saved.cost || 0)
+                const profit = shippingData.shipping - totalPaid
+                const savedAt = saved.updatedAt
+                  ? new Date(saved.updatedAt).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
+                  : null
+                return (
+                  <div style={{ marginTop: 10 }}>
+                    {/* Locked-in badge — always visible, courier breakdown */}
+                    <div style={{
+                      padding: '10px 12px', borderRadius: 8,
+                      background: shippingSavedFlash ? '#DCFCE7' : '#F0FDFA',
+                      border: `1px solid ${shippingSavedFlash ? '#10B981' : '#A7F3D0'}`,
+                      transition: 'background 0.2s, border-color 0.2s',
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: '#047857', textTransform: 'uppercase', letterSpacing: '.04em' }}>
+                          {shippingSavedFlash ? 'Saved ✓' : 'Locked In'}
                         </div>
-                        {savedAt && (
-                          <div style={{ fontSize: 10, color: '#047857', textAlign: 'right' }}>
-                            saved<br/>{savedAt}
+                        {savedAt && <div style={{ fontSize: 10, color: '#047857' }}>saved {savedAt}</div>}
+                      </div>
+                      {hasCouriers ? (
+                        <>
+                          <div className="kv-row" style={{ fontSize: 12 }}>
+                            <span>AusPost</span>
+                            <strong>{auspost != null ? `$${auspost.toFixed(2)}` : '—'}</strong>
                           </div>
-                        )}
-                      </div>
-                      <div className="kv-row">
-                        <span>Profit / Loss</span>
-                        <strong style={{ color: profit >= 0 ? '#10B981' : '#E43F7B' }}>
-                          {profit >= 0 ? '+' : '-'}${Math.abs(profit).toFixed(2)}
-                        </strong>
-                      </div>
+                          <div className="kv-row" style={{ fontSize: 12 }}>
+                            <span>StarTrack</span>
+                            <strong>{startrack != null ? `$${startrack.toFixed(2)}` : '—'}</strong>
+                          </div>
+                          <div className="kv-row" style={{ borderTop: '1px solid #A7F3D0', marginTop: 4, paddingTop: 4 }}>
+                            <span style={{ fontWeight: 600 }}>Total paid</span>
+                            <strong style={{ color: '#047857', fontSize: 14 }}>${totalPaid.toFixed(2)}</strong>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="kv-row">
+                          <span>Total paid (legacy)</span>
+                          <strong style={{ color: '#047857', fontSize: 14 }}>${totalPaid.toFixed(2)}</strong>
+                        </div>
+                      )}
                     </div>
-                  )
-                }
-                return null
+                    <div className="kv-row" style={{ marginTop: 8 }}>
+                      <span>Customers paid (Shopify)</span>
+                      <strong>${shippingData.shipping.toFixed(2)}</strong>
+                    </div>
+                    <div className="kv-row">
+                      <span style={{ fontWeight: 600 }}>{profit >= 0 ? 'Margin' : 'Loss'}</span>
+                      <strong style={{ color: profit >= 0 ? '#10B981' : '#E43F7B', fontSize: 14 }}>
+                        {profit >= 0 ? '+' : '-'}${Math.abs(profit).toFixed(2)}
+                      </strong>
+                    </div>
+                  </div>
+                )
               })()}
             </div>
 

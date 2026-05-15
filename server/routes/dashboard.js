@@ -326,23 +326,63 @@ router.get('/shopify/shipping-costs', (_req, res) => {
   res.json({ ok: true, costs, file: SHIPPING_COSTS_FILE })
 })
 
+// Compute the canonical "total cost" for a stored week entry.
+// New format: { auspost, startrack, cost?, updatedAt }
+//   - auspost + startrack is the source of truth
+//   - cost (legacy single-input) is kept as a fallback if neither courier
+//     field is set — so the dashboard never loses old data after the
+//     two-courier migration. As soon as the team enters either courier
+//     amount, the new fields take over.
+function computeTotalShippingCost(entry) {
+  if (!entry) return 0
+  const a = parseFloat(entry.auspost ?? NaN)
+  const s = parseFloat(entry.startrack ?? NaN)
+  if (!Number.isNaN(a) || !Number.isNaN(s)) {
+    return (Number.isNaN(a) ? 0 : a) + (Number.isNaN(s) ? 0 : s)
+  }
+  const legacy = parseFloat(entry.cost ?? NaN)
+  return Number.isNaN(legacy) ? 0 : legacy
+}
+
 router.post('/shopify/shipping-costs', (req, res) => {
-  const { weekStart, cost } = req.body
-  if (!weekStart || cost === undefined) {
-    return res.status(400).json({ ok: false, error: 'weekStart and cost required' })
+  const { weekStart, auspost, startrack, cost } = req.body
+  if (!weekStart) {
+    return res.status(400).json({ ok: false, error: 'weekStart required' })
+  }
+  if (auspost === undefined && startrack === undefined && cost === undefined) {
+    return res.status(400).json({ ok: false, error: 'Provide auspost and/or startrack (or legacy cost)' })
   }
   try {
     const costs = loadShippingCosts()
-    const parsed = parseFloat(cost)
-    if (Number.isNaN(parsed)) {
-      return res.status(400).json({ ok: false, error: `Invalid cost: ${cost}` })
+    const existing = costs[weekStart] || {}
+    const next = { ...existing, updatedAt: new Date().toISOString() }
+
+    if (auspost !== undefined) {
+      const a = parseFloat(auspost)
+      if (Number.isNaN(a) || a < 0) return res.status(400).json({ ok: false, error: `Invalid auspost: ${auspost}` })
+      next.auspost = a
     }
-    costs[weekStart] = { cost: parsed, updatedAt: new Date().toISOString() }
+    if (startrack !== undefined) {
+      const s = parseFloat(startrack)
+      if (Number.isNaN(s) || s < 0) return res.status(400).json({ ok: false, error: `Invalid startrack: ${startrack}` })
+      next.startrack = s
+    }
+    if (cost !== undefined && auspost === undefined && startrack === undefined) {
+      // Legacy single-input path (old clients still in tabs that haven't reloaded)
+      const c = parseFloat(cost)
+      if (Number.isNaN(c) || c < 0) return res.status(400).json({ ok: false, error: `Invalid cost: ${cost}` })
+      next.cost = c
+    }
+
+    // Compute total for back-compat — old UI cards read entry.cost
+    next.cost = computeTotalShippingCost(next)
+
+    costs[weekStart] = next
     const verified = saveShippingCosts(costs)
-    if (!verified[weekStart] || verified[weekStart].cost !== parsed) {
+    if (!verified[weekStart]) {
       return res.status(500).json({ ok: false, error: 'Write did not persist — file round-trip mismatch', file: SHIPPING_COSTS_FILE })
     }
-    console.log(`[shipping-costs] Saved ${weekStart} = $${parsed} → ${SHIPPING_COSTS_FILE}`)
+    console.log(`[shipping-costs] Saved ${weekStart} auspost=${next.auspost ?? '-'} startrack=${next.startrack ?? '-'} total=$${next.cost} → ${SHIPPING_COSTS_FILE}`)
     return res.json({ ok: true, costs: verified, file: SHIPPING_COSTS_FILE })
   } catch (e) {
     console.error('[shipping-costs] Save error:', e.message, e.stack)
