@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800">
+  <defs>
+    <linearGradient id="g" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#fdf8f3"/>
+      <stop offset="1" stop-color="#f4e6d8"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="800" fill="url(#g)"/>
+  <g transform="translate(400 380)">
+    <ellipse cx="-80" cy="0" rx="110" ry="140" fill="#f4b8c7"/>
+    <ellipse cx="80" cy="-20" rx="110" ry="140" fill="#a9cdec"/>
+    <text x="-80" y="20" text-anchor="middle" font-family="Georgia, serif" font-size="120" fill="#fff" font-weight="700">2</text>
+    <text x="80" y="0" text-anchor="middle" font-family="Georgia, serif" font-size="120" fill="#fff" font-weight="700">1</text>
+  </g>
+  <text x="400" y="700" text-anchor="middle" font-family="Inter, sans-serif" font-size="20" fill="#5a544f">Number balloon bundle — placeholder</text>
+</svg>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gender Reveal &amp; Party Balloons — Helium Numbers | Brisbane &amp; Gold Coast Pickup</title>
+  <meta name="description" content="Helium birthday number balloons with full balloon bundle. Pickup or delivery across Brisbane, Gold Coast and surrounds. Order online and collect same-day." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="/" class="brand">Gender Reveal Ideas</a>
+      <nav class="site-nav">
+        <a href="#how-it-works">How it works</a>
+        <a href="#service-area">Service area</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <a href="#order" class="header-cta">Order now</a>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO / PRODUCT -->
+    <section class="product" id="order">
+      <div class="container product-grid">
+
+        <!-- Gallery -->
+        <div class="gallery">
+          <div class="gallery-main">
+            <img id="gallery-main-img" src="assets/placeholder-main.svg" alt="Helium number balloon bundle" />
+          </div>
+          <div class="gallery-thumbs" id="gallery-thumbs">
+            <button class="thumb active" data-src="assets/placeholder-main.svg"><img src="assets/placeholder-main.svg" alt="" /></button>
+            <button class="thumb" data-src="assets/placeholder-2.svg"><img src="assets/placeholder-2.svg" alt="" /></button>
+            <button class="thumb" data-src="assets/placeholder-3.svg"><img src="assets/placeholder-3.svg" alt="" /></button>
+            <button class="thumb" data-src="assets/placeholder-4.svg"><img src="assets/placeholder-4.svg" alt="" /></button>
+          </div>
+        </div>
+
+        <!-- Form column -->
+        <div class="product-info">
+          <p class="eyebrow">Brisbane • Gold Coast • Surrounds</p>
+          <h1 class="product-title">Gender Reveal &amp; Party Balloons</h1>
+          <p class="product-subtitle">Helium-inflated number balloons with a matching balloon bundle. Ready to collect or delivered to your celebration.</p>
+
+          <div class="price-row">
+            <span class="price" id="price">$XX.XX</span>
+            <span class="price-note">AUD · incl. helium</span>
+          </div>
+
+          <form id="order-form" class="order-form" novalidate>
+
+            <!-- Step 1: how many numbers -->
+            <fieldset class="step">
+              <legend><span class="step-num">1</span> How many number balloons?</legend>
+              <div class="pill-group" role="radiogroup" aria-label="Number count">
+                <label class="pill">
+                  <input type="radio" name="numberCount" value="1" checked />
+                  <span>1 Number</span>
+                </label>
+                <label class="pill">
+                  <input type="radio" name="numberCount" value="2" />
+                  <span>2 Numbers</span>
+                </label>
+              </div>
+            </fieldset>
+
+            <!-- Step 2: bundle choice -->
+            <fieldset class="step">
+              <legend><span class="step-num">2</span> Choose your bundle</legend>
+              <div class="bundle-group">
+                <label class="bundle-card" data-bundle="single">
+                  <input type="radio" name="bundle" value="single" checked />
+                  <img src="assets/placeholder-bundle-1.svg" alt="Single number bundle" />
+                  <div class="bundle-meta">
+                    <strong>1 Number + Balloon Bundle</strong>
+                    <span>One helium number + 12 latex balloons + ribbon</span>
+                  </div>
+                </label>
+                <label class="bundle-card" data-bundle="double">
+                  <input type="radio" name="bundle" value="double" />
+                  <img src="assets/placeholder-bundle-2.svg" alt="Double number bundle" />
+                  <div class="bundle-meta">
+                    <strong>2 Numbers + Balloon Bundle</strong>
+                    <span>Two helium numbers + 18 latex balloons + ribbon</span>
+                  </div>
+                </label>
+              </div>
+            </fieldset>
+
+            <!-- Step 3: digit picker(s) -->
+            <fieldset class="step">
+              <legend><span class="step-num">3</span> Pick your number<span id="digits-plural"></span></legend>
+              <div class="digits-row">
+                <label class="digit">
+                  <span>First digit</span>
+                  <select name="digit1">
+                    <option value="" disabled selected>—</option>
+                    <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option>
+                    <option>5</option><option>6</option><option>7</option><option>8</option><option>9</option>
+                  </select>
+                </label>
+                <label class="digit" id="digit2-wrap" hidden>
+                  <span>Second digit</span>
+                  <select name="digit2">
+                    <option value="" disabled selected>—</option>
+                    <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option>
+                    <option>5</option><option>6</option><option>7</option><option>8</option><option>9</option>
+                  </select>
+                </label>
+              </div>
+            </fieldset>
+
+            <!-- Step 4: colour -->
+            <fieldset class="step">
+              <legend><span class="step-num">4</span> Colour</legend>
+              <div class="swatch-group" role="radiogroup" aria-label="Colour">
+                <label class="swatch" style="--swatch:#f4b8c7">
+                  <input type="radio" name="colour" value="pink" checked />
+                  <span class="swatch-dot" aria-hidden="true"></span>
+                  <span class="swatch-label">Pink</span>
+                </label>
+                <label class="swatch" style="--swatch:#a9cdec">
+                  <input type="radio" name="colour" value="blue" />
+                  <span class="swatch-dot" aria-hidden="true"></span>
+                  <span class="swatch-label">Blue</span>
+                </label>
+                <label class="swatch" style="--swatch:#d9b86a">
+                  <input type="radio" name="colour" value="gold" />
+                  <span class="swatch-dot" aria-hidden="true"></span>
+                  <span class="swatch-label">Gold</span>
+                </label>
+                <label class="swatch" style="--swatch:#e9e3da">
+                  <input type="radio" name="colour" value="silver" />
+                  <span class="swatch-dot" aria-hidden="true"></span>
+                  <span class="swatch-label">Silver</span>
+                </label>
+              </div>
+            </fieldset>
+
+            <!-- Step 5: pickup or delivery -->
+            <fieldset class="step">
+              <legend><span class="step-num">5</span> Pickup or delivery?</legend>
+              <div class="pill-group" role="radiogroup" aria-label="Fulfilment">
+                <label class="pill">
+                  <input type="radio" name="fulfilment" value="pickup" checked />
+                  <span>Pickup</span>
+                </label>
+                <label class="pill">
+                  <input type="radio" name="fulfilment" value="delivery" />
+                  <span>Delivery</span>
+                </label>
+              </div>
+              <p class="hint" id="fulfilment-hint">Pickup from our Brisbane studio. Address shared on order confirmation.</p>
+            </fieldset>
+
+            <!-- Step 6: date + time -->
+            <fieldset class="step">
+              <legend>
+                <span class="step-num">6</span>
+                <span id="date-legend-text">Pickup date &amp; time</span>
+                <button type="button" class="info-btn" id="info-btn" aria-label="Booking rules" aria-expanded="false">i</button>
+              </legend>
+
+              <div class="info-pop" id="info-pop" hidden>
+                <strong>Booking rules</strong>
+                <ul>
+                  <li>Same-day orders: available 7:00am – 2:00pm AEST.</li>
+                  <li>All bookings need at least 1 hour lead time.</li>
+                  <li>Orders placed after 2:00pm AEST are for the next day onwards.</li>
+                </ul>
+              </div>
+
+              <div class="date-row">
+                <label class="field">
+                  <span>Date</span>
+                  <input type="date" id="pickup-date" name="pickupDate" required />
+                </label>
+                <label class="field">
+                  <span>Time</span>
+                  <select id="pickup-time" name="pickupTime" required>
+                    <option value="" disabled selected>Select a time</option>
+                  </select>
+                </label>
+              </div>
+              <p class="error" id="date-error" hidden></p>
+            </fieldset>
+
+            <!-- Summary + CTA -->
+            <div class="summary" id="summary">
+              <div class="summary-row"><span>Bundle</span><strong id="sum-bundle">1 Number + Bundle</strong></div>
+              <div class="summary-row"><span>Number</span><strong id="sum-number">—</strong></div>
+              <div class="summary-row"><span>Colour</span><strong id="sum-colour">Pink</strong></div>
+              <div class="summary-row"><span>Fulfilment</span><strong id="sum-fulfilment">Pickup</strong></div>
+              <div class="summary-row"><span>When</span><strong id="sum-when">—</strong></div>
+            </div>
+
+            <button type="submit" class="cta" id="cta">Order My Balloons</button>
+            <p class="reassurance">Secure checkout · Order confirmation by email · Brisbane &amp; Gold Coast pickup</p>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="how" id="how-it-works">
+      <div class="container">
+        <h2>How it works</h2>
+        <div class="how-grid">
+          <div class="how-step">
+            <div class="how-icon">1</div>
+            <h3>Build your bundle</h3>
+            <p>Choose 1 or 2 numbers, your colour, and your bundle size.</p>
+          </div>
+          <div class="how-step">
+            <div class="how-icon">2</div>
+            <h3>Pick your time</h3>
+            <p>Pickup same-day (before 2pm AEST) or schedule a delivery.</p>
+          </div>
+          <div class="how-step">
+            <div class="how-icon">3</div>
+            <h3>Collect &amp; celebrate</h3>
+            <p>Fully inflated with helium, ready to go. Just bring a car big enough.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SERVICE AREA -->
+    <section class="service" id="service-area">
+      <div class="container service-grid">
+        <div>
+          <h2>Brisbane, Gold Coast &amp; surrounds</h2>
+          <p>We service the greater Brisbane and Gold Coast regions for both pickup and delivery. Delivery fees and availability vary by suburb — confirmed at checkout.</p>
+          <ul class="suburb-list">
+            <li>Brisbane CBD</li>
+            <li>North &amp; South Brisbane</li>
+            <li>Logan</li>
+            <li>Ipswich</li>
+            <li>Gold Coast</li>
+            <li>Redlands</li>
+            <li>Moreton Bay</li>
+            <li>Scenic Rim</li>
+          </ul>
+        </div>
+        <div class="service-card">
+          <h3>Pickup hours</h3>
+          <p>7:00am – 6:00pm, 7 days</p>
+          <h3>Same-day cutoff</h3>
+          <p>Order by 2:00pm AEST for same-day pickup.</p>
+          <h3>Delivery</h3>
+          <p>Available across Brisbane &amp; Gold Coast — book 24h ahead where possible.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq" id="faq">
+      <div class="container">
+        <h2>Frequently asked</h2>
+        <details>
+          <summary>How long do helium number balloons last?</summary>
+          <p>Our 34" foil number balloons stay inflated for 3–5 days indoors when treated gently. Heat and direct sun shorten that significantly.</p>
+        </details>
+        <details>
+          <summary>Will the balloons fit in my car?</summary>
+          <p>The number balloons are roughly 86cm tall. A small hatchback can usually fit one or two with the seats down. Bring a friend if you can.</p>
+        </details>
+        <details>
+          <summary>Can I order on the day?</summary>
+          <p>Yes — same-day orders are accepted between 7:00am and 2:00pm AEST, with at least 1 hour lead time for inflation.</p>
+        </details>
+        <details>
+          <summary>What if I need to cancel or change my order?</summary>
+          <p>Get in touch as soon as possible. We can usually adjust colour or numbers up until inflation starts.</p>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div>
+        <strong>Gender Reveal Ideas</strong>
+        <p>Brisbane &amp; Gold Coast based · Pickup &amp; delivery available</p>
+      </div>
+      <div>
+        <p>Pickup hours: 7am–6pm, 7 days</p>
+        <p>Same-day cutoff: 2pm AEST</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
