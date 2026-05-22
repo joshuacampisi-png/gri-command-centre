@@ -8,7 +8,8 @@ const BALLOON_CHAT_IDS = [
 
 function bondAmount(hire) {
   const base = parseInt(process.env.BALLOON_BOND_AMOUNT || '200', 10);
-  return base * (hire.boxQty || 1);
+  const perBox = process.env.BALLOON_BOND_PER_BOX === 'true';
+  return base * (perBox ? (hire.boxQty || 1) : 1);
 }
 
 /**

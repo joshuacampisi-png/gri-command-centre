@@ -16,9 +16,12 @@ const headers = () => ({
   'Square-Version': '2024-12-18',
 });
 
+// Flat $200 bond regardless of how many boxes the customer hires.
+// Set BALLOON_BOND_PER_BOX=true on Railway if you ever want to scale by qty.
 function bondCents(hire) {
   const base = parseInt(process.env.BALLOON_BOND_AMOUNT || '200', 10);
-  return base * 100 * (hire.boxQty || 1);
+  const perBox = process.env.BALLOON_BOND_PER_BOX === 'true';
+  return base * 100 * (perBox ? (hire.boxQty || 1) : 1);
 }
 
 /**

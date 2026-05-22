@@ -38,9 +38,10 @@ function bondAmountCents(type, hire) {
   if (type === 'tnt') {
     return ((hire.kitQty || 1) >= 2 ? 40000 : 20000)
   }
-  // Balloon: $200 × boxQty (override via BALLOON_BOND_AMOUNT)
+  // Balloon: FLAT $200 by default — set BALLOON_BOND_PER_BOX=true to scale by qty.
   const base = parseInt(process.env.BALLOON_BOND_AMOUNT || '200', 10)
-  return base * 100 * (hire.boxQty || 1)
+  const perBox = process.env.BALLOON_BOND_PER_BOX === 'true'
+  return base * 100 * (perBox ? (hire.boxQty || 1) : 1)
 }
 
 function bondAmountDollars(type, hire) { return (bondAmountCents(type, hire) / 100) }

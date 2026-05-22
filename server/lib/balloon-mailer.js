@@ -53,9 +53,11 @@ async function telegramFallback(type, hire, subject, text, error) {
 function firstName(hire) { return (hire.customerName || 'there').split(' ')[0]; }
 
 function bondAmount(hire) {
-  // Default $200 — override via env BALLOON_BOND_AMOUNT
+  // Flat $200 bond regardless of box quantity. Set BALLOON_BOND_PER_BOX=true
+  // on Railway if you ever want it to scale per box.
   const base = parseInt(process.env.BALLOON_BOND_AMOUNT || '200', 10);
-  return base * (hire.boxQty || 1);
+  const perBox = process.env.BALLOON_BOND_PER_BOX === 'true';
+  return base * (perBox ? (hire.boxQty || 1) : 1);
 }
 
 // Balloon-box uses SAME DAY pickup, NEXT DAY return (helium deflates ~24h).
