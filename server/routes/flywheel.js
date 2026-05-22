@@ -272,18 +272,6 @@ router.get('/dashboard', async (req, res) => {
     const organicOrders = attribution.buckets.organic.orders
     const organicNewCustomers = attribution.buckets.organic.newCustomers
 
-    // ── iCAC (incremental customer acquisition cost) per channel ──
-    // Uses the BEST ESTIMATE customer count for Meta (triangulated from
-    // 1d_click + first-party) so iCAC isn't artificially inflated by
-    // ignoring iOS/in-app-browser orders that lost fbclid.
-    // Apply 96% new-customer rate to Meta's best-estimate purchase count.
-    const newRate = parseFloat(process.env.GRI_NEW_CUSTOMER_RATE || '0.96')
-    const metaBestNewCustomers = Math.round((metaBestPurchases || metaOrders) * newRate)
-    const metaICac = metaBestNewCustomers > 0 ? metaSpend / metaBestNewCustomers : 0
-    const googleICac = googleNewCustomers > 0 ? googleSpend / googleNewCustomers : 0
-    const blendedICac = (metaBestNewCustomers + googleNewCustomers) > 0
-      ? totalSpend / (metaBestNewCustomers + googleNewCustomers)
-      : 0
     // Meta-pixel-reported revenue is kept for reference but no longer used
     // for any calculation — it's the source of the double-count problem.
     const metaPixelRevenue = metaData.purchaseValue || 0
@@ -313,6 +301,19 @@ router.get('/dashboard', async (req, res) => {
     const metaBestRevenue = W_META_1D * meta1dClickRevenue + W_FIRST_PARTY * metaRevenue
     const metaBestPurchases = Math.round(W_META_1D * meta1dClickPurchases + W_FIRST_PARTY * metaOrders)
     const metaBestRoas = metaSpend > 0 ? metaBestRevenue / metaSpend : 0
+
+    // ── iCAC (incremental customer acquisition cost) per channel ──
+    // Uses the BEST ESTIMATE customer count for Meta (triangulated from
+    // 1d_click + first-party) so iCAC isn't artificially inflated by
+    // ignoring iOS/in-app-browser orders that lost fbclid.
+    // Apply 96% new-customer rate to Meta's best-estimate purchase count.
+    const newRate = parseFloat(process.env.GRI_NEW_CUSTOMER_RATE || '0.96')
+    const metaBestNewCustomers = Math.round((metaBestPurchases || metaOrders) * newRate)
+    const metaICac = metaBestNewCustomers > 0 ? metaSpend / metaBestNewCustomers : 0
+    const googleICac = googleNewCustomers > 0 ? googleSpend / googleNewCustomers : 0
+    const blendedICac = (metaBestNewCustomers + googleNewCustomers) > 0
+      ? totalSpend / (metaBestNewCustomers + googleNewCustomers)
+      : 0
 
     // Cross-attribution check: how many Shopify orders show NO fbclid but
     // landed within Meta's 1d_click window? Approximation: 1d_click count
