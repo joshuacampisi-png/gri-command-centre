@@ -81,7 +81,7 @@ router.get('/:hireId/sign', (req, res) => {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Helium Balloon Box Rental Agreement — ${hire.customerName} (${hire.orderNumber})</title>
+  <title>Gender Reveal Ideas Contract — ${hire.customerName}</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F8F6F4; color: #2D3A4A; line-height: 1.6; padding: 14px; }

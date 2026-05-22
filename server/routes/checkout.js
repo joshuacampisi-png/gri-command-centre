@@ -204,7 +204,7 @@ function renderCheckout({ type, hire, amount, label, sq, sdkUrl, logo }) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${label} — Bond Payment</title>
+  <title>Gender Reveal Ideas Contract — Bond Payment</title>
   <script src="${sdkUrl}"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -303,7 +303,7 @@ function renderCheckout({ type, hire, amount, label, sq, sdkUrl, logo }) {
 function renderAlreadyPaid({ type, hire, logo }) {
   const label = type === 'tnt' ? 'TNT Cannon Hire' : 'Helium Balloon Box Hire'
   return `<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Bond Already Paid</title>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Gender Reveal Ideas Contract — Bond Paid</title>
 <style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#F8F6F4;padding:14px}
 .container{max-width:480px;margin:60px auto;background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.06);padding:28px;text-align:center}
 img{max-width:140px;margin-bottom:14px}h1{color:#047857;font-size:22px;margin-bottom:8px}p{color:#475569;font-size:14px;line-height:1.6}</style></head>

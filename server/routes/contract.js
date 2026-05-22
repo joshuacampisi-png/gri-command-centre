@@ -54,7 +54,7 @@ router.get('/:hireId/sign', (req, res) => {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="format-detection" content="telephone=no, date=no, address=no">
-  <title>TNT Kit Rental Agreement \u2014 ${hire.orderNumber}</title>
+  <title>Gender Reveal Ideas Contract \u2014 ${hire.customerName || hire.orderNumber}</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
