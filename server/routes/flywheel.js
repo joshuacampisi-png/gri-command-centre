@@ -52,9 +52,9 @@ const router = Router()
 router.get('/dashboard', async (req, res) => {
   try {
     const range = req.query.range || 'today'
-    const metaPresetMap = { today: 'today', '7d': 'last_7d', '14d': 'last_14d', '30d': 'last_30d' }
+    const metaPresetMap = { today: 'today', yesterday: 'yesterday', '7d': 'last_7d', '14d': 'last_14d', '30d': 'last_30d' }
     const metaPreset = metaPresetMap[range] || 'today'
-    const daysMap = { today: 1, '7d': 7, '14d': 14, '30d': 30 }
+    const daysMap = { today: 1, yesterday: 1, '7d': 7, '14d': 14, '30d': 30 }
     const days = daysMap[range] || 1
 
     // Parallel fetch: Shopify revenue + Meta insights + LIVE Google Ads + all store data
@@ -66,10 +66,20 @@ router.get('/dashboard', async (req, res) => {
           from.setDate(from.getDate() - days)
           // AEST dates
           const aestNow = new Date(to.getTime() + 10 * 3600000)
-          const aestFrom = range === 'today' ? aestNow : new Date(from.getTime() + 10 * 3600000)
+          let aestFrom, aestTo = aestNow
+          if (range === 'today') {
+            aestFrom = aestNow
+          } else if (range === 'yesterday') {
+            // Yesterday = AEST(now-1) for BOTH from and to
+            const y = new Date(aestNow); y.setDate(y.getDate() - 1)
+            aestFrom = y
+            aestTo = y
+          } else {
+            aestFrom = new Date(from.getTime() + 10 * 3600000)
+          }
           return await getShopifyOrdersRange(
             aestFrom.toISOString().slice(0, 10),
-            aestNow.toISOString().slice(0, 10),
+            aestTo.toISOString().slice(0, 10),
             { includeOrderDetails: true }
           )
         } catch (e) { return { ok: false, revenue: 0, orders: 0, error: e.message } }
@@ -106,6 +116,10 @@ router.get('/dashboard', async (req, res) => {
     if (range === 'today') {
       gFromStr = todayStr2
       gToStr = todayStr2
+    } else if (range === 'yesterday') {
+      const y = new Date(aestNow2); y.setDate(y.getDate() - 1)
+      gFromStr = y.toISOString().slice(0, 10)
+      gToStr = gFromStr
     } else {
       const gTo = new Date(aestNow2)
       gTo.setDate(gTo.getDate() - 1)
@@ -1140,7 +1154,7 @@ router.get('/attribution-diag', async (req, res) => {
     const range = req.query.range || '7d'
     const presetMap = { today: 'today', '7d': 'last_7d', '14d': 'last_14d', '30d': 'last_30d' }
     const preset = presetMap[range] || 'last_7d'
-    const daysMap = { today: 1, '7d': 7, '14d': 14, '30d': 30 }
+    const daysMap = { today: 1, yesterday: 1, '7d': 7, '14d': 14, '30d': 30 }
     const days = daysMap[range] || 7
 
     const aestNow = new Date(new Date().getTime() + 10 * 3600000)

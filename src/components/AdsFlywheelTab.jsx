@@ -18,6 +18,7 @@ const API = '/api/flywheel'
 const GRI_ADS_FE = { profitableCPP: 43.13, breakevenCPP: 50.74, grossMarginPct: 0.40 }
 const RANGES = [
   { key: 'today', label: 'Today (Live)' },
+  { key: 'yesterday', label: 'Yesterday' },
   { key: '7d', label: '7 Days' },
   { key: '14d', label: '14 Days' },
   { key: '30d', label: '30 Days' },
@@ -867,6 +868,24 @@ export function AdsFlywheelTab() {
         <HeroCard label="Orders Today" value={range === 'today' ? (h.shopifyOrders || 0) : '--'} sub="From Shopify" color={C.text} />
       </div>
 
+      {/* Attribution methodology callout — explains why Meta shows 2 numbers */}
+      {h.metaSpend > 0 && (h.metaAttributionGapPct || 0) > 30 && (
+        <div style={{
+          ...card, marginBottom: 12, padding: '10px 14px',
+          background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.35)',
+          fontSize: 12, lineHeight: 1.5,
+        }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: '#D97706', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>
+            Why Meta shows two ROAS numbers
+          </div>
+          <div style={{ color: C.muted }}>
+            <strong style={{ color: C.text }}>Ads Manager</strong> reports {(h.metaPixelRoas || 0).toFixed(2)}x — it counts view-throughs + iOS-recovered conversions even when no click ID survives.
+            <strong style={{ color: C.text }}> Shopify verified</strong> reports {(h.metaRoas || 0).toFixed(2)}x — only orders whose landing URL still carries an <code style={{ background: 'rgba(0,0,0,0.2)', padding: '0 4px', borderRadius: 3 }}>fbclid</code>.
+            The {h.metaAttributionGapPct.toFixed(0)}% gap = iOS Safari, Instagram in-app browser, and ad-blockers stripping the click ID. Real ROAS sits between the two. The Shopify number is the conservative incremental floor your scaling decisions should reference.
+          </div>
+        </div>
+      )}
+
       {/* ── Channel Performance comparison — Meta vs Google vs Organic ── */}
       {(h.metaSpend > 0 || h.googleSpend > 0 || h.organicRevenue > 0) && (
         <div style={{ ...card, marginBottom: 16, padding: isMobile ? 14 : 18 }}>
@@ -1037,6 +1056,13 @@ export function AdsFlywheelTab() {
             <span style={{ color: C.text }}>= Profit (CM after ad spend)</span>
             <span style={{ color: (h.profit || 0) > 0 ? C.green : C.red }}>{fmt$(h.profit || 0)}</span>
           </div>
+          {/* Detailed CM$ row — accounts for shipping cost too (full nCAC Layer 1 CM) */}
+          {h.cm != null && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, padding: '8px 10px', background: 'rgba(124, 58, 237, 0.08)', borderRadius: 6, fontSize: 12, border: '1px solid rgba(124, 58, 237, 0.25)' }}>
+              <span style={{ color: '#7C3AED' }}>CM$ (nCAC Layer 1 — after shipping + ads)</span>
+              <span style={{ color: (h.cm || 0) > 0 ? C.green : C.red, fontWeight: 700 }}>{fmt$(h.cm || 0)}</span>
+            </div>
+          )}
         </div>
       )}
 
