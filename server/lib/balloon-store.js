@@ -1,0 +1,85 @@
+import { readFileSync, writeFileSync, mkdirSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+/**
+ * balloon-store.js
+ * Persistence layer for Gender Reveal Helium Balloon Box hires.
+ * Parallel to hire-store.js (TNT) — same shape, separate file.
+ */
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const DATA_FILE = join(__dirname, '..', '..', 'data', 'balloon-hires.json');
+
+function readHires() {
+  try {
+    return JSON.parse(readFileSync(DATA_FILE, 'utf8'));
+  } catch {
+    return [];
+  }
+}
+
+function writeHires(hires) {
+  mkdirSync(dirname(DATA_FILE), { recursive: true });
+  writeFileSync(DATA_FILE, JSON.stringify(hires, null, 2));
+}
+
+export function getAll() {
+  return readHires();
+}
+
+export function getById(id) {
+  return readHires().find(h => h.id === id) || null;
+}
+
+export function create(hire) {
+  const hires = readHires();
+  const id = 'B' + Date.now().toString(36).toUpperCase();
+  const now = new Date().toISOString();
+  const record = {
+    id,
+    orderNumber: hire.orderNumber,
+    customerName: hire.customerName,
+    customerEmail: hire.customerEmail,
+    customerPhone: hire.customerPhone || '',
+    eventDate: hire.eventDate,
+    status: 'confirmed',
+    bondStatus: 'pending',
+    bondPaymentId: null,
+    bondPaymentLinkId: null,
+    bondPaymentUrl: null,
+    bondOrderId: null,
+    bondOutcome: null,
+    boxQty: hire.boxQty || 1,
+    boxColor: hire.boxColor || null, // pink | blue | secret
+    revenue: hire.revenue || 0,
+    contractStatus: 'not_sent',
+    contractSignedAt: null,
+    contractSignatureUrl: null,
+    emailSent: false,
+    confirmationSentAt: null,
+    bondPaidAt: null,
+    contractSentAt: null,
+    pickedUpAt: null,
+    returnedAt: null,
+    bondOutcomeAt: null,
+    productType: 'balloon-box',
+    createdAt: now,
+    updatedAt: now,
+  };
+  hires.unshift(record);
+  writeHires(hires);
+  return record;
+}
+
+export function clearAll() {
+  writeHires([]);
+}
+
+export function update(id, changes) {
+  const hires = readHires();
+  const idx = hires.findIndex(h => h.id === id);
+  if (idx === -1) return null;
+  hires[idx] = { ...hires[idx], ...changes, updatedAt: new Date().toISOString() };
+  writeHires(hires);
+  return hires[idx];
+}

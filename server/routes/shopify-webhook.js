@@ -8,6 +8,10 @@ import { update } from '../lib/hire-store.js';
 import { notifyTNTEvent } from '../lib/tnt-telegram.js';
 import { recordOrder } from '../lib/sales-tracker.js';
 import { pushProductToBottom, reorderAllCollections } from '../lib/inventory-sorter.js';
+import { create as createBalloonHire, getAll as getAllBalloonHires, update as updateBalloonHire } from '../lib/balloon-store.js';
+import { createBalloonBondPaymentLink } from '../lib/balloon-square.js';
+import { sendBalloonEmail } from '../lib/balloon-mailer.js';
+import { notifyBalloonEvent } from '../lib/balloon-telegram.js';
 
 const router = Router();
 
@@ -15,6 +19,29 @@ const router = Router();
 const TNT_PRODUCT_IDS = [
   7988691927129,  // TNT Gender Reveal Self Hire
 ];
+
+// Helium Balloon Box product IDs that trigger a balloon-hire creation.
+// One order can contain BOTH a TNT product and a balloon-box product —
+// in that case the webhook creates one of each (parallel systems).
+const BALLOON_PRODUCT_IDS = [
+  8205084131417,  // Gender Reveal Helium Balloon Box Hire (Pink / Blue / Secret)
+];
+
+function findBalloonLineItems(order) {
+  return (order.line_items || []).filter(item =>
+    BALLOON_PRODUCT_IDS.includes(item.product_id)
+  );
+}
+
+function pickBalloonColor(items) {
+  const li = items[0]
+  if (!li) return null
+  const t = (li.variant_title || '').toLowerCase()
+  if (t.includes('pink')) return 'pink'
+  if (t.includes('blue')) return 'blue'
+  if (t.includes('secret')) return 'secret'
+  return null
+}
 
 /**
  * Verify Shopify webhook HMAC signature.
@@ -151,8 +178,62 @@ async function processOrder(order) {
   }
 
   const tntItems = findTNTLineItems(order);
-  if (tntItems.length === 0) {
-    return { created: false, reason: 'No TNT products in order' };
+  const balloonItems = findBalloonLineItems(order);
+
+  if (tntItems.length === 0 && balloonItems.length === 0) {
+    return { created: false, reason: 'No TNT or balloon-box products in order' };
+  }
+
+  // ── Balloon-box branch (runs in parallel to TNT branch below) ──────────
+  if (balloonItems.length > 0) {
+    try {
+      const existing = getAllBalloonHires();
+      const orderName = order.name || `#${order.order_number}`;
+      if (existing.some(h => h.orderNumber === orderName)) {
+        console.log(`[shopify-webhook] Balloon hire already exists for ${orderName}, skipping`);
+      } else {
+        const customer = order.customer || {};
+        const shipping = order.shipping_address || order.billing_address || {};
+        const customerName = `${customer.first_name || shipping.first_name || ''} ${customer.last_name || shipping.last_name || ''}`.trim() || 'Unknown';
+        const customerEmail = order.contact_email || customer.email || order.email || '';
+        const customerPhone = shipping.phone || customer.phone || order.phone || '';
+        const eventDate = extractEventDate(order);
+        const boxQty = balloonItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
+        const boxColor = pickBalloonColor(balloonItems);
+        const revenue = balloonItems.reduce((sum, item) => sum + parseFloat(item.price || 0) * (item.quantity || 1), 0);
+
+        const balloonHire = createBalloonHire({
+          orderNumber: orderName, customerName, customerEmail, customerPhone,
+          eventDate: eventDate || '', boxQty, boxColor, revenue,
+        });
+        console.log(`[shopify-webhook] Balloon hire created: ${balloonHire.id} for ${orderName} (${customerName})`);
+
+        if (customerEmail) {
+          try {
+            if (eventDate) {
+              await sendBalloonEmail('confirmation', balloonHire);
+              updateBalloonHire(balloonHire.id, { emailSent: true, confirmationSentAt: new Date().toISOString() });
+            }
+          } catch (e) { console.error('[shopify-webhook] balloon confirm email failed:', e.message); }
+          try {
+            const link = await createBalloonBondPaymentLink(balloonHire);
+            updateBalloonHire(balloonHire.id, { bondPaymentUrl: link.url, bondPaymentLinkId: link.paymentLinkId, bondOrderId: link.orderId });
+            await sendBalloonEmail('bond_link', balloonHire, link.url);
+          } catch (e) { console.error('[shopify-webhook] balloon bond link failed:', e.message); }
+        }
+
+        notifyBalloonEvent('order_created', balloonHire).catch(() => {});
+      }
+    } catch (e) {
+      console.error('[shopify-webhook] balloon branch error:', e.message);
+    }
+
+    // If THIS order only had a balloon product (no TNT), we're done
+    if (tntItems.length === 0) {
+      return { created: true, balloonOnly: true };
+    }
+    // Otherwise fall through to the TNT branch below — single order
+    // creates BOTH a balloon hire AND a TNT hire.
   }
 
   // Check for duplicate — don't create if order number already exists

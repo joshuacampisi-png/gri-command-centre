@@ -7,6 +7,7 @@ import BlogApproval from './components/BlogApproval'
 import GSCVisibility from './components/GSCVisibility'
 import MarketShare from './components/MarketShare'
 import TNTDashboard from './components/TNTDashboard'
+import BalloonDashboard from './components/BalloonDashboard'
 import ReturnsTab from './components/ReturnsTab'
 import ContentCalendarTab from './components/ContentCalendarTab'
 import BlogWriterTab from './components/BlogWriterTab'
@@ -16,7 +17,7 @@ import IGReplyBotTab from './components/IGReplyBotTab'
 import { AdsFlywheelTab } from './components/AdsFlywheelTab'
 import { GoogleAdsAgentTab } from './components/GoogleAdsAgentTab'
 
-const NAV = ['Overview', 'Tasks', 'Completed', 'Keywords', 'Competitors', 'Trends', 'Blog Writer', 'Instagram', 'IG Bot', 'Ads Flywheel', 'Google Ads Agent', 'Ads Testing', 'Ads Performance', 'TNT Hire', 'Returns']
+const NAV = ['Overview', 'Tasks', 'Completed', 'Keywords', 'Competitors', 'Trends', 'Blog Writer', 'Instagram', 'IG Bot', 'Ads Flywheel', 'Google Ads Agent', 'Ads Testing', 'Ads Performance', 'TNT Hire', 'Balloon Hire', 'Returns']
 
 const COMPANIES = {
   GRI:     { name: 'Gender Reveal Ideas', description: 'Gender reveal party supplies',          accent: '#ef4444' },
@@ -3059,7 +3060,7 @@ export default function App() {
   const integ   = data?.integrations || {}
   const profile = COMPANIES[company] || COMPANIES.GRI
 
-  const navIcons = { Overview:'◉', Tasks:'☑', Completed:'✅', Keywords:'📈', Competitors:'⚔', Trends:'📊', 'Blog Writer':'✍', Instagram:'📸', 'IG Bot':'🤖', 'Ads Flywheel':'🔄', 'Google Ads Agent':'🎯', 'Ads Testing':'📅', 'Ads Performance':'📊', 'TNT Hire':'💥', Returns:'↩', Themes:'◈', 'Theme Editor':'✏', Settings:'⚙' }
+  const navIcons = { Overview:'◉', Tasks:'☑', Completed:'✅', Keywords:'📈', Competitors:'⚔', Trends:'📊', 'Blog Writer':'✍', Instagram:'📸', 'IG Bot':'🤖', 'Ads Flywheel':'🔄', 'Google Ads Agent':'🎯', 'Ads Testing':'📅', 'Ads Performance':'📊', 'TNT Hire':'💥', 'Balloon Hire':'🎈', Returns:'↩', Themes:'◈', 'Theme Editor':'✏', Settings:'⚙' }
 
   const goEditor = theme => { setEditorTheme(theme); setActive('Theme Editor') }
 
@@ -3115,6 +3116,7 @@ export default function App() {
             {active==='Google Ads Agent' && <GoogleAdsAgentTab />}
             {active==='Ads Performance' && <AdsPerformanceTab />}
             {active==='TNT Hire'    && <TNTDashboard />}
+            {active==='Balloon Hire' && <BalloonDashboard />}
             {active==='Returns'     && <ReturnsTab />}
             {active==='Themes'       && <ThemesPage      data={data} onOpenEditor={goEditor} />}
             {active==='Theme Editor' && <ThemeEditorPage data={data} initialTheme={editorTheme} />}

@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import { verifyOrderToken } from './lib/contract-signing-token.js'
 import { getAll as getAllHires } from './lib/hire-store.js'
+import { getAll as getAllBalloonHires } from './lib/balloon-store.js'
 import dashboardRoutes from './routes/dashboard.js'
 import calendarRoutes from './routes/calendar.js'
 import telegramIntakeRoutes from './routes/telegram-intake.js'
@@ -16,6 +17,8 @@ import competitorRoutes from './routes/competitors.js'
 import trendsRoutes from './routes/trends.js'
 import publishRoutes from './routes/publish.js'
 import hiresRoutes from './routes/hires.js'
+import balloonsRoutes from './routes/balloons.js'
+import balloonContractRoutes from './routes/balloon-contract.js'
 import returnsRoutes from './routes/returns.js'
 import contractRoutes from './routes/contract.js'
 import blogWriterRoutes from './routes/blog-writer.js'
@@ -138,6 +141,15 @@ if (DASHBOARD_PASSWORD && DASHBOARD_PASSWORD !== 'changeme') {
     '/api/hires/reset-contract',
     '/api/hires/refund-audit',
     '/api/flywheel/attribution-diag',
+    // ── Balloon-box hire ──
+    '/api/balloons/sync',
+    '/api/balloons/reconcile-payments',
+    '/api/balloons/health',
+    '/api/balloons/refund-audit',
+    '/api/balloons/mark-bond-paid-by-order',
+    '/api/balloons/convert-to-historical-by-order',
+    '/api/balloon-contract',
+    '/sign-balloon/',
     '/sign/',
     '/signed',
     '/company-logos',
@@ -230,6 +242,30 @@ app.post('/sign/:orderNumber/:token', express.json(), (req, res, next) => {
   req.url = `/api/contract/${encodeURIComponent(hire.id)}/sign`
   next()
 })
+
+// ── BALLOON contract signing URLs — parallel to /sign/ above ────────────
+app.get('/sign-balloon/:orderNumber/:token', (req, res, next) => {
+  const { orderNumber, token } = req.params
+  const v = verifyOrderToken(orderNumber, token)
+  if (!v.ok) {
+    return res.status(403).type('html').send(
+      `<!doctype html><meta charset="utf-8"><title>Link expired</title><div style="font-family:system-ui;max-width:500px;margin:60px auto;padding:24px"><h1>Link expired or invalid</h1><p>Please contact Gender Reveal Ideas on 0406860077 to get a fresh signing link.</p></div>`
+    )
+  }
+  const hire = getAllBalloonHires().find(h => h.orderNumber === `#${orderNumber}` || h.orderNumber === orderNumber)
+  if (!hire) return res.status(404).send('Balloon hire not found')
+  req.url = `/api/balloon-contract/${encodeURIComponent(hire.id)}/sign`
+  next()
+})
+app.post('/sign-balloon/:orderNumber/:token', express.json(), (req, res, next) => {
+  const { orderNumber, token } = req.params
+  const v = verifyOrderToken(orderNumber, token)
+  if (!v.ok) return res.status(403).json({ ok: false, error: 'Token invalid or expired' })
+  const hire = getAllBalloonHires().find(h => h.orderNumber === `#${orderNumber}` || h.orderNumber === orderNumber)
+  if (!hire) return res.status(404).json({ ok: false, error: 'Balloon hire not found' })
+  req.url = `/api/balloon-contract/${encodeURIComponent(hire.id)}/sign`
+  next()
+})
 // Capture raw body for Shopify webhook HMAC verification
 app.use('/api/shopify/webhook', express.json({
   verify: (req, _res, buf) => { req.rawBody = buf.toString('utf8'); }
@@ -278,6 +314,8 @@ app.use('/api/competitors', competitorRoutes)
 app.use('/api/trends', trendsRoutes)
 app.use('/api/publish', publishRoutes)
 app.use('/api/hires', hiresRoutes)
+app.use('/api/balloons', balloonsRoutes)
+app.use('/api/balloon-contract', balloonContractRoutes)
 app.use('/api/returns', returnsRoutes)
 app.use('/api/contract', contractRoutes)
 app.use('/api/blog-writer', blogWriterRoutes)

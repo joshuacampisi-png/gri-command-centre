@@ -5,6 +5,10 @@ import { sendHireEmail } from '../lib/hire-mailer.js';
 import { notifyTNTEvent } from '../lib/tnt-telegram.js';
 import { env } from '../lib/env.js';
 import { buildSigningUrl } from '../lib/contract-signing-token.js';
+import { getAll as getAllBalloons, getById as getBalloonById, update as updateBalloon } from '../lib/balloon-store.js';
+import { sendBalloonEmail } from '../lib/balloon-mailer.js';
+import { notifyBalloonEvent } from '../lib/balloon-telegram.js';
+import { balloonBondCents } from '../lib/balloon-square.js';
 
 const router = Router();
 
@@ -60,11 +64,15 @@ router.post('/', async (req, res) => {
 
       console.log(`[square-webhook] Refund ${refundId} payment=${paymentId} status=${refundStatus}`);
 
+      // Try TNT first, then balloon hires
       const hires = getAll();
-      const hire = hires.find(h =>
-        h.refundId === refundId ||
-        (h.bondPaymentId && h.bondPaymentId === paymentId)
-      );
+      let hire = hires.find(h => h.refundId === refundId || (h.bondPaymentId && h.bondPaymentId === paymentId));
+      let isBalloon = false;
+      if (!hire) {
+        const bHires = getAllBalloons();
+        hire = bHires.find(h => h.refundId === refundId || (h.bondPaymentId && h.bondPaymentId === paymentId));
+        if (hire) isBalloon = true;
+      }
       if (!hire) {
         console.log(`[square-webhook] No matching hire for refund ${refundId}`);
         return;
@@ -81,11 +89,16 @@ router.post('/', async (req, res) => {
       } else if (refundStatus === 'PENDING') {
         patch.bondOutcome = 'refund_pending';
       }
-      update(hire.id, patch);
-
-      // Telegram alert if the refund actually failed
-      if (refundStatus === 'FAILED' || refundStatus === 'REJECTED') {
-        notifyTNTEvent('refund_failed', { ...getById(hire.id), refundId, refundStatus }).catch(() => {});
+      if (isBalloon) {
+        updateBalloon(hire.id, patch);
+        if (refundStatus === 'FAILED' || refundStatus === 'REJECTED') {
+          notifyBalloonEvent('refund_failed', { ...getBalloonById(hire.id), refundId, refundStatus }).catch(() => {});
+        }
+      } else {
+        update(hire.id, patch);
+        if (refundStatus === 'FAILED' || refundStatus === 'REJECTED') {
+          notifyTNTEvent('refund_failed', { ...getById(hire.id), refundId, refundStatus }).catch(() => {});
+        }
       }
       return;
     }
@@ -109,6 +122,43 @@ router.post('/', async (req, res) => {
       if (status !== 'COMPLETED') {
         console.log(`[square-webhook] Payment not completed (${status}) — skipping`);
         return;
+      }
+
+      // ── Try BALLOON hires FIRST. The payment note for balloon bonds
+      // contains the literal string "Helium Balloon Box" so we can route
+      // unambiguously even when an order has both products.
+      const isBalloonPayment = /Helium Balloon Box|Balloon Box Bond/i.test(note);
+      if (isBalloonPayment) {
+        const bHires = getAllBalloons();
+        let b = null;
+        if (orderId) b = bHires.find(h => h.bondStatus !== 'paid' && h.bondOrderId === orderId);
+        if (!b) {
+          for (const h of bHires) {
+            if (h.bondStatus === 'paid') continue;
+            if (h.orderNumber && note.includes(h.orderNumber.replace('#', ''))) { b = h; break; }
+          }
+        }
+        if (!b) {
+          b = bHires.find(h => h.bondStatus !== 'paid' && amountCents === balloonBondCents(h));
+        }
+        if (b) {
+          console.log(`[square-webhook] Matched BALLOON payment → hire ${b.id} (${b.orderNumber})`);
+          updateBalloon(b.id, {
+            bondStatus: 'paid', bondPaymentId: paymentId, bondPaidAt: new Date().toISOString(),
+            status: b.status === 'confirmed' ? 'bond_paid' : b.status,
+          });
+          const updated = getBalloonById(b.id);
+          // Auto-send balloon contract
+          try {
+            const orderNum = (updated.orderNumber || '').replace(/^#/, '');
+            const signingUrl = buildSigningUrl(orderNum).replace('/sign/', '/sign-balloon/');
+            await sendBalloonEmail('contract', updated, signingUrl);
+            updateBalloon(updated.id, { contractStatus: 'sent', contractSentAt: new Date().toISOString(), status: 'contract_sent' });
+          } catch (e) { console.error('[square-webhook] balloon contract send failed:', e.message); }
+          notifyBalloonEvent('bond_paid', getBalloonById(b.id)).catch(() => {});
+          return;
+        }
+        console.log('[square-webhook] Balloon-tagged payment did not match any pending balloon hire — falling through to TNT match');
       }
 
       // Find the matching hire by:
