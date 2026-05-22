@@ -154,7 +154,15 @@ router.get('/dashboard', async (req, res) => {
     const cpa = shopifyOrders > 0 ? totalSpend / shopifyOrders : 0
     const aov = shopifyOrders > 0 ? shopifyRevenue / shopifyOrders : 0
     const amer = calculateAMER(shopifyRevenue, totalSpend)
-    const profit = (shopifyRevenue * GRI_ADS.grossMarginPct) - totalSpend
+    // ── Blended profit: 100% margin on hire products + standard margin on others
+    // Hire revenue = TNT, Helium Balloon Box, Arch Garland, Inflatable Costume,
+    // DIY Garland Hire (configurable via HIRE_PRODUCT_IDS env). For these, only
+    // cost is CPA (ad spend) — the equipment is returned, no COGS.
+    const hireRev = shopifyData?.hireRevenueTotal || 0
+    const productRev = shopifyData?.productRevenueTotal || (shopifyRevenue - hireRev)
+    const blendedMarginDollars = (hireRev * 1.0) + (productRev * GRI_ADS.grossMarginPct)
+    const profit = blendedMarginDollars - totalSpend
+    const effectiveMarginPct = shopifyRevenue > 0 ? blendedMarginDollars / shopifyRevenue : GRI_ADS.grossMarginPct
 
     // nCAC — new customer acquisition cost using customer index
     let ncac = null
@@ -178,9 +186,9 @@ router.get('/dashboard', async (req, res) => {
         firstOrderAov = classified.firstOrderAov || 0
         ncac = calculateNCAC(totalSpend, newCustomerCount)
 
-        // nCAC Framework metrics
+        // nCAC Framework metrics — use the BLENDED margin (hire @ 100% + product @ standard)
         if (ncac > 0 && firstOrderAov > 0) {
-          fovCac = calculateFOVCAC(firstOrderAov, GRI_ADS.grossMarginPct, ncac)
+          fovCac = calculateFOVCAC(firstOrderAov, effectiveMarginPct, ncac)
         }
         if (newCustomerRevenue > 0 && totalSpend > 0) {
           acquisitionMer = calculateAcquisitionMER(newCustomerRevenue, totalSpend)
@@ -190,8 +198,13 @@ router.get('/dashboard', async (req, res) => {
         }
       }
       // CM$ — Contribution Margin (Layer 1 scoreboard)
-      const shipping = shopifyData?.shipping || 0
-      const costOfDelivery = calculateCostOfDelivery(shopifyRevenue, shipping, shopifyOrders, GRI_ADS.grossMarginPct, days)
+      // Uses BLENDED margin (hire 100% + product standard).
+      // Shipping paid by us = $400 / week default (Josh's known cost) — override
+      // via DEFAULT_WEEKLY_SHIPPING_COST env if it ever changes.
+      const shippingCharged = shopifyData?.shipping || 0
+      const weeklyShippingPaid = parseFloat(process.env.DEFAULT_WEEKLY_SHIPPING_COST || '400')
+      const shippingPaidByUs = (weeklyShippingPaid / 7) * days
+      const costOfDelivery = calculateCostOfDelivery(shopifyRevenue, shippingPaidByUs - shippingCharged, shopifyOrders, effectiveMarginPct, days)
       cm = calculateCM(shopifyRevenue, costOfDelivery, totalSpend)
     } catch (e) {
       console.warn('[Flywheel] nCAC calculation skipped:', e.message)
@@ -210,16 +223,12 @@ router.get('/dashboard', async (req, res) => {
     let attribution = { byPlatform: {}, buckets: { meta: { orders: 0, revenue: 0, newCustomers: 0, newRevenue: 0 }, google: { orders: 0, revenue: 0, newCustomers: 0, newRevenue: 0 }, organic: { orders: 0, revenue: 0, newCustomers: 0, newRevenue: 0 } } }
     try {
       const orderDetailsForAttribution = shopifyData?.orderDetails || []
-      // Wire the customer-index in so aggregateByPlatform can mark each
-      // order as new vs returning — required for nCAC framework metrics.
-      // Previously this was missing, so newCustomers showed 0 across the
-      // dashboard even though paid spend was real.
-      const idxForNew = getIndex()
-      const isNewCustomer = (order) => {
-        const c = classifyCustomerNewVsReturning(order, idxForNew)
-        return c.isNew === true
-      }
-      const agg = aggregateByPlatform(orderDetailsForAttribution, { isNewCustomer })
+      // Don't use the customer-index for new/returning detection on GRI —
+      // gender reveals are one-shot purchases, the index has every email
+      // ever seen so it would mark essentially everyone as "returning"
+      // (false negative). Instead, apply Josh's domain rate (default 96%)
+      // probabilistically — that's the right answer for the category.
+      const agg = aggregateByPlatform(orderDetailsForAttribution)
       attribution = { byPlatform: agg.byPlatform, buckets: rollupToFlywheelBuckets(agg.byPlatform) }
     } catch (e) {
       console.warn('[Flywheel] Order attribution failed:', e.message)
@@ -407,6 +416,11 @@ router.get('/dashboard', async (req, res) => {
         googleICac: Math.round(googleICac * 100) / 100,
         blendedICac: Math.round(blendedICac * 100) / 100,
         metaNewCustomers, googleNewCustomers, organicNewCustomers,
+        // ── Margin breakdown ──
+        hireRevenue: Math.round(hireRev * 100) / 100,
+        productRevenue: Math.round(productRev * 100) / 100,
+        blendedMarginDollars: Math.round(blendedMarginDollars * 100) / 100,
+        effectiveMarginPct: Math.round(effectiveMarginPct * 1000) / 10, // as % with 1dp
         // Legacy "roas" field = Meta ROAS (no longer the inflated blended one)
         roas: metaSpend > 0 ? Math.round((metaRevenue / metaSpend) * 100) / 100 : 0,
         mer: Math.round(mer * 100) / 100,

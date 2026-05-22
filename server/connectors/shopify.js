@@ -240,20 +240,40 @@ export async function getShopifyOrdersRange(fromDate, toDate, { includeOrderDeta
   const result = { ok: true, revenue, productRevenue, shipping, orders: orderCount, protectionCount, protectionRevenue, bundleOrders, bundleRate, from: fromDate, to: toDate }
 
   if (includeOrderDetails) {
-    result.orderDetails = validOrders.map(o => ({
-      id: o.id,
-      email: (o.contact_email || o.email || '').toLowerCase().trim(),
-      aov: parseFloat(o.total_price) || 0,
-      total_price: o.total_price,
-      createdAt: o.created_at,
-      created_at: o.created_at,
-      name: o.name,
-      // Attribution fields — required by order-attribution.classifyOrder()
-      landing_site: o.landing_site || o.landing_site_ref || '',
-      referring_site: o.referring_site || '',
-      source_name: o.source_name || '',
-      note_attributes: o.note_attributes || [],
-    }))
+    // Hire products = 100% margin (rental equipment, only ad-spend cost).
+    // IDs configurable via HIRE_PRODUCT_IDS env (comma-separated).
+    const HIRE_PRODUCT_IDS = (process.env.HIRE_PRODUCT_IDS || '7988691927129,8205084131417,8216641241177,8137632710745,8145211031641')
+      .split(',').map(s => parseInt(s.trim(), 10)).filter(Boolean)
+    result.orderDetails = validOrders.map(o => {
+      const items = o.line_items || []
+      let hireRev = 0, productRev = 0
+      for (const li of items) {
+        const lineTotal = parseFloat(li.price || 0) * (li.quantity || 1)
+        if (HIRE_PRODUCT_IDS.includes(li.product_id)) hireRev += lineTotal
+        else productRev += lineTotal
+      }
+      return {
+        id: o.id,
+        email: (o.contact_email || o.email || '').toLowerCase().trim(),
+        aov: parseFloat(o.total_price) || 0,
+        total_price: o.total_price,
+        createdAt: o.created_at,
+        created_at: o.created_at,
+        name: o.name,
+        // Hire vs product revenue split (for 100%-margin hire calc)
+        hireRevenue: Math.round(hireRev * 100) / 100,
+        productRevenue: Math.round(productRev * 100) / 100,
+        hasHireProduct: hireRev > 0,
+        // Attribution fields — required by order-attribution.classifyOrder()
+        landing_site: o.landing_site || o.landing_site_ref || '',
+        referring_site: o.referring_site || '',
+        source_name: o.source_name || '',
+        note_attributes: o.note_attributes || [],
+      }
+    })
+    // Roll up total hire revenue for the period (used by Flywheel margin calc)
+    result.hireRevenueTotal = Math.round(result.orderDetails.reduce((s, o) => s + o.hireRevenue, 0) * 100) / 100
+    result.productRevenueTotal = Math.round(result.orderDetails.reduce((s, o) => s + o.productRevenue, 0) * 100) / 100
   }
 
   return result
