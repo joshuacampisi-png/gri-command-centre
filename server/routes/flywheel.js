@@ -151,9 +151,9 @@ router.get('/dashboard', async (req, res) => {
     // Meta revenue, not pixel revenue, so it can't be inflated by Google
     // overlap. metaRoas / googleRoas are added separately to the response.
     const mer = calculateMER(shopifyRevenue, totalSpend)
-    // Legacy `roas` local — used by ad-set scale projections below.
-    // Falls back to MER when Meta has zero spend (e.g. brand-new accounts).
-    const roas = metaSpend > 0 ? (metaRevenue / metaSpend) : (mer || 0)
+    // Legacy `roas` local — computed AFTER metaRevenue below; declared
+    // with `let` here so it's in scope for the surgical-actions loop.
+    let roas = 0
     const cpa = shopifyOrders > 0 ? totalSpend / shopifyOrders : 0
     const aov = shopifyOrders > 0 ? shopifyRevenue / shopifyOrders : 0
     const amer = calculateAMER(shopifyRevenue, totalSpend)
@@ -238,6 +238,8 @@ router.get('/dashboard', async (req, res) => {
     }
     const metaRevenue = attribution.buckets.meta.revenue
     const metaOrders = attribution.buckets.meta.orders
+    // Now safe to compute the local `roas` declared with let earlier
+    roas = metaSpend > 0 ? (metaRevenue / metaSpend) : (mer || 0)
     const metaNewCustomers = attribution.buckets.meta.newCustomers
     const googleRevenue = attribution.buckets.google.revenue
     const googleOrders = attribution.buckets.google.orders
