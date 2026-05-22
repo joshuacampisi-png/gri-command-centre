@@ -63,28 +63,38 @@ export function verifyOrderToken(orderNumber, token) {
   return { ok: diff === 0 }
 }
 
+// URL resolver: prefer CONTRACT_BASE_URL → PUBLIC_BASE_URL → BASE_URL.
+// Until the contracts.* CNAME is set up at the domain registrar, falls
+// through to the Railway auto-injected BASE_URL so links work (even if
+// the host name says railway). Once you set CONTRACT_BASE_URL on Railway
+// to https://contracts.genderrevealideas.com.au, every URL becomes clean.
+function resolveBaseUrl(override) {
+  if (override) return override.replace(/\/$/, '')
+  const env = process.env.CONTRACT_BASE_URL
+    || process.env.PUBLIC_BASE_URL
+    || process.env.BASE_URL
+    || ''
+  return env.replace(/\/$/, '')
+}
+
 /**
  * Build a complete signing URL for an order.
  * @param {string} orderNumber
- * @param {string} baseUrl defaults to process.env.BASE_URL
+ * @param {string} baseUrl defaults to CONTRACT_BASE_URL → PUBLIC_BASE_URL → BASE_URL
  */
 export function buildSigningUrl(orderNumber, baseUrl) {
   const normalised = String(orderNumber).replace(/^#/, '')
   const token = signOrderToken(normalised)
-  const base = baseUrl || process.env.CONTRACT_BASE_URL || process.env.BASE_URL || ''
-  return `${base}/sign/${normalised}/${token}`
+  return `${resolveBaseUrl(baseUrl)}/sign/${normalised}/${token}`
 }
 
 /**
- * Build the custom card-on-file bond checkout URL. Replaces the old
- * Square Quick Pay link so we can save the customer's card and charge
- * for damage later.
+ * Build the custom card-on-file bond checkout URL.
  * @param {'tnt'|'balloon'} type
  * @param {string} orderNumber
  */
 export function buildBondCheckoutUrl(type, orderNumber, baseUrl) {
   const normalised = String(orderNumber).replace(/^#/, '')
   const token = signOrderToken(normalised)
-  const base = baseUrl || process.env.CONTRACT_BASE_URL || process.env.BASE_URL || ''
-  return `${base}/checkout/${type}/${normalised}/${token}`
+  return `${resolveBaseUrl(baseUrl)}/checkout/${type}/${normalised}/${token}`
 }
