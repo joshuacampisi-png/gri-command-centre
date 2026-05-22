@@ -867,6 +867,102 @@ export function AdsFlywheelTab() {
         <HeroCard label="Orders Today" value={range === 'today' ? (h.shopifyOrders || 0) : '--'} sub="From Shopify" color={C.text} />
       </div>
 
+      {/* ── Channel Performance comparison — Meta vs Google vs Organic ── */}
+      {(h.metaSpend > 0 || h.googleSpend > 0 || h.organicRevenue > 0) && (
+        <div style={{ ...card, marginBottom: 16, padding: isMobile ? 14 : 18 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 14 }}>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: C.muted, textTransform: 'uppercase' }}>Channel Performance</div>
+              <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>Spend per platform vs Shopify-attributed sales (first-party only)</div>
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 10 }}>
+            {/* META */}
+            <div style={{ padding: '12px 14px', background: 'rgba(225, 95, 142, 0.06)', borderRadius: 8, border: `1px solid rgba(225, 95, 142, 0.3)` }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                <MetaLogo />
+                <span style={{ fontSize: 13, fontWeight: 700, color: C.text }}>Meta</span>
+              </div>
+              <div style={{ fontSize: 10, color: C.muted, textTransform: 'uppercase', letterSpacing: 0.5 }}>Spend</div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: C.text, marginBottom: 6 }}>{fmt$(h.metaSpend || 0)}</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.muted, marginBottom: 2 }}>
+                <span>Orders</span><span style={{ color: C.text, fontWeight: 600 }}>{h.metaOrders || 0}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.muted, marginBottom: 2 }}>
+                <span>Revenue</span><span style={{ color: C.text, fontWeight: 600 }}>{fmt$(h.metaRevenue || 0)}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.muted, marginBottom: 2 }}>
+                <span>ROAS</span>
+                <span style={{ color: (h.metaRoas || 0) >= 2 ? C.green : (h.metaRoas || 0) >= 1 ? C.yellow : C.red, fontWeight: 700 }}>{(h.metaRoas || 0).toFixed(2)}x</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.muted, marginTop: 6, paddingTop: 6, borderTop: `1px solid ${C.border || '#2A2D38'}` }}>
+                <span>iCAC</span>
+                <span style={{ color: (h.metaICac || 0) > 0 && (h.metaICac || 0) < 80 ? C.green : (h.metaICac || 0) < 150 ? C.yellow : C.red, fontWeight: 700 }}>${(h.metaICac || 0).toFixed(2)}</span>
+              </div>
+            </div>
+            {/* GOOGLE */}
+            <div style={{ padding: '12px 14px', background: 'rgba(251, 188, 5, 0.06)', borderRadius: 8, border: `1px solid rgba(251, 188, 5, 0.3)` }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                <GoogleLogo />
+                <span style={{ fontSize: 13, fontWeight: 700, color: C.text }}>Google</span>
+              </div>
+              <div style={{ fontSize: 10, color: C.muted, textTransform: 'uppercase', letterSpacing: 0.5 }}>Spend</div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: C.text, marginBottom: 6 }}>
+                {fmt$(h.googleSpend || 0)}
+                {!h.googleHasData && <span style={{ fontSize: 10, color: C.yellow, marginLeft: 6 }}>(API auth needed)</span>}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.muted, marginBottom: 2 }}>
+                <span>Orders</span><span style={{ color: C.text, fontWeight: 600 }}>{h.googleOrders || 0}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.muted, marginBottom: 2 }}>
+                <span>Revenue</span><span style={{ color: C.text, fontWeight: 600 }}>{fmt$(h.googleRevenue || 0)}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.muted, marginBottom: 2 }}>
+                <span>ROAS</span>
+                <span style={{ color: (h.googleRoas || 0) >= 2 ? C.green : (h.googleRoas || 0) >= 1 ? C.yellow : C.red, fontWeight: 700 }}>{(h.googleRoas || 0).toFixed(2)}x</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.muted, marginTop: 6, paddingTop: 6, borderTop: `1px solid ${C.border || '#2A2D38'}` }}>
+                <span>iCAC</span>
+                <span style={{ color: (h.googleICac || 0) > 0 && (h.googleICac || 0) < 80 ? C.green : (h.googleICac || 0) < 150 ? C.yellow : C.red, fontWeight: 700 }}>${(h.googleICac || 0).toFixed(2)}</span>
+              </div>
+            </div>
+            {/* ORGANIC */}
+            <div style={{ padding: '12px 14px', background: 'rgba(34, 197, 94, 0.06)', borderRadius: 8, border: `1px solid rgba(34, 197, 94, 0.3)` }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                <span style={{ fontSize: 14 }}>🌱</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: C.text }}>Organic</span>
+              </div>
+              <div style={{ fontSize: 10, color: C.muted, textTransform: 'uppercase', letterSpacing: 0.5 }}>Spend</div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: C.green, marginBottom: 6 }}>$0</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.muted, marginBottom: 2 }}>
+                <span>Orders</span><span style={{ color: C.text, fontWeight: 600 }}>{h.organicOrders || 0}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.muted, marginBottom: 2 }}>
+                <span>Revenue</span><span style={{ color: C.text, fontWeight: 600 }}>{fmt$(h.organicRevenue || 0)}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.muted, marginBottom: 2 }}>
+                <span>ROAS</span><span style={{ color: C.green, fontWeight: 700 }}>∞</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.muted, marginTop: 6, paddingTop: 6, borderTop: `1px solid ${C.border || '#2A2D38'}` }}>
+                <span>iCAC</span>
+                <span style={{ color: C.green, fontWeight: 700 }}>$0</span>
+              </div>
+            </div>
+          </div>
+          {/* Totals strip */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 12, padding: '10px 12px', background: C.bg, borderRadius: 6, fontSize: 12 }}>
+            <span style={{ color: C.muted }}>Total spend</span>
+            <span style={{ color: C.text, fontWeight: 700 }}>{fmt$(h.totalSpend || 0)}</span>
+            <span style={{ color: C.muted, marginLeft: 12 }}>→</span>
+            <span style={{ color: C.muted, marginLeft: 12 }}>Total revenue</span>
+            <span style={{ color: C.text, fontWeight: 700 }}>{fmt$(h.shopifyRevenue || 0)}</span>
+            <span style={{ color: C.muted, marginLeft: 12 }}>•</span>
+            <span style={{ color: C.muted, marginLeft: 12 }}>MER</span>
+            <span style={{ color: (h.mer || 0) >= 2 ? C.green : C.yellow, fontWeight: 700 }}>{(h.mer || 0).toFixed(2)}x</span>
+          </div>
+        </div>
+      )}
+
       {/* ── Contribution Margin breakdown — hire products feed in at 100% ── */}
       {(h.hireRevenue > 0 || h.productRevenue > 0) && (
         <div style={{ ...card, marginBottom: 16, padding: isMobile ? 14 : 18, borderLeft: `4px solid ${C.green}` }}>

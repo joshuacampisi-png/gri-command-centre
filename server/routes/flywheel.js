@@ -151,6 +151,9 @@ router.get('/dashboard', async (req, res) => {
     // Meta revenue, not pixel revenue, so it can't be inflated by Google
     // overlap. metaRoas / googleRoas are added separately to the response.
     const mer = calculateMER(shopifyRevenue, totalSpend)
+    // Legacy `roas` local — used by ad-set scale projections below.
+    // Falls back to MER when Meta has zero spend (e.g. brand-new accounts).
+    const roas = metaSpend > 0 ? (metaRevenue / metaSpend) : (mer || 0)
     const cpa = shopifyOrders > 0 ? totalSpend / shopifyOrders : 0
     const aov = shopifyOrders > 0 ? shopifyRevenue / shopifyOrders : 0
     const amer = calculateAMER(shopifyRevenue, totalSpend)
@@ -1148,13 +1151,10 @@ router.get('/attribution-diag', async (req, res) => {
     ])
 
     const orders = shop?.orderDetails || []
-    // Wire the customer-index so new-vs-returning counts populate
-    const diagIdx = getIndex()
-    const diagIsNew = (order) => {
-      const c = classifyCustomerNewVsReturning(order, diagIdx)
-      return c.isNew === true
-    }
-    const agg = aggregateByPlatform(orders, { isNewCustomer: diagIsNew })
+    // Use 96% new-customer rate (Josh's domain knowledge — gender reveals
+    // are one-shot). Customer-index makes everyone look "returning" because
+    // it captures every email ever.
+    const agg = aggregateByPlatform(orders)
     const buckets = rollupToFlywheelBuckets(agg.byPlatform)
 
     res.json({
