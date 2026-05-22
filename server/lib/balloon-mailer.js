@@ -87,7 +87,7 @@ Thank you for hiring our Luxury Gender Reveal Helium Balloon Box${colorLine}.
 IMPORTANT — same-day use only:
 This box is built for same-day pickup and same-day reveal. Helium balloons naturally lose lift over time, so we can only guarantee performance on the day of pickup. If you choose to collect the day before, you do so at your own risk and we cannot be held responsible for deflated balloons or any performance issues.
 
-Pickup: ${dates.pickupFormatted} (same day as your event) from 2 Monaco Street, Surfers Paradise.
+Your box will be ready for pickup on the day you've selected — ${dates.pickupFormatted} — from 2 Monaco Street, Surfers Paradise. Collect any time during business hours.
 Return: ${dates.returnFormatted} (the next day) to the same address — please bring back the box undamaged with the balloon weight inside.
 
 Late return: $100 per day late fee deducted from your bond.

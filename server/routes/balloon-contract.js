@@ -125,6 +125,7 @@ router.get('/:hireId/sign', (req, res) => {
     <p>One Gender Reveal Helium Balloon Box for hire, pre-filled with helium balloons of the selected (organised) gender — ${variant} — together with the balloon weight inside the box.</p>
 
     <h2>Hire window — SAME-DAY use only</h2>
+    <p><strong>Your box will be ready for pickup on the day you've selected: ${dates.pickupFormatted}.</strong> Collect any time during business hours that day.</p>
     <p><strong>This Helium Balloon Box hire is built for same-day pickup and same-day reveal. By signing this contract, you acknowledge and accept that the box is designed to be picked up on the day of your event and used the same day.</strong></p>
     <p>If you choose to arrange pickup the day before, you do so entirely at your own risk. Gender Reveal Ideas accepts <strong>no liability and no responsibility</strong> for deflated balloons or for the balloon box not performing as it should under those circumstances. Helium balloons naturally lose lift over time — same-day use is the only way we can guarantee performance.</p>
 
