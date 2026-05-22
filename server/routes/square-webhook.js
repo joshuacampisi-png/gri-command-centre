@@ -193,7 +193,8 @@ router.post('/', async (req, res) => {
       if (!matchedHire) {
         matchedHire = hires.find(h => {
           if (h.bondStatus !== 'pending' || !h.bondPaymentUrl) return false;
-          const expectedCents = (h.kitQty || 1) >= 2 ? 40000 : 20000;
+          const tntBase = parseInt(process.env.TNT_BOND_AMOUNT || '200', 10);
+          const expectedCents = tntBase * 100 * (h.kitQty || 1);
           return amountCents === expectedCents;
         });
         if (matchedHire) console.log(`[square-webhook] Matched by fallback amount: ${amountCents}c`);

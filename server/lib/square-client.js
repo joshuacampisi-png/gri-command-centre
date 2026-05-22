@@ -16,7 +16,9 @@ const headers = () => ({
  */
 export async function createBondPaymentLink(hire) {
   const idempotencyKey = crypto.randomUUID();
-  const bondCents = (hire.kitQty || 1) >= 2 ? 40000 : 20000;
+  // Bond scales linearly with TNT kit quantity: $200 × kitQty (override TNT_BOND_AMOUNT)
+  const tntBase = parseInt(process.env.TNT_BOND_AMOUNT || '200', 10);
+  const bondCents = tntBase * 100 * (hire.kitQty || 1);
 
   const body = {
     idempotency_key: idempotencyKey,

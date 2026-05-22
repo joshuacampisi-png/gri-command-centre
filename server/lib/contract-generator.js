@@ -26,9 +26,11 @@ export async function generateContractPdf(hire) {
       const dates = getHireDates(hire.eventDate);
       const hasLogo = existsSync(LOGO_PATH);
       const qty = hire.kitQty || 1;
-      const bondAmount = qty >= 2 ? 400 : 200;
-      const kitPrice = qty >= 2 ? '699.98' : '349.99';
-      const mul = (base) => qty >= 2 ? base * 2 : base;
+      // Bond scales linearly with kit quantity ($200 × kitQty)
+      const tntBase = parseInt(process.env.TNT_BOND_AMOUNT || '200', 10);
+      const bondAmount = tntBase * qty;
+      const kitPrice = (349.99 * qty).toFixed(2);
+      const mul = (base) => base * qty;
 
       // ─── PAGE 1: COVER ───────────────────────────────────────
       // Logo top-left

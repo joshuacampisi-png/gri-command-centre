@@ -538,7 +538,8 @@ router.post('/:id/process-return', async (req, res) => {
     }
 
     // ── REFUND branch ──────────────────────────────────────────────
-    const bondCents = (hire.kitQty || 1) >= 2 ? 40000 : 20000;
+    const tntBase = parseInt(process.env.TNT_BOND_AMOUNT || '200', 10);
+    const bondCents = tntBase * 100 * (hire.kitQty || 1);
 
     // 1. Manual override path: operator confirms they will refund in Square dashboard
     if (forceManual) {

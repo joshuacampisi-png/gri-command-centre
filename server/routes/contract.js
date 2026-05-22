@@ -44,7 +44,9 @@ router.get('/:hireId/sign', (req, res) => {
   const dates = getHireDates(hire.eventDate);
   const alreadySigned = hire.contractStatus === 'signed';
   const qty = hire.kitQty || 1;
-  const bondAmount = qty >= 2 ? 400 : 200;
+  // Bond scales linearly with kit quantity ($200 × kitQty)
+  const tntBase = parseInt(process.env.TNT_BOND_AMOUNT || '200', 10);
+  const bondAmount = tntBase * qty;
   const kitPrice = qty >= 2 ? '699.98' : '349.99';
   const mul = (base) => qty >= 2 ? base * 2 : base;
 

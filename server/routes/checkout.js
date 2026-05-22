@@ -34,14 +34,15 @@ function resolveHire(type, orderNumber) {
   return list.find(h => h.orderNumber === `#${norm}` || h.orderNumber === norm) || null
 }
 
+// Bond scales linearly with hire quantity for BOTH TNT and Balloon.
+// 1 unit = $200, 2 units = $400, 3 units = $600, etc.
 function bondAmountCents(type, hire) {
   if (type === 'tnt') {
-    return ((hire.kitQty || 1) >= 2 ? 40000 : 20000)
+    const tntBase = parseInt(process.env.TNT_BOND_AMOUNT || '200', 10)
+    return tntBase * 100 * (hire.kitQty || 1)
   }
-  // Balloon: FLAT $200 by default — set BALLOON_BOND_PER_BOX=true to scale by qty.
   const base = parseInt(process.env.BALLOON_BOND_AMOUNT || '200', 10)
-  const perBox = process.env.BALLOON_BOND_PER_BOX === 'true'
-  return base * 100 * (perBox ? (hire.boxQty || 1) : 1)
+  return base * 100 * (hire.boxQty || 1)
 }
 
 function bondAmountDollars(type, hire) { return (bondAmountCents(type, hire) / 100) }

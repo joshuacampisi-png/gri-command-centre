@@ -92,7 +92,7 @@ https://youtube.com/shorts/vg1xm_YO7Tw
 
 The TNT kit must be returned on ${dates.returnFormatted} at 2 Monaco Street, Surfers Paradise before 2:00 pm, in the same condition it was provided. All items should be clean, fully functional, and free from scratches.
 
-Please note: A $${(hire.kitQty || 1) >= 2 ? '400' : '200'} bond is held on a credit card during purchase. You will receive a separate email shortly with a secure link to submit your bond payment.
+Please note: A $${(parseInt(process.env.TNT_BOND_AMOUNT || '200', 10)) * (hire.kitQty || 1)} bond is held on a credit card during purchase. You will receive a separate email shortly with a secure link to submit your bond payment.
 
 Once the kit is returned in the correct condition, the bond will be refunded to the card on file.
 
@@ -107,7 +107,8 @@ Thank you.`,
 function buildBondLinkEmail(hire, extraData) {
   const name = firstName(hire);
   const paymentUrl = extraData;
-  const bondStr = (hire.kitQty || 1) >= 2 ? '$400' : '$200';
+  const tntBase = parseInt(process.env.TNT_BOND_AMOUNT || '200', 10);
+  const bondStr = `$${tntBase * (hire.kitQty || 1)}`;
 
   return {
     subject: `Your ${bondStr} TNT Bond Payment — Order ${hire.orderNumber}`,
@@ -137,7 +138,7 @@ function buildRefundEmail(hire) {
 
 Thank you for returning your TNT kit in great condition.
 
-We have processed your $${(hire.kitQty || 1) >= 2 ? '400' : '200'} bond refund. Please allow 3 to 5 business days for the amount to appear back on your card, depending on your bank.
+We have processed your $${(parseInt(process.env.TNT_BOND_AMOUNT || '200', 10)) * (hire.kitQty || 1)} bond refund. Please allow 3 to 5 business days for the amount to appear back on your card, depending on your bank.
 
 We hope your gender reveal was truly special. If you have a moment, we would love to hear how it went.
 
@@ -157,7 +158,7 @@ function buildWithheldEmail(hire) {
 
 Thank you for returning your TNT kit.
 
-Following our inspection, we have identified damage or an issue with the returned equipment. As per the hire terms and conditions, your $${(hire.kitQty || 1) >= 2 ? '400' : '200'} bond has been withheld to cover the cost of repair or replacement.
+Following our inspection, we have identified damage or an issue with the returned equipment. As per the hire terms and conditions, your $${(parseInt(process.env.TNT_BOND_AMOUNT || '200', 10)) * (hire.kitQty || 1)} bond has been withheld to cover the cost of repair or replacement.
 
 If you would like to discuss this further, please reply to this email and our team will be in touch within 1 business day.
 
