@@ -7,7 +7,8 @@ import { createBondPaymentLink, refundBondPayment, isRealSquarePaymentId, getRef
 import { sendHireEmail } from '../lib/hire-mailer.js';
 import { notifyTNTEvent } from '../lib/tnt-telegram.js';
 import { env } from '../lib/env.js';
-import { buildSigningUrl } from '../lib/contract-signing-token.js';
+import { buildSigningUrl, buildBondCheckoutUrl } from '../lib/contract-signing-token.js';
+import { chargeCardOnFile } from '../lib/square-cards.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const router = Router();
@@ -170,17 +171,13 @@ router.post('/sync', async (_req, res) => {
         console.error(`[hires/sync] Square payment check failed:`, sqErr.message)
       }
 
-      // Only create new bond link if not already paid
+      // Card-on-file checkout URL (not the old Quick Pay link)
       if (!bondAlreadyPaid && customerEmail) {
         try {
-          const link = await createBondPaymentLink(hire)
-          update(hire.id, {
-            bondPaymentUrl: link.url,
-            bondPaymentLinkId: link.paymentLinkId,
-            bondOrderId: link.orderId,
-          })
-          await sendHireEmail('bond_link', hire, link.url)
-          console.log(`[hires/sync] Bond link sent to ${customerEmail}`)
+          const checkoutUrl = buildBondCheckoutUrl('tnt', hire.orderNumber)
+          update(hire.id, { bondPaymentUrl: checkoutUrl })
+          await sendHireEmail('bond_link', hire, checkoutUrl)
+          console.log(`[hires/sync] Bond checkout URL sent to ${customerEmail}`)
         } catch (e) {
           console.error(`[hires/sync] Bond link failed for ${orderName}:`, e.message)
         }
@@ -404,21 +401,14 @@ router.post('/', async (req, res) => {
       console.error('[hires] Confirmation email failed:', emailErr.message);
     }
 
-    // Create Square payment link for bond
+    // Card-on-file checkout URL — replaces Quick Pay
     try {
-      const link = await createBondPaymentLink(hire);
-      update(hire.id, {
-        bondPaymentUrl: link.url,
-        bondPaymentLinkId: link.paymentLinkId,
-        bondOrderId: link.orderId || null,
-      });
-      hire.bondPaymentUrl = link.url;
-      hire.bondPaymentLinkId = link.paymentLinkId;
-
-      // Send bond payment link email
-      await sendHireEmail('bond_link', hire, link.url);
+      const checkoutUrl = buildBondCheckoutUrl('tnt', hire.orderNumber);
+      update(hire.id, { bondPaymentUrl: checkoutUrl });
+      hire.bondPaymentUrl = checkoutUrl;
+      await sendHireEmail('bond_link', hire, checkoutUrl);
     } catch (squareErr) {
-      console.error('[hires] Square payment link failed:', squareErr.message);
+      console.error('[hires] Bond checkout URL gen failed:', squareErr.message);
     }
 
     res.json({ hire });
@@ -634,6 +624,41 @@ router.post('/:id/process-return', async (req, res) => {
   }
 });
 
+// POST /api/hires/:id/charge-damages — use the saved card on file to charge
+// the customer for damage / late fees / replacement parts. Returns 409 if no
+// card is on file (e.g. customer paid via the old Quick Pay link).
+router.post('/:id/charge-damages', async (req, res) => {
+  try {
+    const hire = getById(req.params.id);
+    if (!hire) return res.status(404).json({ ok: false, error: 'Hire not found' });
+    const { amount, reason } = req.body || {};
+    const amt = parseFloat(amount);
+    if (!Number.isFinite(amt) || amt <= 0) return res.status(400).json({ ok: false, error: 'amount must be a positive number' });
+    if (!reason || !reason.trim()) return res.status(400).json({ ok: false, error: 'reason required' });
+    if (!hire.squareCardId || !hire.squareCustomerId) {
+      return res.status(409).json({ ok: false, code: 'NO_CARD_ON_FILE',
+        error: 'No card saved on file for this hire. The customer paid the bond via the old Quick Pay link, so we cannot auto-charge — process this damage charge manually in the Square dashboard.' });
+    }
+    const charge = await chargeCardOnFile({
+      cardId: hire.squareCardId,
+      customerId: hire.squareCustomerId,
+      amountCents: Math.round(amt * 100),
+      note: `Damage charge for TNT hire ${hire.orderNumber}: ${reason.trim()}`,
+    });
+    const damageCharges = Array.isArray(hire.damageCharges) ? [...hire.damageCharges] : [];
+    damageCharges.push({
+      amount: amt, reason: reason.trim(),
+      paymentId: charge.paymentId, status: charge.status,
+      receiptUrl: charge.receiptUrl,
+      chargedAt: new Date().toISOString(),
+    });
+    const updated = update(hire.id, { damageCharges });
+    res.json({ ok: true, hire: updated, charge });
+  } catch (e) {
+    res.status(502).json({ ok: false, code: 'CHARGE_FAIL', error: e.message, squareErrors: e.squareErrors || null });
+  }
+});
+
 // POST /api/hires/:id/send-bond-link — resend the Square payment link
 router.post('/:id/send-bond-link', async (req, res) => {
   try {
@@ -641,14 +666,9 @@ router.post('/:id/send-bond-link', async (req, res) => {
     if (!hire) return res.status(404).json({ error: 'Hire not found' });
 
     let url = hire.bondPaymentUrl;
-    if (!url) {
-      const link = await createBondPaymentLink(hire);
-      update(hire.id, {
-        bondPaymentUrl: link.url,
-        bondPaymentLinkId: link.paymentLinkId,
-      });
-      url = link.url;
-    }
+    // Always issue a fresh card-on-file checkout URL
+    url = buildBondCheckoutUrl('tnt', hire.orderNumber);
+    update(hire.id, { bondPaymentUrl: url });
 
     await sendHireEmail('bond_link', hire, url);
     res.json({ hire: getById(hire.id), paymentUrl: url });
@@ -782,10 +802,9 @@ router.post('/resend-pre-bond-by-order', async (req, res) => {
     try {
       let payUrl = hire.bondPaymentUrl;
       if (!payUrl) {
-        const link = await createBondPaymentLink(hire);
-        payUrl = link.url;
+        payUrl = buildBondCheckoutUrl('tnt', hire.orderNumber);
         if (!testEmail) {
-          update(hire.id, { bondPaymentUrl: link.url, bondPaymentLinkId: link.paymentLinkId });
+          update(hire.id, { bondPaymentUrl: payUrl });
         }
       }
       const r = await sendHireEmail('bond_link', target, payUrl);

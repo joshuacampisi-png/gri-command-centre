@@ -74,3 +74,17 @@ export function buildSigningUrl(orderNumber, baseUrl) {
   const base = baseUrl || process.env.CONTRACT_BASE_URL || process.env.BASE_URL || ''
   return `${base}/sign/${normalised}/${token}`
 }
+
+/**
+ * Build the custom card-on-file bond checkout URL. Replaces the old
+ * Square Quick Pay link so we can save the customer's card and charge
+ * for damage later.
+ * @param {'tnt'|'balloon'} type
+ * @param {string} orderNumber
+ */
+export function buildBondCheckoutUrl(type, orderNumber, baseUrl) {
+  const normalised = String(orderNumber).replace(/^#/, '')
+  const token = signOrderToken(normalised)
+  const base = baseUrl || process.env.CONTRACT_BASE_URL || process.env.BASE_URL || ''
+  return `${base}/checkout/${type}/${normalised}/${token}`
+}

@@ -19,6 +19,7 @@ import publishRoutes from './routes/publish.js'
 import hiresRoutes from './routes/hires.js'
 import balloonsRoutes from './routes/balloons.js'
 import balloonContractRoutes from './routes/balloon-contract.js'
+import checkoutRoutes from './routes/checkout.js'
 import returnsRoutes from './routes/returns.js'
 import contractRoutes from './routes/contract.js'
 import blogWriterRoutes from './routes/blog-writer.js'
@@ -150,6 +151,7 @@ if (DASHBOARD_PASSWORD && DASHBOARD_PASSWORD !== 'changeme') {
     '/api/balloons/convert-to-historical-by-order',
     '/api/balloon-contract',
     '/sign-balloon/',
+    '/checkout/',
     '/sign/',
     '/signed',
     '/company-logos',
@@ -316,6 +318,7 @@ app.use('/api/publish', publishRoutes)
 app.use('/api/hires', hiresRoutes)
 app.use('/api/balloons', balloonsRoutes)
 app.use('/api/balloon-contract', balloonContractRoutes)
+app.use('/checkout', checkoutRoutes)
 app.use('/api/returns', returnsRoutes)
 app.use('/api/contract', contractRoutes)
 app.use('/api/blog-writer', blogWriterRoutes)

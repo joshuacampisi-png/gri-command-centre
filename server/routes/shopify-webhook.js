@@ -12,6 +12,7 @@ import { create as createBalloonHire, getAll as getAllBalloonHires, update as up
 import { createBalloonBondPaymentLink } from '../lib/balloon-square.js';
 import { sendBalloonEmail } from '../lib/balloon-mailer.js';
 import { notifyBalloonEvent } from '../lib/balloon-telegram.js';
+import { buildBondCheckoutUrl } from '../lib/contract-signing-token.js';
 
 const router = Router();
 
@@ -216,9 +217,11 @@ async function processOrder(order) {
             }
           } catch (e) { console.error('[shopify-webhook] balloon confirm email failed:', e.message); }
           try {
-            const link = await createBalloonBondPaymentLink(balloonHire);
-            updateBalloonHire(balloonHire.id, { bondPaymentUrl: link.url, bondPaymentLinkId: link.paymentLinkId, bondOrderId: link.orderId });
-            await sendBalloonEmail('bond_link', balloonHire, link.url);
+            // Card-on-file checkout URL (replaces the old Square Quick Pay link).
+            // Lets us charge for damages later against the saved card.
+            const checkoutUrl = buildBondCheckoutUrl('balloon', balloonHire.orderNumber);
+            updateBalloonHire(balloonHire.id, { bondPaymentUrl: checkoutUrl });
+            await sendBalloonEmail('bond_link', balloonHire, checkoutUrl);
           } catch (e) { console.error('[shopify-webhook] balloon bond link failed:', e.message); }
         }
 
@@ -282,20 +285,16 @@ async function processOrder(order) {
       console.error('[shopify-webhook] Confirmation email failed:', emailErr.message);
     }
 
-    // Create Square payment link for bond
+    // Card-on-file checkout URL (replaces Quick Pay so we can charge for
+    // damages later against the saved card).
     try {
-      const link = await createBondPaymentLink(hire);
-      update(hire.id, {
-        bondPaymentUrl: link.url,
-        bondPaymentLinkId: link.paymentLinkId,
-      });
-      hire.bondPaymentUrl = link.url;
-
-      // Send bond payment link email
-      await sendHireEmail('bond_link', hire, link.url);
-      console.log(`[shopify-webhook] Bond payment link sent to ${customerEmail}`);
+      const checkoutUrl = buildBondCheckoutUrl('tnt', hire.orderNumber);
+      update(hire.id, { bondPaymentUrl: checkoutUrl });
+      hire.bondPaymentUrl = checkoutUrl;
+      await sendHireEmail('bond_link', hire, checkoutUrl);
+      console.log(`[shopify-webhook] Bond checkout URL sent to ${customerEmail}`);
     } catch (squareErr) {
-      console.error('[shopify-webhook] Square payment link failed:', squareErr.message);
+      console.error('[shopify-webhook] Bond checkout URL gen failed:', squareErr.message);
     }
   }
 

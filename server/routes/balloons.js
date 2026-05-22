@@ -12,7 +12,8 @@ import { createBalloonBondPaymentLink, balloonBondCents } from '../lib/balloon-s
 import { refundBondPayment, isRealSquarePaymentId, getRefund, getPayment } from '../lib/square-client.js'
 import { sendBalloonEmail } from '../lib/balloon-mailer.js'
 import { notifyBalloonEvent } from '../lib/balloon-telegram.js'
-import { buildSigningUrl } from '../lib/contract-signing-token.js'
+import { buildSigningUrl, buildBondCheckoutUrl } from '../lib/contract-signing-token.js'
+import { chargeCardOnFile } from '../lib/square-cards.js'
 
 const router = Router()
 
@@ -105,12 +106,12 @@ router.post('/sync', async (_req, res) => {
         boxQty, boxColor, revenue,
       })
       console.log(`[balloons/sync] Created hire ${hire.id} for ${orderName} (${customerName})`)
-      // Bond link
+      // Bond link → card-on-file checkout URL (lets us charge damages later)
       if (customerEmail) {
         try {
-          const link = await createBalloonBondPaymentLink(hire)
-          update(hire.id, { bondPaymentUrl: link.url, bondPaymentLinkId: link.paymentLinkId, bondOrderId: link.orderId })
-          await sendBalloonEmail('bond_link', hire, link.url)
+          const checkoutUrl = buildBondCheckoutUrl('balloon', hire.orderNumber)
+          update(hire.id, { bondPaymentUrl: checkoutUrl })
+          await sendBalloonEmail('bond_link', hire, checkoutUrl)
         } catch (e) {
           console.error(`[balloons/sync] Bond link failed for ${orderName}:`, e.message)
         }
@@ -305,10 +306,10 @@ router.post('/', async (req, res) => {
     const hire = create({ orderNumber, customerName, customerEmail, customerPhone, eventDate, boxColor, boxQty })
     try { await sendBalloonEmail('confirmation', hire); update(hire.id, { emailSent: true, confirmationSentAt: new Date().toISOString() }); hire.emailSent = true } catch (e) { console.error('[balloons] confirm email fail:', e.message) }
     try {
-      const link = await createBalloonBondPaymentLink(hire)
-      update(hire.id, { bondPaymentUrl: link.url, bondPaymentLinkId: link.paymentLinkId, bondOrderId: link.orderId || null })
-      hire.bondPaymentUrl = link.url
-      await sendBalloonEmail('bond_link', hire, link.url)
+      const checkoutUrl = buildBondCheckoutUrl('balloon', hire.orderNumber)
+      update(hire.id, { bondPaymentUrl: checkoutUrl })
+      hire.bondPaymentUrl = checkoutUrl
+      await sendBalloonEmail('bond_link', hire, checkoutUrl)
     } catch (e) { console.error('[balloons] bond link fail:', e.message) }
     res.json({ hire })
   } catch (e) { res.status(500).json({ error: e.message }) }
@@ -339,15 +340,47 @@ router.post('/:id/send-bond-link', async (req, res) => {
   try {
     const hire = getById(req.params.id)
     if (!hire) return res.status(404).json({ error: 'Hire not found' })
-    let url = hire.bondPaymentUrl
-    if (!url) {
-      const link = await createBalloonBondPaymentLink(hire)
-      update(hire.id, { bondPaymentUrl: link.url, bondPaymentLinkId: link.paymentLinkId })
-      url = link.url
-    }
+    // Always generate a fresh checkout URL — token rotation invalidates old links
+    const url = buildBondCheckoutUrl('balloon', hire.orderNumber)
+    update(hire.id, { bondPaymentUrl: url })
     await sendBalloonEmail('bond_link', hire, url)
     res.json({ hire: getById(hire.id), paymentUrl: url })
   } catch (e) { res.status(500).json({ error: e.message }) }
+})
+
+// ── Charge for damages (post-hire) ─────────────────────────────────────────
+// Uses the card saved on file during the bond checkout to charge any
+// additional amount — damage / replacement / late fees / re-bookings.
+router.post('/:id/charge-damages', async (req, res) => {
+  try {
+    const hire = getById(req.params.id)
+    if (!hire) return res.status(404).json({ ok: false, error: 'Hire not found' })
+    const { amount, reason } = req.body || {}
+    const amt = parseFloat(amount)
+    if (!Number.isFinite(amt) || amt <= 0) return res.status(400).json({ ok: false, error: 'amount must be a positive number' })
+    if (!reason || !reason.trim()) return res.status(400).json({ ok: false, error: 'reason required' })
+    if (!hire.squareCardId || !hire.squareCustomerId) {
+      return res.status(409).json({ ok: false, code: 'NO_CARD_ON_FILE',
+        error: 'No card saved on file for this hire. The customer paid the bond via the old Quick Pay link, so we cannot auto-charge — process this damage charge manually in the Square dashboard.' })
+    }
+    const charge = await chargeCardOnFile({
+      cardId: hire.squareCardId,
+      customerId: hire.squareCustomerId,
+      amountCents: Math.round(amt * 100),
+      note: `Damage charge for balloon-box hire ${hire.orderNumber}: ${reason.trim()}`,
+    }).catch(e => { throw e })
+    const damageCharges = Array.isArray(hire.damageCharges) ? [...hire.damageCharges] : []
+    damageCharges.push({
+      amount: amt, reason: reason.trim(),
+      paymentId: charge.paymentId, status: charge.status,
+      receiptUrl: charge.receiptUrl,
+      chargedAt: new Date().toISOString(),
+    })
+    const updated = update(hire.id, { damageCharges })
+    res.json({ ok: true, hire: updated, charge })
+  } catch (e) {
+    res.status(502).json({ ok: false, code: 'CHARGE_FAIL', error: e.message, squareErrors: e.squareErrors || null })
+  }
 })
 
 router.post('/:id/mark-picked-up', (req, res) => {

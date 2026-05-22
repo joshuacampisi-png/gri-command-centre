@@ -308,8 +308,29 @@ function DetailPanel({ hire, onClose, onAction }) {
                 ...btnBase, display: "block", textDecoration: "none", width: "100%", boxSizing: "border-box",
               }}>Download signed contract PDF</a>
             )}
+            {hire.bondStatus === "paid" && hire.squareCardId && (
+              <button onClick={() => onAction("charge_damages", hire)} style={{ ...btnBase, width: "100%", borderColor: "#F59E0B", color: "#92400E" }}>
+                Charge card for damages
+                <span style={{ display: "block", fontSize: 10, fontWeight: 400, opacity: 0.85, marginTop: 2 }}>
+                  {hire.squareCardBrand || "Card"} ending {hire.squareCardLast4 || "••••"}
+                </span>
+              </button>
+            )}
             {hire.bondStatus === "paid" && hire.status !== "returned" && hire.status !== "withheld" && (
               <button onClick={() => onAction("mark_returned", hire)} style={{ ...btnDanger, width: "100%" }}>Process return</button>
+            )}
+            {Array.isArray(hire.damageCharges) && hire.damageCharges.length > 0 && (
+              <div style={{ marginTop: 6, padding: "10px 12px", background: "#FFF7ED", border: "1px solid #FDBA74", borderRadius: 8 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "#92400E", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
+                  Damage charges ({hire.damageCharges.length})
+                </div>
+                {hire.damageCharges.map((c, i) => (
+                  <div key={i} style={{ fontSize: 12, color: "#7C2D12", marginBottom: 4, paddingBottom: 4, borderBottom: i < hire.damageCharges.length - 1 ? "1px dashed #FDBA74" : "none" }}>
+                    <strong>${(c.amount || 0).toFixed(2)}</strong> · {c.reason}
+                    <div style={{ fontSize: 10, opacity: 0.75 }}>{new Date(c.chargedAt).toLocaleString("en-AU", { timeZone: "Australia/Brisbane", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · {c.status || "COMPLETED"}</div>
+                  </div>
+                ))}
+              </div>
             )}
             {hire.bondOutcome === "refunded" && (
               <div style={{ padding: "10px", background: "#EAF3DE", borderRadius: 6, fontSize: 12, color: "#3B6D11", textAlign: "center", fontWeight: 600 }}>Bond refunded</div>
@@ -363,6 +384,20 @@ export default function BalloonDashboard() {
   const act = async (action, hire) => {
     if (action === "view") { setDetailHire(hire); return; }
     if (action === "mark_returned") { setReturnHire(hire); return; }
+    if (action === "charge_damages") {
+      const amount = window.prompt(`Charge the card on file ${hire.squareCardBrand || ""} ending ${hire.squareCardLast4 || "••••"}\n\nAmount in AUD (e.g. 150):`);
+      if (!amount) return;
+      const reason = window.prompt("Reason / description (e.g. 'Box returned with water damage')");
+      if (!reason || !reason.trim()) return;
+      setActionLoading(true);
+      try {
+        const r = await api(`/${hire.id}/charge-damages`, { method: "POST", body: JSON.stringify({ amount: parseFloat(amount), reason: reason.trim() }) });
+        showToast(`Charged $${parseFloat(amount).toFixed(2)} to card on file (${r.charge.status})`);
+        await loadHires();
+      } catch (err) { showToast(err.message, "error"); }
+      finally { setActionLoading(false); }
+      return;
+    }
     setActionLoading(true);
     try {
       if (action === "send_confirm" || action === "resend_confirm") {
