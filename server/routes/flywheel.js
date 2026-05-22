@@ -58,7 +58,7 @@ router.get('/dashboard', async (req, res) => {
     const days = daysMap[range] || 1
 
     // Parallel fetch: Shopify revenue + Meta insights + LIVE Google Ads + all store data
-    const [shopifyData, shopifyTodayData, metaData, googleLive] = await Promise.all([
+    const [shopifyData, shopifyTodayData, metaData, metaData1dClick, googleLive] = await Promise.all([
       (async () => {
         try {
           const to = new Date()
@@ -93,6 +93,16 @@ router.get('/dashboard', async (req, res) => {
       (async () => {
         try { return { ...await fetchAccountInsights(metaPreset), ok: true, fetchedAt: new Date().toISOString() } }
         catch (e) { return { ok: false, spend: 0, purchases: 0, error: e.message, fetchedAt: new Date().toISOString() } }
+      })(),
+      // Tighter attribution: 1d_click only (no view-throughs, no 7-day stretch).
+      // This is the closer-to-truth ceiling we use to triangulate against
+      // Shopify first-party. Done as a separate API call because attribution
+      // windows can't be mixed with the default insights call.
+      (async () => {
+        try {
+          const { fetchAccountInsightsWithWindow } = await import('../lib/meta-api.js')
+          return await fetchAccountInsightsWithWindow(metaPreset, ['1d_click'])
+        } catch (e) { return { purchases: 0, purchaseValue: 0, error: e.message } }
       })(),
       // LIVE Google Ads API via gads-client.js (replaces the broken Google
       // Ads Script JSON-file webhook). Falls back to the legacy JSON file
@@ -263,19 +273,52 @@ router.get('/dashboard', async (req, res) => {
     const organicNewCustomers = attribution.buckets.organic.newCustomers
 
     // ── iCAC (incremental customer acquisition cost) per channel ──
-    // iCAC = channel spend ÷ new customers Shopify attributed to that channel.
-    // Uses first-party signals (fbclid, gclid, utm) so view-through /
-    // cookie-stripped conversions don't inflate it — this is the
-    // "incremental floor" Corey Wilton's nCAC framework recommends for
-    // scaling decisions. Blended nCAC = total spend ÷ all new customers.
-    const metaICac = metaNewCustomers > 0 ? metaSpend / metaNewCustomers : 0
+    // Uses the BEST ESTIMATE customer count for Meta (triangulated from
+    // 1d_click + first-party) so iCAC isn't artificially inflated by
+    // ignoring iOS/in-app-browser orders that lost fbclid.
+    // Apply 96% new-customer rate to Meta's best-estimate purchase count.
+    const newRate = parseFloat(process.env.GRI_NEW_CUSTOMER_RATE || '0.96')
+    const metaBestNewCustomers = Math.round((metaBestPurchases || metaOrders) * newRate)
+    const metaICac = metaBestNewCustomers > 0 ? metaSpend / metaBestNewCustomers : 0
     const googleICac = googleNewCustomers > 0 ? googleSpend / googleNewCustomers : 0
-    const blendedICac = (metaNewCustomers + googleNewCustomers) > 0
-      ? totalSpend / (metaNewCustomers + googleNewCustomers)
+    const blendedICac = (metaBestNewCustomers + googleNewCustomers) > 0
+      ? totalSpend / (metaBestNewCustomers + googleNewCustomers)
       : 0
     // Meta-pixel-reported revenue is kept for reference but no longer used
     // for any calculation — it's the source of the double-count problem.
     const metaPixelRevenue = metaData.purchaseValue || 0
+    // Meta 1d_click only — strictest Meta-side window (no view-throughs)
+    const meta1dClickPurchases = metaData1dClick?.purchases || 0
+    const meta1dClickRevenue = metaData1dClick?.purchaseValue || 0
+    const meta1dClickRoas = metaSpend > 0 ? meta1dClickRevenue / metaSpend : 0
+
+    // ── BEST ESTIMATE (triangulated) ─────────────────────────────────
+    // Three signals for Meta-attributed revenue, in increasing strictness:
+    //   1. metaPixelRevenue (7d_click + 1d_view) — Meta over-claims via view-throughs + iOS recovery
+    //   2. meta1dClickRevenue (1d_click only)    — drops view-throughs, still includes iOS-recovered clicks
+    //   3. metaRevenue (Shopify first-party)     — only orders whose landing URL still carries fbclid
+    //
+    // Truth lives between (2) and (3). The "best estimate" is the average of
+    // Meta's 1d_click count and Shopify-first-party count, weighted by how
+    // confident we are in each source. For an Aussie DTC store with heavy
+    // iOS/in-app browser traffic we use:
+    //     bestEstimate = 0.45 × meta1dClick  +  0.55 × shopifyFirstParty
+    //
+    // This recovers ~half of the gap between Ads Manager and the strict
+    // first-party floor — the half that's defensible click-attribution.
+    // The other half (view-throughs + cross-channel double-claims) is
+    // discounted because we cannot independently verify it.
+    const W_META_1D = 0.45
+    const W_FIRST_PARTY = 0.55
+    const metaBestRevenue = W_META_1D * meta1dClickRevenue + W_FIRST_PARTY * metaRevenue
+    const metaBestPurchases = Math.round(W_META_1D * meta1dClickPurchases + W_FIRST_PARTY * metaOrders)
+    const metaBestRoas = metaSpend > 0 ? metaBestRevenue / metaSpend : 0
+
+    // Cross-attribution check: how many Shopify orders show NO fbclid but
+    // landed within Meta's 1d_click window? Approximation: 1d_click count
+    // minus first-party count = orders Meta credits but Shopify can't see.
+    const metaClickIdLostOrders = Math.max(0, meta1dClickPurchases - metaOrders)
+    const metaViewThroughOrders = Math.max(0, (metaData.purchases || 0) - meta1dClickPurchases)
     const googleTagRevenue = googleSpendData.totalConversionValue || 0
     const paidRevenue = metaRevenue + googleRevenue
 
@@ -416,6 +459,16 @@ router.get('/dashboard', async (req, res) => {
         metaPixelRevenue: Math.round(metaPixelRevenue * 100) / 100,
         metaPixelPurchases: metaPurchases,
         metaPixelRoas: metaSpend > 0 ? Math.round((metaPixelRevenue / metaSpend) * 100) / 100 : 0,
+        // Meta 1d_click only — Meta's strictest window (no view-throughs)
+        meta1dClickPurchases,
+        meta1dClickRevenue: Math.round(meta1dClickRevenue * 100) / 100,
+        meta1dClickRoas: Math.round(meta1dClickRoas * 100) / 100,
+        // Triangulated BEST ESTIMATE — blend of 1d_click + first-party
+        metaBestPurchases,
+        metaBestRevenue: Math.round(metaBestRevenue * 100) / 100,
+        metaBestRoas: Math.round(metaBestRoas * 100) / 100,
+        metaClickIdLostOrders,
+        metaViewThroughOrders,
         googleTagRevenue: Math.round(googleTagRevenue * 100) / 100,
         googleTagConversions: googleSpendData.totalConversions || 0,
         googleTagRoas: googleSpend > 0 ? Math.round((googleTagRevenue / googleSpend) * 100) / 100 : 0,

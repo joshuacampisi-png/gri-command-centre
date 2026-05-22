@@ -255,6 +255,23 @@ export async function fetchAccountInsights(datePreset = 'today') {
   return parseInsights(data.data?.[0])
 }
 
+// Fetch account insights with a SPECIFIC attribution window — used by the
+// Flywheel triangulation logic to compare Meta's strict 1d_click number
+// vs the default 7d_click+1d_view (Ads Manager) vs Shopify first-party.
+//
+// Valid windows: '1d_click', '7d_click', '28d_click', '1d_view', '7d_view'
+// Pass an array of strings; Meta returns actions/action_values attributed
+// under any of those windows summed together.
+export async function fetchAccountInsightsWithWindow(datePreset = 'today', attributionWindows = ['1d_click']) {
+  const accountId = metaAccountId()
+  const data = await metaGet(`/${accountId}/insights`, {
+    fields: 'spend,impressions,clicks,actions,action_values',
+    date_preset: normalisePreset(datePreset),
+    action_attribution_windows: JSON.stringify(attributionWindows),
+  })
+  return parseInsights(data.data?.[0])
+}
+
 // ── Write operations ─────────────────────────────────────────────────────────
 
 export async function pauseAd(adId) {

@@ -905,24 +905,37 @@ export function AdsFlywheelTab() {
               <div style={{ fontSize: 10, color: C.muted, textTransform: 'uppercase', letterSpacing: 0.5 }}>Spend</div>
               <div style={{ fontSize: 22, fontWeight: 800, color: C.text, marginBottom: 8 }}>{fmt$(h.metaSpend || 0)}</div>
 
-              {/* Dual ROAS: what Ads Mgr shows vs first-party */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, marginBottom: 8 }}>
-                <div style={{ padding: '5px 6px', background: 'rgba(225, 95, 142, 0.15)', borderRadius: 4, textAlign: 'center' }}>
-                  <div style={{ fontSize: 8, color: C.muted, textTransform: 'uppercase', letterSpacing: 0.3 }}>Ads Mgr</div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: (h.metaPixelRoas || 0) >= 2 ? C.green : (h.metaPixelRoas || 0) >= 1 ? C.yellow : C.red }}>{(h.metaPixelRoas || 0).toFixed(2)}x</div>
-                  <div style={{ fontSize: 9, color: C.muted }}>{h.metaPixelPurchases || 0} pur · {fmt$(h.metaPixelRevenue || 0)}</div>
+              {/* BEST ESTIMATE — the triangulated number you should act on */}
+              <div style={{ padding: '8px 10px', background: 'linear-gradient(135deg, rgba(225, 95, 142, 0.22), rgba(225, 95, 142, 0.10))', borderRadius: 6, textAlign: 'center', marginBottom: 8, border: `1.5px solid ${C.pink}` }}>
+                <div style={{ fontSize: 8, color: C.text, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 }}>Best Estimate (triangulated)</div>
+                <div style={{ fontSize: 20, fontWeight: 800, color: (h.metaBestRoas || 0) >= 2 ? C.green : (h.metaBestRoas || 0) >= 1 ? C.yellow : C.red, marginTop: 2 }}>{(h.metaBestRoas || 0).toFixed(2)}x</div>
+                <div style={{ fontSize: 10, color: C.text }}>{h.metaBestPurchases || 0} purchases · {fmt$(h.metaBestRevenue || 0)}</div>
+                <div style={{ fontSize: 8, color: C.muted, marginTop: 2 }}>45% × Meta 1-day-click + 55% × Shopify verified</div>
+              </div>
+
+              {/* Three reference numbers underneath: ceiling → midpoint → floor */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 4, marginBottom: 6 }}>
+                <div style={{ padding: '4px', background: 'rgba(225, 95, 142, 0.10)', borderRadius: 4, textAlign: 'center' }}>
+                  <div style={{ fontSize: 7, color: C.muted, textTransform: 'uppercase' }}>Ads Mgr</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: C.text }}>{(h.metaPixelRoas || 0).toFixed(2)}x</div>
+                  <div style={{ fontSize: 8, color: C.muted }}>{h.metaPixelPurchases || 0} pur</div>
                 </div>
-                <div style={{ padding: '5px 6px', background: 'rgba(58, 180, 192, 0.12)', borderRadius: 4, textAlign: 'center' }}>
-                  <div style={{ fontSize: 8, color: C.muted, textTransform: 'uppercase', letterSpacing: 0.3 }}>Shopify</div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: (h.metaRoas || 0) >= 2 ? C.green : (h.metaRoas || 0) >= 1 ? C.yellow : C.red }}>{(h.metaRoas || 0).toFixed(2)}x</div>
-                  <div style={{ fontSize: 9, color: C.muted }}>{h.metaOrders || 0} ord · {fmt$(h.metaRevenue || 0)}</div>
+                <div style={{ padding: '4px', background: 'rgba(225, 95, 142, 0.06)', borderRadius: 4, textAlign: 'center' }}>
+                  <div style={{ fontSize: 7, color: C.muted, textTransform: 'uppercase' }}>1d Click</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: C.text }}>{(h.meta1dClickRoas || 0).toFixed(2)}x</div>
+                  <div style={{ fontSize: 8, color: C.muted }}>{h.meta1dClickPurchases || 0} pur</div>
+                </div>
+                <div style={{ padding: '4px', background: 'rgba(58, 180, 192, 0.10)', borderRadius: 4, textAlign: 'center' }}>
+                  <div style={{ fontSize: 7, color: C.muted, textTransform: 'uppercase' }}>Shopify</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: C.text }}>{(h.metaRoas || 0).toFixed(2)}x</div>
+                  <div style={{ fontSize: 8, color: C.muted }}>{h.metaOrders || 0} ord</div>
                 </div>
               </div>
 
-              {(h.metaAttributionGapPct || 0) > 0 && (
-                <div style={{ fontSize: 9, color: C.muted, fontStyle: 'italic', marginBottom: 6, textAlign: 'center' }}>
-                  Gap: {h.metaAttributionGapPct.toFixed(0)}% no click ID
-                  {h.metaAttributionGapPct > 50 ? ' (iOS/in-app strip)' : ''}
+              {((h.metaViewThroughOrders || 0) > 0 || (h.metaClickIdLostOrders || 0) > 0) && (
+                <div style={{ fontSize: 9, color: C.muted, fontStyle: 'italic', marginBottom: 6, lineHeight: 1.3 }}>
+                  {h.metaClickIdLostOrders > 0 && <>fbclid lost: {h.metaClickIdLostOrders} ord · </>}
+                  {h.metaViewThroughOrders > 0 && <>view-through: {h.metaViewThroughOrders} ord</>}
                 </div>
               )}
 
