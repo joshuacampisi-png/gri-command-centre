@@ -867,6 +867,67 @@ export function AdsFlywheelTab() {
         <HeroCard label="Orders Today" value={range === 'today' ? (h.shopifyOrders || 0) : '--'} sub="From Shopify" color={C.text} />
       </div>
 
+      {/* ── Contribution Margin breakdown — hire products feed in at 100% ── */}
+      {(h.hireRevenue > 0 || h.productRevenue > 0) && (
+        <div style={{ ...card, marginBottom: 16, padding: isMobile ? 14 : 18, borderLeft: `4px solid ${C.green}` }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: C.muted, textTransform: 'uppercase' }}>Contribution Margin Breakdown</div>
+              <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>Hire products feed directly at 100% (rental, no COGS) — only ad spend costs apply</div>
+            </div>
+            <div style={{ fontSize: 28, fontWeight: 900, color: (h.profit || 0) > 0 ? C.green : C.red }}>
+              {fmt$(h.profit || 0)}
+            </div>
+          </div>
+
+          {/* Revenue split bar */}
+          <div style={{ display: 'flex', height: 10, borderRadius: 5, overflow: 'hidden', background: C.bg, marginBottom: 8 }}>
+            {h.hireRevenue > 0 && (
+              <div style={{ width: `${(h.hireRevenue / (h.hireRevenue + h.productRevenue)) * 100}%`, background: C.green, transition: 'width 0.5s' }} />
+            )}
+            {h.productRevenue > 0 && (
+              <div style={{ width: `${(h.productRevenue / (h.hireRevenue + h.productRevenue)) * 100}%`, background: C.blue, transition: 'width 0.5s' }} />
+            )}
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: 8, fontSize: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 10px', background: 'rgba(34, 197, 94, 0.08)', borderRadius: 6, border: `1px solid ${C.green}` }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ width: 8, height: 8, borderRadius: 2, background: C.green }} />
+                <span style={{ color: C.text, fontWeight: 600 }}>Hire revenue</span>
+                <span style={{ color: C.green, fontSize: 10, fontWeight: 700, marginLeft: 2 }}>(100% margin)</span>
+              </span>
+              <span style={{ color: C.green, fontWeight: 700 }}>{fmt$(h.hireRevenue || 0)}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 10px', background: 'rgba(58, 180, 192, 0.08)', borderRadius: 6, border: `1px solid ${C.blue}` }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ width: 8, height: 8, borderRadius: 2, background: C.blue }} />
+                <span style={{ color: C.text, fontWeight: 600 }}>Product revenue</span>
+                <span style={{ color: C.blue, fontSize: 10, fontWeight: 700, marginLeft: 2 }}>(std margin)</span>
+              </span>
+              <span style={{ color: C.text, fontWeight: 700 }}>{fmt$(h.productRevenue || 0)}</span>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, padding: '8px 10px', background: C.bg, borderRadius: 6, fontSize: 12 }}>
+            <span style={{ color: C.muted }}>Blended margin $</span>
+            <span style={{ color: C.text, fontWeight: 700 }}>{fmt$(h.blendedMarginDollars || 0)}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, padding: '8px 10px', background: C.bg, borderRadius: 6, fontSize: 12 }}>
+            <span style={{ color: C.muted }}>Effective margin %</span>
+            <span style={{ color: C.text, fontWeight: 700 }}>{(h.effectiveMarginPct || 0).toFixed(1)}%</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, padding: '8px 10px', background: C.bg, borderRadius: 6, fontSize: 12 }}>
+            <span style={{ color: C.muted }}>− Total ad spend</span>
+            <span style={{ color: C.red, fontWeight: 700 }}>−{fmt$(h.totalSpend || 0)}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, padding: '10px 10px', background: (h.profit || 0) > 0 ? 'rgba(34, 197, 94, 0.12)' : 'rgba(239, 68, 68, 0.12)', borderRadius: 6, fontSize: 13, fontWeight: 700 }}>
+            <span style={{ color: C.text }}>= Profit (CM after ad spend)</span>
+            <span style={{ color: (h.profit || 0) > 0 ? C.green : C.red }}>{fmt$(h.profit || 0)}</span>
+          </div>
+        </div>
+      )}
+
       {/* ── Winner Scout Card ────────────────────────────────────────────── */}
       {d?.winnerStats && d.winnerStats.totalWinners > 0 && (
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)', gap: 10, marginBottom: 10 }}>
