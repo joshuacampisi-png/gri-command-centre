@@ -228,7 +228,30 @@ function renderCheckout({ type, hire, amount, label, sq, sdkUrl, logo }) {
     button:disabled { opacity: .5; cursor: not-allowed; }
     .err { color: #DC2626; font-size: 13px; margin-top: 10px; min-height: 18px; }
     .ok { color: #047857; font-size: 13px; margin-top: 10px; }
-    .safe { text-align: center; color: #94A3B8; font-size: 11px; margin-top: 14px; }
+    /* Trust badges */
+    .trust { margin-top: 18px; padding-top: 16px; border-top: 1px solid #E2E8F0; }
+    .trust-row { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-bottom: 12px; }
+    .trust-pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 5px 10px; border-radius: 999px;
+      background: linear-gradient(180deg, #F0FDF4, #DCFCE7);
+      border: 1px solid #86EFAC;
+      color: #047857; font-size: 11px; font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+    .cards-row {
+      display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .card-logo {
+      width: 42px; height: 28px;
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,0.06));
+    }
+    .powered-by {
+      text-align: center; color: #64748B; font-size: 11px;
+      margin-top: 6px; line-height: 1.5;
+    }
+    .powered-by strong { color: #2D3A4A; }
     .footer { text-align: center; color: #94A3B8; font-size: 11px; margin-top: 18px; padding-top: 12px; border-top: 1px solid #E2E8F0; }
   </style>
 </head>
@@ -254,7 +277,66 @@ function renderCheckout({ type, hire, amount, label, sq, sdkUrl, logo }) {
 
     <button id="pay-btn" type="button" disabled>Loading secure card form…</button>
     <div id="msg" class="err"></div>
-    <div class="safe">🔒 Card data goes directly to Square — never to our servers.</div>
+
+    <!-- Trust badges + card brands -->
+    <div class="trust">
+      <div class="trust-row">
+        <span class="trust-pill">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          256-bit SSL
+        </span>
+        <span class="trust-pill">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+          PCI DSS Compliant
+        </span>
+        <span class="trust-pill">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5"><circle cx="12" cy="12" r="10"></circle><polyline points="9 12 11 14 15 10"></polyline></svg>
+          Encrypted
+        </span>
+      </div>
+
+      <div class="cards-row" aria-label="Accepted payment methods">
+        <!-- Visa -->
+        <svg class="card-logo" viewBox="0 0 48 32" xmlns="http://www.w3.org/2000/svg" aria-label="Visa">
+          <rect width="48" height="32" rx="4" fill="#fff" stroke="#E5E7EB"/>
+          <path d="M19.7 21.3l1.7-10.4h2.7l-1.7 10.4h-2.7zm12.4-10.1c-.5-.2-1.4-.4-2.5-.4-2.7 0-4.7 1.4-4.7 3.5 0 1.5 1.4 2.4 2.4 2.9 1.1.5 1.5.9 1.5 1.4 0 .7-.9 1.1-1.7 1.1-1.1 0-1.8-.2-2.7-.6l-.4-.2-.4 2.5c.6.3 1.8.6 3.1.6 2.9 0 4.8-1.4 4.8-3.6 0-1.2-.7-2.1-2.3-2.9-1-.5-1.6-.8-1.6-1.4 0-.5.5-1 1.7-1 1 0 1.7.2 2.2.4l.3.1.3-2.4zm6.7-.3h-2.1c-.6 0-1.1.2-1.4 1l-4 9.4h2.8s.5-1.3.6-1.5h3.4c.1.4.3 1.5.3 1.5h2.5l-2.1-10.4zm-3.3 6.6c.2-.6 1.1-2.9 1.1-2.9 0 0 .2-.6.4-1l.2 1s.5 2.5.6 3l-2.3-.1zm-17.7-6.6l-2.6 7.1-.3-1.4c-.5-1.6-2-3.4-3.7-4.3l2.4 9h2.9l4.3-10.4h-3z" fill="#1A1F71"/>
+          <path d="M11.6 10.9H7.2l-.1.3c3.5.9 5.8 3 6.7 5.5l-1-4.8c-.2-.8-.7-1-1.2-1z" fill="#F7B600"/>
+        </svg>
+        <!-- Mastercard -->
+        <svg class="card-logo" viewBox="0 0 48 32" xmlns="http://www.w3.org/2000/svg" aria-label="Mastercard">
+          <rect width="48" height="32" rx="4" fill="#fff" stroke="#E5E7EB"/>
+          <circle cx="19" cy="16" r="7" fill="#EB001B"/>
+          <circle cx="29" cy="16" r="7" fill="#F79E1B"/>
+          <path d="M24 10.5a7 7 0 010 11 7 7 0 010-11z" fill="#FF5F00"/>
+        </svg>
+        <!-- American Express -->
+        <svg class="card-logo" viewBox="0 0 48 32" xmlns="http://www.w3.org/2000/svg" aria-label="American Express">
+          <rect width="48" height="32" rx="4" fill="#1F72CD"/>
+          <text x="24" y="20" font-family="Arial Black, sans-serif" font-size="6.5" fill="#fff" text-anchor="middle" font-weight="900">AMERICAN</text>
+          <text x="24" y="26" font-family="Arial Black, sans-serif" font-size="6.5" fill="#fff" text-anchor="middle" font-weight="900">EXPRESS</text>
+        </svg>
+        <!-- Apple Pay -->
+        <svg class="card-logo" viewBox="0 0 48 32" xmlns="http://www.w3.org/2000/svg" aria-label="Apple Pay">
+          <rect width="48" height="32" rx="4" fill="#000"/>
+          <path d="M14.3 13.2c-.4.5-1 .9-1.7.8-.1-.7.3-1.4.6-1.8.4-.5 1.1-.9 1.6-.9.1.7-.1 1.4-.5 1.9zm.5.8c-.9-.1-1.7.5-2.1.5-.5 0-1.1-.5-1.9-.5-1 0-1.9.6-2.4 1.5-1 1.7-.3 4.2.7 5.6.5.7 1 1.4 1.8 1.4.7 0 1-.5 1.9-.5.9 0 1.1.5 1.9.5.8 0 1.3-.7 1.8-1.4.5-.7.7-1.4.7-1.4-.6-.2-1.5-.9-1.5-1.9.1-1.1.9-1.6 1-1.7-.5-.7-1.3-1.1-1.9-1.1zM19.5 12.5h3.4c1.5 0 2.6 1.1 2.6 2.6s-1.1 2.6-2.7 2.6h-1.9v2.7h-1.4v-7.9zm1.4 1.1v3h1.6c1 0 1.6-.5 1.6-1.5s-.6-1.5-1.6-1.5h-1.6zM28.2 20.5c-.9 0-1.6-.5-1.6-1.3 0-.8.6-1.3 2-1.4l1.6-.1v-.5c0-.7-.5-1.1-1.2-1.1-.7 0-1.2.4-1.3.9h-1.3c.1-1.1 1-1.9 2.6-1.9 1.5 0 2.5.8 2.5 2.1v3.2h-1.2v-.8h0c-.4.5-1 .9-2.1.9zm.4-1c.9 0 1.6-.6 1.6-1.4v-.5l-1.4.1c-.7.1-1.2.4-1.2.9 0 .6.5.9 1 .9zM32.5 22.5c-.1 0-.5 0-.6-.1v-1c.1 0 .3.1.4.1.6 0 .9-.3 1.1-.9l.1-.4-1.9-5.4h1.4l1.3 4.4h0l1.3-4.4h1.4l-2 5.7c-.5 1.4-1 1.9-2.5 1.9z" fill="#fff"/>
+        </svg>
+        <!-- Google Pay -->
+        <svg class="card-logo" viewBox="0 0 48 32" xmlns="http://www.w3.org/2000/svg" aria-label="Google Pay">
+          <rect width="48" height="32" rx="4" fill="#fff" stroke="#E5E7EB"/>
+          <path d="M21.4 16.9v3.3h-1V12h2.8c.7 0 1.3.2 1.8.7s.7 1 .7 1.7-.2 1.2-.7 1.7-1.1.7-1.8.7l-1.8.1zm0-3.9V16h1.8c.4 0 .8-.1 1-.4s.4-.6.4-1-.1-.7-.4-1c-.3-.3-.6-.4-1-.4l-1.8-.2zm6.2 1.5c.7 0 1.3.2 1.7.6.4.4.6.9.6 1.5v3.6h-1v-.7h0c-.4.6-1 .9-1.7.9-.6 0-1.1-.2-1.5-.5s-.6-.8-.6-1.3.2-.9.6-1.2.9-.5 1.6-.5c.6 0 1.1.1 1.5.3v-.2c0-.3-.1-.6-.4-.9s-.6-.4-1-.4c-.6 0-1 .2-1.4.7l-.9-.6c.5-.8 1.2-1.3 2.5-1.3zm-1.4 3.9c0 .2.1.5.3.6s.5.3.8.3c.5 0 .9-.2 1.2-.5.4-.4.5-.8.5-1.2-.4-.3-.8-.4-1.4-.4-.4 0-.8.1-1.1.3s-.3.5-.3.9zM35 14.6l-3.4 7.8h-1.1l1.3-2.7-2.3-5.1h1.1l1.6 3.9h0l1.6-3.9H35z" fill="#5F6368"/>
+          <path d="M18.4 16.2c0-.3 0-.6-.1-.9h-4v1.7H17c-.1.4-.3.8-.7 1l1.2 1c.7-.7 1.1-1.7 1.1-2.8h-.2z" fill="#4285F4"/>
+          <path d="M14.3 20.4c1.1 0 2-.4 2.7-1l-1.2-1c-.4.3-.9.4-1.5.4-1.1 0-2-.7-2.4-1.7H10v1c.6 1.3 1.9 2.3 4.3 2.3z" fill="#34A853"/>
+          <path d="M11.9 17.1c-.1-.3-.2-.6-.2-.9s.1-.7.2-.9v-1H10c-.4.7-.6 1.4-.6 2.2s.2 1.5.6 2.2l1.9-.6v-1z" fill="#FBBC04"/>
+          <path d="M14.3 13.6c.6 0 1.2.2 1.6.6l1.1-1c-.7-.7-1.6-1.1-2.7-1.1-2.4 0-3.8 1-4.3 2.3l1.9 1c.4-1.1 1.3-1.8 2.4-1.8z" fill="#EA4335"/>
+        </svg>
+      </div>
+
+      <div class="powered-by">
+        <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4;vertical-align:-2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        Card data goes directly to <strong>Square</strong> — never touches our servers.
+      </div>
+    </div>
+
     <div class="footer">Gender Reveal Ideas · 0406 860 077 · genderrevealideas.com.au</div>
   </div>
 
