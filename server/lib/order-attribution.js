@@ -190,29 +190,58 @@ export function classifyOrder(order) {
 
 /**
  * Classify a batch of Shopify orders and aggregate per platform.
+ *
+ * @param {Array} orders          Shopify order objects
+ * @param {Object} opts
+ * @param {Function} opts.isNewCustomer  optional per-order check (email lookup)
+ * @param {number} opts.newCustomerRate  fallback rate when isNewCustomer
+ *                                       returns falsy or isn't provided.
+ *                                       Default 0.96 for GRI — gender reveals
+ *                                       are almost entirely first-time buyers.
+ *                                       Override via GRI_NEW_CUSTOMER_RATE env.
+ *
  * Returns { byPlatform: { [platform]: { orders, revenue, newCustomers, newRevenue } }, total }
  */
-export function aggregateByPlatform(orders, { isNewCustomer } = {}) {
+export function aggregateByPlatform(orders, { isNewCustomer, newCustomerRate } = {}) {
+  const rateFromEnv = parseFloat(process.env.GRI_NEW_CUSTOMER_RATE)
+  const rate = Number.isFinite(newCustomerRate)
+    ? newCustomerRate
+    : (Number.isFinite(rateFromEnv) ? rateFromEnv : 0.96)
+
   const byPlatform = {}
   let total = { orders: 0, revenue: 0, newCustomers: 0, newRevenue: 0 }
 
   for (const o of orders) {
     const { platform } = classifyOrder(o)
     const rev = parseFloat(o.total_price || o.subtotal_price || 0) || 0
-    const isNew = isNewCustomer ? !!isNewCustomer(o) : false
+    // Use explicit isNewCustomer check when available; otherwise fall back
+    // to the configured rate. Each order is treated probabilistically
+    // (revenue × rate, count × rate) so totals stay coherent.
+    let newWeight
+    if (isNewCustomer) {
+      const explicit = isNewCustomer(o)
+      newWeight = explicit === true ? 1 : (explicit === false ? 0 : rate)
+    } else {
+      newWeight = rate
+    }
 
     if (!byPlatform[platform]) byPlatform[platform] = { orders: 0, revenue: 0, newCustomers: 0, newRevenue: 0 }
     byPlatform[platform].orders += 1
     byPlatform[platform].revenue += rev
-    if (isNew) {
-      byPlatform[platform].newCustomers += 1
-      byPlatform[platform].newRevenue += rev
-    }
+    byPlatform[platform].newCustomers += newWeight
+    byPlatform[platform].newRevenue += rev * newWeight
 
     total.orders += 1
     total.revenue += rev
-    if (isNew) { total.newCustomers += 1; total.newRevenue += rev }
+    total.newCustomers += newWeight
+    total.newRevenue += rev * newWeight
   }
+
+  // Round new-customer counts to integers — rate × N is float
+  for (const p of Object.keys(byPlatform)) {
+    byPlatform[p].newCustomers = Math.round(byPlatform[p].newCustomers)
+  }
+  total.newCustomers = Math.round(total.newCustomers)
 
   // Round to 2dp for readable output
   for (const p of Object.keys(byPlatform)) {

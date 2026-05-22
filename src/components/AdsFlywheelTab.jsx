@@ -777,6 +777,13 @@ export function AdsFlywheelTab() {
                       {h.metaAttributionGapPct > 50 ? ' (high — iOS/in-app browser stripping fbclid)' : ''}
                     </div>
                   )}
+                  {/* iCAC strip — incremental customer acquisition cost */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: C.muted, paddingLeft: 36, marginTop: 4 }}>
+                    <span>{h.metaNewCustomers || 0} new customers</span>
+                    <span style={{ fontWeight: 600, color: (h.metaICac || 0) > 0 && (h.metaICac || 0) < 80 ? C.green : (h.metaICac || 0) < 150 ? C.yellow : C.red }}>
+                      iCAC ${(h.metaICac || 0).toFixed(2)}
+                    </span>
+                  </div>
                 </div>
                 {/* GOOGLE */}
                 <div>
@@ -807,8 +814,20 @@ export function AdsFlywheelTab() {
                       </div>
                     </div>
                   </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: C.muted, paddingLeft: 36, marginTop: 4 }}>
+                    <span>{h.googleNewCustomers || 0} new customers</span>
+                    <span style={{ fontWeight: 600, color: (h.googleICac || 0) > 0 && (h.googleICac || 0) < 80 ? C.green : (h.googleICac || 0) < 150 ? C.yellow : C.red }}>
+                      iCAC ${(h.googleICac || 0).toFixed(2)}
+                    </span>
+                  </div>
                 </div>
                 <div style={{ borderTop: `1px solid ${C.border || '#2A2D38'}`, paddingTop: 6, marginTop: 2 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: C.muted, marginBottom: 4 }}>
+                    <span style={{ fontWeight: 600 }}>Blended iCAC</span>
+                    <span style={{ fontWeight: 700, color: (h.blendedICac || 0) > 0 && (h.blendedICac || 0) < 80 ? C.green : (h.blendedICac || 0) < 150 ? C.yellow : C.red }}>
+                      ${(h.blendedICac || 0).toFixed(2)} <span style={{ opacity: 0.65, fontWeight: 400 }}>per new customer</span>
+                    </span>
+                  </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: C.muted }}>
                     <span>Organic / Direct / Email</span>
                     <span>{h.organicOrders || 0} orders → {fmt$(h.organicRevenue || 0)}</span>

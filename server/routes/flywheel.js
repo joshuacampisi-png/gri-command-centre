@@ -38,7 +38,7 @@ import { GRI_ADS, calculateMER, calculateTrueCAC, calculateAMER, calculateNCAC, 
 import { getGoogleSpend } from '../lib/google-ads-spend.js'
 import { fetchLiveGoogleSpend } from '../lib/gads-live-spend.js'
 import { aggregateByPlatform, rollupToFlywheelBuckets } from '../lib/order-attribution.js'
-import { getIndex, classifyOrders } from '../lib/customer-index.js'
+import { getIndex, classifyOrders, classifyOrder as classifyCustomerNewVsReturning } from '../lib/customer-index.js'
 import { calculateFatigueScore } from '../lib/fatigue-engine.js'
 import { processShopifyOrder, verifyShopifyHmac } from '../lib/flywheel-webhook.js'
 import multer from 'multer'
@@ -207,20 +207,44 @@ router.get('/dashboard', async (req, res) => {
     // Spend stays sourced from each ad-platform API.
     // Orders + revenue per platform come from Shopify.
     // Organic = Shopify minus paid-attributed (a real, signed number now).
-    let attribution = { byPlatform: {}, buckets: { meta: { orders: 0, revenue: 0 }, google: { orders: 0, revenue: 0 }, organic: { orders: 0, revenue: 0 } } }
+    let attribution = { byPlatform: {}, buckets: { meta: { orders: 0, revenue: 0, newCustomers: 0, newRevenue: 0 }, google: { orders: 0, revenue: 0, newCustomers: 0, newRevenue: 0 }, organic: { orders: 0, revenue: 0, newCustomers: 0, newRevenue: 0 } } }
     try {
       const orderDetailsForAttribution = shopifyData?.orderDetails || []
-      const agg = aggregateByPlatform(orderDetailsForAttribution)
+      // Wire the customer-index in so aggregateByPlatform can mark each
+      // order as new vs returning — required for nCAC framework metrics.
+      // Previously this was missing, so newCustomers showed 0 across the
+      // dashboard even though paid spend was real.
+      const idxForNew = getIndex()
+      const isNewCustomer = (order) => {
+        const c = classifyCustomerNewVsReturning(order, idxForNew)
+        return c.isNew === true
+      }
+      const agg = aggregateByPlatform(orderDetailsForAttribution, { isNewCustomer })
       attribution = { byPlatform: agg.byPlatform, buckets: rollupToFlywheelBuckets(agg.byPlatform) }
     } catch (e) {
       console.warn('[Flywheel] Order attribution failed:', e.message)
     }
     const metaRevenue = attribution.buckets.meta.revenue
     const metaOrders = attribution.buckets.meta.orders
+    const metaNewCustomers = attribution.buckets.meta.newCustomers
     const googleRevenue = attribution.buckets.google.revenue
     const googleOrders = attribution.buckets.google.orders
+    const googleNewCustomers = attribution.buckets.google.newCustomers
     const organicRevenue = attribution.buckets.organic.revenue
     const organicOrders = attribution.buckets.organic.orders
+    const organicNewCustomers = attribution.buckets.organic.newCustomers
+
+    // ── iCAC (incremental customer acquisition cost) per channel ──
+    // iCAC = channel spend ÷ new customers Shopify attributed to that channel.
+    // Uses first-party signals (fbclid, gclid, utm) so view-through /
+    // cookie-stripped conversions don't inflate it — this is the
+    // "incremental floor" Corey Wilton's nCAC framework recommends for
+    // scaling decisions. Blended nCAC = total spend ÷ all new customers.
+    const metaICac = metaNewCustomers > 0 ? metaSpend / metaNewCustomers : 0
+    const googleICac = googleNewCustomers > 0 ? googleSpend / googleNewCustomers : 0
+    const blendedICac = (metaNewCustomers + googleNewCustomers) > 0
+      ? totalSpend / (metaNewCustomers + googleNewCustomers)
+      : 0
     // Meta-pixel-reported revenue is kept for reference but no longer used
     // for any calculation — it's the source of the double-count problem.
     const metaPixelRevenue = metaData.purchaseValue || 0
@@ -376,6 +400,13 @@ router.get('/dashboard', async (req, res) => {
         // ── Per-platform ROAS (now correct) ──
         metaRoas: metaSpend > 0 ? Math.round((metaRevenue / metaSpend) * 100) / 100 : 0,
         googleRoas: googleSpend > 0 ? Math.round((googleRevenue / googleSpend) * 100) / 100 : 0,
+        // ── iCAC (incremental customer acquisition cost) per channel ──
+        // Channel spend ÷ Shopify-attributed new customers from that channel.
+        // First-party only — no view-throughs, no pixel double-count.
+        metaICac: Math.round(metaICac * 100) / 100,
+        googleICac: Math.round(googleICac * 100) / 100,
+        blendedICac: Math.round(blendedICac * 100) / 100,
+        metaNewCustomers, googleNewCustomers, organicNewCustomers,
         // Legacy "roas" field = Meta ROAS (no longer the inflated blended one)
         roas: metaSpend > 0 ? Math.round((metaRevenue / metaSpend) * 100) / 100 : 0,
         mer: Math.round(mer * 100) / 100,
@@ -1103,7 +1134,13 @@ router.get('/attribution-diag', async (req, res) => {
     ])
 
     const orders = shop?.orderDetails || []
-    const agg = aggregateByPlatform(orders)
+    // Wire the customer-index so new-vs-returning counts populate
+    const diagIdx = getIndex()
+    const diagIsNew = (order) => {
+      const c = classifyCustomerNewVsReturning(order, diagIdx)
+      return c.isNew === true
+    }
+    const agg = aggregateByPlatform(orders, { isNewCustomer: diagIsNew })
     const buckets = rollupToFlywheelBuckets(agg.byPlatform)
 
     res.json({
