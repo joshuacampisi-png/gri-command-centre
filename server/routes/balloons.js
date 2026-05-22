@@ -274,6 +274,7 @@ router.get('/contracts', (_req, res) => {
     .map(h => ({
       id: h.id, orderNumber: h.orderNumber, customerName: h.customerName,
       customerEmail: h.customerEmail, contractSignedAt: h.contractSignedAt,
+      pdfUrl: `/api/balloon-contract/${h.id}/pdf`,
     }))
     .sort((a, b) => new Date(b.contractSignedAt) - new Date(a.contractSignedAt))
   res.json({ ok: true, contracts: signed })

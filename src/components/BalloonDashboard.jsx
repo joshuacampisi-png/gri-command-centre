@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import HireFlowTracker from "./HireFlowTracker";
 
 const API = "/api/balloons";
 
@@ -60,42 +61,8 @@ const pill = (cfg) => (
   }}>{cfg.label}</span>
 );
 
-/* ── Flow progress bar ── */
-function FlowProgress({ hire }) {
-  const steps = [
-    { key: 'booked', label: 'Booked', done: true, at: hire.createdAt },
-    { key: 'email', label: 'Email', done: hire.emailSent, at: hire.confirmationSentAt },
-    { key: 'bond', label: 'Bond Paid', done: hire.bondStatus === 'paid', at: hire.bondPaidAt },
-    { key: 'contract_sent', label: 'Contract Sent', done: ['sent','signed'].includes(hire.contractStatus), at: hire.contractSentAt },
-    { key: 'signed', label: 'Signed', done: hire.contractStatus === 'signed', at: hire.contractSignedAt },
-    { key: 'picked_up', label: 'Picked Up', done: !!hire.pickedUpAt, at: hire.pickedUpAt },
-    { key: 'returned', label: 'Returned', done: ['returned','withheld'].includes(hire.status), at: hire.returnedAt },
-    { key: 'bond_outcome', label: hire.bondOutcome === 'withheld' ? 'Withheld' : 'Refunded', done: !!hire.bondOutcome, at: hire.bondOutcomeAt },
-  ];
-
-  return (
-    <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap' }}>
-      {steps.map((step, i) => (
-        <React.Fragment key={step.key}>
-          {i > 0 && <span style={{ color: '#333', fontSize: 10 }}>{'\u2192'}</span>}
-          <div style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
-            opacity: step.done ? 1 : 0.35
-          }}>
-            <span style={{ fontSize: 11, fontWeight: step.done ? 600 : 400, color: step.done ? '#22c55e' : '#666' }}>
-              {step.done ? '\u2713' : '\u25CB'} {step.label}
-            </span>
-            {step.done && step.at && (
-              <span style={{ fontSize: 9, color: '#888' }}>
-                {new Date(step.at).toLocaleString('en-AU', { timeZone: 'Australia/Brisbane', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-              </span>
-            )}
-          </div>
-        </React.Fragment>
-      ))}
-    </div>
-  );
-}
+/* FlowProgress now extracted into shared HireFlowTracker component */
+const FlowProgress = ({ hire }) => <HireFlowTracker hire={hire} />;
 
 /* ── Signed Contracts register ── */
 function SignedContracts() {

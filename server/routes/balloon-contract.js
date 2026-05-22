@@ -12,9 +12,17 @@
  * password prompts).
  */
 import { Router } from 'express'
+import { writeFileSync, mkdirSync, existsSync } from 'fs'
+import { join, dirname } from 'path'
+import { fileURLToPath } from 'url'
 import { getAll, getById, update } from '../lib/balloon-store.js'
 import { notifyBalloonEvent } from '../lib/balloon-telegram.js'
 import { getGriLogoDataUri } from '../lib/gri-logo-data-uri.js'
+import { generateBalloonContractPdf } from '../lib/balloon-contract-generator.js'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const CONTRACTS_DIR = join(__dirname, '..', '..', 'data', 'balloon-contracts')
+mkdirSync(CONTRACTS_DIR, { recursive: true })
 
 // Balloon-box hire dates: SAME DAY pickup, NEXT DAY return.
 // Helium balloons deflate within ~24h, so the box is built for same-day use.
@@ -215,8 +223,49 @@ router.post('/:hireId/sign', async (req, res) => {
     status: hire.status === 'contract_sent' ? 'contract_signed' : hire.status,
   })
   console.log(`[balloon-contract] Signed by ${signature.trim()} for hire ${hire.id}`)
+
+  // Save signed PDF to disk so the dashboard's "Download PDF" link resolves.
+  try {
+    const pdfBuffer = await generateBalloonContractPdf(updated)
+    const safeOrder = (hire.orderNumber || hire.id).replace(/[^a-zA-Z0-9_-]/g, '_')
+    const filename = `Balloon-Contract-${safeOrder}-${hire.id}.pdf`
+    writeFileSync(join(CONTRACTS_DIR, filename), pdfBuffer)
+    update(hire.id, { contractPdfPath: filename })
+    console.log(`[balloon-contract] Signed PDF saved: data/balloon-contracts/${filename}`)
+  } catch (pdfErr) {
+    console.error('[balloon-contract] Failed to save signed PDF:', pdfErr.message)
+  }
+
   notifyBalloonEvent('contract_signed', getById(hire.id)).catch(() => {})
   res.json({ ok: true, hire: getById(hire.id) })
+})
+
+// Download the signed/draft balloon contract PDF
+router.get('/:hireId/pdf', async (req, res) => {
+  try {
+    const hire = findHire(req.params.hireId)
+    if (!hire) return res.status(404).json({ error: 'Hire not found' })
+
+    // Serve cached PDF if it exists
+    if (hire.contractPdfPath && existsSync(join(CONTRACTS_DIR, hire.contractPdfPath))) {
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `inline; filename="${hire.contractPdfPath}"`,
+      })
+      return res.sendFile(join(CONTRACTS_DIR, hire.contractPdfPath))
+    }
+    // Otherwise generate fresh on-the-fly
+    const pdfBuffer = await generateBalloonContractPdf(hire)
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `inline; filename="Balloon-Contract-${hire.orderNumber}.pdf"`,
+      'Content-Length': pdfBuffer.length,
+    })
+    res.send(pdfBuffer)
+  } catch (e) {
+    console.error('[balloon-contract] PDF error:', e.message)
+    res.status(500).json({ error: e.message })
+  }
 })
 
 export default router
