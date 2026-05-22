@@ -58,13 +58,22 @@ router.get('/:hireId/sign', (req, res) => {
   const bond = bondAmount(hire)
   const variant = hire.boxColor ? hire.boxColor.toUpperCase() : 'UNSPECIFIED'
   const logo = getGriLogoDataUri()
+  // Contract date = order/hire creation date (the day the booking was made).
+  // Customer name is rendered in the H1 sub-heading so the doc is clearly
+  // "prepared for {Customer}". Both auto-populate from the hire record.
+  const issuedDate = hire.createdAt
+    ? new Date(hire.createdAt).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Australia/Brisbane' })
+    : new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })
+  const eventDateFormatted = hire.eventDate
+    ? new Date(hire.eventDate + 'T00:00:00').toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })
+    : 'TBC'
 
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Helium Balloon Box Rental Agreement — ${hire.orderNumber}</title>
+  <title>Helium Balloon Box Rental Agreement — ${hire.customerName} (${hire.orderNumber})</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F8F6F4; color: #2D3A4A; line-height: 1.6; padding: 14px; }
@@ -97,12 +106,17 @@ router.get('/:hireId/sign', (req, res) => {
   <div class="container">
     <div class="brand"><img src="${logo}" alt="Gender Reveal Ideas"></div>
     <h1>Helium Balloon Box Rental Agreement</h1>
-    <div class="sub">Order ${hire.orderNumber} · ${hire.customerName}</div>
+    <div class="sub">Prepared for <strong>${hire.customerName}</strong></div>
+    <div class="sub" style="margin-top:2px">Order ${hire.orderNumber} · Issued ${issuedDate}</div>
 
     <div class="meta">
+      <div class="meta-row"><span>Hirer</span><strong>${hire.customerName}</strong></div>
+      <div class="meta-row"><span>Contact</span><strong>${hire.customerEmail || ''}${hire.customerPhone ? ' · ' + hire.customerPhone : ''}</strong></div>
+      <div class="meta-row"><span>Order number</span><strong>${hire.orderNumber}</strong></div>
+      <div class="meta-row"><span>Contract issued</span><strong>${issuedDate}</strong></div>
       <div class="meta-row"><span>Variant</span><strong>${variant}${qty > 1 ? ` × ${qty}` : ''}</strong></div>
       <div class="meta-row"><span>Pickup (SAME DAY as event)</span><strong>${dates.pickupFormatted}</strong></div>
-      <div class="meta-row"><span>Event</span><strong>${dates.eventFormatted}</strong></div>
+      <div class="meta-row"><span>Event date</span><strong>${dates.eventFormatted}</strong></div>
       <div class="meta-row"><span>Return (next day)</span><strong>${dates.returnFormatted}</strong></div>
       <div class="meta-row"><span>Refundable bond</span><strong>$${bond}</strong></div>
     </div>
