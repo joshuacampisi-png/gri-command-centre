@@ -877,52 +877,68 @@ export function AdsFlywheelTab() {
             </div>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 10 }}>
-            {/* META */}
+            {/* META — shows BOTH pixel ROAS (Ads Manager) and Shopify-verified */}
             <div style={{ padding: '12px 14px', background: 'rgba(225, 95, 142, 0.06)', borderRadius: 8, border: `1px solid rgba(225, 95, 142, 0.3)` }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
                 <MetaLogo />
                 <span style={{ fontSize: 13, fontWeight: 700, color: C.text }}>Meta</span>
               </div>
               <div style={{ fontSize: 10, color: C.muted, textTransform: 'uppercase', letterSpacing: 0.5 }}>Spend</div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: C.text, marginBottom: 6 }}>{fmt$(h.metaSpend || 0)}</div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.muted, marginBottom: 2 }}>
-                <span>Orders</span><span style={{ color: C.text, fontWeight: 600 }}>{h.metaOrders || 0}</span>
+              <div style={{ fontSize: 22, fontWeight: 800, color: C.text, marginBottom: 8 }}>{fmt$(h.metaSpend || 0)}</div>
+
+              {/* Dual ROAS: what Ads Mgr shows vs first-party */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, marginBottom: 8 }}>
+                <div style={{ padding: '5px 6px', background: 'rgba(225, 95, 142, 0.15)', borderRadius: 4, textAlign: 'center' }}>
+                  <div style={{ fontSize: 8, color: C.muted, textTransform: 'uppercase', letterSpacing: 0.3 }}>Ads Mgr</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: (h.metaPixelRoas || 0) >= 2 ? C.green : (h.metaPixelRoas || 0) >= 1 ? C.yellow : C.red }}>{(h.metaPixelRoas || 0).toFixed(2)}x</div>
+                  <div style={{ fontSize: 9, color: C.muted }}>{h.metaPixelPurchases || 0} pur · {fmt$(h.metaPixelRevenue || 0)}</div>
+                </div>
+                <div style={{ padding: '5px 6px', background: 'rgba(58, 180, 192, 0.12)', borderRadius: 4, textAlign: 'center' }}>
+                  <div style={{ fontSize: 8, color: C.muted, textTransform: 'uppercase', letterSpacing: 0.3 }}>Shopify</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: (h.metaRoas || 0) >= 2 ? C.green : (h.metaRoas || 0) >= 1 ? C.yellow : C.red }}>{(h.metaRoas || 0).toFixed(2)}x</div>
+                  <div style={{ fontSize: 9, color: C.muted }}>{h.metaOrders || 0} ord · {fmt$(h.metaRevenue || 0)}</div>
+                </div>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.muted, marginBottom: 2 }}>
-                <span>Revenue</span><span style={{ color: C.text, fontWeight: 600 }}>{fmt$(h.metaRevenue || 0)}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.muted, marginBottom: 2 }}>
-                <span>ROAS</span>
-                <span style={{ color: (h.metaRoas || 0) >= 2 ? C.green : (h.metaRoas || 0) >= 1 ? C.yellow : C.red, fontWeight: 700 }}>{(h.metaRoas || 0).toFixed(2)}x</span>
-              </div>
+
+              {(h.metaAttributionGapPct || 0) > 0 && (
+                <div style={{ fontSize: 9, color: C.muted, fontStyle: 'italic', marginBottom: 6, textAlign: 'center' }}>
+                  Gap: {h.metaAttributionGapPct.toFixed(0)}% no click ID
+                  {h.metaAttributionGapPct > 50 ? ' (iOS/in-app strip)' : ''}
+                </div>
+              )}
+
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.muted, marginTop: 6, paddingTop: 6, borderTop: `1px solid ${C.border || '#2A2D38'}` }}>
-                <span>iCAC</span>
+                <span>iCAC (Shopify floor)</span>
                 <span style={{ color: (h.metaICac || 0) > 0 && (h.metaICac || 0) < 80 ? C.green : (h.metaICac || 0) < 150 ? C.yellow : C.red, fontWeight: 700 }}>${(h.metaICac || 0).toFixed(2)}</span>
               </div>
             </div>
-            {/* GOOGLE */}
+            {/* GOOGLE — dual view (Google Ads tag vs Shopify-verified) */}
             <div style={{ padding: '12px 14px', background: 'rgba(251, 188, 5, 0.06)', borderRadius: 8, border: `1px solid rgba(251, 188, 5, 0.3)` }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
                 <GoogleLogo />
                 <span style={{ fontSize: 13, fontWeight: 700, color: C.text }}>Google</span>
               </div>
               <div style={{ fontSize: 10, color: C.muted, textTransform: 'uppercase', letterSpacing: 0.5 }}>Spend</div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: C.text, marginBottom: 6 }}>
+              <div style={{ fontSize: 22, fontWeight: 800, color: C.text, marginBottom: 8 }}>
                 {fmt$(h.googleSpend || 0)}
                 {!h.googleHasData && <span style={{ fontSize: 10, color: C.yellow, marginLeft: 6 }}>(API auth needed)</span>}
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.muted, marginBottom: 2 }}>
-                <span>Orders</span><span style={{ color: C.text, fontWeight: 600 }}>{h.googleOrders || 0}</span>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, marginBottom: 8 }}>
+                <div style={{ padding: '5px 6px', background: 'rgba(251, 188, 5, 0.18)', borderRadius: 4, textAlign: 'center' }}>
+                  <div style={{ fontSize: 8, color: C.muted, textTransform: 'uppercase', letterSpacing: 0.3 }}>Google Ads</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: (h.googleTagRoas || 0) >= 2 ? C.green : (h.googleTagRoas || 0) >= 1 ? C.yellow : C.red }}>{(h.googleTagRoas || 0).toFixed(2)}x</div>
+                  <div style={{ fontSize: 9, color: C.muted }}>{(h.googleTagConversions || 0).toFixed(0)} conv · {fmt$(h.googleTagRevenue || 0)}</div>
+                </div>
+                <div style={{ padding: '5px 6px', background: 'rgba(58, 180, 192, 0.12)', borderRadius: 4, textAlign: 'center' }}>
+                  <div style={{ fontSize: 8, color: C.muted, textTransform: 'uppercase', letterSpacing: 0.3 }}>Shopify</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: (h.googleRoas || 0) >= 2 ? C.green : (h.googleRoas || 0) >= 1 ? C.yellow : C.red }}>{(h.googleRoas || 0).toFixed(2)}x</div>
+                  <div style={{ fontSize: 9, color: C.muted }}>{h.googleOrders || 0} ord · {fmt$(h.googleRevenue || 0)}</div>
+                </div>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.muted, marginBottom: 2 }}>
-                <span>Revenue</span><span style={{ color: C.text, fontWeight: 600 }}>{fmt$(h.googleRevenue || 0)}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.muted, marginBottom: 2 }}>
-                <span>ROAS</span>
-                <span style={{ color: (h.googleRoas || 0) >= 2 ? C.green : (h.googleRoas || 0) >= 1 ? C.yellow : C.red, fontWeight: 700 }}>{(h.googleRoas || 0).toFixed(2)}x</span>
-              </div>
+
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.muted, marginTop: 6, paddingTop: 6, borderTop: `1px solid ${C.border || '#2A2D38'}` }}>
-                <span>iCAC</span>
+                <span>iCAC (Shopify floor)</span>
                 <span style={{ color: (h.googleICac || 0) > 0 && (h.googleICac || 0) < 80 ? C.green : (h.googleICac || 0) < 150 ? C.yellow : C.red, fontWeight: 700 }}>${(h.googleICac || 0).toFixed(2)}</span>
               </div>
             </div>
