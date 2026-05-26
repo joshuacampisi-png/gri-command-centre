@@ -211,11 +211,31 @@ function OverviewPage({ data, company }) {
     return () => clearInterval(interval)
   }, [])
 
-  // Fetch all shipping costs once on mount
+  // Fetch shipping costs — on mount, on tab focus, on visibility-change,
+  // AND every 60 seconds while tab is open. Previously fetched once on
+  // mount only, so when a teammate saved on another device the change
+  // wouldn't show until a full page reload. Multi-device sync now works.
   useEffect(() => {
-    fetch('/api/shopify/shipping-costs').then(r => r.json()).then(d => {
-      if (d.ok) setShippingCosts(d.costs || {})
-    }).catch(() => {})
+    const load = () => {
+      fetch('/api/shopify/shipping-costs').then(r => r.json()).then(d => {
+        if (d.ok) setShippingCosts(d.costs || {})
+      }).catch(() => {})
+    }
+    // Initial load
+    load()
+    // Poll every 60s while tab is visible
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') load()
+    }, 60000)
+    // Refetch when tab regains focus / becomes visible
+    const onVisible = () => { if (document.visibilityState === 'visible') load() }
+    window.addEventListener('focus', load)
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('focus', load)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
   }, [])
 
   // Pre-fill the two courier inputs with the saved values whenever the active
