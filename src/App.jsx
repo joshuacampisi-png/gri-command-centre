@@ -560,6 +560,43 @@ function OverviewPage({ data, company }) {
                 )}
               </div>
 
+              {/* When THIS week has no data, show a "last saved" reminder
+                  + a one-click jump button so you can see what's there */}
+              {(() => {
+                const { from: thisFrom } = getWedTueWeek(shippingWeekOffset)
+                if (shippingCosts[thisFrom]) return null
+                const savedKeys = Object.keys(shippingCosts).filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k)).sort()
+                if (savedKeys.length === 0) return null
+                const lastKey = savedKeys[savedKeys.length - 1]
+                const lastEntry = shippingCosts[lastKey]
+                // Find offset for lastKey
+                let lastOffset = null
+                for (const w of allShippingWeeks) {
+                  if (w.from === lastKey) { lastOffset = w.offset; break }
+                }
+                return (
+                  <div style={{
+                    marginTop: 12, padding: '10px 12px', borderRadius: 8,
+                    background: '#FEF3C7', border: '1px solid #FDE68A',
+                    fontSize: 12,
+                  }}>
+                    <div style={{ fontWeight: 700, color: '#92400E', marginBottom: 4, fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.3 }}>
+                      No couriers entered for this week yet
+                    </div>
+                    <div style={{ color: '#78350F' }}>
+                      Last saved week: <strong>{lastKey}</strong> · ${lastEntry.cost?.toFixed(2)}
+                      {lastEntry.auspost != null && lastEntry.startrack != null && <> (AusPost ${lastEntry.auspost.toFixed(2)} + StarTrack ${lastEntry.startrack.toFixed(2)})</>}
+                    </div>
+                    {lastOffset != null && (
+                      <button onClick={() => setShippingWeekOffset(lastOffset)}
+                        style={{ marginTop: 6, padding: '4px 10px', fontSize: 11, fontWeight: 600, borderRadius: 6, border: '1px solid #92400E', background: '#FEF3C7', color: '#92400E', cursor: 'pointer' }}>
+                        Jump to last saved week →
+                      </button>
+                    )}
+                  </div>
+                )
+              })()}
+
               {(() => {
                 const { from } = getWedTueWeek(shippingWeekOffset)
                 const saved = shippingCosts[from]
@@ -913,15 +950,29 @@ function OverviewPage({ data, company }) {
 
       {/* ── Shipping Costs Graph Modal ── */}
       {showShippingGraph && (() => {
-        // Build data for the last 12 weeks
+        // Auto-extend the window to cover EVERY saved week back to the
+        // earliest entry — previously hard-capped at 12 weeks which hid
+        // historical data when the date range exceeded 3 months.
+        const savedKeys = Object.keys(shippingCosts).filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k)).sort()
+        const earliestSavedDate = savedKeys[0] || null
+        let maxWeeksBack = 12
+        if (earliestSavedDate) {
+          // Number of full weeks between earliest saved entry and today
+          const earliest = new Date(earliestSavedDate + 'T00:00:00')
+          const now = new Date()
+          const weeksDiff = Math.ceil((now - earliest) / (7 * 24 * 60 * 60 * 1000))
+          maxWeeksBack = Math.max(12, weeksDiff + 1)
+        }
         const weeks = []
-        for (let i = 0; i >= -11; i--) {
+        for (let i = 0; i >= -maxWeeksBack; i--) {
           const { from, to, wedDate, tueDate } = getWedTueWeek(i)
           const saved = shippingCosts[from]
           weeks.push({
             from, to,
             label: formatWeekLabel(wedDate, tueDate),
             cost: saved ? saved.cost : null,
+            auspost: saved?.auspost,
+            startrack: saved?.startrack,
           })
         }
         weeks.reverse() // oldest first
