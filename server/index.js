@@ -301,7 +301,24 @@ import { existsSync } from 'fs'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const distPath = join(__dirname, '..', 'dist')
 if (existsSync(distPath)) {
-  app.use(express.static(distPath))
+  // Cache strategy:
+  //   - HTML files (index.html) — NEVER cache. The HTML references the
+  //     hashed JS/CSS bundle filenames; if the HTML is stale, the user
+  //     gets stuck on the old bundle even after the bundle changes.
+  //   - Hashed assets (/assets/index-{hash}.js, etc.) — cache forever.
+  //     The filename changes on every deploy, so cache-busting is automatic.
+  app.use(express.static(distPath, {
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith('.html')) {
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+        res.setHeader('Pragma', 'no-cache')
+        res.setHeader('Expires', '0')
+      } else if (/\/assets\/.*\.(js|css|woff2?|jpg|png|svg)$/.test(filePath)) {
+        // Hashed assets — safe to cache aggressively
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+      }
+    },
+  }))
 }
 app.use('/api', dashboardRoutes)
 app.use('/api/telegram-intake', telegramIntakeRoutes)
@@ -563,6 +580,10 @@ if (existsSync(distPath)) {
     if (req.path.startsWith('/api')) return next()
     // Customer-facing signing URLs are handled by app-level routes, not the SPA
     if (req.path.startsWith('/sign/') || req.path === '/sign' || req.path.startsWith('/signed')) return next()
+    // Belt and braces: no-store on the SPA fallback HTML too
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+    res.setHeader('Pragma', 'no-cache')
+    res.setHeader('Expires', '0')
     res.sendFile(join(distPath, 'index.html'))
   })
 }
