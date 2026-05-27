@@ -516,6 +516,56 @@ function OverviewPage({ data, company }) {
             <div className="kv-row"><span>Orders</span><strong>{shippingData.orders}</strong></div>
             <div className="kv-row"><span>Total sales</span><strong>${shippingData.revenue.toFixed(2)}</strong></div>
 
+            {/* SAVED WEEKS jump-pills — clicking jumps to that week instantly.
+                Removes the "I can't see my saves" friction by surfacing
+                every week with data right on the main card. */}
+            {(() => {
+              const entries = Object.entries(shippingCosts)
+                .filter(([k]) => /^\d{4}-\d{2}-\d{2}$/.test(k))
+                .sort((a, b) => b[0].localeCompare(a[0])) // newest first
+              if (entries.length === 0) return null
+              return (
+                <div style={{ marginTop: 12, padding: '10px 12px', background: '#F0FDFA', border: '1px solid #A7F3D0', borderRadius: 8 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: '#047857', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>
+                    {entries.length} weeks with data — click to view
+                  </div>
+                  <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+                    {entries.slice(0, 8).map(([key, val]) => {
+                      // Find offset for this key
+                      let offset = null
+                      for (const w of allShippingWeeks) {
+                        if (w.from === key) { offset = w.offset; break }
+                      }
+                      const isActive = offset === shippingWeekOffset
+                      const total = val.cost || 0
+                      const dt = new Date(key + 'T00:00:00')
+                      const label = `${dt.getDate()} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][dt.getMonth()]}`
+                      return (
+                        <button key={key} disabled={offset == null}
+                          onClick={() => offset != null && setShippingWeekOffset(offset)}
+                          style={{
+                            padding: '4px 9px', fontSize: 11, borderRadius: 14,
+                            border: isActive ? '2px solid #047857' : '1px solid #A7F3D0',
+                            background: isActive ? '#047857' : '#fff',
+                            color: isActive ? '#fff' : '#047857',
+                            cursor: offset != null ? 'pointer' : 'default',
+                            fontWeight: 600, whiteSpace: 'nowrap',
+                          }}>
+                          {label} · ${total.toFixed(0)}
+                        </button>
+                      )
+                    })}
+                    {entries.length > 8 && (
+                      <button onClick={() => setShowShippingGraph(true)}
+                        style={{ padding: '4px 9px', fontSize: 11, borderRadius: 14, border: '1px solid #A7F3D0', background: '#fff', color: '#047857', cursor: 'pointer', fontWeight: 600 }}>
+                        +{entries.length - 8} more →
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )
+            })()}
+
             {/* Actual shipping cost paid — TWO COURIERS (AusPost + StarTrack)
                 Both bills typed in, hit Save → totals deducted from this
                 week's Shopify-collected shipping revenue → real profit/loss. */}
