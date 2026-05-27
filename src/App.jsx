@@ -560,117 +560,103 @@ function OverviewPage({ data, company }) {
                 )}
               </div>
 
-              {/* When THIS week has no data, show a "last saved" reminder
-                  + a one-click jump button so you can see what's there */}
-              {(() => {
-                const { from: thisFrom } = getWedTueWeek(shippingWeekOffset)
-                if (shippingCosts[thisFrom]) return null
-                const savedKeys = Object.keys(shippingCosts).filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k)).sort()
-                if (savedKeys.length === 0) return null
-                const lastKey = savedKeys[savedKeys.length - 1]
-                const lastEntry = shippingCosts[lastKey]
-                // Find offset for lastKey
-                let lastOffset = null
-                for (const w of allShippingWeeks) {
-                  if (w.from === lastKey) { lastOffset = w.offset; break }
-                }
-                return (
-                  <div style={{
-                    marginTop: 12, padding: '10px 12px', borderRadius: 8,
-                    background: '#FEF3C7', border: '1px solid #FDE68A',
-                    fontSize: 12,
-                  }}>
-                    <div style={{ fontWeight: 700, color: '#92400E', marginBottom: 4, fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.3 }}>
-                      No couriers entered for this week yet
-                    </div>
-                    <div style={{ color: '#78350F' }}>
-                      Last saved week: <strong>{lastKey}</strong> · ${lastEntry.cost?.toFixed(2)}
-                      {lastEntry.auspost != null && lastEntry.startrack != null && <> (AusPost ${lastEntry.auspost.toFixed(2)} + StarTrack ${lastEntry.startrack.toFixed(2)})</>}
-                    </div>
-                    {lastOffset != null && (
-                      <button onClick={() => setShippingWeekOffset(lastOffset)}
-                        style={{ marginTop: 6, padding: '4px 10px', fontSize: 11, fontWeight: 600, borderRadius: 6, border: '1px solid #92400E', background: '#FEF3C7', color: '#92400E', cursor: 'pointer' }}>
-                        Jump to last saved week →
-                      </button>
-                    )}
-                  </div>
-                )
-              })()}
-
+              {/* SHIPPING P&L — ALWAYS visible.
+                  Formula: net = shipping_revenue − auspost − startrack
+                  Positive = GRI MADE money. Negative = GRI PAID extra. */}
               {(() => {
                 const { from } = getWedTueWeek(shippingWeekOffset)
                 const saved = shippingCosts[from]
-                if (!saved) return null
-                const auspost = saved.auspost != null ? saved.auspost : null
-                const startrack = saved.startrack != null ? saved.startrack : null
-                const hasCouriers = auspost != null || startrack != null
-                const totalPaid = hasCouriers ? ((auspost || 0) + (startrack || 0)) : (saved.cost || 0)
-                const collected = shippingData.shipping
-                const net = collected - totalPaid  // ← positive = profit, negative = subsidising shipping
-                const isProfit = net >= 0
-                const savedAt = saved.updatedAt
-                  ? new Date(saved.updatedAt).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
+                const auspostNum = saved?.auspost != null ? Number(saved.auspost) : null
+                const startrackNum = saved?.startrack != null ? Number(saved.startrack) : null
+                // Live preview: while typing in the inputs, use those values
+                const liveAuspost = auspostInput !== '' ? parseFloat(auspostInput) : null
+                const liveStartrack = startrackInput !== '' ? parseFloat(startrackInput) : null
+                const displayAuspost = !Number.isNaN(liveAuspost) && liveAuspost != null ? liveAuspost : auspostNum
+                const displayStartrack = !Number.isNaN(liveStartrack) && liveStartrack != null ? liveStartrack : startrackNum
+                const totalPaid = (displayAuspost || 0) + (displayStartrack || 0)
+                const collected = shippingData.shipping || 0
+                const net = collected - totalPaid
+                const madeMoney = net > 0
+                const lostMoney = net < 0
+                const noData = displayAuspost == null && displayStartrack == null
+                const savedAt = saved?.updatedAt
+                  ? new Date(saved.updatedAt).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })
                   : null
                 return (
                   <div style={{ marginTop: 12 }}>
-                    {/* SHIPPING P&L — full step-by-step calculation */}
                     <div style={{
                       borderRadius: 10,
                       background: shippingSavedFlash ? '#DCFCE7' : '#FAFAFA',
-                      border: `1.5px solid ${shippingSavedFlash ? '#10B981' : '#E5E7EB'}`,
-                      transition: 'background 0.2s, border-color 0.2s',
+                      border: `2px solid ${shippingSavedFlash ? '#10B981' : madeMoney ? '#10B981' : lostMoney ? '#E43F7B' : '#E5E7EB'}`,
                       overflow: 'hidden',
                     }}>
                       <div style={{ padding: '8px 12px', background: '#F0FDFA', borderBottom: '1px solid #E5E7EB', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ fontSize: 10, fontWeight: 700, color: '#047857', textTransform: 'uppercase', letterSpacing: '.04em' }}>
-                          {shippingSavedFlash ? 'Saved ✓ — Shipping P&L' : 'Shipping P&L'}
+                        <div style={{ fontSize: 11, fontWeight: 700, color: '#047857', textTransform: 'uppercase', letterSpacing: '.04em' }}>
+                          {shippingSavedFlash ? 'Saved ✓ — Shipping P&L' : 'Shipping P&L (this week)'}
                         </div>
                         {savedAt && <div style={{ fontSize: 10, color: '#047857' }}>saved {savedAt}</div>}
                       </div>
-                      <div style={{ padding: '10px 12px' }}>
+                      <div style={{ padding: '12px 14px' }}>
                         {/* Step 1: collected */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: 13, marginBottom: 6 }}>
-                          <span style={{ color: '#475569' }}>Customers paid (collected via Shopify)</span>
-                          <strong style={{ color: '#0F766E', fontSize: 15 }}>+${collected.toFixed(2)}</strong>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: 14, marginBottom: 8 }}>
+                          <span style={{ color: '#475569' }}>Shipping revenue collected</span>
+                          <strong style={{ color: '#0F766E', fontSize: 16 }}>+${collected.toFixed(2)}</strong>
                         </div>
-                        {/* Step 2: courier costs */}
-                        {hasCouriers ? (
-                          <>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: 13, marginBottom: 4 }}>
-                              <span style={{ color: '#475569' }}>− AusPost paid</span>
-                              <strong style={{ color: '#DC2626' }}>{auspost != null ? `−$${auspost.toFixed(2)}` : '—'}</strong>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: 13, marginBottom: 6 }}>
-                              <span style={{ color: '#475569' }}>− StarTrack paid</span>
-                              <strong style={{ color: '#DC2626' }}>{startrack != null ? `−$${startrack.toFixed(2)}` : '—'}</strong>
-                            </div>
-                          </>
-                        ) : (
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: 13, marginBottom: 6 }}>
-                            <span style={{ color: '#475569' }}>− Total shipping paid (legacy)</span>
-                            <strong style={{ color: '#DC2626' }}>−${totalPaid.toFixed(2)}</strong>
-                          </div>
-                        )}
-                        {/* Step 3: result */}
-                        <div style={{
-                          borderTop: '2px dashed #CBD5E1', marginTop: 4, paddingTop: 8,
-                          display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
-                        }}>
-                          <span style={{ fontSize: 13, fontWeight: 700, color: '#181A1D' }}>
-                            = {isProfit ? 'Net Shipping Profit' : 'Net Shipping Loss'}
-                          </span>
-                          <strong style={{
-                            fontSize: 20, fontWeight: 800,
-                            color: isProfit ? '#10B981' : '#E43F7B',
-                          }}>
-                            {isProfit ? '+' : '−'}${Math.abs(net).toFixed(2)}
+                        {/* Step 2: AusPost */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: 14, marginBottom: 6 }}>
+                          <span style={{ color: '#475569' }}>− AusPost paid</span>
+                          <strong style={{ color: displayAuspost != null ? '#DC2626' : '#9CA3AF' }}>
+                            {displayAuspost != null ? `−$${displayAuspost.toFixed(2)}` : 'not entered'}
                           </strong>
                         </div>
-                        {/* Margin % */}
-                        {collected > 0 && (
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: 11, color: '#6B7280', marginTop: 4 }}>
-                            <span>Effective margin on shipping</span>
-                            <span style={{ fontWeight: 600 }}>{((net / collected) * 100).toFixed(1)}%</span>
+                        {/* Step 3: StarTrack */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: 14, marginBottom: 8 }}>
+                          <span style={{ color: '#475569' }}>− StarTrack paid</span>
+                          <strong style={{ color: displayStartrack != null ? '#DC2626' : '#9CA3AF' }}>
+                            {displayStartrack != null ? `−$${displayStartrack.toFixed(2)}` : 'not entered'}
+                          </strong>
+                        </div>
+                        {/* Total paid sub-line if both entered */}
+                        {(displayAuspost != null || displayStartrack != null) && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: 12, color: '#6B7280', marginBottom: 8 }}>
+                            <span>Total couriers paid</span>
+                            <span>−${totalPaid.toFixed(2)}</span>
+                          </div>
+                        )}
+                        {/* RESULT BAR */}
+                        <div style={{
+                          borderTop: '2px dashed #CBD5E1', marginTop: 4, paddingTop: 10,
+                          display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
+                        }}>
+                          <span style={{ fontSize: 14, fontWeight: 700, color: '#181A1D' }}>
+                            = {noData ? 'Pending' : madeMoney ? 'GRI MADE on shipping' : lostMoney ? 'GRI PAID for shipping' : 'Break-even'}
+                          </span>
+                          <strong style={{
+                            fontSize: 22, fontWeight: 900,
+                            color: noData ? '#9CA3AF' : madeMoney ? '#10B981' : lostMoney ? '#E43F7B' : '#475569',
+                          }}>
+                            {noData ? '—' : (madeMoney ? '+' : lostMoney ? '−' : '')}${Math.abs(net).toFixed(2)}
+                          </strong>
+                        </div>
+                        {/* Plain-English summary */}
+                        {!noData && (
+                          <div style={{
+                            marginTop: 8, padding: '8px 10px', borderRadius: 6,
+                            background: madeMoney ? '#DCFCE7' : lostMoney ? '#FEE2E2' : '#F3F4F6',
+                            fontSize: 12,
+                            color: madeMoney ? '#065F46' : lostMoney ? '#991B1B' : '#374151',
+                            lineHeight: 1.5,
+                          }}>
+                            ${collected.toFixed(2)} − ${(displayAuspost || 0).toFixed(2)} − ${(displayStartrack || 0).toFixed(2)} = <strong>{madeMoney ? '+' : lostMoney ? '−' : ''}${Math.abs(net).toFixed(2)}</strong>
+                            <br/>
+                            {madeMoney && <>We made <strong>${net.toFixed(2)}</strong> on shipping this week 🟢</>}
+                            {lostMoney && <>GRI paid <strong>${Math.abs(net).toFixed(2)}</strong> out-of-pocket for shipping 🔴</>}
+                            {!madeMoney && !lostMoney && <>Break-even — covered shipping exactly.</>}
+                          </div>
+                        )}
+                        {noData && (
+                          <div style={{ marginTop: 8, padding: '8px 10px', borderRadius: 6, background: '#FEF3C7', fontSize: 12, color: '#78350F', lineHeight: 1.5 }}>
+                            Enter AusPost + StarTrack above and hit <strong>Save couriers</strong> to see the net result for this week.
                           </div>
                         )}
                       </div>
