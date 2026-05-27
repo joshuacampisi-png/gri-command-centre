@@ -211,23 +211,37 @@ function OverviewPage({ data, company }) {
     return () => clearInterval(interval)
   }, [])
 
-  // Fetch shipping costs — on mount, on tab focus, on visibility-change,
-  // AND every 60 seconds while tab is open. Previously fetched once on
-  // mount only, so when a teammate saved on another device the change
-  // wouldn't show until a full page reload. Multi-device sync now works.
+  // Visible fetch status so any user can see WHY data is missing if it is.
+  // Previously the catch swallowed errors silently — staff saw empty + no
+  // explanation, leading to 'I can't see my saves' loops.
+  const [shippingFetchStatus, setShippingFetchStatus] = useState({ state: 'idle', message: '', count: 0, at: null })
+
   useEffect(() => {
-    const load = () => {
-      fetch('/api/shopify/shipping-costs').then(r => r.json()).then(d => {
-        if (d.ok) setShippingCosts(d.costs || {})
-      }).catch(() => {})
+    const load = async () => {
+      setShippingFetchStatus(s => ({ ...s, state: 'loading' }))
+      try {
+        const res = await fetch('/api/shopify/shipping-costs', { cache: 'no-store', credentials: 'include' })
+        if (!res.ok) {
+          const errBody = await res.text().catch(() => '')
+          setShippingFetchStatus({ state: 'error', message: `HTTP ${res.status} ${res.statusText}: ${errBody.slice(0, 100)}`, count: 0, at: new Date().toISOString() })
+          return
+        }
+        const d = await res.json()
+        if (d.ok) {
+          const costs = d.costs || {}
+          setShippingCosts(costs)
+          setShippingFetchStatus({ state: 'ok', message: '', count: Object.keys(costs).length, at: new Date().toISOString() })
+        } else {
+          setShippingFetchStatus({ state: 'error', message: d.error || 'Server returned ok:false', count: 0, at: new Date().toISOString() })
+        }
+      } catch (e) {
+        setShippingFetchStatus({ state: 'error', message: e.message || String(e), count: 0, at: new Date().toISOString() })
+      }
     }
-    // Initial load
     load()
-    // Poll every 60s while tab is visible
     const interval = setInterval(() => {
       if (document.visibilityState === 'visible') load()
     }, 60000)
-    // Refetch when tab regains focus / becomes visible
     const onVisible = () => { if (document.visibilityState === 'visible') load() }
     window.addEventListener('focus', load)
     document.addEventListener('visibilitychange', onVisible)
@@ -458,6 +472,25 @@ function OverviewPage({ data, company }) {
         {/* Shipping Revenue */}
         <div className="ov-card ov-stat-card" style={{ ...carouselCardStyle, minWidth: 280 }}>
           <h3>Shipping Revenue</h3>
+          {/* Data-load status indicator — shows EXACTLY what was fetched.
+              Replaces silent failures with a visible banner so we can
+              diagnose 'I can't see saved data' on any device instantly. */}
+          {shippingFetchStatus.state === 'error' && (
+            <div style={{ background: '#FEE2E2', border: '1px solid #FECACA', color: '#991B1B', padding: '8px 10px', borderRadius: 6, fontSize: 11, marginBottom: 8 }}>
+              ⚠️ Couldn't load saved shipping data: <strong>{shippingFetchStatus.message}</strong>
+              <button onClick={() => window.location.reload()} style={{ marginLeft: 6, padding: '2px 8px', fontSize: 11, borderRadius: 4, border: '1px solid #991B1B', background: '#fff', color: '#991B1B', cursor: 'pointer', fontWeight: 600 }}>retry</button>
+            </div>
+          )}
+          {shippingFetchStatus.state === 'ok' && shippingFetchStatus.count > 0 && (
+            <div style={{ fontSize: 10, color: '#047857', marginBottom: 6 }}>
+              ✓ {shippingFetchStatus.count} weeks of data loaded · click any green pill below to view
+            </div>
+          )}
+          {shippingFetchStatus.state === 'ok' && shippingFetchStatus.count === 0 && (
+            <div style={{ background: '#FEF3C7', border: '1px solid #FDE68A', color: '#78350F', padding: '8px 10px', borderRadius: 6, fontSize: 11, marginBottom: 8 }}>
+              No saved shipping data on the server yet. Enter AusPost + StarTrack below to start tracking.
+            </div>
+          )}
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
             {shippingWeeks.map(w => {
               const hasEntry = !!shippingCosts[w.from]
