@@ -310,6 +310,56 @@ function loadShippingCosts() {
   return {}
 }
 
+// Normalise any date string to the Wednesday-of-week (the canonical key).
+// Historical bug: some entries were saved keyed by the Tuesday end-of-week
+// (e.g. 2026-03-17, 2026-03-24, 2026-03-31, 2026-04-28) instead of the
+// Wednesday start. This helper maps EITHER convention to the Wednesday key.
+function wedOfWeek(yyyymmdd) {
+  const [y, m, d] = yyyymmdd.split('-').map(Number)
+  const dt = new Date(Date.UTC(y, m - 1, d))
+  const day = dt.getUTCDay() // 0=Sun..6=Sat, Wed=3
+  const daysSinceWed = (day - 3 + 7) % 7
+  dt.setUTCDate(dt.getUTCDate() - daysSinceWed)
+  return dt.toISOString().slice(0, 10)
+}
+
+// Migrate stored keys to canonical Wed-of-week format. Merges duplicate
+// entries that pointed at the same week, preferring the newer updatedAt.
+// Returns { migrated, mergedFrom } so we can log what changed.
+function migrateShippingCostKeys(costs) {
+  const out = {}
+  let migrated = 0, mergedFrom = 0
+  for (const [origKey, val] of Object.entries(costs)) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(origKey)) { out[origKey] = val; continue }
+    const canonical = wedOfWeek(origKey)
+    if (canonical !== origKey) migrated++
+    if (out[canonical]) {
+      // Merge — keep newer updatedAt, sum auspost + startrack if both present
+      mergedFrom++
+      const a = out[canonical], b = val
+      const aTime = new Date(a.updatedAt || 0).getTime()
+      const bTime = new Date(b.updatedAt || 0).getTime()
+      const newer = bTime > aTime ? b : a
+      const older = bTime > aTime ? a : b
+      out[canonical] = {
+        ...older, ...newer,
+        // If only one had a courier field, keep it
+        auspost: newer.auspost != null ? newer.auspost : older.auspost,
+        startrack: newer.startrack != null ? newer.startrack : older.startrack,
+      }
+      // Recompute cost
+      const ap = parseFloat(out[canonical].auspost ?? NaN)
+      const st = parseFloat(out[canonical].startrack ?? NaN)
+      if (!Number.isNaN(ap) || !Number.isNaN(st)) {
+        out[canonical].cost = (Number.isNaN(ap) ? 0 : ap) + (Number.isNaN(st) ? 0 : st)
+      }
+    } else {
+      out[canonical] = val
+    }
+  }
+  return { migrated: out, migratedCount: migrated, mergedCount: mergedFrom }
+}
+
 function saveShippingCosts(data) {
   // Throws on any write failure so the POST handler can return ok:false.
   // Previously errors were swallowed and the response still said ok:true —
@@ -322,8 +372,31 @@ function saveShippingCosts(data) {
 }
 
 router.get('/shopify/shipping-costs', (_req, res) => {
-  const costs = loadShippingCosts()
-  res.json({ ok: true, costs, file: SHIPPING_COSTS_FILE })
+  const raw = loadShippingCosts()
+  // Auto-migrate keys on every read so the UI always sees canonical Wed-of-week
+  const { migrated, migratedCount, mergedCount } = migrateShippingCostKeys(raw)
+  // Persist the migration once if anything changed (idempotent on subsequent reads)
+  if (migratedCount > 0 || mergedCount > 0) {
+    try {
+      saveShippingCosts(migrated)
+      console.log(`[shipping-costs] Auto-migrated ${migratedCount} key(s), merged ${mergedCount} duplicate(s)`)
+    } catch (e) {
+      console.error('[shipping-costs] Migration save failed:', e.message)
+    }
+  }
+  res.json({ ok: true, costs: migrated, file: SHIPPING_COSTS_FILE })
+})
+
+// One-off manual migration trigger (public for ease of use)
+router.post('/shopify/shipping-costs/migrate', (_req, res) => {
+  const raw = loadShippingCosts()
+  const { migrated, migratedCount, mergedCount } = migrateShippingCostKeys(raw)
+  try {
+    saveShippingCosts(migrated)
+    res.json({ ok: true, migratedCount, mergedCount, totalWeeks: Object.keys(migrated).length })
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message })
+  }
 })
 
 // Compute the canonical "total cost" for a stored week entry.
@@ -352,9 +425,14 @@ router.post('/shopify/shipping-costs', (req, res) => {
   if (auspost === undefined && startrack === undefined && cost === undefined) {
     return res.status(400).json({ ok: false, error: 'Provide auspost and/or startrack (or legacy cost)' })
   }
+  // Always store under the canonical Wednesday-of-week key — regardless of
+  // what date the client sent. Prevents historical drift where some entries
+  // got keyed by Tuesday-end instead of Wednesday-start.
+  const canonicalKey = /^\d{4}-\d{2}-\d{2}$/.test(weekStart) ? wedOfWeek(weekStart) : weekStart
   try {
-    const costs = loadShippingCosts()
-    const existing = costs[weekStart] || {}
+    const raw = loadShippingCosts()
+    const { migrated: costs } = migrateShippingCostKeys(raw)
+    const existing = costs[canonicalKey] || {}
     const next = { ...existing, updatedAt: new Date().toISOString() }
 
     if (auspost !== undefined) {
@@ -377,12 +455,12 @@ router.post('/shopify/shipping-costs', (req, res) => {
     // Compute total for back-compat — old UI cards read entry.cost
     next.cost = computeTotalShippingCost(next)
 
-    costs[weekStart] = next
+    costs[canonicalKey] = next
     const verified = saveShippingCosts(costs)
-    if (!verified[weekStart]) {
+    if (!verified[canonicalKey]) {
       return res.status(500).json({ ok: false, error: 'Write did not persist — file round-trip mismatch', file: SHIPPING_COSTS_FILE })
     }
-    console.log(`[shipping-costs] Saved ${weekStart} auspost=${next.auspost ?? '-'} startrack=${next.startrack ?? '-'} total=$${next.cost} → ${SHIPPING_COSTS_FILE}`)
+    console.log(`[shipping-costs] Saved ${canonicalKey} (client sent ${weekStart}) auspost=${next.auspost ?? '-'} startrack=${next.startrack ?? '-'} total=$${next.cost} → ${SHIPPING_COSTS_FILE}`)
     return res.json({ ok: true, costs: verified, file: SHIPPING_COSTS_FILE })
   } catch (e) {
     console.error('[shipping-costs] Save error:', e.message, e.stack)
@@ -415,8 +493,11 @@ router.delete('/shopify/shipping-costs', (req, res) => {
   if (!weekStart) {
     return res.status(400).json({ ok: false, error: 'weekStart required' })
   }
-  const costs = loadShippingCosts()
-  delete costs[weekStart]
+  // Normalise + remove all keys for the same week (handles legacy Tuesday keys)
+  const canonicalKey = /^\d{4}-\d{2}-\d{2}$/.test(weekStart) ? wedOfWeek(weekStart) : weekStart
+  const raw = loadShippingCosts()
+  const { migrated: costs } = migrateShippingCostKeys(raw)
+  delete costs[canonicalKey]
   saveShippingCosts(costs)
   res.json({ ok: true, costs })
 })
