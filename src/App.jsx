@@ -568,56 +568,75 @@ function OverviewPage({ data, company }) {
                 const startrack = saved.startrack != null ? saved.startrack : null
                 const hasCouriers = auspost != null || startrack != null
                 const totalPaid = hasCouriers ? ((auspost || 0) + (startrack || 0)) : (saved.cost || 0)
-                const profit = shippingData.shipping - totalPaid
+                const collected = shippingData.shipping
+                const net = collected - totalPaid  // ← positive = profit, negative = subsidising shipping
+                const isProfit = net >= 0
                 const savedAt = saved.updatedAt
                   ? new Date(saved.updatedAt).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
                   : null
                 return (
-                  <div style={{ marginTop: 10 }}>
-                    {/* Locked-in badge — always visible, courier breakdown */}
+                  <div style={{ marginTop: 12 }}>
+                    {/* SHIPPING P&L — full step-by-step calculation */}
                     <div style={{
-                      padding: '10px 12px', borderRadius: 8,
-                      background: shippingSavedFlash ? '#DCFCE7' : '#F0FDFA',
-                      border: `1px solid ${shippingSavedFlash ? '#10B981' : '#A7F3D0'}`,
+                      borderRadius: 10,
+                      background: shippingSavedFlash ? '#DCFCE7' : '#FAFAFA',
+                      border: `1.5px solid ${shippingSavedFlash ? '#10B981' : '#E5E7EB'}`,
                       transition: 'background 0.2s, border-color 0.2s',
+                      overflow: 'hidden',
                     }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                      <div style={{ padding: '8px 12px', background: '#F0FDFA', borderBottom: '1px solid #E5E7EB', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div style={{ fontSize: 10, fontWeight: 700, color: '#047857', textTransform: 'uppercase', letterSpacing: '.04em' }}>
-                          {shippingSavedFlash ? 'Saved ✓' : 'Locked In'}
+                          {shippingSavedFlash ? 'Saved ✓ — Shipping P&L' : 'Shipping P&L'}
                         </div>
                         {savedAt && <div style={{ fontSize: 10, color: '#047857' }}>saved {savedAt}</div>}
                       </div>
-                      {hasCouriers ? (
-                        <>
-                          <div className="kv-row" style={{ fontSize: 12 }}>
-                            <span>AusPost</span>
-                            <strong>{auspost != null ? `$${auspost.toFixed(2)}` : '—'}</strong>
-                          </div>
-                          <div className="kv-row" style={{ fontSize: 12 }}>
-                            <span>StarTrack</span>
-                            <strong>{startrack != null ? `$${startrack.toFixed(2)}` : '—'}</strong>
-                          </div>
-                          <div className="kv-row" style={{ borderTop: '1px solid #A7F3D0', marginTop: 4, paddingTop: 4 }}>
-                            <span style={{ fontWeight: 600 }}>Total paid</span>
-                            <strong style={{ color: '#047857', fontSize: 14 }}>${totalPaid.toFixed(2)}</strong>
-                          </div>
-                        </>
-                      ) : (
-                        <div className="kv-row">
-                          <span>Total paid (legacy)</span>
-                          <strong style={{ color: '#047857', fontSize: 14 }}>${totalPaid.toFixed(2)}</strong>
+                      <div style={{ padding: '10px 12px' }}>
+                        {/* Step 1: collected */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: 13, marginBottom: 6 }}>
+                          <span style={{ color: '#475569' }}>Customers paid (collected via Shopify)</span>
+                          <strong style={{ color: '#0F766E', fontSize: 15 }}>+${collected.toFixed(2)}</strong>
                         </div>
-                      )}
-                    </div>
-                    <div className="kv-row" style={{ marginTop: 8 }}>
-                      <span>Customers paid (Shopify)</span>
-                      <strong>${shippingData.shipping.toFixed(2)}</strong>
-                    </div>
-                    <div className="kv-row">
-                      <span style={{ fontWeight: 600 }}>{profit >= 0 ? 'Margin' : 'Loss'}</span>
-                      <strong style={{ color: profit >= 0 ? '#10B981' : '#E43F7B', fontSize: 14 }}>
-                        {profit >= 0 ? '+' : '-'}${Math.abs(profit).toFixed(2)}
-                      </strong>
+                        {/* Step 2: courier costs */}
+                        {hasCouriers ? (
+                          <>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: 13, marginBottom: 4 }}>
+                              <span style={{ color: '#475569' }}>− AusPost paid</span>
+                              <strong style={{ color: '#DC2626' }}>{auspost != null ? `−$${auspost.toFixed(2)}` : '—'}</strong>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: 13, marginBottom: 6 }}>
+                              <span style={{ color: '#475569' }}>− StarTrack paid</span>
+                              <strong style={{ color: '#DC2626' }}>{startrack != null ? `−$${startrack.toFixed(2)}` : '—'}</strong>
+                            </div>
+                          </>
+                        ) : (
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: 13, marginBottom: 6 }}>
+                            <span style={{ color: '#475569' }}>− Total shipping paid (legacy)</span>
+                            <strong style={{ color: '#DC2626' }}>−${totalPaid.toFixed(2)}</strong>
+                          </div>
+                        )}
+                        {/* Step 3: result */}
+                        <div style={{
+                          borderTop: '2px dashed #CBD5E1', marginTop: 4, paddingTop: 8,
+                          display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
+                        }}>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: '#181A1D' }}>
+                            = {isProfit ? 'Net Shipping Profit' : 'Net Shipping Loss'}
+                          </span>
+                          <strong style={{
+                            fontSize: 20, fontWeight: 800,
+                            color: isProfit ? '#10B981' : '#E43F7B',
+                          }}>
+                            {isProfit ? '+' : '−'}${Math.abs(net).toFixed(2)}
+                          </strong>
+                        </div>
+                        {/* Margin % */}
+                        {collected > 0 && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: 11, color: '#6B7280', marginTop: 4 }}>
+                            <span>Effective margin on shipping</span>
+                            <span style={{ fontWeight: 600 }}>{((net / collected) * 100).toFixed(1)}%</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )
