@@ -1,0 +1,98 @@
+{
+  "shippedAt": "2026-05-29T01:09:33.265Z",
+  "campaignId": "21094179575",
+  "adGroupId": "165478691408",
+  "addedPositives": [
+    {
+      "text": "confetti cannon gender reveal",
+      "match": 2,
+      "proof": "27k PMAX imp, 12.4 conv, $1,303"
+    },
+    {
+      "text": "gender reveal confetti cannons",
+      "match": 2,
+      "proof": "plural variant, 260/mo AU vol"
+    },
+    {
+      "text": "biodegradable confetti cannon gender reveal",
+      "match": 2,
+      "proof": "1.5 PMAX conv, $108 rev"
+    },
+    {
+      "text": "blue confetti cannon",
+      "match": 2,
+      "proof": "2.0 conv proven, $84 rev"
+    },
+    {
+      "text": "gender reveal smoke confetti cannon",
+      "match": 2,
+      "proof": "1.0 conv proven, $94 rev"
+    }
+  ],
+  "addedPositiveResources": [
+    "customers/9431746480/adGroupCriteria/165478691408~332380240279",
+    "customers/9431746480/adGroupCriteria/165478691408~362493341431",
+    "customers/9431746480/adGroupCriteria/165478691408~759965231707",
+    "customers/9431746480/adGroupCriteria/165478691408~297398303681",
+    "customers/9431746480/adGroupCriteria/165478691408~743803157974"
+  ],
+  "addedNegatives": [
+    {
+      "text": "electric confetti cannon",
+      "match": 2,
+      "reason": "693 PMAX imp, 0 conv — wrong product"
+    },
+    {
+      "text": "co2 confetti cannon",
+      "match": 2,
+      "reason": "pneumatic product, not ours"
+    },
+    {
+      "text": "compressed air confetti cannon",
+      "match": 2,
+      "reason": "different product type"
+    },
+    {
+      "text": "remote control confetti cannon",
+      "match": 3,
+      "reason": "different product"
+    },
+    {
+      "text": "make your own confetti cannon",
+      "match": 3,
+      "reason": "DIY tutorial intent"
+    },
+    {
+      "text": "make a confetti cannon",
+      "match": 2,
+      "reason": "DIY tutorial intent"
+    },
+    {
+      "text": "stage confetti cannon",
+      "match": 2,
+      "reason": "DJ/event intent"
+    },
+    {
+      "text": "dj confetti cannon",
+      "match": 2,
+      "reason": "DJ intent"
+    },
+    {
+      "text": "rice paper confetti cannon",
+      "match": 3,
+      "reason": "14 imp 0 conv, wrong eco product"
+    }
+  ],
+  "addedNegativeResources": [
+    "customers/9431746480/campaignCriteria/21094179575~316969884233",
+    "customers/9431746480/campaignCriteria/21094179575~302307183763",
+    "customers/9431746480/campaignCriteria/21094179575~349213447644",
+    "customers/9431746480/campaignCriteria/21094179575~1367003594582",
+    "customers/9431746480/campaignCriteria/21094179575~362791926859",
+    "customers/9431746480/campaignCriteria/21094179575~544270778610",
+    "customers/9431746480/campaignCriteria/21094179575~347406378140",
+    "customers/9431746480/campaignCriteria/21094179575~349213448604",
+    "customers/9431746480/campaignCriteria/21094179575~1966888641015"
+  ],
+  "errors": []
+}

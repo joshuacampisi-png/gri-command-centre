@@ -1,0 +1,55 @@
+{
+  "ranAt": "2026-05-15T10:13:12.529Z",
+  "results": [
+    {
+      "handle": "gender-reveal-ideas-nsw",
+      "status": "OK"
+    },
+    {
+      "handle": "gender-reveal-ideas-wa",
+      "status": "OK"
+    },
+    {
+      "handle": "gender-reveal-ideas-sa",
+      "status": "OK"
+    },
+    {
+      "handle": "gender-reveal-ideas-tasmania",
+      "status": "OK"
+    },
+    {
+      "handle": "gender-reveal-ideas-act",
+      "status": "OK"
+    },
+    {
+      "handle": "gender-reveal-ideas-nt",
+      "status": "OK"
+    },
+    {
+      "handle": "gender-reveal-ideas-central-coast",
+      "status": "OK"
+    },
+    {
+      "handle": "gender-reveal-ideas-geelong",
+      "status": "OK"
+    },
+    {
+      "handle": "gender-reveal-ideas-cairns",
+      "status": "OK"
+    },
+    {
+      "handle": "gender-reveal-ideas-launceston",
+      "status": "OK"
+    },
+    {
+      "handle": "gender-reveal-ideas-victoria",
+      "status": "OK"
+    },
+    {
+      "handle": "gender-reveal-ideas-queensland",
+      "status": "OK"
+    }
+  ],
+  "totalCreated": 10,
+  "totalErrors": 0
+}

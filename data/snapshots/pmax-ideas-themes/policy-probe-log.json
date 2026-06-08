@@ -1,0 +1,39 @@
+{
+  "ranAt": "2026-05-17T21:06:51.622Z",
+  "targetAg": {
+    "id": "6500812492",
+    "name": "All Products",
+    "campaign": "GRI PMAX | All Products"
+  },
+  "results": [
+    {
+      "variant": "creative gender reveal",
+      "status": "rejected",
+      "error": "The search theme requested to be added violates certain policy."
+    },
+    {
+      "variant": "easy gender reveal",
+      "status": "rejected",
+      "error": "The search theme requested to be added violates certain policy."
+    },
+    {
+      "variant": "unique gender reveal",
+      "status": "rejected",
+      "error": "The search theme requested to be added violates certain policy."
+    },
+    {
+      "variant": "best gender reveal",
+      "status": "rejected",
+      "error": "The search theme requested to be added violates certain policy."
+    },
+    {
+      "variant": "baby reveal ideas",
+      "status": "already_exists"
+    },
+    {
+      "variant": "pregnancy reveal",
+      "status": "accepted",
+      "resource_name": "customers/9431746480/assetGroupSignals/6500812492~2270640385081"
+    }
+  ]
+}

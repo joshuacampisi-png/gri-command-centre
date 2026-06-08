@@ -877,5 +877,110 @@
     "type": "error",
     "detail": "Decision engine failed: Cannot create property 'max_tokens' on string 'You are the AI marketing agent for Gender Reveal Ideas. You analyse live Meta Ads data and produce specific, actionable recommendations.\n\nYou must output valid JSON only. No markdown, no explanation outside the JSON.\n\nFor each recommendation, output this structure:\n{\n  \"actions\": [\n    {\n      \"action_type\": \"pause_ad|scale_budget|create_brief|flag_for_review|swap_creative\",\n      \"action_title\": \"Short title shown to Josh\",\n      \"action_summary\": \"One sentence plain English summary\",\n      \"ai_reasoning\": \"Full reasoning with data points. Why this action, why now.\",\n      \"ai_confidence\": 1-10,\n      \"expected_outcome\": \"What will happen if approved\",\n      \"risk_level\": \"low|medium|high\",\n      \"entity_name\": \"Name of campaign/ad set/ad affected\",\n      \"entity_id\": \"Meta ID if available\",\n      \"entity_type\": \"campaign|ad_set|ad\",\n      \"execution_payload\": { \"method\": \"pauseAd|updateAdSetBudget|etc\", \"params\": {} }\n    }\n  ]\n}\n\nRules:\n- Maximum 5 actions per cycle\n- Confidence below 6 gets a caution badge\n- High risk actions (kill campaign, budget over $50 increase) need extra justification\n- Budget increases must be exactly 15% (never exceed 20%)\n- If performance is stable and on target, it is valid to recommend zero actions\n- If you have no data, recommend \"flag_for_review\" with a request to wait for more data\n- Learn from previous decision outcomes. If similar actions failed before, explain why this time is different.\n- All dollar amounts in AUD'",
     "timestamp": "2026-05-14T23:00:00.071Z"
+  },
+  {
+    "id": "e54004b1-a5c6-4f31-acb9-0f8c2149b4e0",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-05-16T04:00:00.031Z"
+  },
+  {
+    "id": "93cedcaf-14e6-4e30-8d8c-bfd88b7fe688",
+    "type": "meta_sync_complete",
+    "detail": {
+      "campaigns": 4,
+      "adSets": 25,
+      "ads": 225,
+      "snapshots": 158
+    },
+    "timestamp": "2026-05-16T04:02:03.538Z"
+  },
+  {
+    "id": "f43d2409-36b7-437c-9c4f-5c90aba03465",
+    "type": "error",
+    "detail": "Decision engine failed: Cannot create property 'max_tokens' on string 'You are the AI marketing agent for Gender Reveal Ideas. You analyse live Meta Ads data and produce specific, actionable recommendations.\n\nYou must output valid JSON only. No markdown, no explanation outside the JSON.\n\nFor each recommendation, output this structure:\n{\n  \"actions\": [\n    {\n      \"action_type\": \"pause_ad|scale_budget|create_brief|flag_for_review|swap_creative\",\n      \"action_title\": \"Short title shown to Josh\",\n      \"action_summary\": \"One sentence plain English summary\",\n      \"ai_reasoning\": \"Full reasoning with data points. Why this action, why now.\",\n      \"ai_confidence\": 1-10,\n      \"expected_outcome\": \"What will happen if approved\",\n      \"risk_level\": \"low|medium|high\",\n      \"entity_name\": \"Name of campaign/ad set/ad affected\",\n      \"entity_id\": \"Meta ID if available\",\n      \"entity_type\": \"campaign|ad_set|ad\",\n      \"execution_payload\": { \"method\": \"pauseAd|updateAdSetBudget|etc\", \"params\": {} }\n    }\n  ]\n}\n\nRules:\n- Maximum 5 actions per cycle\n- Confidence below 6 gets a caution badge\n- High risk actions (kill campaign, budget over $50 increase) need extra justification\n- Budget increases must be exactly 15% (never exceed 20%)\n- If performance is stable and on target, it is valid to recommend zero actions\n- If you have no data, recommend \"flag_for_review\" with a request to wait for more data\n- Learn from previous decision outcomes. If similar actions failed before, explain why this time is different.\n- All dollar amounts in AUD'",
+    "timestamp": "2026-05-16T05:00:00.159Z"
+  },
+  {
+    "id": "d85b3490-02bb-459f-b8fb-66d969e206e8",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-05-17T04:00:00.033Z"
+  },
+  {
+    "id": "58d37fe5-b496-4bc2-94e7-eaf49509863e",
+    "type": "meta_sync_complete",
+    "detail": {
+      "campaigns": 4,
+      "adSets": 25,
+      "ads": 225,
+      "snapshots": 145
+    },
+    "timestamp": "2026-05-17T04:02:06.460Z"
+  },
+  {
+    "id": "9890c2fc-9b81-4d74-a259-a91b50884a10",
+    "type": "error",
+    "detail": "Decision engine failed: Cannot create property 'max_tokens' on string 'You are the AI marketing agent for Gender Reveal Ideas. You analyse live Meta Ads data and produce specific, actionable recommendations.\n\nYou must output valid JSON only. No markdown, no explanation outside the JSON.\n\nFor each recommendation, output this structure:\n{\n  \"actions\": [\n    {\n      \"action_type\": \"pause_ad|scale_budget|create_brief|flag_for_review|swap_creative\",\n      \"action_title\": \"Short title shown to Josh\",\n      \"action_summary\": \"One sentence plain English summary\",\n      \"ai_reasoning\": \"Full reasoning with data points. Why this action, why now.\",\n      \"ai_confidence\": 1-10,\n      \"expected_outcome\": \"What will happen if approved\",\n      \"risk_level\": \"low|medium|high\",\n      \"entity_name\": \"Name of campaign/ad set/ad affected\",\n      \"entity_id\": \"Meta ID if available\",\n      \"entity_type\": \"campaign|ad_set|ad\",\n      \"execution_payload\": { \"method\": \"pauseAd|updateAdSetBudget|etc\", \"params\": {} }\n    }\n  ]\n}\n\nRules:\n- Maximum 5 actions per cycle\n- Confidence below 6 gets a caution badge\n- High risk actions (kill campaign, budget over $50 increase) need extra justification\n- Budget increases must be exactly 15% (never exceed 20%)\n- If performance is stable and on target, it is valid to recommend zero actions\n- If you have no data, recommend \"flag_for_review\" with a request to wait for more data\n- Learn from previous decision outcomes. If similar actions failed before, explain why this time is different.\n- All dollar amounts in AUD'",
+    "timestamp": "2026-05-17T05:00:00.128Z"
+  },
+  {
+    "id": "3ae6f4e9-55a1-4772-b9ea-c00ed475c7ad",
+    "type": "meta_sync_start",
+    "detail": "Pulling latest data from Meta Ads API",
+    "timestamp": "2026-05-18T22:00:00.035Z"
+  },
+  {
+    "id": "4f47a18a-a3b8-45e1-b508-f488342673e1",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120226215760060711",
+      "campaignName": "GRI - Advantage+ Catalogue (Testing)",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-05-18T22:00:07.328Z"
+  },
+  {
+    "id": "d94a9687-17e0-4e6c-90fa-c21d1318a0cd",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120216057846380711",
+      "campaignName": "GRI  - AUS Wide [Broad Targeting]",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-05-18T22:00:11.012Z"
+  },
+  {
+    "id": "4cd3768b-a1e0-4ca1-b719-08e419062870",
+    "type": "sync_error",
+    "detail": {
+      "campaignId": "120211361720620711",
+      "campaignName": "GRI  - AUS Wide [Lookalike Targeting]",
+      "error": "Meta API: User request limit reached"
+    },
+    "timestamp": "2026-05-18T22:00:14.596Z"
+  },
+  {
+    "id": "27915f5a-9148-42a2-98d6-cbecc8932d83",
+    "type": "meta_sync_complete",
+    "detail": {
+      "campaigns": 4,
+      "adSets": 1,
+      "ads": 13,
+      "snapshots": 42
+    },
+    "timestamp": "2026-05-18T22:00:22.893Z"
+  },
+  {
+    "id": "d60f3135-a959-41f0-9519-84afcbb26cda",
+    "type": "error",
+    "detail": "Decision engine failed: Cannot create property 'max_tokens' on string 'You are the AI marketing agent for Gender Reveal Ideas. You analyse live Meta Ads data and produce specific, actionable recommendations.\n\nYou must output valid JSON only. No markdown, no explanation outside the JSON.\n\nFor each recommendation, output this structure:\n{\n  \"actions\": [\n    {\n      \"action_type\": \"pause_ad|scale_budget|create_brief|flag_for_review|swap_creative\",\n      \"action_title\": \"Short title shown to Josh\",\n      \"action_summary\": \"One sentence plain English summary\",\n      \"ai_reasoning\": \"Full reasoning with data points. Why this action, why now.\",\n      \"ai_confidence\": 1-10,\n      \"expected_outcome\": \"What will happen if approved\",\n      \"risk_level\": \"low|medium|high\",\n      \"entity_name\": \"Name of campaign/ad set/ad affected\",\n      \"entity_id\": \"Meta ID if available\",\n      \"entity_type\": \"campaign|ad_set|ad\",\n      \"execution_payload\": { \"method\": \"pauseAd|updateAdSetBudget|etc\", \"params\": {} }\n    }\n  ]\n}\n\nRules:\n- Maximum 5 actions per cycle\n- Confidence below 6 gets a caution badge\n- High risk actions (kill campaign, budget over $50 increase) need extra justification\n- Budget increases must be exactly 15% (never exceed 20%)\n- If performance is stable and on target, it is valid to recommend zero actions\n- If you have no data, recommend \"flag_for_review\" with a request to wait for more data\n- Learn from previous decision outcomes. If similar actions failed before, explain why this time is different.\n- All dollar amounts in AUD'",
+    "timestamp": "2026-05-18T23:00:00.108Z"
+  },
+  {
+    "id": "610ff38f-5ea0-457f-8909-5dcb96bdd8f5",
+    "type": "error",
+    "detail": "Decision engine failed: Cannot create property 'max_tokens' on string 'You are the AI marketing agent for Gender Reveal Ideas. You analyse live Meta Ads data and produce specific, actionable recommendations.\n\nYou must output valid JSON only. No markdown, no explanation outside the JSON.\n\nFor each recommendation, output this structure:\n{\n  \"actions\": [\n    {\n      \"action_type\": \"pause_ad|scale_budget|create_brief|flag_for_review|swap_creative\",\n      \"action_title\": \"Short title shown to Josh\",\n      \"action_summary\": \"One sentence plain English summary\",\n      \"ai_reasoning\": \"Full reasoning with data points. Why this action, why now.\",\n      \"ai_confidence\": 1-10,\n      \"expected_outcome\": \"What will happen if approved\",\n      \"risk_level\": \"low|medium|high\",\n      \"entity_name\": \"Name of campaign/ad set/ad affected\",\n      \"entity_id\": \"Meta ID if available\",\n      \"entity_type\": \"campaign|ad_set|ad\",\n      \"execution_payload\": { \"method\": \"pauseAd|updateAdSetBudget|etc\", \"params\": {} }\n    }\n  ]\n}\n\nRules:\n- Maximum 5 actions per cycle\n- Confidence below 6 gets a caution badge\n- High risk actions (kill campaign, budget over $50 increase) need extra justification\n- Budget increases must be exactly 15% (never exceed 20%)\n- If performance is stable and on target, it is valid to recommend zero actions\n- If you have no data, recommend \"flag_for_review\" with a request to wait for more data\n- Learn from previous decision outcomes. If similar actions failed before, explain why this time is different.\n- All dollar amounts in AUD'",
+    "timestamp": "2026-05-20T05:00:00.165Z"
   }
 ]

@@ -1,0 +1,35 @@
+{
+  "shippedAt": "2026-05-29T00:03:19.456Z",
+  "updates": [
+    {
+      "handle": "gender-reveal-powder-extinguisher",
+      "productId": "gid://shopify/Product/7781664882777",
+      "before": {
+        "productId": "gid://shopify/Product/7781664882777",
+        "seoTitle": "Gender Reveal Powder Extinguisher Bundle | $150 Pink Blue",
+        "seoDescription": "Pink and blue powder extinguisher bundle for the ultimate gender reveal moment. Eco-friendly cornstarch powder. Australia-wide express delivery.",
+        "titleTagMfId": "gid://shopify/Metafield/36889462833241",
+        "titleTagValue": "Gender Reveal Powder Extinguisher Bundle | $150 Pink Blue"
+      },
+      "after": {
+        "seoTitle": "Gender Reveal Powder Extinguisher Bundle | Pink Blue | Australia Same Day Dispatch",
+        "titleTagValue": "Gender Reveal Powder Extinguisher Bundle | Pink Blue | Australia Same Day Dispatch"
+      }
+    },
+    {
+      "handle": "gender-reveal-powder-cannons",
+      "productId": "gid://shopify/Product/7877241602137",
+      "before": {
+        "productId": "gid://shopify/Product/7877241602137",
+        "seoTitle": "Gender Reveal Cannon & Extinguisher Bundle | $135 | Australia",
+        "seoDescription": "The ultimate gender reveal combo — cannon plus extinguisher in one bundle. Pink, blue or secret. Australia-wide shipping. 4.85★ from 1,360+ reviews.",
+        "titleTagMfId": "gid://shopify/Metafield/36889462767705",
+        "titleTagValue": "Gender Reveal Cannon & Extinguisher Bundle | $135 | Australia"
+      },
+      "after": {
+        "seoTitle": "Gender Reveal Cannon & Extinguisher Bundle | Pink Blue | Australia 4.85★ Reviews",
+        "titleTagValue": "Gender Reveal Cannon & Extinguisher Bundle | Pink Blue | Australia 4.85★ Reviews"
+      }
+    }
+  ]
+}

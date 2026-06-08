@@ -1,0 +1,1406 @@
+[
+  {
+    "query": "dry ice gender reveal",
+    "slots": [
+      {
+        "pos": 1,
+        "domain": "genderrevealideas.com.au",
+        "url": "https://genderrevealideas.com.au/blogs/news/how-to-dry-ice-gender-reveal?srsltid=AfmBOop2wVtQe9Bl2fSMkYSpzfBUVFyvhQPxFDzBx3Mt7J4_uRlPpSVn",
+        "type": "GRI Blog"
+      },
+      {
+        "pos": 2,
+        "domain": "www.etsy.com",
+        "url": "https://www.etsy.com/au/market/dry_ice_gender_reveal",
+        "type": "Etsy"
+      },
+      {
+        "pos": 3,
+        "domain": "www.amazon.com",
+        "url": "https://www.amazon.com/dry-ice-gender-reveal-kit/s?k=dry+ice+gender+reveal+kit",
+        "type": "Amazon"
+      },
+      {
+        "pos": 5,
+        "domain": "www.genderrevealexpress.com.au",
+        "url": "https://www.genderrevealexpress.com.au/?srsltid=AfmBOoriCTgvszo55J8B5wp0Pp27hxFurIfTp5vqSOc53icmuLVyup5l",
+        "type": "Other Site"
+      },
+      {
+        "pos": 6,
+        "domain": "penguindryice.com",
+        "url": "https://penguindryice.com/its-magic-a-dry-ice-gender-reveal-idea/",
+        "type": "Other Site"
+      },
+      {
+        "pos": 10,
+        "domain": "www.dryicemakers.co.uk",
+        "url": "https://www.dryicemakers.co.uk/product/dry-ice-gender-identity-reveal-kit/",
+        "type": "Other Site"
+      }
+    ],
+    "gri": {
+      "pos": 1,
+      "domain": "genderrevealideas.com.au",
+      "url": "https://genderrevealideas.com.au/blogs/news/how-to-dry-ice-gender-reveal?srsltid=AfmBOop2wVtQe9Bl2fSMkYSpzfBUVFyvhQPxFDzBx3Mt7J4_uRlPpSVn",
+      "type": "GRI Blog"
+    }
+  },
+  {
+    "query": "how to do a dry ice gender reveal",
+    "slots": [
+      {
+        "pos": 2,
+        "domain": "genderrevealideas.com.au",
+        "url": "https://genderrevealideas.com.au/blogs/news/how-to-dry-ice-gender-reveal?srsltid=AfmBOorEQOicL1MZDDyKuxgviTocn13s4cpe8b06D5A88U50mjv98NIu",
+        "type": "GRI Blog"
+      },
+      {
+        "pos": 4,
+        "domain": "www.reddit.com",
+        "url": "https://www.reddit.com/r/windsorontario/comments/1q0o83u/dry_ice_gender_reveal_tips_for_a_safe_diy/",
+        "type": "Forum"
+      },
+      {
+        "pos": 5,
+        "domain": "penguindryice.com",
+        "url": "https://penguindryice.com/its-magic-a-dry-ice-gender-reveal-idea/",
+        "type": "Other Site"
+      },
+      {
+        "pos": 7,
+        "domain": "www.genderrevealexpress.com.au",
+        "url": "https://www.genderrevealexpress.com.au/blogs/gender-reveal-ideas/dry-ice-gender-reveal?srsltid=AfmBOoqJngGSRvrSoeULE33oUUImsYs8fwNcyh4kpvkhEHXyE5c3Xq-V",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 8,
+        "domain": "dryiceaustralia.net.au",
+        "url": "https://dryiceaustralia.net.au/dry_ice_applications/events-celebrations/",
+        "type": "Other Site"
+      },
+      {
+        "pos": 9,
+        "domain": "www.instagram.com",
+        "url": "https://www.instagram.com/reel/DNnaPkZpk2v/?hl=en",
+        "type": "Social"
+      },
+      {
+        "pos": 10,
+        "domain": "www.dryicejeddah.com",
+        "url": "https://www.dryicejeddah.com/dry-ice-smoke-for-gender-reveal/",
+        "type": "Other Site"
+      }
+    ],
+    "gri": {
+      "pos": 2,
+      "domain": "genderrevealideas.com.au",
+      "url": "https://genderrevealideas.com.au/blogs/news/how-to-dry-ice-gender-reveal?srsltid=AfmBOorEQOicL1MZDDyKuxgviTocn13s4cpe8b06D5A88U50mjv98NIu",
+      "type": "GRI Blog"
+    }
+  },
+  {
+    "query": "gender reveal dry ice",
+    "slots": [
+      {
+        "pos": 1,
+        "domain": "genderrevealideas.com.au",
+        "url": "https://genderrevealideas.com.au/blogs/news/how-to-dry-ice-gender-reveal?srsltid=AfmBOoqixumOKUFIuZr3m3CCwjn8POAUKM1W6KQzkV2ua9g57GAivpDQ",
+        "type": "GRI Blog"
+      },
+      {
+        "pos": 2,
+        "domain": "www.genderrevealexpress.com.au",
+        "url": "https://www.genderrevealexpress.com.au/?srsltid=AfmBOoqGB7o8OR96dhn5N-c8x3ZCU1txqfvXlmHkMvnyllMiKHLNhsA3",
+        "type": "Other Site"
+      },
+      {
+        "pos": 3,
+        "domain": "www.amazon.com",
+        "url": "https://www.amazon.com/dry-ice-gender-reveal-kit/s?k=dry+ice+gender+reveal+kit",
+        "type": "Amazon"
+      },
+      {
+        "pos": 4,
+        "domain": "penguindryice.com",
+        "url": "https://penguindryice.com/its-magic-a-dry-ice-gender-reveal-idea/",
+        "type": "Other Site"
+      },
+      {
+        "pos": 6,
+        "domain": "www.etsy.com",
+        "url": "https://www.etsy.com/au/market/dry_ice_gender_reveal",
+        "type": "Etsy"
+      },
+      {
+        "pos": 7,
+        "domain": "www.reddit.com",
+        "url": "https://www.reddit.com/r/windsorontario/comments/1q0o83u/dry_ice_gender_reveal_tips_for_a_safe_diy/",
+        "type": "Forum"
+      },
+      {
+        "pos": 9,
+        "domain": "www.pinterest.com",
+        "url": "https://www.pinterest.com/ideas/dry-ice-gender-reveal/951075513275/",
+        "type": "Social"
+      }
+    ],
+    "gri": {
+      "pos": 1,
+      "domain": "genderrevealideas.com.au",
+      "url": "https://genderrevealideas.com.au/blogs/news/how-to-dry-ice-gender-reveal?srsltid=AfmBOoqixumOKUFIuZr3m3CCwjn8POAUKM1W6KQzkV2ua9g57GAivpDQ",
+      "type": "GRI Blog"
+    }
+  },
+  {
+    "query": "how to do a gender reveal",
+    "slots": [
+      {
+        "pos": 2,
+        "domain": "www.reddit.com",
+        "url": "https://www.reddit.com/r/BabyBumps/comments/1dk51iy/how_can_we_do_a_gender_reveal_on_our_own/",
+        "type": "Forum"
+      },
+      {
+        "pos": 4,
+        "domain": "www.thebump.com",
+        "url": "https://www.thebump.com/a/creative-baby-gender-reveal-ideas",
+        "type": "Other Site"
+      },
+      {
+        "pos": 5,
+        "domain": "purebaby.com.au",
+        "url": "https://purebaby.com.au/blogs/journal/gender-reveal-ideas",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 6,
+        "domain": "www.huggies.com.au",
+        "url": "https://www.huggies.com.au/resources/downloadables/gender-reveal-party-guide",
+        "type": "Other Site"
+      },
+      {
+        "pos": 9,
+        "domain": "www.gfpbabies.com.au",
+        "url": "https://www.gfpbabies.com.au/blogs/all/8-fun-gender-reveal-ideas",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 10,
+        "domain": "www.newtonbaby.com",
+        "url": "https://www.newtonbaby.com/blogs/pregnancy/gender-reveal-parties?srsltid=AfmBOorqnNmRQaWETSiQnPvpHZv05ZE6PufRlJMJTMjEUwuYHDBE3jIH",
+        "type": "Other Blog"
+      }
+    ]
+  },
+  {
+    "query": "diy gender reveal",
+    "slots": [
+      {
+        "pos": 3,
+        "domain": "www.thebump.com",
+        "url": "https://www.thebump.com/a/creative-baby-gender-reveal-ideas",
+        "type": "Other Site"
+      },
+      {
+        "pos": 4,
+        "domain": "fr.pinterest.com",
+        "url": "https://fr.pinterest.com/pin/552887291750044499/",
+        "type": "Social"
+      },
+      {
+        "pos": 6,
+        "domain": "genderrevealcelebrations.com",
+        "url": "https://genderrevealcelebrations.com/blogs/gender-reveal-ideas?srsltid=AfmBOor5QQticD_Ejp5J8K2eOulWhkgKj12MqgasCfBel_YvZ2hKtz5h",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 7,
+        "domain": "www.pinterest.com",
+        "url": "https://www.pinterest.com/ideas/gender-reveal-diy/903038575611/",
+        "type": "Social"
+      },
+      {
+        "pos": 8,
+        "domain": "aussiebubs.com",
+        "url": "https://aussiebubs.com/blogs/bubs-blog/gender-reveal-ideas?srsltid=AfmBOooHzV0o_t0mGCtI2G662ja8VCsVS9Gzr5gVOhEe6_LxC4sRZwG3",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 10,
+        "domain": "deercreekflorida.com",
+        "url": "https://deercreekflorida.com/2025/diy-gender-reveals.html",
+        "type": "Other Site"
+      }
+    ]
+  },
+  {
+    "query": "how to make gender reveal smoke",
+    "slots": [
+      {
+        "pos": 4,
+        "domain": "genderrevealideas.com.au",
+        "url": "https://genderrevealideas.com.au/blogs/news/how-to-dry-ice-gender-reveal?srsltid=AfmBOoqwi-s4EuMTq4lUbPuiAgSWs47Sv6L_8Kr9jOIZE5KAfKbqmF6A",
+        "type": "GRI Blog"
+      },
+      {
+        "pos": 6,
+        "domain": "www.reddit.com",
+        "url": "https://www.reddit.com/r/pregnant/comments/1nnszyu/smoke_bomb_gender_reveal/",
+        "type": "Forum"
+      },
+      {
+        "pos": 7,
+        "domain": "www.genderrevealexpress.com.au",
+        "url": "https://www.genderrevealexpress.com.au/blogs/gender-reveal-ideas/dry-ice-gender-reveal?srsltid=AfmBOoqZ7Pp1YDAP5P2p1n2jkx_V0c1u_ZGhYVOl7lvHXLQAsUNrC0KZ",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 8,
+        "domain": "www.facebook.com",
+        "url": "https://www.facebook.com/groups/218676792817854/posts/1077326226952902/",
+        "type": "Social"
+      },
+      {
+        "pos": 9,
+        "domain": "genderrevealideas.com.au",
+        "url": "https://genderrevealideas.com.au/blogs/news/smoke-bomb-gender-reveals-101-everything-you-need-to-know?srsltid=AfmBOoqC1Wr2LOeJbaEZFIX3aWY0wdzpaOrCMCimZWmtflGvduzX84xm",
+        "type": "GRI Blog"
+      },
+      {
+        "pos": 10,
+        "domain": "genderrevealcelebrations.com",
+        "url": "https://genderrevealcelebrations.com/blogs/all-about-gender-reveal-smoke-bombs?srsltid=AfmBOoqO1JTro-t7rgAyn8F0g-242jZ6FzKvLmlNu_WVPDXF-6lyuN1u",
+        "type": "Other Blog"
+      }
+    ],
+    "gri": {
+      "pos": 4,
+      "domain": "genderrevealideas.com.au",
+      "url": "https://genderrevealideas.com.au/blogs/news/how-to-dry-ice-gender-reveal?srsltid=AfmBOoqwi-s4EuMTq4lUbPuiAgSWs47Sv6L_8Kr9jOIZE5KAfKbqmF6A",
+      "type": "GRI Blog"
+    }
+  },
+  {
+    "query": "easy gender reveal ideas",
+    "slots": [
+      {
+        "pos": 1,
+        "domain": "www.reddit.com",
+        "url": "https://www.reddit.com/r/BabyBumps/comments/nw30fq/low_key_gender_reveal_ideas/",
+        "type": "Forum"
+      },
+      {
+        "pos": 2,
+        "domain": "www.thebump.com",
+        "url": "https://www.thebump.com/a/creative-baby-gender-reveal-ideas",
+        "type": "Other Site"
+      },
+      {
+        "pos": 4,
+        "domain": "www.pinterest.com",
+        "url": "https://www.pinterest.com/ideas/mini-gender-reveal-ideas/923422111231/",
+        "type": "Social"
+      },
+      {
+        "pos": 7,
+        "domain": "genderrevealideas.com.au",
+        "url": "https://genderrevealideas.com.au/?srsltid=AfmBOoraqmFhUKbGgp1u_2xBZkhoBxdYoMi0C1Wwy722t6bKq3dpEfLU",
+        "type": "GRI (non-blog)"
+      },
+      {
+        "pos": 8,
+        "domain": "purebaby.com.au",
+        "url": "https://purebaby.com.au/blogs/journal/gender-reveal-ideas",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 9,
+        "domain": "sneakpeektest.com",
+        "url": "https://sneakpeektest.com/blog/easy-gender-reveal-ideas/?srsltid=AfmBOopE85dlEpBwl2_1-R7SWDISdVT96-t_bWRKTokvvNWrE8RBeaOY",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 10,
+        "domain": "www.happiestbaby.com",
+        "url": "https://www.happiestbaby.com/blogs/pregnancy/gender-reveal-ideas?srsltid=AfmBOorkhPcMNXf1_BTzrOfNlq62KSrht6gHBXbzCtenPUOvFn9Uo1vc",
+        "type": "Other Blog"
+      }
+    ],
+    "gri": {
+      "pos": 7,
+      "domain": "genderrevealideas.com.au",
+      "url": "https://genderrevealideas.com.au/?srsltid=AfmBOoraqmFhUKbGgp1u_2xBZkhoBxdYoMi0C1Wwy722t6bKq3dpEfLU",
+      "type": "GRI (non-blog)"
+    }
+  },
+  {
+    "query": "simple gender reveal ideas",
+    "slots": [
+      {
+        "pos": 2,
+        "domain": "www.reddit.com",
+        "url": "https://www.reddit.com/r/BabyBumps/comments/nw30fq/low_key_gender_reveal_ideas/",
+        "type": "Forum"
+      },
+      {
+        "pos": 3,
+        "domain": "www.thebump.com",
+        "url": "https://www.thebump.com/a/creative-baby-gender-reveal-ideas",
+        "type": "Other Site"
+      },
+      {
+        "pos": 5,
+        "domain": "www.pinterest.com",
+        "url": "https://www.pinterest.com/ideas/mini-gender-reveal-ideas/923422111231/",
+        "type": "Social"
+      },
+      {
+        "pos": 6,
+        "domain": "genderrevealideas.com.au",
+        "url": "https://genderrevealideas.com.au/?srsltid=AfmBOoqBSH9psoDzmkTcanWPCIAUaOqqk_MGg32tp_TE8E0pBXGem9Ik",
+        "type": "GRI (non-blog)"
+      },
+      {
+        "pos": 7,
+        "domain": "purebaby.com.au",
+        "url": "https://purebaby.com.au/blogs/journal/gender-reveal-ideas",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 8,
+        "domain": "sneakpeektest.com",
+        "url": "https://sneakpeektest.com/blog/easy-gender-reveal-ideas/?srsltid=AfmBOopTOXK8g47QnBYfTFAEVoHrhz3bWZhYQ3EpZRTbwcuKc7S3b8pO",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 9,
+        "domain": "www.pinterest.com",
+        "url": "https://www.pinterest.com/ideas/at-home-gender-reveal/919736877319/",
+        "type": "Social"
+      },
+      {
+        "pos": 10,
+        "domain": "thelabormama.com",
+        "url": "https://thelabormama.com/5-ways-to-keep-your-gender-reveal-sweet-simple/",
+        "type": "Other Site"
+      }
+    ],
+    "gri": {
+      "pos": 6,
+      "domain": "genderrevealideas.com.au",
+      "url": "https://genderrevealideas.com.au/?srsltid=AfmBOoqBSH9psoDzmkTcanWPCIAUaOqqk_MGg32tp_TE8E0pBXGem9Ik",
+      "type": "GRI (non-blog)"
+    }
+  },
+  {
+    "query": "cheap gender reveal ideas",
+    "slots": [
+      {
+        "pos": 2,
+        "domain": "www.reddit.com",
+        "url": "https://www.reddit.com/r/BabyBumps/comments/nw30fq/low_key_gender_reveal_ideas/",
+        "type": "Forum"
+      },
+      {
+        "pos": 3,
+        "domain": "www.eventlive.pro",
+        "url": "https://www.eventlive.pro/blog/gender-reveal-ideas",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 6,
+        "domain": "genderrevealideas.com.au",
+        "url": "https://genderrevealideas.com.au/?srsltid=AfmBOooAq6oxZf0luIK1Ihq0tN4cm6x-MZMayuiiqlUUgcRc1P2PiLS1",
+        "type": "GRI (non-blog)"
+      },
+      {
+        "pos": 7,
+        "domain": "babyfirsttv.com",
+        "url": "https://babyfirsttv.com/pregnancy/gender-reveal-ideas/",
+        "type": "Other Site"
+      },
+      {
+        "pos": 8,
+        "domain": "www.pinterest.com",
+        "url": "https://www.pinterest.com/topsafetysocialmedia/gender-reveal-party-on-a-budget/",
+        "type": "Social"
+      },
+      {
+        "pos": 10,
+        "domain": "www.thebump.com",
+        "url": "https://www.thebump.com/a/creative-baby-gender-reveal-ideas",
+        "type": "Other Site"
+      }
+    ],
+    "gri": {
+      "pos": 6,
+      "domain": "genderrevealideas.com.au",
+      "url": "https://genderrevealideas.com.au/?srsltid=AfmBOooAq6oxZf0luIK1Ihq0tN4cm6x-MZMayuiiqlUUgcRc1P2PiLS1",
+      "type": "GRI (non-blog)"
+    }
+  },
+  {
+    "query": "small gender reveal ideas",
+    "slots": [
+      {
+        "pos": 2,
+        "domain": "www.reddit.com",
+        "url": "https://www.reddit.com/r/BabyBumps/comments/nw30fq/low_key_gender_reveal_ideas/",
+        "type": "Forum"
+      },
+      {
+        "pos": 3,
+        "domain": "www.thebump.com",
+        "url": "https://www.thebump.com/a/creative-baby-gender-reveal-ideas",
+        "type": "Other Site"
+      },
+      {
+        "pos": 4,
+        "domain": "www.pinterest.com",
+        "url": "https://www.pinterest.com/ideas/mini-gender-reveal-ideas/923422111231/",
+        "type": "Social"
+      },
+      {
+        "pos": 9,
+        "domain": "genderrevealideas.com.au",
+        "url": "https://genderrevealideas.com.au/?srsltid=AfmBOorVirQo1eG8bRXrd4O86hrMb-iFbTGPASb8Lk5AcdRpxlsjLyNk",
+        "type": "GRI (non-blog)"
+      },
+      {
+        "pos": 10,
+        "domain": "purebaby.com.au",
+        "url": "https://purebaby.com.au/blogs/journal/gender-reveal-ideas",
+        "type": "Other Blog"
+      }
+    ],
+    "gri": {
+      "pos": 9,
+      "domain": "genderrevealideas.com.au",
+      "url": "https://genderrevealideas.com.au/?srsltid=AfmBOorVirQo1eG8bRXrd4O86hrMb-iFbTGPASb8Lk5AcdRpxlsjLyNk",
+      "type": "GRI (non-blog)"
+    }
+  },
+  {
+    "query": "intimate gender reveal ideas",
+    "slots": [
+      {
+        "pos": 1,
+        "domain": "www.reddit.com",
+        "url": "https://www.reddit.com/r/pregnant/comments/1d6i9ej/gender_reveal_ideasfor_husband_and_i_no_party/",
+        "type": "Forum"
+      },
+      {
+        "pos": 3,
+        "domain": "www.thebump.com",
+        "url": "https://www.thebump.com/a/creative-baby-gender-reveal-ideas",
+        "type": "Other Site"
+      },
+      {
+        "pos": 4,
+        "domain": "www.pinterest.com",
+        "url": "https://www.pinterest.com/ideas/cute-intimate-gender-reveal/959172111299/",
+        "type": "Social"
+      },
+      {
+        "pos": 5,
+        "domain": "purebaby.com.au",
+        "url": "https://purebaby.com.au/blogs/journal/gender-reveal-ideas",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 9,
+        "domain": "genderrevealideas.com.au",
+        "url": "https://genderrevealideas.com.au/blogs/news/intimate-gender-reveal-ideas?srsltid=AfmBOoo4wUJf1yec2oktAi3N2i9-5nFMPh532c-v0BSXANeScuBTQmnH",
+        "type": "GRI Blog"
+      },
+      {
+        "pos": 10,
+        "domain": "sneakpeektest.com",
+        "url": "https://sneakpeektest.com/blog/easy-gender-reveal-ideas/?srsltid=AfmBOop5iAVIj5kOGMVDGsJHKlBcVdIl5s3lYtSXodSPhuBIOSkd4GcY",
+        "type": "Other Blog"
+      }
+    ],
+    "gri": {
+      "pos": 9,
+      "domain": "genderrevealideas.com.au",
+      "url": "https://genderrevealideas.com.au/blogs/news/intimate-gender-reveal-ideas?srsltid=AfmBOoo4wUJf1yec2oktAi3N2i9-5nFMPh532c-v0BSXANeScuBTQmnH",
+      "type": "GRI Blog"
+    }
+  },
+  {
+    "query": "gender reveal ideas at home",
+    "slots": [
+      {
+        "pos": 2,
+        "domain": "www.thebump.com",
+        "url": "https://www.thebump.com/a/creative-baby-gender-reveal-ideas",
+        "type": "Other Site"
+      },
+      {
+        "pos": 4,
+        "domain": "www.reddit.com",
+        "url": "https://www.reddit.com/r/BabyBumps/comments/nw30fq/low_key_gender_reveal_ideas/",
+        "type": "Forum"
+      },
+      {
+        "pos": 5,
+        "domain": "www.pinterest.com",
+        "url": "https://www.pinterest.com/ideas/mini-gender-reveal-ideas/923422111231/",
+        "type": "Social"
+      },
+      {
+        "pos": 7,
+        "domain": "purebaby.com.au",
+        "url": "https://purebaby.com.au/blogs/journal/gender-reveal-ideas",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 9,
+        "domain": "genderrevealideas.com.au",
+        "url": "https://genderrevealideas.com.au/?srsltid=AfmBOoo12rqlcN-kEFTNNnj6p15EaBtF4Klpzwt-O1Q2Vk4zK8DZuUQ6",
+        "type": "GRI (non-blog)"
+      },
+      {
+        "pos": 10,
+        "domain": "sneakpeektest.com",
+        "url": "https://sneakpeektest.com/blog/easy-gender-reveal-ideas/?srsltid=AfmBOopTSytjRXNI5o6PM-OHP6bd8EQqeJgqkXjqZHDPbDPeFhi6END0",
+        "type": "Other Blog"
+      }
+    ],
+    "gri": {
+      "pos": 9,
+      "domain": "genderrevealideas.com.au",
+      "url": "https://genderrevealideas.com.au/?srsltid=AfmBOoo12rqlcN-kEFTNNnj6p15EaBtF4Klpzwt-O1Q2Vk4zK8DZuUQ6",
+      "type": "GRI (non-blog)"
+    }
+  },
+  {
+    "query": "best gender reveal ideas",
+    "slots": [
+      {
+        "pos": 2,
+        "domain": "genderrevealideas.com.au",
+        "url": "https://genderrevealideas.com.au/?srsltid=AfmBOopQDPLao4KwJQnzBnnpnRw9qLSou0J0SaVk8F4mqVQwEexRIaRa",
+        "type": "GRI (non-blog)"
+      },
+      {
+        "pos": 3,
+        "domain": "www.thebump.com",
+        "url": "https://www.thebump.com/a/creative-baby-gender-reveal-ideas",
+        "type": "Other Site"
+      },
+      {
+        "pos": 6,
+        "domain": "genderrevealcelebrations.com",
+        "url": "https://genderrevealcelebrations.com/blogs/gender-reveal-ideas?srsltid=AfmBOooUkl0TPdzF_kKsr7xlAYhBr2Kgs9AP4euooYG2UWcPcNn8h4CQ",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 10,
+        "domain": "www.adobe.com",
+        "url": "https://www.adobe.com/express/discover/ideas/gender-reveal",
+        "type": "Other Blog"
+      }
+    ],
+    "gri": {
+      "pos": 2,
+      "domain": "genderrevealideas.com.au",
+      "url": "https://genderrevealideas.com.au/?srsltid=AfmBOopQDPLao4KwJQnzBnnpnRw9qLSou0J0SaVk8F4mqVQwEexRIaRa",
+      "type": "GRI (non-blog)"
+    }
+  },
+  {
+    "query": "creative gender reveal ideas",
+    "slots": [
+      {
+        "pos": 2,
+        "domain": "www.thebump.com",
+        "url": "https://www.thebump.com/a/creative-baby-gender-reveal-ideas",
+        "type": "Other Site"
+      },
+      {
+        "pos": 3,
+        "domain": "genderrevealideas.com.au",
+        "url": "https://genderrevealideas.com.au/?srsltid=AfmBOorEOf7L30VS-YQNn5-cgUQ1-vlQOUXxClVwhf7AclcQrmJEVlDK",
+        "type": "GRI (non-blog)"
+      },
+      {
+        "pos": 5,
+        "domain": "purebaby.com.au",
+        "url": "https://purebaby.com.au/blogs/journal/gender-reveal-ideas",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 6,
+        "domain": "au.pinterest.com",
+        "url": "https://au.pinterest.com/SquealsForReveals/unique-gender-reveal-ideas/",
+        "type": "Social"
+      },
+      {
+        "pos": 9,
+        "domain": "www.adobe.com",
+        "url": "https://www.adobe.com/express/discover/ideas/gender-reveal",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 10,
+        "domain": "hoorayheroes.com.au",
+        "url": "https://hoorayheroes.com.au/gender-reveal-ideas?srsltid=AfmBOoqNBud2z_dqbC2rMXWXjRio-8jgm_tmWQG1Sob2GAtP6L20TCZc",
+        "type": "Other Site"
+      }
+    ],
+    "gri": {
+      "pos": 3,
+      "domain": "genderrevealideas.com.au",
+      "url": "https://genderrevealideas.com.au/?srsltid=AfmBOorEOf7L30VS-YQNn5-cgUQ1-vlQOUXxClVwhf7AclcQrmJEVlDK",
+      "type": "GRI (non-blog)"
+    }
+  },
+  {
+    "query": "unique gender reveal ideas",
+    "slots": [
+      {
+        "pos": 2,
+        "domain": "genderrevealideas.com.au",
+        "url": "https://genderrevealideas.com.au/?srsltid=AfmBOooylxGgEUS9uEKSQig6krroKh9-8GgTj8uZiiDqQeea-5Cqwhtf",
+        "type": "GRI (non-blog)"
+      },
+      {
+        "pos": 3,
+        "domain": "www.thebump.com",
+        "url": "https://www.thebump.com/a/creative-baby-gender-reveal-ideas",
+        "type": "Other Site"
+      },
+      {
+        "pos": 4,
+        "domain": "purebaby.com.au",
+        "url": "https://purebaby.com.au/blogs/journal/gender-reveal-ideas",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 8,
+        "domain": "au.pinterest.com",
+        "url": "https://au.pinterest.com/SquealsForReveals/unique-gender-reveal-ideas/",
+        "type": "Social"
+      },
+      {
+        "pos": 9,
+        "domain": "www.reddit.com",
+        "url": "https://www.reddit.com/r/BabyBumps/comments/16r83ho/what_the_best_gender_reveal_idea_youve_seen/",
+        "type": "Forum"
+      },
+      {
+        "pos": 10,
+        "domain": "www.happiestbaby.com",
+        "url": "https://www.happiestbaby.com/blogs/pregnancy/gender-reveal-ideas?srsltid=AfmBOor4xWO8K3t2_965AH7IrB8y3YGFcXFZflpVBWhcNoPEgZ9S-gfi",
+        "type": "Other Blog"
+      }
+    ],
+    "gri": {
+      "pos": 2,
+      "domain": "genderrevealideas.com.au",
+      "url": "https://genderrevealideas.com.au/?srsltid=AfmBOooylxGgEUS9uEKSQig6krroKh9-8GgTj8uZiiDqQeea-5Cqwhtf",
+      "type": "GRI (non-blog)"
+    }
+  },
+  {
+    "query": "gender reveal photos",
+    "slots": [
+      {
+        "pos": 1,
+        "domain": "www.pinterest.com",
+        "url": "https://www.pinterest.com/thecreativecopy/gender-reveal-photo-ideas/",
+        "type": "Social"
+      },
+      {
+        "pos": 2,
+        "domain": "stock.adobe.com",
+        "url": "https://stock.adobe.com/search?k=gender+reveal",
+        "type": "Other Site"
+      },
+      {
+        "pos": 3,
+        "domain": "www.instagram.com",
+        "url": "https://www.instagram.com/genderrevealideas/",
+        "type": "Social"
+      },
+      {
+        "pos": 5,
+        "domain": "www.kateleephotography.com.au",
+        "url": "https://www.kateleephotography.com.au/gender-reveal-photography/",
+        "type": "Other Site"
+      },
+      {
+        "pos": 6,
+        "domain": "www.pinterest.com",
+        "url": "https://www.pinterest.com/ideas/gender-reveal-photoshoot-with-cake/946951699270/",
+        "type": "Social"
+      },
+      {
+        "pos": 8,
+        "domain": "www.istockphoto.com",
+        "url": "https://www.istockphoto.com/photos/gender-reveal",
+        "type": "Other Site"
+      },
+      {
+        "pos": 9,
+        "domain": "genderrevealideas.com.au",
+        "url": "https://genderrevealideas.com.au/?srsltid=AfmBOop_jg3-tDQhu4hF3hkMR7lFwh3MsGnrkhOOHEp9YezsT3gJQTzO",
+        "type": "GRI (non-blog)"
+      },
+      {
+        "pos": 10,
+        "domain": "locallens.com",
+        "url": "https://locallens.com/baby-pregnancy-announcement-photoshoot/",
+        "type": "Other Site"
+      }
+    ],
+    "gri": {
+      "pos": 9,
+      "domain": "genderrevealideas.com.au",
+      "url": "https://genderrevealideas.com.au/?srsltid=AfmBOop_jg3-tDQhu4hF3hkMR7lFwh3MsGnrkhOOHEp9YezsT3gJQTzO",
+      "type": "GRI (non-blog)"
+    }
+  },
+  {
+    "query": "smoke bomb gender reveal photos",
+    "slots": [
+      {
+        "pos": 3,
+        "domain": "genderrevealideas.com.au",
+        "url": "https://genderrevealideas.com.au/collections/gender-reveal-smoke-bombs-australia?srsltid=AfmBOoqYEubRlkpVt_BeKbcnbGIDYOrBnq9Q3TD-40G_psEBs6w25pxC",
+        "type": "GRI (non-blog)"
+      },
+      {
+        "pos": 4,
+        "domain": "confettified.com.au",
+        "url": "https://confettified.com.au/collections/smoke-emitters?srsltid=AfmBOooIT0Wp5M-BiScQUuRx6AH5HCf2uC-3V0dtFgGfoeK5Tk8nZeib",
+        "type": "Confettified"
+      },
+      {
+        "pos": 5,
+        "domain": "www.pinterest.com",
+        "url": "https://www.pinterest.com/tcpphotographer/smoke-bomb-maternity-shoot-ideas/",
+        "type": "Social"
+      },
+      {
+        "pos": 6,
+        "domain": "genderrevealcelebrations.com",
+        "url": "https://genderrevealcelebrations.com/blogs/all-about-gender-reveal-smoke-bombs/tips-for-photographing-your-gender-reveal-with-smoke-bombs?srsltid=AfmBOoqhd4mRrpfKXBHA849XYF5cpsMt-6INRdqmyHLpD-gymdU_q78Q",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 7,
+        "domain": "www.etsy.com",
+        "url": "https://www.etsy.com/au/market/smoke_bomb_gender",
+        "type": "Etsy"
+      },
+      {
+        "pos": 10,
+        "domain": "za.pinterest.com",
+        "url": "https://za.pinterest.com/busybstudio/gender-reveal-smoke/",
+        "type": "Social"
+      }
+    ],
+    "gri": {
+      "pos": 3,
+      "domain": "genderrevealideas.com.au",
+      "url": "https://genderrevealideas.com.au/collections/gender-reveal-smoke-bombs-australia?srsltid=AfmBOoqYEubRlkpVt_BeKbcnbGIDYOrBnq9Q3TD-40G_psEBs6w25pxC",
+      "type": "GRI (non-blog)"
+    }
+  },
+  {
+    "query": "gender reveal photoshoot",
+    "slots": [
+      {
+        "pos": 2,
+        "domain": "www.kateleephotography.com.au",
+        "url": "https://www.kateleephotography.com.au/gender-reveal-photography/",
+        "type": "Other Site"
+      },
+      {
+        "pos": 3,
+        "domain": "thenewbornstudio.com.au",
+        "url": "https://thenewbornstudio.com.au/gender-reveal-photoshoot-brisbane/",
+        "type": "Other Site"
+      },
+      {
+        "pos": 4,
+        "domain": "www.pinterest.com",
+        "url": "https://www.pinterest.com/jinxedjill/gender-reveal-photo-shoot/",
+        "type": "Social"
+      },
+      {
+        "pos": 6,
+        "domain": "enhancestudios.com.au",
+        "url": "https://enhancestudios.com.au/announcement-mini/",
+        "type": "Other Site"
+      },
+      {
+        "pos": 7,
+        "domain": "www.genniferrose.com",
+        "url": "https://www.genniferrose.com/blog/gender-reveal-photo-ideas",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 8,
+        "domain": "www.tiktok.com",
+        "url": "https://www.tiktok.com/@cole_abbie/video/7579701115156188419",
+        "type": "Social"
+      },
+      {
+        "pos": 9,
+        "domain": "www.pinterest.com",
+        "url": "https://www.pinterest.com/ideas/unique-gender-reveal-photoshoot/905165972752/",
+        "type": "Social"
+      },
+      {
+        "pos": 10,
+        "domain": "www.kingshillstudios.co.uk",
+        "url": "https://www.kingshillstudios.co.uk/gender-reveal-photography/",
+        "type": "Other Site"
+      }
+    ]
+  },
+  {
+    "query": "gender reveal party ideas",
+    "slots": [
+      {
+        "pos": 3,
+        "domain": "genderrevealideas.com.au",
+        "url": "https://genderrevealideas.com.au/?srsltid=AfmBOooY-eVN3isIpxlRkY9p5lAo_3i1Z2LxWcRfafkSOpeg6pWShup7",
+        "type": "GRI (non-blog)"
+      },
+      {
+        "pos": 6,
+        "domain": "www.pinterest.com",
+        "url": "https://www.pinterest.com/projectnursery/gender-reveal-party-ideas/",
+        "type": "Social"
+      },
+      {
+        "pos": 8,
+        "domain": "genderrevealcelebrations.com",
+        "url": "https://genderrevealcelebrations.com/blogs/gender-reveal-ideas?srsltid=AfmBOorETYZqMWWgBzRWKNoRcTyAhTiYax3xvM1mXe-qsvU-S6WmSVvs",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 9,
+        "domain": "purebaby.com.au",
+        "url": "https://purebaby.com.au/blogs/journal/gender-reveal-ideas",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 10,
+        "domain": "www.babycenter.com.au",
+        "url": "https://www.babycenter.com.au/v25022776/6-gender-reveal-party-ideas-video",
+        "type": "Big Media Blog"
+      }
+    ],
+    "gri": {
+      "pos": 3,
+      "domain": "genderrevealideas.com.au",
+      "url": "https://genderrevealideas.com.au/?srsltid=AfmBOooY-eVN3isIpxlRkY9p5lAo_3i1Z2LxWcRfafkSOpeg6pWShup7",
+      "type": "GRI (non-blog)"
+    }
+  },
+  {
+    "query": "outdoor gender reveal ideas",
+    "slots": [
+      {
+        "pos": 3,
+        "domain": "genderrevealideas.com.au",
+        "url": "https://genderrevealideas.com.au/?srsltid=AfmBOopmNO2tQNFg5KZ2TiMXhhYtIfRhLqfqvJTOreTn_FKYtzpgQAFd",
+        "type": "GRI (non-blog)"
+      },
+      {
+        "pos": 4,
+        "domain": "www.thebump.com",
+        "url": "https://www.thebump.com/a/creative-baby-gender-reveal-ideas",
+        "type": "Other Site"
+      },
+      {
+        "pos": 5,
+        "domain": "www.pinterest.com",
+        "url": "https://www.pinterest.com/ideas/gender-reveal-ideas-at-a-park/893494862671/",
+        "type": "Social"
+      },
+      {
+        "pos": 7,
+        "domain": "genderrevealcelebrations.com",
+        "url": "https://genderrevealcelebrations.com/blogs/gender-reveal-ideas?srsltid=AfmBOopOQZtEDzVErzQeKvvGCg_HVHNaFPnyX_Ra9cih_AG_huqS-niQ",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 10,
+        "domain": "www.pinterest.com",
+        "url": "https://www.pinterest.com/ideas/gender-reveal-outdoor-ideas/924901513051/",
+        "type": "Social"
+      }
+    ],
+    "gri": {
+      "pos": 3,
+      "domain": "genderrevealideas.com.au",
+      "url": "https://genderrevealideas.com.au/?srsltid=AfmBOopmNO2tQNFg5KZ2TiMXhhYtIfRhLqfqvJTOreTn_FKYtzpgQAFd",
+      "type": "GRI (non-blog)"
+    }
+  },
+  {
+    "query": "gender reveal for family",
+    "slots": [
+      {
+        "pos": 2,
+        "domain": "www.reddit.com",
+        "url": "https://www.reddit.com/r/BabyBumps/comments/nw30fq/low_key_gender_reveal_ideas/",
+        "type": "Forum"
+      },
+      {
+        "pos": 3,
+        "domain": "www.thebump.com",
+        "url": "https://www.thebump.com/a/creative-baby-gender-reveal-ideas",
+        "type": "Other Site"
+      },
+      {
+        "pos": 4,
+        "domain": "www.pinterest.com",
+        "url": "https://www.pinterest.com/ideas/gender-reveal-ideas-to-tell-family/908616823206/",
+        "type": "Social"
+      },
+      {
+        "pos": 6,
+        "domain": "genderrevealideas.com.au",
+        "url": "https://genderrevealideas.com.au/?srsltid=AfmBOopUh7N_js1boGKGPD_zQRWHQCE5sYQJbKFuOhAIBKWqjLSuipkH",
+        "type": "GRI (non-blog)"
+      },
+      {
+        "pos": 8,
+        "domain": "www.happiestbaby.com",
+        "url": "https://www.happiestbaby.com/blogs/pregnancy/gender-reveal-ideas?srsltid=AfmBOoq7f9eWSg-f6_TJF_qvUE8eD0wzwbFbNr-PVw_XPeOC8OSGVtkj",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 10,
+        "domain": "www.pampers.com",
+        "url": "https://www.pampers.com/en-us/pregnancy/pregnancy-announcement/article/gender-reveal-ideas",
+        "type": "Other Blog"
+      }
+    ],
+    "gri": {
+      "pos": 6,
+      "domain": "genderrevealideas.com.au",
+      "url": "https://genderrevealideas.com.au/?srsltid=AfmBOopUh7N_js1boGKGPD_zQRWHQCE5sYQJbKFuOhAIBKWqjLSuipkH",
+      "type": "GRI (non-blog)"
+    }
+  },
+  {
+    "query": "gender reveal countdown",
+    "slots": [
+      {
+        "pos": 2,
+        "domain": "www.timeanddate.com",
+        "url": "https://www.timeanddate.com/countdown/generic?iso=20140224t070101&p0=70&fg1=a39de0&fg2=a39de0&msg=baby%27s++gender",
+        "type": "Other Site"
+      },
+      {
+        "pos": 3,
+        "domain": "revealoo.com",
+        "url": "https://revealoo.com/en/",
+        "type": "Other Site"
+      },
+      {
+        "pos": 4,
+        "domain": "www.revealtogether.com",
+        "url": "https://www.revealtogether.com/gender-reveal-countdown",
+        "type": "Other Site"
+      },
+      {
+        "pos": 5,
+        "domain": "www.youtube.com",
+        "url": "https://www.youtube.com/playlist?list=PLB4DbvUl_N5B1EERhXjG8yPMN8V6kN-g8",
+        "type": "YouTube"
+      },
+      {
+        "pos": 6,
+        "domain": "www.tiktok.com",
+        "url": "https://www.tiktok.com/discover/gender-reveal-countdown-screen",
+        "type": "Social"
+      },
+      {
+        "pos": 7,
+        "domain": "www.hwtm.com",
+        "url": "https://www.hwtm.com/countdown-gender-reveal-party/",
+        "type": "Other Site"
+      },
+      {
+        "pos": 8,
+        "domain": "gendergram.com",
+        "url": "https://gendergram.com/",
+        "type": "Other Site"
+      },
+      {
+        "pos": 9,
+        "domain": "www.genderreveal.live",
+        "url": "https://www.genderreveal.live/blog/ultimate-guide-to-virtual-gender-reveal-countdowns",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 10,
+        "domain": "next9months.com",
+        "url": "https://next9months.com/features/online-gender-reveal",
+        "type": "Other Site"
+      }
+    ]
+  },
+  {
+    "query": "what is a gender reveal",
+    "slots": [
+      {
+        "pos": 2,
+        "domain": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/wiki/Gender_reveal_party",
+        "type": "Other Site"
+      },
+      {
+        "pos": 4,
+        "domain": "www.snuz.co.uk",
+        "url": "https://www.snuz.co.uk/blogs/sleep-talk/what-is-a-gender-reveal-party-answering-all-your-questions",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 5,
+        "domain": "www.abc.net.au",
+        "url": "https://www.abc.net.au/news/2024-01-02/gender-reveals-parenting-mothers-fathers-families-baby-showers/103250418",
+        "type": "Other Site"
+      },
+      {
+        "pos": 7,
+        "domain": "genderrevealcelebrations.com",
+        "url": "https://genderrevealcelebrations.com/?srsltid=AfmBOopB7f0Dn4QlERpaXohq3MoPZdwlnhI6lxDfpP6OEPhgHL2FaO6R",
+        "type": "Other Site"
+      },
+      {
+        "pos": 8,
+        "domain": "www.thebump.com",
+        "url": "https://www.thebump.com/a/creative-baby-gender-reveal-ideas",
+        "type": "Other Site"
+      },
+      {
+        "pos": 9,
+        "domain": "www.reddit.com",
+        "url": "https://www.reddit.com/r/NoStupidQuestions/comments/1aq9v4d/i_dont_understand_why_people_have_gender_reveal/",
+        "type": "Forum"
+      },
+      {
+        "pos": 10,
+        "domain": "dictionary.cambridge.org",
+        "url": "https://dictionary.cambridge.org/dictionary/english/gender-reveal",
+        "type": "Other Site"
+      }
+    ]
+  },
+  {
+    "query": "gender reveal vs baby shower",
+    "slots": [
+      {
+        "pos": 3,
+        "domain": "www.reddit.com",
+        "url": "https://www.reddit.com/r/BabyBumps/comments/8hm483/gender_reveal_baby_shower_together_or_separate/",
+        "type": "Forum"
+      },
+      {
+        "pos": 4,
+        "domain": "www.babyriddle.com",
+        "url": "https://www.babyriddle.com/blogs/baby-riddle-blog/baby-shower-vs-gender-reveal-what-s-the-difference-and-do-you-need-both?srsltid=AfmBOord5-cfbgSH5dsDngsTN5Yazc5BlWRbmoO5-DW7wiIE3shkyDwN",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 6,
+        "domain": "www.youtube.com",
+        "url": "https://www.youtube.com/watch?v=0FgP6H0a1h8",
+        "type": "YouTube"
+      },
+      {
+        "pos": 7,
+        "domain": "www.ktranee.com",
+        "url": "https://www.ktranee.com/blog/gender-reveal-vs-baby-shower",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 8,
+        "domain": "earlyreveal.com",
+        "url": "https://earlyreveal.com/blogs/pregnancy/baby-shower-vs-gender-reveal-what-s-the-difference?srsltid=AfmBOooE4UuNU9AG3sX-59ubm3AkQkQHObv7IVJfaBFiPaKSN158Ul5O",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 9,
+        "domain": "timesofindia.indiatimes.com",
+        "url": "https://timesofindia.indiatimes.com/life-style/parenting/pregnancy/baby-shower-vs-gender-reveal-party-which-one-should-you-choose/photostory/100375776.cms",
+        "type": "Other Site"
+      },
+      {
+        "pos": 10,
+        "domain": "www.instagram.com",
+        "url": "https://www.instagram.com/p/DUlj5k0jpCH/",
+        "type": "Social"
+      }
+    ]
+  },
+  {
+    "query": "when to have a gender reveal",
+    "slots": [
+      {
+        "pos": 2,
+        "domain": "www.babylist.com",
+        "url": "https://www.babylist.com/hello-baby/how-to-throw-a-gender-reveal-party",
+        "type": "Other Site"
+      },
+      {
+        "pos": 4,
+        "domain": "www.reddit.com",
+        "url": "https://www.reddit.com/r/BabyBumps/comments/qe8fzy/gender_reveal/",
+        "type": "Forum"
+      },
+      {
+        "pos": 5,
+        "domain": "genderrevealcelebrations.com",
+        "url": "https://genderrevealcelebrations.com/blogs/gender-reveal-ideas/what-week-should-you-do-a-gender-reveal?srsltid=AfmBOoq6pCB9R2C1O1t5N4YYgaT-dAgNYzY2i3-aPfGqgK2O1AlQ4mrv",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 6,
+        "domain": "www.facebook.com",
+        "url": "https://www.facebook.com/groups/670773830304392/posts/1605504613497971/",
+        "type": "Social"
+      },
+      {
+        "pos": 7,
+        "domain": "perthmumsgroup.com.au",
+        "url": "https://perthmumsgroup.com.au/should-i-have-a-gender-reveal-party/",
+        "type": "Other Site"
+      },
+      {
+        "pos": 8,
+        "domain": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/wiki/Gender_reveal_party",
+        "type": "Other Site"
+      },
+      {
+        "pos": 9,
+        "domain": "www.pampers.com",
+        "url": "https://www.pampers.com/en-us/pregnancy/pregnancy-announcement/article/ultimate-guide-for-planning-a-gender-reveal-party",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 10,
+        "domain": "purebaby.com.au",
+        "url": "https://purebaby.com.au/blogs/journal/gender-reveal-ideas",
+        "type": "Other Blog"
+      }
+    ]
+  },
+  {
+    "query": "sports gender reveal ideas",
+    "slots": [
+      {
+        "pos": 2,
+        "domain": "genderrevealideas.com.au",
+        "url": "https://genderrevealideas.com.au/collections/gender-reveal-sports?srsltid=AfmBOoo4gX0pyDMMJ-tsUiErn7vabynltbByJyAJ-x_7piXaCHLxjyQD",
+        "type": "GRI (non-blog)"
+      },
+      {
+        "pos": 3,
+        "domain": "www.pinterest.com",
+        "url": "https://www.pinterest.com/ideas/sports-gender-reveal/960962948368/",
+        "type": "Social"
+      },
+      {
+        "pos": 4,
+        "domain": "genderrevealcelebrations.com",
+        "url": "https://genderrevealcelebrations.com/collections/sports-gender-reveals?srsltid=AfmBOoq4QH7imLCROhZ7gYFNtA3a2tkYdXRozY68mWgQnhJdWWGDdS36",
+        "type": "Other Site"
+      },
+      {
+        "pos": 6,
+        "domain": "www.pinterest.com",
+        "url": "https://www.pinterest.com/ideas/gender-reveal-ideas-sports/938468145711/",
+        "type": "Social"
+      },
+      {
+        "pos": 9,
+        "domain": "www.peerspace.com",
+        "url": "https://www.peerspace.com/resources/football-themed-gender-reveal/",
+        "type": "Other Site"
+      },
+      {
+        "pos": 10,
+        "domain": "www.genderrevealer.com.au",
+        "url": "https://www.genderrevealer.com.au/collections/sports-reveals?srsltid=AfmBOoqgz4FnCKHJF5Co9VM7oDSxcQdF5Gv9XtJ6fP-k_PPrVOQJ9VPH",
+        "type": "Other Site"
+      }
+    ],
+    "gri": {
+      "pos": 2,
+      "domain": "genderrevealideas.com.au",
+      "url": "https://genderrevealideas.com.au/collections/gender-reveal-sports?srsltid=AfmBOoo4gX0pyDMMJ-tsUiErn7vabynltbByJyAJ-x_7piXaCHLxjyQD",
+      "type": "GRI (non-blog)"
+    }
+  },
+  {
+    "query": "football gender reveal",
+    "slots": [
+      {
+        "pos": 2,
+        "domain": "genderrevealideas.com.au",
+        "url": "https://genderrevealideas.com.au/products/gender-reveal-afl-ball?srsltid=AfmBOorcmRroC5x31ICEyX3so4BNCZFmzh2iJb3Hv-chojDxtauyzXSb",
+        "type": "GRI (non-blog)"
+      },
+      {
+        "pos": 4,
+        "domain": "www.amazon.com.au",
+        "url": "https://www.amazon.com.au/gender-reveal-football/s?k=gender+reveal+football",
+        "type": "Amazon"
+      },
+      {
+        "pos": 6,
+        "domain": "preciouspreviews.com.au",
+        "url": "https://preciouspreviews.com.au/product/gender-reveal-afl-ball/",
+        "type": "Other Site"
+      },
+      {
+        "pos": 8,
+        "domain": "www.pinterest.com",
+        "url": "https://www.pinterest.com/casades/football-gender-reveal/",
+        "type": "Social"
+      },
+      {
+        "pos": 10,
+        "domain": "www.babygendersurprise.com.au",
+        "url": "https://www.babygendersurprise.com.au/products/prank-gender-reveal-football-and-rugby-ball?srsltid=AfmBOoot5nmPFBJ002c_vxO95rM3cytzsgDDh-E1bOz4mW_wz1I376lL",
+        "type": "Other Site"
+      }
+    ],
+    "gri": {
+      "pos": 2,
+      "domain": "genderrevealideas.com.au",
+      "url": "https://genderrevealideas.com.au/products/gender-reveal-afl-ball?srsltid=AfmBOorcmRroC5x31ICEyX3so4BNCZFmzh2iJb3Hv-chojDxtauyzXSb",
+      "type": "GRI (non-blog)"
+    }
+  },
+  {
+    "query": "winter gender reveal ideas",
+    "slots": [
+      {
+        "pos": 2,
+        "domain": "www.pinterest.com",
+        "url": "https://www.pinterest.com/party_monkey/baby-its-cold-outside-gender-reveal-ideas/",
+        "type": "Social"
+      },
+      {
+        "pos": 3,
+        "domain": "www.amazon.com",
+        "url": "https://www.amazon.com/winter-gender-reveal-ideas/s?k=winter+gender+reveal+ideas",
+        "type": "Amazon"
+      },
+      {
+        "pos": 4,
+        "domain": "www.pinterest.com",
+        "url": "https://www.pinterest.com/ideas/gender-reveal-ideas-in-winter/956168362588/",
+        "type": "Social"
+      },
+      {
+        "pos": 5,
+        "domain": "webbabyshower.com",
+        "url": "https://webbabyshower.com/guides/10-magical-winter-gender-reveal-ideas-youll-love/",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 7,
+        "domain": "solorayacreates.com",
+        "url": "https://solorayacreates.com/9-creative-winter-gender-reveal-ideas/",
+        "type": "Other Site"
+      },
+      {
+        "pos": 9,
+        "domain": "www.tiktok.com",
+        "url": "https://www.tiktok.com/discover/winter-gender-reveal-ideas",
+        "type": "Social"
+      }
+    ]
+  },
+  {
+    "query": "summer gender reveal ideas",
+    "slots": [
+      {
+        "pos": 2,
+        "domain": "www.pinterest.com",
+        "url": "https://www.pinterest.com/ideas/gender-reveal-party-theme-summer/911830021575/",
+        "type": "Social"
+      },
+      {
+        "pos": 3,
+        "domain": "www.thebump.com",
+        "url": "https://www.thebump.com/a/creative-baby-gender-reveal-ideas",
+        "type": "Other Site"
+      },
+      {
+        "pos": 4,
+        "domain": "www.babysensemonitors.com",
+        "url": "https://www.babysensemonitors.com/a/nursery-resources/parenting/summer-gender-reveal-party-ideas?srsltid=AfmBOoqyYl1--XlRdQZHzeAH5j7gur0TwDS-oEz5_H5i2LQWLY4ousx1",
+        "type": "Other Site"
+      },
+      {
+        "pos": 9,
+        "domain": "www.pinterest.com",
+        "url": "https://www.pinterest.com/ideas/summer-theme-gender-reveal-ideas/931168830005/",
+        "type": "Social"
+      },
+      {
+        "pos": 10,
+        "domain": "genderrevealideas.com.au",
+        "url": "https://genderrevealideas.com.au/?srsltid=AfmBOoof7Ei1o6jOloh0XtQ_pAXmzfGVpYDgmswTSiOQZkjVPLtpb05L",
+        "type": "GRI (non-blog)"
+      }
+    ],
+    "gri": {
+      "pos": 10,
+      "domain": "genderrevealideas.com.au",
+      "url": "https://genderrevealideas.com.au/?srsltid=AfmBOoof7Ei1o6jOloh0XtQ_pAXmzfGVpYDgmswTSiOQZkjVPLtpb05L",
+      "type": "GRI (non-blog)"
+    }
+  },
+  {
+    "query": "christmas gender reveal ideas",
+    "slots": [
+      {
+        "pos": 2,
+        "domain": "www.snuz.co.uk",
+        "url": "https://www.snuz.co.uk/blogs/sleep-talk/8-magical-christmas-gender-reveal-ideas",
+        "type": "Other Blog"
+      },
+      {
+        "pos": 3,
+        "domain": "www.pinterest.com",
+        "url": "https://www.pinterest.com/aliciamhernande/christmas-gender-reveal/",
+        "type": "Social"
+      },
+      {
+        "pos": 4,
+        "domain": "www.reddit.com",
+        "url": "https://www.reddit.com/r/parentsofmultiples/comments/1821w5r/gender_reveal_idea_for_christmas/",
+        "type": "Forum"
+      },
+      {
+        "pos": 8,
+        "domain": "www.facebook.com",
+        "url": "https://www.facebook.com/groups/670773830304392/posts/1640796373302128/",
+        "type": "Social"
+      },
+      {
+        "pos": 9,
+        "domain": "www.amazon.com",
+        "url": "https://www.amazon.com/christmas-gender-reveal/s?k=christmas+gender+reveal",
+        "type": "Amazon"
+      }
+    ]
+  }
+]

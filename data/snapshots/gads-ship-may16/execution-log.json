@@ -1,0 +1,47 @@
+{
+  "ranAt": "2026-05-15T23:42:01.417Z",
+  "step1_url_expansion": [
+    {
+      "id": "21113841118",
+      "name": "GRI PMAX | All Products",
+      "status": "OK",
+      "resource": "customers/9431746480/campaigns/21113841118"
+    },
+    {
+      "id": "22841772135",
+      "name": "GRI PMAX | Bundles",
+      "status": "OK",
+      "resource": "customers/9431746480/campaigns/22841772135"
+    },
+    {
+      "id": "21511998936",
+      "name": "GRI PMAX | Cannon & Powder Reveals",
+      "status": "OK",
+      "resource": "customers/9431746480/campaigns/21511998936"
+    }
+  ],
+  "step2_troas": {
+    "id": "21511998936",
+    "status": "OK",
+    "new_target_roas": 1.7,
+    "resource": "customers/9431746480/campaigns/21511998936"
+  },
+  "snapshot": {
+    "takenAt": "2026-05-15T23:41:47.662Z",
+    "campaigns": [
+      {
+        "id": "21113841118",
+        "name": "GRI PMAX | All Products"
+      },
+      {
+        "id": "22841772135",
+        "name": "GRI PMAX | Bundles"
+      },
+      {
+        "id": "21511998936",
+        "name": "GRI PMAX | Cannon & Powder Reveals",
+        "target_roas": 2
+      }
+    ]
+  }
+}

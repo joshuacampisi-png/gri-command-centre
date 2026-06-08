@@ -1,74 +1,84 @@
 /**
- * Auction Insights — who's beating us in the auction.
- * Queries every Google Ads API resource that might expose competitor data.
+ * Pull Google Ads Auction Insights via `domain` resource
  */
 import 'dotenv/config'
 import { getGadsCustomer } from '../server/lib/gads-client.js'
-
 const customer = getGadsCustomer()
 
-async function tryQuery(query, label) {
-  try {
-    const rows = await customer.query(query)
-    return { ok: true, rows, label }
-  } catch (e) {
-    return { ok: false, error: e?.errors?.[0]?.message || e.message, label }
+console.log('\n=== AUCTION INSIGHTS — last 30d (across all campaigns where data exposed) ===\n')
+
+// Standard auction insights query — `domain` resource exposes competitor domains
+try {
+  const rows = await customer.query(`
+    SELECT
+      campaign.name,
+      campaign.advertising_channel_type,
+      domain.domain,
+      metrics.impression_share,
+      metrics.outranking_share,
+      metrics.top_of_page_rate,
+      metrics.absolute_top_of_page_rate,
+      metrics.overlap_rate,
+      metrics.position_above_rate
+    FROM domain
+    WHERE segments.date DURING LAST_30_DAYS
+  `)
+  console.log(`Got ${rows.length} domain rows`)
+  // Aggregate competitor across campaigns
+  const byDomain = new Map()
+  for (const r of rows) {
+    const d = r.domain?.domain || ''
+    if (!d || /genderrevealideas/i.test(d)) continue
+    if (!byDomain.has(d)) byDomain.set(d, { camps: new Set(), is:[], outrank:[], topPage:[], absTop:[], overlap:[], posAbove:[] })
+    const x = byDomain.get(d)
+    x.camps.add(r.campaign?.name)
+    const push = (arr, v) => { if (v != null) arr.push(Number(v)) }
+    push(x.is, r.metrics?.impression_share)
+    push(x.outrank, r.metrics?.outranking_share)
+    push(x.topPage, r.metrics?.top_of_page_rate)
+    push(x.absTop, r.metrics?.absolute_top_of_page_rate)
+    push(x.overlap, r.metrics?.overlap_rate)
+    push(x.posAbove, r.metrics?.position_above_rate)
   }
+  const avg = a => a.length ? a.reduce((x,y)=>x+y,0)/a.length : null
+  const pct = n => n==null ? '—' : (n*100).toFixed(1)+'%'
+
+  // Sort by overlap rate (how often they show alongside us)
+  const ranked = [...byDomain.entries()]
+    .map(([d, x]) => ({ domain:d, camps:[...x.camps], overlap:avg(x.overlap), is:avg(x.is), topPage:avg(x.topPage), absTop:avg(x.absTop), posAbove:avg(x.posAbove), outrank:avg(x.outrank) }))
+    .sort((a,b) => (b.overlap||0) - (a.overlap||0))
+
+  console.log(`\n=== ALL COMPETITORS (sorted by Overlap Rate = how often they show alongside us) ===\n`)
+  console.log('Domain                                       | Overlap | TheirIS | TopPage | AbsTop | Above Us | Campaigns')
+  console.log('-'.repeat(130))
+  for (const r of ranked.slice(0,25)) {
+    console.log(`${r.domain.slice(0,44).padEnd(44)} | ${pct(r.overlap).padStart(7)} | ${pct(r.is).padStart(7)} | ${pct(r.topPage).padStart(7)} | ${pct(r.absTop).padStart(6)} | ${pct(r.posAbove).padStart(8)} | ${r.camps.length}`)
+  }
+
+  // Show per-campaign
+  console.log(`\n=== BY CAMPAIGN — top competitors per campaign ===\n`)
+  const byCampaign = new Map()
+  for (const r of rows) {
+    const c = r.campaign?.name || '?'
+    const d = r.domain?.domain || ''
+    if (!d || /genderrevealideas/i.test(d)) continue
+    if (!byCampaign.has(c)) byCampaign.set(c, new Map())
+    const m = byCampaign.get(c)
+    if (!m.has(d)) m.set(d, { overlap:[], is:[], posAbove:[] })
+    const x = m.get(d)
+    if (r.metrics?.overlap_rate != null) x.overlap.push(Number(r.metrics.overlap_rate))
+    if (r.metrics?.impression_share != null) x.is.push(Number(r.metrics.impression_share))
+    if (r.metrics?.position_above_rate != null) x.posAbove.push(Number(r.metrics.position_above_rate))
+  }
+  for (const [camp, comps] of byCampaign.entries()) {
+    console.log(`\n[${camp}]`)
+    const sorted = [...comps.entries()]
+      .map(([d,x])=>({ d, overlap:avg(x.overlap), is:avg(x.is), posAbove:avg(x.posAbove) }))
+      .sort((a,b)=>(b.overlap||0)-(a.overlap||0))
+      .slice(0,8)
+    sorted.forEach(c => console.log(`  ${c.d.padEnd(44)} | overlap ${pct(c.overlap).padStart(6)} | theirIS ${pct(c.is).padStart(6)} | aboveUs ${pct(c.posAbove).padStart(6)}`))
+  }
+} catch(e) {
+  console.log('Error:', JSON.stringify(e.errors?.[0] || e.message))
 }
-
-const fmt = (d) => d.toISOString().slice(0, 10)
-const daysAgo = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return fmt(d) }
-const start = daysAgo(30)
-const end = daysAgo(1)
-
-console.log('\n========== AUCTION INSIGHTS PROBE ==========\n')
-
-// Try various known resource names that may expose auction insights
-const probes = [
-  {
-    name: 'Per-campaign IS metrics (already known)',
-    q: `SELECT campaign.name, metrics.search_impression_share, metrics.search_top_impression_share, metrics.search_rank_lost_impression_share, metrics.search_budget_lost_impression_share, metrics.search_exact_match_impression_share FROM campaign WHERE campaign.status = 'ENABLED' AND segments.date BETWEEN '${start}' AND '${end}'`,
-  },
-  {
-    name: 'Customer-level IS for all queries',
-    q: `SELECT customer.descriptive_name, metrics.search_impression_share, metrics.search_top_impression_share, metrics.search_rank_lost_impression_share, metrics.search_budget_lost_impression_share FROM customer WHERE segments.date BETWEEN '${start}' AND '${end}'`,
-  },
-  {
-    name: 'Ad group level IS',
-    q: `SELECT ad_group.name, campaign.name, metrics.search_impression_share, metrics.search_top_impression_share, metrics.search_rank_lost_impression_share FROM ad_group WHERE ad_group.status = 'ENABLED' AND segments.date BETWEEN '${start}' AND '${end}'`,
-  },
-  {
-    name: 'Domain-level data (paid_organic_search_term_view)',
-    q: `SELECT paid_organic_search_term_view.search_term, metrics.organic_clicks, metrics.organic_impressions, metrics.organic_average_position, metrics.combined_clicks, metrics.combined_impressions FROM paid_organic_search_term_view WHERE segments.date BETWEEN '${start}' AND '${end}' LIMIT 30`,
-  },
-  {
-    name: 'Search term performance with relative metrics',
-    q: `SELECT search_term_view.search_term, campaign.name, metrics.absolute_top_impression_percentage, metrics.top_impression_percentage, metrics.search_rank_lost_top_impression_share FROM search_term_view WHERE metrics.impressions > 20 AND segments.date BETWEEN '${start}' AND '${end}' ORDER BY metrics.impressions DESC LIMIT 25`,
-  },
-]
-
-for (const p of probes) {
-  const r = await tryQuery(p.q, p.name)
-  console.log(`--- ${p.name} ---`)
-  if (!r.ok) {
-    console.log(`  ❌ ${r.error}\n`)
-    continue
-  }
-  console.log(`  ✓ ${r.rows.length} rows\n`)
-  for (const row of r.rows.slice(0, 10)) {
-    const flat = JSON.stringify(row).replace(/[{}"]/g, '').replace(/,/g, ' · ').slice(0, 200)
-    console.log(`    ${flat}`)
-  }
-  console.log('')
-}
-
-// The real Auction Insights report is at:
-//   https://ads.google.com/aw/reporting/insights/?...&campaignId=XXX
-// It's UI-only via official API. Some clients expose it via screenshot/scrape.
-console.log('\n========== NOTE ==========')
-console.log('Google Ads "Auction Insights" report (with competitor display URLs) is')
-console.log('UI-only. The API does not expose competitor domains directly.')
-console.log('Closest API metric: search_rank_lost_impression_share = % of auctions where')
-console.log('we COULD have shown but didn\'t due to Ad Rank lower than competitors.\n')
-
 process.exit(0)

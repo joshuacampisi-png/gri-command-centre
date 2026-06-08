@@ -7796,5 +7796,2043 @@
     },
     "triggeredBy": "agent",
     "createdAt": "2026-05-15T00:15:08.531Z"
+  },
+  {
+    "id": "c81a6070-9bd3-4e24-823a-a0bddacb22dd",
+    "eventType": "scan_started",
+    "recommendationId": null,
+    "details": {
+      "timestamp": "2026-05-15T04:15:00.079Z"
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-15T04:15:00.092Z"
+  },
+  {
+    "id": "2f5d4987-9fe6-4893-bd02-0f3fa3c10274",
+    "eventType": "findings_suppressed",
+    "recommendationId": null,
+    "details": {
+      "count": 8,
+      "byReason": {
+        "suppressed: bid finding on auto-bid strategy \"MAXIMIZE_CONVERSION_VALUE\" — manual bid changes are ignored by Google": 8
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-15T04:15:07.912Z"
+  },
+  {
+    "id": "3f4f63d4-35fe-4b91-ad42-43c783ae9d03",
+    "eventType": "preflight_needs_review",
+    "recommendationId": null,
+    "details": {
+      "count": 14,
+      "byVerdict": {
+        "block": 2,
+        "needs-review": 12
+      },
+      "titles": [
+        "Reallocation opportunity — \"GRI | Search | Cannons\" at 1.02x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Keyword \"gender reveal powder cannon\" bleeding — $44.08 AUD with zero conversions",
+        "Shopping product \"DIY -Gender Reveal Smoke Box Trend Pink Blue Holi Powder Australia Pink\" bleeding — $53.32 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal | Double MEGA Powder Blaster/ Extinguisher Australia | G 1 x Pink 1 x Blue\" bleeding — $44.86 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal Smoke Bombs Prank / White Smoke\" bleeding — $49.85 AUD, 0 conversions",
+        "Shopping product \"DIY Hire Gender Reveal Balloon Garland Australia | Gender Reveal Decor\" bleeding — $58.66 AUD, 0 conversions",
+        "Shopping product \"4 Pack Gender Reveal Confetti Cannon XL BIO Bundle Pink Blue Australia 2 Pink + 2 Blue\" bleeding — $40.79 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Confetti XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $54.56 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal Race Day Sports Bundle Pink Blue Australia Blue - Boy\" bleeding — $39.58 AUD, 0 conversions",
+        "Shopping product \"Toy Story Birthday Party Set (15 Person) | Party Supplies Australia\" bleeding — $43.05 AUD, 0 conversions"
+      ]
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-15T04:15:07.918Z"
+  },
+  {
+    "id": "2b7822a9-d103-4ff6-a70a-a2e161fb39e2",
+    "eventType": "scan_completed",
+    "recommendationId": null,
+    "details": {
+      "findings": 1,
+      "newRecommendations": 0,
+      "counts": {
+        "campaigns": 4,
+        "keywords": 92,
+        "searchTerms": 20,
+        "ads": 26,
+        "zeroImpressionKeywords": 1,
+        "shoppingProducts": 291,
+        "findings": 1,
+        "needsReview": 14
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-15T04:15:07.933Z"
+  },
+  {
+    "id": "2e4e8342-ea17-416a-9b56-3b84e4dd816d",
+    "eventType": "scan_started",
+    "recommendationId": null,
+    "details": {
+      "timestamp": "2026-05-15T11:15:00.085Z"
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-15T11:15:00.093Z"
+  },
+  {
+    "id": "c9159748-cd6e-49a9-bb8a-364ffd07a4b6",
+    "eventType": "findings_suppressed",
+    "recommendationId": null,
+    "details": {
+      "count": 8,
+      "byReason": {
+        "suppressed: bid finding on auto-bid strategy \"MAXIMIZE_CONVERSION_VALUE\" — manual bid changes are ignored by Google": 8
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-15T11:15:10.047Z"
+  },
+  {
+    "id": "51214784-2bb4-49fa-9f94-dc60f83b3b59",
+    "eventType": "preflight_needs_review",
+    "recommendationId": null,
+    "details": {
+      "count": 14,
+      "byVerdict": {
+        "block": 2,
+        "needs-review": 12
+      },
+      "titles": [
+        "Reallocation opportunity — \"GRI | Search | Cannons\" at 1.02x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Keyword \"gender reveal powder cannon\" bleeding — $44.08 AUD with zero conversions",
+        "Shopping product \"DIY -Gender Reveal Smoke Box Trend Pink Blue Holi Powder Australia Pink\" bleeding — $53.32 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal | Double MEGA Powder Blaster/ Extinguisher Australia | G 1 x Pink 1 x Blue\" bleeding — $44.86 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal Smoke Bombs Prank / White Smoke\" bleeding — $49.85 AUD, 0 conversions",
+        "Shopping product \"DIY Hire Gender Reveal Balloon Garland Australia | Gender Reveal Decor\" bleeding — $58.66 AUD, 0 conversions",
+        "Shopping product \"4 Pack Gender Reveal Confetti Cannon XL BIO Bundle Pink Blue Australia 2 Pink + 2 Blue\" bleeding — $40.79 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Confetti XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $54.56 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal Race Day Sports Bundle Pink Blue Australia Blue - Boy\" bleeding — $39.58 AUD, 0 conversions",
+        "Shopping product \"Toy Story Birthday Party Set (15 Person) | Party Supplies Australia\" bleeding — $43.05 AUD, 0 conversions"
+      ]
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-15T11:15:10.053Z"
+  },
+  {
+    "id": "b2a87a45-362d-4de7-a725-2d9a08c1006d",
+    "eventType": "scan_completed",
+    "recommendationId": null,
+    "details": {
+      "findings": 1,
+      "newRecommendations": 0,
+      "counts": {
+        "campaigns": 4,
+        "keywords": 94,
+        "searchTerms": 20,
+        "ads": 26,
+        "zeroImpressionKeywords": 1,
+        "shoppingProducts": 291,
+        "findings": 1,
+        "needsReview": 14
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-15T11:15:10.063Z"
+  },
+  {
+    "id": "bc2fc2ca-1657-4846-a304-7276b2c42226",
+    "eventType": "scan_started",
+    "recommendationId": null,
+    "details": {
+      "timestamp": "2026-05-16T05:15:00.052Z"
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-16T05:15:00.116Z"
+  },
+  {
+    "id": "810e7c9a-01e8-4c77-9fd8-32df7ecbfe57",
+    "eventType": "findings_suppressed",
+    "recommendationId": null,
+    "details": {
+      "count": 7,
+      "byReason": {
+        "suppressed: bid finding on auto-bid strategy \"MAXIMIZE_CONVERSION_VALUE\" — manual bid changes are ignored by Google": 7
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-16T05:15:10.230Z"
+  },
+  {
+    "id": "d55e90da-2752-44d9-a6eb-27f90174068e",
+    "eventType": "preflight_needs_review",
+    "recommendationId": null,
+    "details": {
+      "count": 17,
+      "byVerdict": {
+        "block": 2,
+        "needs-review": 15
+      },
+      "titles": [
+        "Reallocation opportunity — \"GRI | Search | Cannons\" at 1.03x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | All Products\" at 2.01x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | Bundles\" at 2.07x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Keyword \"gender reveal powder cannon\" bleeding — $44.08 AUD with zero conversions",
+        "Shopping product \"DIY -Gender Reveal Smoke Box Trend Pink Blue Holi Powder Australia Pink\" bleeding — $51.97 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal | Double MEGA Powder Blaster/ Extinguisher Australia | G 1 x Pink 1 x Blue\" bleeding — $44.86 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal Smoke Bombs Prank / White Smoke\" bleeding — $48.97 AUD, 0 conversions",
+        "Shopping product \"DIY Hire Gender Reveal Balloon Garland Australia | Gender Reveal Decor\" bleeding — $56.54 AUD, 0 conversions",
+        "Shopping product \"4 Pack Gender Reveal Confetti Cannon XL BIO Bundle Pink Blue Australia 2 Pink + 2 Blue\" bleeding — $40.79 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Confetti XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $53.33 AUD, 0 conversions"
+      ]
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-16T05:15:10.236Z"
+  },
+  {
+    "id": "0ad7fc32-5821-4a77-8b64-6f1600bfc85c",
+    "eventType": "scan_completed",
+    "recommendationId": null,
+    "details": {
+      "findings": 1,
+      "newRecommendations": 0,
+      "counts": {
+        "campaigns": 4,
+        "keywords": 94,
+        "searchTerms": 20,
+        "ads": 26,
+        "zeroImpressionKeywords": 1,
+        "shoppingProducts": 291,
+        "findings": 1,
+        "needsReview": 17
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-16T05:15:10.247Z"
+  },
+  {
+    "id": "ef598052-f9a5-4feb-9f15-4452f38e52c8",
+    "eventType": "scan_started",
+    "recommendationId": null,
+    "details": {
+      "timestamp": "2026-05-16T11:15:00.139Z"
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-16T11:15:00.202Z"
+  },
+  {
+    "id": "a8748236-e046-4093-b7d4-037b87e74688",
+    "eventType": "findings_suppressed",
+    "recommendationId": null,
+    "details": {
+      "count": 7,
+      "byReason": {
+        "suppressed: bid finding on auto-bid strategy \"MAXIMIZE_CONVERSION_VALUE\" — manual bid changes are ignored by Google": 7
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-16T11:15:11.825Z"
+  },
+  {
+    "id": "0a6f1927-64c5-41dc-898b-98588565689c",
+    "eventType": "preflight_needs_review",
+    "recommendationId": null,
+    "details": {
+      "count": 17,
+      "byVerdict": {
+        "block": 2,
+        "needs-review": 15
+      },
+      "titles": [
+        "Reallocation opportunity — \"GRI | Search | Cannons\" at 1.11x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | All Products\" at 2.01x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | Bundles\" at 2.07x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Keyword \"gender reveal powder cannon\" bleeding — $44.08 AUD with zero conversions",
+        "Shopping product \"DIY -Gender Reveal Smoke Box Trend Pink Blue Holi Powder Australia Pink\" bleeding — $51.97 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal | Double MEGA Powder Blaster/ Extinguisher Australia | G 1 x Pink 1 x Blue\" bleeding — $44.86 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal Smoke Bombs Prank / White Smoke\" bleeding — $48.97 AUD, 0 conversions",
+        "Shopping product \"DIY Hire Gender Reveal Balloon Garland Australia | Gender Reveal Decor\" bleeding — $56.54 AUD, 0 conversions",
+        "Shopping product \"4 Pack Gender Reveal Confetti Cannon XL BIO Bundle Pink Blue Australia 2 Pink + 2 Blue\" bleeding — $40.79 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Confetti XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $53.33 AUD, 0 conversions"
+      ]
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-16T11:15:11.840Z"
+  },
+  {
+    "id": "2a48c512-1682-4e83-b770-cbcdf091058c",
+    "eventType": "scan_completed",
+    "recommendationId": null,
+    "details": {
+      "findings": 1,
+      "newRecommendations": 0,
+      "counts": {
+        "campaigns": 4,
+        "keywords": 94,
+        "searchTerms": 20,
+        "ads": 26,
+        "zeroImpressionKeywords": 1,
+        "shoppingProducts": 291,
+        "findings": 1,
+        "needsReview": 17
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-16T11:15:11.862Z"
+  },
+  {
+    "id": "7732e48f-a88b-431f-b886-7af0bd35204b",
+    "eventType": "scan_started",
+    "recommendationId": null,
+    "details": {
+      "timestamp": "2026-05-17T09:15:00.024Z"
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-17T09:15:00.031Z"
+  },
+  {
+    "id": "97a0ab83-6a43-4a06-8657-61ce01a7f0a1",
+    "eventType": "findings_suppressed",
+    "recommendationId": null,
+    "details": {
+      "count": 7,
+      "byReason": {
+        "suppressed: bid finding on auto-bid strategy \"MAXIMIZE_CONVERSION_VALUE\" — manual bid changes are ignored by Google": 7
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-17T09:15:11.046Z"
+  },
+  {
+    "id": "bac89dc9-010f-4be6-be33-811309d66c0b",
+    "eventType": "preflight_needs_review",
+    "recommendationId": null,
+    "details": {
+      "count": 20,
+      "byVerdict": {
+        "block": 2,
+        "needs-review": 18
+      },
+      "titles": [
+        "Reallocation opportunity — \"GRI | Search | Cannons\" at 1.06x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | All Products\" at 1.87x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | Bundles\" at 2.00x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Keyword \"gender reveal powder cannon\" bleeding — $44.08 AUD with zero conversions",
+        "Shopping product \"DIY -Gender Reveal Smoke Box Trend Pink Blue Holi Powder Australia Pink\" bleeding — $48.80 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal | Double MEGA Powder Blaster/ Extinguisher Australia | G 1 x Pink 1 x Blue\" bleeding — $48.67 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal Smoke Bombs Prank / White Smoke\" bleeding — $52.30 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Powder XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $67.32 AUD, 0 conversions",
+        "Shopping product \"DIY Hire Gender Reveal Balloon Garland Australia | Gender Reveal Decor\" bleeding — $54.65 AUD, 0 conversions",
+        "Shopping product \"4 Pack Gender Reveal Confetti Cannon XL BIO Bundle Pink Blue Australia 2 Pink + 2 Blue\" bleeding — $40.79 AUD, 0 conversions"
+      ]
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-17T09:15:11.051Z"
+  },
+  {
+    "id": "97a32f58-58b2-48b9-a982-6f895c96f684",
+    "eventType": "recommendation_created",
+    "recommendationId": "85dd3b4b-3190-451e-ac32-4ff083cd9213",
+    "details": {
+      "title": "Zero impressions — \"gender reveal ideas\" has been dead for the full window",
+      "category": "keyword",
+      "projectedImpact": 0
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-17T09:16:42.526Z"
+  },
+  {
+    "id": "782dd8e6-516d-49b1-9672-787fff8e9931",
+    "eventType": "recommendation_created",
+    "recommendationId": "f62616e1-8116-48dc-8a66-b563c9a4344b",
+    "details": {
+      "title": "Zero impressions — \"gender reveal ideas\" has been dead for the full window",
+      "category": "keyword",
+      "projectedImpact": 0
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-17T09:16:42.540Z"
+  },
+  {
+    "id": "61c298d7-fc0c-48cf-8c0e-7f7896153f88",
+    "eventType": "recommendation_created",
+    "recommendationId": "3ac6516f-0b13-4afc-8673-8edbd9d78663",
+    "details": {
+      "title": "Zero impressions — \"gender reveal ideas reviews\" has been dead for the full window",
+      "category": "keyword",
+      "projectedImpact": 0
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-17T09:16:42.554Z"
+  },
+  {
+    "id": "fc07f5b5-fa0b-4934-8fdc-c7991f29c748",
+    "eventType": "recommendation_created",
+    "recommendationId": "dd1eeb2c-d165-4288-967c-e322bd882226",
+    "details": {
+      "title": "Zero impressions — \"genderrevealideas\" has been dead for the full window",
+      "category": "keyword",
+      "projectedImpact": 0
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-17T09:16:42.567Z"
+  },
+  {
+    "id": "c4d3ac99-eba3-4316-86c1-da3e7655112d",
+    "eventType": "recommendation_created",
+    "recommendationId": "9f11507e-5e3f-4756-a7f1-4456b2bc6911",
+    "details": {
+      "title": "Zero impressions — \"GRI gender reveal\" has been dead for the full window",
+      "category": "keyword",
+      "projectedImpact": 0
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-17T09:16:42.580Z"
+  },
+  {
+    "id": "59e42cea-bbbc-487e-915d-e14c2fe79f64",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "147c30a1-d71a-4899-add3-7cf1f2637d8a",
+    "details": {
+      "title": "Reallocation opportunity — \"GRI | Search | Cannons\" at 1.06x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+      "category": "spend",
+      "verdict": "block",
+      "failures": 2
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-17T09:16:42.593Z"
+  },
+  {
+    "id": "b2857d6f-a726-4a38-8a93-85c160b3c18c",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "8a33762d-894b-4c50-ba37-edb13a1ec1bd",
+    "details": {
+      "title": "Reallocation opportunity — \"GRI PMAX | All Products\" at 1.87x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+      "category": "spend",
+      "verdict": "needs-review",
+      "failures": 1
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-17T09:16:42.606Z"
+  },
+  {
+    "id": "b260720b-a822-4b46-b3c8-d66f2bcb838a",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "80243623-a71b-4dcb-b850-5c4c08e53163",
+    "details": {
+      "title": "Reallocation opportunity — \"GRI PMAX | Bundles\" at 2.00x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+      "category": "spend",
+      "verdict": "needs-review",
+      "failures": 1
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-17T09:16:42.619Z"
+  },
+  {
+    "id": "92cecc8f-c8c9-42bf-8990-3541bc5ac6e4",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "fb32c574-17f0-42ac-92f8-17b5ebb25353",
+    "details": {
+      "title": "Keyword \"gender reveal powder cannon\" bleeding — $44.08 AUD with zero conversions",
+      "category": "keyword",
+      "verdict": "block",
+      "failures": 2
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-17T09:16:42.632Z"
+  },
+  {
+    "id": "fde4d115-09c9-45e4-97d3-40ce3c8605bc",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "ec3f68a4-5964-4347-afbd-351c37ec0f7d",
+    "details": {
+      "title": "Shopping product \"DIY -Gender Reveal Smoke Box Trend Pink Blue Holi Powder Australia Pink\" bleeding — $48.80 AUD, 0 conversions",
+      "category": "merchant",
+      "verdict": "needs-review",
+      "failures": 1
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-17T09:16:42.645Z"
+  },
+  {
+    "id": "2637faf5-22ba-4a16-8bb9-4fac2e8508ad",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "9cde9a75-d7ad-4be3-9a9e-312ca5b73a6e",
+    "details": {
+      "title": "Shopping product \"Gender Reveal | Double MEGA Powder Blaster/ Extinguisher Australia | G 1 x Pink 1 x Blue\" bleeding — $48.67 AUD, 0 conversions",
+      "category": "merchant",
+      "verdict": "needs-review",
+      "failures": 1
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-17T09:16:42.658Z"
+  },
+  {
+    "id": "8472b715-9cc0-4f50-bef7-5ee3a32083f8",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "b522f908-4de1-43d5-ade6-80010d0b3183",
+    "details": {
+      "title": "Shopping product \"Gender Reveal Smoke Bombs Prank / White Smoke\" bleeding — $52.30 AUD, 0 conversions",
+      "category": "merchant",
+      "verdict": "needs-review",
+      "failures": 1
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-17T09:16:42.671Z"
+  },
+  {
+    "id": "7501c7b3-467d-4df8-a8a6-e4e7a7bfb683",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "3f76b174-f8ce-4036-b3b8-804856ba0651",
+    "details": {
+      "title": "Shopping product \"2 Pack Gender Reveal Powder XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $67.32 AUD, 0 conversions",
+      "category": "merchant",
+      "verdict": "needs-review",
+      "failures": 1
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-17T09:16:42.684Z"
+  },
+  {
+    "id": "0c565bdb-642f-4f62-89f8-28a60f25782f",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "9939ca2b-3d71-4218-88a8-01d40c0d7969",
+    "details": {
+      "title": "Shopping product \"DIY Hire Gender Reveal Balloon Garland Australia | Gender Reveal Decor\" bleeding — $54.65 AUD, 0 conversions",
+      "category": "merchant",
+      "verdict": "needs-review",
+      "failures": 1
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-17T09:16:42.698Z"
+  },
+  {
+    "id": "bd2e3c99-eba4-4cbb-bb93-97471edf84d5",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "a951fb6b-cbd9-409a-809c-a5757ebf90e0",
+    "details": {
+      "title": "Shopping product \"4 Pack Gender Reveal Confetti Cannon XL BIO Bundle Pink Blue Australia 2 Pink + 2 Blue\" bleeding — $40.79 AUD, 0 conversions",
+      "category": "merchant",
+      "verdict": "needs-review",
+      "failures": 1
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-17T09:16:42.711Z"
+  },
+  {
+    "id": "3d2a40b6-2db6-4375-bdcd-40e063a05447",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "a8d7a873-1dc5-4558-ab55-8581703b62d8",
+    "details": {
+      "title": "Shopping product \"2 Pack Gender Reveal Confetti XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $53.33 AUD, 0 conversions",
+      "category": "merchant",
+      "verdict": "needs-review",
+      "failures": 1
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-17T09:16:42.725Z"
+  },
+  {
+    "id": "498329d9-af8f-43c8-a0a3-98b11b045a7d",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "4e39fecc-c193-4347-a31f-a3d39f334dd6",
+    "details": {
+      "title": "Shopping product \"4x Bundle Pack Gender Reveal Smoke Bombs Red\" bleeding — $36.97 AUD, 0 conversions",
+      "category": "merchant",
+      "verdict": "needs-review",
+      "failures": 1
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-17T09:16:42.738Z"
+  },
+  {
+    "id": "8d30de58-5e35-4b2b-822c-9e6500880a7d",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "4b1cd868-6fcb-47e5-a849-15d285be792d",
+    "details": {
+      "title": "Shopping product \"Gender Reveal Race Day Sports Bundle Pink Blue Australia Blue - Boy\" bleeding — $38.37 AUD, 0 conversions",
+      "category": "merchant",
+      "verdict": "needs-review",
+      "failures": 1
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-17T09:16:42.752Z"
+  },
+  {
+    "id": "b3f82b32-e700-40e2-aef0-0b0ae9ffee47",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "9c66aab4-4a8f-4005-805b-d5e4907c475e",
+    "details": {
+      "title": "Shopping product \"Toy Story Birthday Party Set (15 Person) | Party Supplies Australia\" bleeding — $39.40 AUD, 0 conversions",
+      "category": "merchant",
+      "verdict": "needs-review",
+      "failures": 1
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-17T09:16:42.765Z"
+  },
+  {
+    "id": "7e795d7e-ae56-4db5-aa39-48d21977fa1b",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "0b6147ac-a5e0-4890-b502-5b7963ce1b35",
+    "details": {
+      "title": "Shopping product \"148 Piece Gender Reveal/ Baby Shower Luxury Balloon Kit Australia | Ge\" bleeding — $56.32 AUD, 0 conversions",
+      "category": "merchant",
+      "verdict": "needs-review",
+      "failures": 1
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-17T09:16:42.778Z"
+  },
+  {
+    "id": "72595b45-6b28-401f-83f4-d96be646ec28",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "996bf68a-9595-43c6-9899-370eea5fdf10",
+    "details": {
+      "title": "Shopping product \"Sports Gender Reveal Soccer Ball Powder Australia | Gender Reveal Blue Powder\" bleeding — $45.41 AUD, 0 conversions",
+      "category": "merchant",
+      "verdict": "needs-review",
+      "failures": 1
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-17T09:16:42.793Z"
+  },
+  {
+    "id": "2883e004-fd2e-4e06-b1e1-79df77e69f8f",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "735a3e6a-357f-4789-9247-b631854e3bd2",
+    "details": {
+      "title": "Shopping product \"Gender Reveal AFL Sports Bundle Pink Blue Australia To Be Announced\" bleeding — $36.76 AUD, 0 conversions",
+      "category": "merchant",
+      "verdict": "needs-review",
+      "failures": 1
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-17T09:16:42.807Z"
+  },
+  {
+    "id": "b797d1ba-cbc4-4b56-8f19-369d8889a14e",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "d390ffc6-311a-40c7-ab61-1a1c7da6a89a",
+    "details": {
+      "title": "Shopping product \"Sports Gender Reveal AFL Ball Both Colours Powder\" bleeding — $55.84 AUD, 0 conversions",
+      "category": "merchant",
+      "verdict": "needs-review",
+      "failures": 1
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-17T09:16:42.821Z"
+  },
+  {
+    "id": "8c6197a5-4cc2-4455-8af4-ae593a320c88",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "4bb2e09d-7aab-4fdf-a552-76c6fe214679",
+    "details": {
+      "title": "FOV/CAC 0.00× below 1.0 for 3 consecutive days — framework PAUSE gate: first-order gross profit no longer covers acquisition cost",
+      "category": "framework",
+      "verdict": "needs-review",
+      "failures": 4
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-17T09:16:42.834Z"
+  },
+  {
+    "id": "e9f6efd5-2fa1-453a-a3f4-4274408cb4d3",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "f076b015-0949-47db-9060-caa2383814e0",
+    "details": {
+      "title": "CM$ is negative — 30d contribution margin = $-17206.98 (new-customer revenue minus Cost of Delivery minus blended ad spend)",
+      "category": "framework",
+      "verdict": "needs-review",
+      "failures": 4
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-17T09:16:42.848Z"
+  },
+  {
+    "id": "1c5a0279-2d9c-4612-b439-ed71cb0c2393",
+    "eventType": "scan_completed",
+    "recommendationId": null,
+    "details": {
+      "findings": 6,
+      "newRecommendations": 5,
+      "needsReview": 20,
+      "counts": {
+        "campaigns": 5,
+        "keywords": 99,
+        "searchTerms": 20,
+        "ads": 28,
+        "zeroImpressionKeywords": 6,
+        "shoppingProducts": 292,
+        "findings": 6,
+        "needsReview": 20
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-17T09:16:42.853Z"
+  },
+  {
+    "id": "7ce0b3ba-6621-4b89-a71e-c191b9556f57",
+    "eventType": "scan_started",
+    "recommendationId": null,
+    "details": {
+      "timestamp": "2026-05-18T00:15:00.049Z"
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-18T00:15:00.059Z"
+  },
+  {
+    "id": "7b6a7f00-d1ce-48cc-83df-5e7c545da7f6",
+    "eventType": "findings_suppressed",
+    "recommendationId": null,
+    "details": {
+      "count": 7,
+      "byReason": {
+        "suppressed: bid finding on auto-bid strategy \"MAXIMIZE_CONVERSION_VALUE\" — manual bid changes are ignored by Google": 7
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-18T00:15:07.720Z"
+  },
+  {
+    "id": "8a02bafb-c0db-4ed1-a392-f34cc630a3a0",
+    "eventType": "preflight_needs_review",
+    "recommendationId": null,
+    "details": {
+      "count": 19,
+      "byVerdict": {
+        "block": 2,
+        "needs-review": 17
+      },
+      "titles": [
+        "Reallocation opportunity — \"GRI | Search | Cannons\" at 1.04x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | All Products\" at 1.89x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | Bundles\" at 1.77x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Keyword \"gender reveal powder cannon\" bleeding — $44.08 AUD with zero conversions",
+        "Shopping product \"DIY -Gender Reveal Smoke Box Trend Pink Blue Holi Powder Australia Pink\" bleeding — $49.55 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal | Double MEGA Powder Blaster/ Extinguisher Australia | G 1 x Pink 1 x Blue\" bleeding — $53.83 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal Smoke Bombs Prank / White Smoke\" bleeding — $54.20 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Powder XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $64.25 AUD, 0 conversions",
+        "Shopping product \"DIY Hire Gender Reveal Balloon Garland Australia | Gender Reveal Decor\" bleeding — $56.64 AUD, 0 conversions",
+        "Shopping product \"4 Pack Gender Reveal Confetti Cannon XL BIO Bundle Pink Blue Australia 2 Pink + 2 Blue\" bleeding — $36.03 AUD, 0 conversions"
+      ]
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-18T00:15:07.727Z"
+  },
+  {
+    "id": "a055b3bd-609b-4870-9dcf-506e49ff4614",
+    "eventType": "scan_completed",
+    "recommendationId": null,
+    "details": {
+      "findings": 7,
+      "newRecommendations": 0,
+      "counts": {
+        "campaigns": 5,
+        "keywords": 99,
+        "searchTerms": 19,
+        "ads": 28,
+        "zeroImpressionKeywords": 7,
+        "shoppingProducts": 292,
+        "findings": 7,
+        "needsReview": 19
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-18T00:15:07.744Z"
+  },
+  {
+    "id": "80160881-a65c-4e9c-988a-09d157c3469c",
+    "eventType": "scan_started",
+    "recommendationId": null,
+    "details": {
+      "timestamp": "2026-05-18T01:15:00.049Z"
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-18T01:15:00.057Z"
+  },
+  {
+    "id": "fd0958f1-953f-45cb-a849-76a88156fc89",
+    "eventType": "findings_suppressed",
+    "recommendationId": null,
+    "details": {
+      "count": 7,
+      "byReason": {
+        "suppressed: bid finding on auto-bid strategy \"MAXIMIZE_CONVERSION_VALUE\" — manual bid changes are ignored by Google": 7
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-18T01:15:08.121Z"
+  },
+  {
+    "id": "9ee74fb7-e0c7-48e3-8a58-f70d4f7a479c",
+    "eventType": "preflight_needs_review",
+    "recommendationId": null,
+    "details": {
+      "count": 19,
+      "byVerdict": {
+        "block": 2,
+        "needs-review": 17
+      },
+      "titles": [
+        "Reallocation opportunity — \"GRI | Search | Cannons\" at 1.04x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | All Products\" at 1.89x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | Bundles\" at 1.77x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Keyword \"gender reveal powder cannon\" bleeding — $44.08 AUD with zero conversions",
+        "Shopping product \"DIY -Gender Reveal Smoke Box Trend Pink Blue Holi Powder Australia Pink\" bleeding — $49.55 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal | Double MEGA Powder Blaster/ Extinguisher Australia | G 1 x Pink 1 x Blue\" bleeding — $53.83 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal Smoke Bombs Prank / White Smoke\" bleeding — $54.20 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Powder XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $64.25 AUD, 0 conversions",
+        "Shopping product \"DIY Hire Gender Reveal Balloon Garland Australia | Gender Reveal Decor\" bleeding — $56.64 AUD, 0 conversions",
+        "Shopping product \"4 Pack Gender Reveal Confetti Cannon XL BIO Bundle Pink Blue Australia 2 Pink + 2 Blue\" bleeding — $36.03 AUD, 0 conversions"
+      ]
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-18T01:15:08.126Z"
+  },
+  {
+    "id": "c1f0dac0-9f67-4e6d-b8fd-e312c5faab63",
+    "eventType": "scan_completed",
+    "recommendationId": null,
+    "details": {
+      "findings": 7,
+      "newRecommendations": 0,
+      "counts": {
+        "campaigns": 5,
+        "keywords": 99,
+        "searchTerms": 19,
+        "ads": 28,
+        "zeroImpressionKeywords": 7,
+        "shoppingProducts": 292,
+        "findings": 7,
+        "needsReview": 19
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-18T01:15:08.142Z"
+  },
+  {
+    "id": "f13d9eda-f6d4-408a-a6b8-fb740fb75ac5",
+    "eventType": "scan_started",
+    "recommendationId": null,
+    "details": {
+      "timestamp": "2026-05-18T02:15:00.048Z"
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-18T02:15:00.064Z"
+  },
+  {
+    "id": "bc7be1e8-c7f3-4984-b1ae-6a221e596125",
+    "eventType": "findings_suppressed",
+    "recommendationId": null,
+    "details": {
+      "count": 7,
+      "byReason": {
+        "suppressed: bid finding on auto-bid strategy \"MAXIMIZE_CONVERSION_VALUE\" — manual bid changes are ignored by Google": 7
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-18T02:15:07.778Z"
+  },
+  {
+    "id": "78168de6-8058-449d-b218-f52d2f8a112e",
+    "eventType": "preflight_needs_review",
+    "recommendationId": null,
+    "details": {
+      "count": 19,
+      "byVerdict": {
+        "block": 2,
+        "needs-review": 17
+      },
+      "titles": [
+        "Reallocation opportunity — \"GRI | Search | Cannons\" at 1.04x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | All Products\" at 1.89x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | Bundles\" at 1.77x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Keyword \"gender reveal powder cannon\" bleeding — $44.08 AUD with zero conversions",
+        "Shopping product \"DIY -Gender Reveal Smoke Box Trend Pink Blue Holi Powder Australia Pink\" bleeding — $49.55 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal | Double MEGA Powder Blaster/ Extinguisher Australia | G 1 x Pink 1 x Blue\" bleeding — $53.83 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal Smoke Bombs Prank / White Smoke\" bleeding — $54.20 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Powder XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $64.25 AUD, 0 conversions",
+        "Shopping product \"DIY Hire Gender Reveal Balloon Garland Australia | Gender Reveal Decor\" bleeding — $56.64 AUD, 0 conversions",
+        "Shopping product \"4 Pack Gender Reveal Confetti Cannon XL BIO Bundle Pink Blue Australia 2 Pink + 2 Blue\" bleeding — $36.03 AUD, 0 conversions"
+      ]
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-18T02:15:07.785Z"
+  },
+  {
+    "id": "0242b31f-8503-4ca2-b209-c67950d69d0e",
+    "eventType": "scan_completed",
+    "recommendationId": null,
+    "details": {
+      "findings": 7,
+      "newRecommendations": 0,
+      "counts": {
+        "campaigns": 5,
+        "keywords": 99,
+        "searchTerms": 19,
+        "ads": 28,
+        "zeroImpressionKeywords": 7,
+        "shoppingProducts": 292,
+        "findings": 7,
+        "needsReview": 19
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-18T02:15:07.806Z"
+  },
+  {
+    "id": "011769b3-0f59-40c6-a1d0-b457bb39fc64",
+    "eventType": "scan_started",
+    "recommendationId": null,
+    "details": {
+      "timestamp": "2026-05-18T20:15:00.044Z"
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-18T20:15:00.146Z"
+  },
+  {
+    "id": "02fb8d36-906b-4643-aeb6-a460e1379c3a",
+    "eventType": "findings_suppressed",
+    "recommendationId": null,
+    "details": {
+      "count": 7,
+      "byReason": {
+        "suppressed: bid finding on auto-bid strategy \"MAXIMIZE_CONVERSION_VALUE\" — manual bid changes are ignored by Google": 7
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-18T20:15:08.728Z"
+  },
+  {
+    "id": "7d4ffc6b-ce9a-4112-8c84-81fe8f2ee03b",
+    "eventType": "preflight_needs_review",
+    "recommendationId": null,
+    "details": {
+      "count": 18,
+      "byVerdict": {
+        "block": 2,
+        "needs-review": 16
+      },
+      "titles": [
+        "Reallocation opportunity — \"GRI | Search | Cannons\" at 0.94x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | All Products\" at 1.93x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | Bundles\" at 1.88x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Keyword \"gender reveal powder cannon\" bleeding — $44.08 AUD with zero conversions",
+        "Shopping product \"DIY -Gender Reveal Smoke Box Trend Pink Blue Holi Powder Australia Pink\" bleeding — $45.09 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal | Double MEGA Powder Blaster/ Extinguisher Australia | G 1 x Pink 1 x Blue\" bleeding — $52.68 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal Smoke Bombs Prank / White Smoke\" bleeding — $54.20 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Powder XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $56.97 AUD, 0 conversions",
+        "Shopping product \"DIY Hire Gender Reveal Balloon Garland Australia | Gender Reveal Decor\" bleeding — $54.54 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Confetti XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $49.07 AUD, 0 conversions"
+      ]
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-18T20:15:08.734Z"
+  },
+  {
+    "id": "b0639978-8b9b-4714-a5ca-2447a42052bd",
+    "eventType": "scan_completed",
+    "recommendationId": null,
+    "details": {
+      "findings": 7,
+      "newRecommendations": 0,
+      "counts": {
+        "campaigns": 5,
+        "keywords": 99,
+        "searchTerms": 19,
+        "ads": 28,
+        "zeroImpressionKeywords": 7,
+        "shoppingProducts": 292,
+        "findings": 7,
+        "needsReview": 18
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-18T20:15:08.748Z"
+  },
+  {
+    "id": "87d9759a-4342-4a3b-bb33-d49b31b951f9",
+    "eventType": "scan_started",
+    "recommendationId": null,
+    "details": {
+      "timestamp": "2026-05-18T21:15:00.024Z"
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-18T21:15:00.031Z"
+  },
+  {
+    "id": "1de5e778-54ab-4f03-9e04-69b0a2c0e0fa",
+    "eventType": "findings_suppressed",
+    "recommendationId": null,
+    "details": {
+      "count": 7,
+      "byReason": {
+        "suppressed: bid finding on auto-bid strategy \"MAXIMIZE_CONVERSION_VALUE\" — manual bid changes are ignored by Google": 7
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-18T21:15:08.753Z"
+  },
+  {
+    "id": "86b83ce2-1f89-4bcd-9c93-46c9dbb64884",
+    "eventType": "preflight_needs_review",
+    "recommendationId": null,
+    "details": {
+      "count": 18,
+      "byVerdict": {
+        "block": 2,
+        "needs-review": 16
+      },
+      "titles": [
+        "Reallocation opportunity — \"GRI | Search | Cannons\" at 0.94x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | All Products\" at 1.93x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | Bundles\" at 1.88x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Keyword \"gender reveal powder cannon\" bleeding — $44.08 AUD with zero conversions",
+        "Shopping product \"DIY -Gender Reveal Smoke Box Trend Pink Blue Holi Powder Australia Pink\" bleeding — $45.09 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal | Double MEGA Powder Blaster/ Extinguisher Australia | G 1 x Pink 1 x Blue\" bleeding — $52.68 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal Smoke Bombs Prank / White Smoke\" bleeding — $54.20 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Powder XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $56.97 AUD, 0 conversions",
+        "Shopping product \"DIY Hire Gender Reveal Balloon Garland Australia | Gender Reveal Decor\" bleeding — $54.54 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Confetti XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $49.07 AUD, 0 conversions"
+      ]
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-18T21:15:08.758Z"
+  },
+  {
+    "id": "00e670ea-5246-438e-a8dc-e256f717760a",
+    "eventType": "scan_completed",
+    "recommendationId": null,
+    "details": {
+      "findings": 7,
+      "newRecommendations": 0,
+      "counts": {
+        "campaigns": 5,
+        "keywords": 99,
+        "searchTerms": 19,
+        "ads": 28,
+        "zeroImpressionKeywords": 7,
+        "shoppingProducts": 292,
+        "findings": 7,
+        "needsReview": 18
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-18T21:15:08.770Z"
+  },
+  {
+    "id": "257ccf17-63f9-4ec2-854a-8f6922f6fb54",
+    "eventType": "scan_started",
+    "recommendationId": null,
+    "details": {
+      "timestamp": "2026-05-18T22:15:00.021Z"
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-18T22:15:00.026Z"
+  },
+  {
+    "id": "d0f22a74-5402-4cd6-8be7-594986d76972",
+    "eventType": "findings_suppressed",
+    "recommendationId": null,
+    "details": {
+      "count": 7,
+      "byReason": {
+        "suppressed: bid finding on auto-bid strategy \"MAXIMIZE_CONVERSION_VALUE\" — manual bid changes are ignored by Google": 7
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-18T22:15:07.467Z"
+  },
+  {
+    "id": "0d272fd6-12cd-4aa3-a02c-a0068b18280b",
+    "eventType": "preflight_needs_review",
+    "recommendationId": null,
+    "details": {
+      "count": 18,
+      "byVerdict": {
+        "block": 2,
+        "needs-review": 16
+      },
+      "titles": [
+        "Reallocation opportunity — \"GRI | Search | Cannons\" at 0.94x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | All Products\" at 1.93x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | Bundles\" at 1.88x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Keyword \"gender reveal powder cannon\" bleeding — $44.08 AUD with zero conversions",
+        "Shopping product \"DIY -Gender Reveal Smoke Box Trend Pink Blue Holi Powder Australia Pink\" bleeding — $45.09 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal | Double MEGA Powder Blaster/ Extinguisher Australia | G 1 x Pink 1 x Blue\" bleeding — $52.68 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal Smoke Bombs Prank / White Smoke\" bleeding — $54.20 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Powder XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $56.97 AUD, 0 conversions",
+        "Shopping product \"DIY Hire Gender Reveal Balloon Garland Australia | Gender Reveal Decor\" bleeding — $54.54 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Confetti XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $49.07 AUD, 0 conversions"
+      ]
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-18T22:15:07.472Z"
+  },
+  {
+    "id": "c4f3f985-8f00-4062-8943-58b9c3899162",
+    "eventType": "scan_completed",
+    "recommendationId": null,
+    "details": {
+      "findings": 7,
+      "newRecommendations": 0,
+      "counts": {
+        "campaigns": 5,
+        "keywords": 99,
+        "searchTerms": 19,
+        "ads": 28,
+        "zeroImpressionKeywords": 7,
+        "shoppingProducts": 292,
+        "findings": 7,
+        "needsReview": 18
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-18T22:15:07.486Z"
+  },
+  {
+    "id": "2264b350-68f0-466d-9d08-2a7f0a4b796b",
+    "eventType": "scan_started",
+    "recommendationId": null,
+    "details": {
+      "timestamp": "2026-05-18T23:15:00.041Z"
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-18T23:15:00.060Z"
+  },
+  {
+    "id": "99bb2bcd-6205-48c9-9992-4f06a56bc6fa",
+    "eventType": "findings_suppressed",
+    "recommendationId": null,
+    "details": {
+      "count": 7,
+      "byReason": {
+        "suppressed: bid finding on auto-bid strategy \"MAXIMIZE_CONVERSION_VALUE\" — manual bid changes are ignored by Google": 7
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-18T23:15:07.553Z"
+  },
+  {
+    "id": "89ee0ed7-4592-41a5-96a4-ec1838bae4d9",
+    "eventType": "preflight_needs_review",
+    "recommendationId": null,
+    "details": {
+      "count": 18,
+      "byVerdict": {
+        "block": 2,
+        "needs-review": 16
+      },
+      "titles": [
+        "Reallocation opportunity — \"GRI | Search | Cannons\" at 0.94x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | All Products\" at 1.93x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | Bundles\" at 1.88x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Keyword \"gender reveal powder cannon\" bleeding — $44.08 AUD with zero conversions",
+        "Shopping product \"DIY -Gender Reveal Smoke Box Trend Pink Blue Holi Powder Australia Pink\" bleeding — $45.09 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal | Double MEGA Powder Blaster/ Extinguisher Australia | G 1 x Pink 1 x Blue\" bleeding — $52.68 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal Smoke Bombs Prank / White Smoke\" bleeding — $54.20 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Powder XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $56.97 AUD, 0 conversions",
+        "Shopping product \"DIY Hire Gender Reveal Balloon Garland Australia | Gender Reveal Decor\" bleeding — $54.54 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Confetti XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $49.07 AUD, 0 conversions"
+      ]
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-18T23:15:07.560Z"
+  },
+  {
+    "id": "31386db3-c50e-4656-817b-288f7e0d1d52",
+    "eventType": "scan_completed",
+    "recommendationId": null,
+    "details": {
+      "findings": 7,
+      "newRecommendations": 0,
+      "counts": {
+        "campaigns": 5,
+        "keywords": 99,
+        "searchTerms": 19,
+        "ads": 28,
+        "zeroImpressionKeywords": 7,
+        "shoppingProducts": 292,
+        "findings": 7,
+        "needsReview": 18
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-18T23:15:07.576Z"
+  },
+  {
+    "id": "3f609f6b-790e-456d-b855-bba1ef38a1fa",
+    "eventType": "scan_started",
+    "recommendationId": null,
+    "details": {
+      "timestamp": "2026-05-19T08:15:00.024Z"
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-19T08:15:00.032Z"
+  },
+  {
+    "id": "0543bc23-f9e7-459d-ae7e-2ffc81020f5c",
+    "eventType": "findings_suppressed",
+    "recommendationId": null,
+    "details": {
+      "count": 7,
+      "byReason": {
+        "suppressed: bid finding on auto-bid strategy \"MAXIMIZE_CONVERSION_VALUE\" — manual bid changes are ignored by Google": 7
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-19T08:15:14.164Z"
+  },
+  {
+    "id": "98de204e-d6de-4ecf-afb7-ae6099526637",
+    "eventType": "preflight_needs_review",
+    "recommendationId": null,
+    "details": {
+      "count": 18,
+      "byVerdict": {
+        "block": 2,
+        "needs-review": 16
+      },
+      "titles": [
+        "Reallocation opportunity — \"GRI | Search | Cannons\" at 0.94x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | All Products\" at 1.93x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | Bundles\" at 1.88x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Keyword \"gender reveal powder cannon\" bleeding — $44.08 AUD with zero conversions",
+        "Shopping product \"DIY -Gender Reveal Smoke Box Trend Pink Blue Holi Powder Australia Pink\" bleeding — $45.09 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal | Double MEGA Powder Blaster/ Extinguisher Australia | G 1 x Pink 1 x Blue\" bleeding — $52.68 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal Smoke Bombs Prank / White Smoke\" bleeding — $54.20 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Powder XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $56.97 AUD, 0 conversions",
+        "Shopping product \"DIY Hire Gender Reveal Balloon Garland Australia | Gender Reveal Decor\" bleeding — $54.54 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Confetti XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $49.07 AUD, 0 conversions"
+      ]
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-19T08:15:14.172Z"
+  },
+  {
+    "id": "23ba3795-e1e1-4813-bfe8-2eb782f25900",
+    "eventType": "scan_completed",
+    "recommendationId": null,
+    "details": {
+      "findings": 7,
+      "newRecommendations": 0,
+      "counts": {
+        "campaigns": 5,
+        "keywords": 99,
+        "searchTerms": 19,
+        "ads": 29,
+        "zeroImpressionKeywords": 7,
+        "shoppingProducts": 292,
+        "findings": 7,
+        "needsReview": 18
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-19T08:15:14.193Z"
+  },
+  {
+    "id": "95cd19dc-9126-4593-bcf1-3e3721b5b310",
+    "eventType": "scan_started",
+    "recommendationId": null,
+    "details": {
+      "timestamp": "2026-05-19T09:15:00.018Z"
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-19T09:15:00.024Z"
+  },
+  {
+    "id": "ad791aee-1887-4788-a954-ed9c4e504034",
+    "eventType": "findings_suppressed",
+    "recommendationId": null,
+    "details": {
+      "count": 7,
+      "byReason": {
+        "suppressed: bid finding on auto-bid strategy \"MAXIMIZE_CONVERSION_VALUE\" — manual bid changes are ignored by Google": 7
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-19T09:15:20.085Z"
+  },
+  {
+    "id": "66fddd9d-28be-4dc0-bdbc-a6f919f111cb",
+    "eventType": "preflight_needs_review",
+    "recommendationId": null,
+    "details": {
+      "count": 18,
+      "byVerdict": {
+        "block": 2,
+        "needs-review": 16
+      },
+      "titles": [
+        "Reallocation opportunity — \"GRI | Search | Cannons\" at 0.94x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | All Products\" at 1.93x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | Bundles\" at 1.88x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Keyword \"gender reveal powder cannon\" bleeding — $44.08 AUD with zero conversions",
+        "Shopping product \"DIY -Gender Reveal Smoke Box Trend Pink Blue Holi Powder Australia Pink\" bleeding — $45.09 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal | Double MEGA Powder Blaster/ Extinguisher Australia | G 1 x Pink 1 x Blue\" bleeding — $52.68 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal Smoke Bombs Prank / White Smoke\" bleeding — $54.20 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Powder XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $56.97 AUD, 0 conversions",
+        "Shopping product \"DIY Hire Gender Reveal Balloon Garland Australia | Gender Reveal Decor\" bleeding — $54.54 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Confetti XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $49.07 AUD, 0 conversions"
+      ]
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-19T09:15:20.092Z"
+  },
+  {
+    "id": "71972fee-ece0-48be-ad8d-54679df188f4",
+    "eventType": "scan_completed",
+    "recommendationId": null,
+    "details": {
+      "findings": 7,
+      "newRecommendations": 0,
+      "counts": {
+        "campaigns": 5,
+        "keywords": 99,
+        "searchTerms": 19,
+        "ads": 29,
+        "zeroImpressionKeywords": 7,
+        "shoppingProducts": 292,
+        "findings": 7,
+        "needsReview": 18
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-19T09:15:20.105Z"
+  },
+  {
+    "id": "f38abbde-5e5f-4205-b996-26acea47ce52",
+    "eventType": "scan_started",
+    "recommendationId": null,
+    "details": {
+      "timestamp": "2026-05-19T10:15:00.104Z"
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-19T10:15:00.116Z"
+  },
+  {
+    "id": "599dd5d1-8d87-4387-a8ef-229112abb967",
+    "eventType": "findings_suppressed",
+    "recommendationId": null,
+    "details": {
+      "count": 7,
+      "byReason": {
+        "suppressed: bid finding on auto-bid strategy \"MAXIMIZE_CONVERSION_VALUE\" — manual bid changes are ignored by Google": 7
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-19T10:15:07.693Z"
+  },
+  {
+    "id": "35a0f7b5-c1de-4ec4-ad1a-854956aab76a",
+    "eventType": "preflight_needs_review",
+    "recommendationId": null,
+    "details": {
+      "count": 18,
+      "byVerdict": {
+        "block": 2,
+        "needs-review": 16
+      },
+      "titles": [
+        "Reallocation opportunity — \"GRI | Search | Cannons\" at 0.94x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | All Products\" at 1.93x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | Bundles\" at 1.88x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Keyword \"gender reveal powder cannon\" bleeding — $44.08 AUD with zero conversions",
+        "Shopping product \"DIY -Gender Reveal Smoke Box Trend Pink Blue Holi Powder Australia Pink\" bleeding — $45.09 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal | Double MEGA Powder Blaster/ Extinguisher Australia | G 1 x Pink 1 x Blue\" bleeding — $52.68 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal Smoke Bombs Prank / White Smoke\" bleeding — $54.20 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Powder XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $56.97 AUD, 0 conversions",
+        "Shopping product \"DIY Hire Gender Reveal Balloon Garland Australia | Gender Reveal Decor\" bleeding — $54.54 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Confetti XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $49.07 AUD, 0 conversions"
+      ]
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-19T10:15:07.702Z"
+  },
+  {
+    "id": "ca69859c-8834-4a29-8dd6-6d8e76757349",
+    "eventType": "scan_completed",
+    "recommendationId": null,
+    "details": {
+      "findings": 7,
+      "newRecommendations": 0,
+      "counts": {
+        "campaigns": 5,
+        "keywords": 99,
+        "searchTerms": 19,
+        "ads": 29,
+        "zeroImpressionKeywords": 7,
+        "shoppingProducts": 292,
+        "findings": 7,
+        "needsReview": 18
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-19T10:15:07.720Z"
+  },
+  {
+    "id": "9a09edb6-5ec9-41e2-8c67-070e1faef13a",
+    "eventType": "scan_started",
+    "recommendationId": null,
+    "details": {
+      "timestamp": "2026-05-20T02:15:00.033Z"
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T02:15:00.047Z"
+  },
+  {
+    "id": "70b000a0-ce64-49bf-8cfc-710d7ebbe560",
+    "eventType": "findings_suppressed",
+    "recommendationId": null,
+    "details": {
+      "count": 7,
+      "byReason": {
+        "suppressed: bid finding on auto-bid strategy \"MAXIMIZE_CONVERSION_VALUE\" — manual bid changes are ignored by Google": 7
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T02:15:08.215Z"
+  },
+  {
+    "id": "a7173da0-78a1-4615-b6cb-8e33a447a9df",
+    "eventType": "preflight_needs_review",
+    "recommendationId": null,
+    "details": {
+      "count": 18,
+      "byVerdict": {
+        "block": 2,
+        "needs-review": 16
+      },
+      "titles": [
+        "Reallocation opportunity — \"GRI | Search | Cannons\" at 0.97x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | All Products\" at 1.97x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | Bundles\" at 1.85x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Keyword \"gender reveal powder cannon\" bleeding — $44.08 AUD with zero conversions",
+        "Shopping product \"DIY -Gender Reveal Smoke Box Trend Pink Blue Holi Powder Australia Pink\" bleeding — $44.62 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal | Double MEGA Powder Blaster/ Extinguisher Australia | G 1 x Pink 1 x Blue\" bleeding — $49.28 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal Smoke Bombs Prank / White Smoke\" bleeding — $46.41 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Powder XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $55.45 AUD, 0 conversions",
+        "Shopping product \"DIY Hire Gender Reveal Balloon Garland Australia | Gender Reveal Decor\" bleeding — $54.22 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Confetti XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $49.07 AUD, 0 conversions"
+      ]
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T02:15:08.225Z"
+  },
+  {
+    "id": "d952753f-e699-4815-91c1-25ea05487c78",
+    "eventType": "recommendation_created",
+    "recommendationId": "f17d3ada-ceb0-4047-a0a4-2852522a1ce8",
+    "details": {
+      "title": "Zero impressions — \"gender reveal smoke bomb\" has been dead for the full window",
+      "category": "keyword",
+      "projectedImpact": 0
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T02:15:24.758Z"
+  },
+  {
+    "id": "f95d304a-fe37-4296-a572-08a076ca84fe",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "fc5459e7-b267-485d-bda3-a5fddef053c0",
+    "details": {
+      "title": "Reallocation opportunity — \"GRI | Search | Cannons\" at 0.97x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+      "category": "spend",
+      "verdict": "block",
+      "failures": 2
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T02:15:24.777Z"
+  },
+  {
+    "id": "9c8c5375-4a4d-4c9e-a7d8-50d4f4445ba2",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "955351d9-1abd-42df-9b75-9f39c93c900c",
+    "details": {
+      "title": "Reallocation opportunity — \"GRI PMAX | All Products\" at 1.97x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+      "category": "spend",
+      "verdict": "needs-review",
+      "failures": 1
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T02:15:24.796Z"
+  },
+  {
+    "id": "10344a74-a17e-4937-9ffc-8d08375498cd",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "c91ac6e9-2bfb-431d-a263-9b11805060e3",
+    "details": {
+      "title": "Reallocation opportunity — \"GRI PMAX | Bundles\" at 1.85x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+      "category": "spend",
+      "verdict": "needs-review",
+      "failures": 1
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T02:15:24.813Z"
+  },
+  {
+    "id": "802bdc8b-a236-4e98-81f2-e668c0c5aebf",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "854a8ff2-291a-4c97-a0c0-67bb712b7531",
+    "details": {
+      "title": "Keyword \"gender reveal powder cannon\" bleeding — $44.08 AUD with zero conversions",
+      "category": "keyword",
+      "verdict": "block",
+      "failures": 2
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T02:15:24.831Z"
+  },
+  {
+    "id": "bf374c9a-a5ca-4d5e-857c-bada1954a2f6",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "98e26273-3fe2-46e7-ad9a-d2713f363db7",
+    "details": {
+      "title": "Shopping product \"DIY -Gender Reveal Smoke Box Trend Pink Blue Holi Powder Australia Pink\" bleeding — $44.62 AUD, 0 conversions",
+      "category": "merchant",
+      "verdict": "needs-review",
+      "failures": 1
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T02:15:24.847Z"
+  },
+  {
+    "id": "4d56f55b-ef6f-4187-b7de-fa47d7ff5afe",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "f6b9d7ea-476c-455e-b684-05e6e92bb1cc",
+    "details": {
+      "title": "Shopping product \"Gender Reveal | Double MEGA Powder Blaster/ Extinguisher Australia | G 1 x Pink 1 x Blue\" bleeding — $49.28 AUD, 0 conversions",
+      "category": "merchant",
+      "verdict": "needs-review",
+      "failures": 1
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T02:15:24.865Z"
+  },
+  {
+    "id": "7e8c2386-7fe7-42c8-98bb-34250ff080b1",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "89298c52-1a52-4fe8-8a65-63e5dff2169d",
+    "details": {
+      "title": "Shopping product \"Gender Reveal Smoke Bombs Prank / White Smoke\" bleeding — $46.41 AUD, 0 conversions",
+      "category": "merchant",
+      "verdict": "needs-review",
+      "failures": 1
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T02:15:24.881Z"
+  },
+  {
+    "id": "130c35af-66d7-4dbf-af38-e6682b87b84f",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "4a034851-e5a8-4ea7-8362-029467a5018b",
+    "details": {
+      "title": "Shopping product \"2 Pack Gender Reveal Powder XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $55.45 AUD, 0 conversions",
+      "category": "merchant",
+      "verdict": "needs-review",
+      "failures": 1
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T02:15:24.898Z"
+  },
+  {
+    "id": "e35b76a1-797f-4679-b1b2-6beac0fa9b55",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "db63d745-32ad-4a5e-b6f8-fe5c7dace0f3",
+    "details": {
+      "title": "Shopping product \"DIY Hire Gender Reveal Balloon Garland Australia | Gender Reveal Decor\" bleeding — $54.22 AUD, 0 conversions",
+      "category": "merchant",
+      "verdict": "needs-review",
+      "failures": 1
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T02:15:24.914Z"
+  },
+  {
+    "id": "e47a5b0c-19f1-47ae-a948-76aaecf2117d",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "0879a645-9bbd-4fa4-8d40-f711bb7c22fe",
+    "details": {
+      "title": "Shopping product \"2 Pack Gender Reveal Confetti XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $49.07 AUD, 0 conversions",
+      "category": "merchant",
+      "verdict": "needs-review",
+      "failures": 1
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T02:15:24.931Z"
+  },
+  {
+    "id": "6ad2f6b6-f061-4b8f-a9f9-00266178f5aa",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "17ece5e9-1d63-4607-a671-68f9f1036c82",
+    "details": {
+      "title": "Shopping product \"4x Bundle Pack Gender Reveal Smoke Bombs Red\" bleeding — $66.97 AUD, 0 conversions",
+      "category": "merchant",
+      "verdict": "needs-review",
+      "failures": 1
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T02:15:24.949Z"
+  },
+  {
+    "id": "460b13c1-bde9-4983-8a28-9509f9443a1f",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "a53183c4-31df-44dc-a864-bf150888560a",
+    "details": {
+      "title": "Shopping product \"Toy Story Birthday Party Set (15 Person) | Party Supplies Australia\" bleeding — $40.14 AUD, 0 conversions",
+      "category": "merchant",
+      "verdict": "needs-review",
+      "failures": 1
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T02:15:24.966Z"
+  },
+  {
+    "id": "dbdc3d0f-e6c0-49e8-ac81-668345bd2712",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "fddd6d5a-4a34-4d39-8256-f6e3619754e6",
+    "details": {
+      "title": "Shopping product \"148 Piece Gender Reveal/ Baby Shower Luxury Balloon Kit Australia | Ge\" bleeding — $59.34 AUD, 0 conversions",
+      "category": "merchant",
+      "verdict": "needs-review",
+      "failures": 1
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T02:15:24.984Z"
+  },
+  {
+    "id": "bbc8d1e9-ff04-43ca-9513-90367bc049cc",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "1347f227-394a-44b7-982c-51ad45fd8797",
+    "details": {
+      "title": "Shopping product \"Sports Gender Reveal Soccer Ball Powder Australia | Gender Reveal Blue Powder\" bleeding — $40.64 AUD, 0 conversions",
+      "category": "merchant",
+      "verdict": "needs-review",
+      "failures": 1
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T02:15:25.000Z"
+  },
+  {
+    "id": "7285b4c2-a906-4284-94e3-3988c707b4f7",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "1ef94fb7-2836-410c-bfd3-5da5044e607a",
+    "details": {
+      "title": "Shopping product \"Gender Reveal AFL Sports Bundle Pink Blue Australia To Be Announced\" bleeding — $36.76 AUD, 0 conversions",
+      "category": "merchant",
+      "verdict": "needs-review",
+      "failures": 1
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T02:15:25.019Z"
+  },
+  {
+    "id": "1d73ac80-9241-480d-ac3d-5091a3181e95",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "2a80addd-cb8a-475c-a271-499a0b439d15",
+    "details": {
+      "title": "Shopping product \"Sports Gender Reveal AFL Ball Both Colours Powder\" bleeding — $47.15 AUD, 0 conversions",
+      "category": "merchant",
+      "verdict": "needs-review",
+      "failures": 1
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T02:15:25.035Z"
+  },
+  {
+    "id": "ff91b511-7e3b-4a99-a163-9d742735ba2c",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "7e16accb-1646-4b89-8bfe-f6f40c94510a",
+    "details": {
+      "title": "FOV/CAC 0.00× below 1.0 for 3 consecutive days — framework PAUSE gate: first-order gross profit no longer covers acquisition cost",
+      "category": "framework",
+      "verdict": "needs-review",
+      "failures": 4
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T02:15:25.051Z"
+  },
+  {
+    "id": "1727ec3b-56d7-4932-9f80-1d8c2ebc4bf8",
+    "eventType": "recommendation_needs_review",
+    "recommendationId": "192e00a6-341b-4096-a5d1-03318873f3ea",
+    "details": {
+      "title": "CM$ is negative — 30d contribution margin = $-17515.16 (new-customer revenue minus Cost of Delivery minus blended ad spend)",
+      "category": "framework",
+      "verdict": "needs-review",
+      "failures": 4
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T02:15:25.066Z"
+  },
+  {
+    "id": "52dcee1f-ec77-4798-babc-8bc3b0650118",
+    "eventType": "scan_completed",
+    "recommendationId": null,
+    "details": {
+      "findings": 8,
+      "newRecommendations": 1,
+      "needsReview": 18,
+      "counts": {
+        "campaigns": 5,
+        "keywords": 97,
+        "searchTerms": 18,
+        "ads": 29,
+        "zeroImpressionKeywords": 8,
+        "shoppingProducts": 292,
+        "findings": 8,
+        "needsReview": 18
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T02:15:25.071Z"
+  },
+  {
+    "id": "52d8feaf-4462-4cef-ae82-a11a0d8ed5ca",
+    "eventType": "scan_started",
+    "recommendationId": null,
+    "details": {
+      "timestamp": "2026-05-20T03:15:00.305Z"
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T03:15:00.311Z"
+  },
+  {
+    "id": "80703d1c-9044-42f3-81ab-237a8b279476",
+    "eventType": "findings_suppressed",
+    "recommendationId": null,
+    "details": {
+      "count": 7,
+      "byReason": {
+        "suppressed: bid finding on auto-bid strategy \"MAXIMIZE_CONVERSION_VALUE\" — manual bid changes are ignored by Google": 7
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T03:15:09.356Z"
+  },
+  {
+    "id": "ef06694f-c063-47a2-af13-17e4c1c4f3c5",
+    "eventType": "preflight_needs_review",
+    "recommendationId": null,
+    "details": {
+      "count": 17,
+      "byVerdict": {
+        "block": 2,
+        "needs-review": 15
+      },
+      "titles": [
+        "Reallocation opportunity — \"GRI | Search | Cannons\" at 0.97x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | All Products\" at 1.97x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | Bundles\" at 1.88x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Keyword \"gender reveal powder cannon\" bleeding — $44.08 AUD with zero conversions",
+        "Shopping product \"DIY -Gender Reveal Smoke Box Trend Pink Blue Holi Powder Australia Pink\" bleeding — $44.62 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal | Double MEGA Powder Blaster/ Extinguisher Australia | G 1 x Pink 1 x Blue\" bleeding — $49.28 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal Smoke Bombs Prank / White Smoke\" bleeding — $46.41 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Powder XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $55.45 AUD, 0 conversions",
+        "Shopping product \"DIY Hire Gender Reveal Balloon Garland Australia | Gender Reveal Decor\" bleeding — $54.22 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Confetti XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $49.07 AUD, 0 conversions"
+      ]
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T03:15:09.362Z"
+  },
+  {
+    "id": "3a6d5e1d-3cec-49be-a318-ee5017ab56e0",
+    "eventType": "scan_completed",
+    "recommendationId": null,
+    "details": {
+      "findings": 8,
+      "newRecommendations": 0,
+      "counts": {
+        "campaigns": 5,
+        "keywords": 97,
+        "searchTerms": 18,
+        "ads": 29,
+        "zeroImpressionKeywords": 8,
+        "shoppingProducts": 292,
+        "findings": 8,
+        "needsReview": 17
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T03:15:09.375Z"
+  },
+  {
+    "id": "44855b50-2cc7-4ec1-8bfa-2de7f1f123d8",
+    "eventType": "scan_started",
+    "recommendationId": null,
+    "details": {
+      "timestamp": "2026-05-20T04:15:00.023Z"
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T04:15:00.029Z"
+  },
+  {
+    "id": "ee936b9f-9640-47f4-a5ac-1ffad0ab52de",
+    "eventType": "findings_suppressed",
+    "recommendationId": null,
+    "details": {
+      "count": 7,
+      "byReason": {
+        "suppressed: bid finding on auto-bid strategy \"MAXIMIZE_CONVERSION_VALUE\" — manual bid changes are ignored by Google": 7
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T04:15:09.026Z"
+  },
+  {
+    "id": "ec2cbf34-f6b2-47ac-be50-57ace8e82a87",
+    "eventType": "preflight_needs_review",
+    "recommendationId": null,
+    "details": {
+      "count": 17,
+      "byVerdict": {
+        "block": 2,
+        "needs-review": 15
+      },
+      "titles": [
+        "Reallocation opportunity — \"GRI | Search | Cannons\" at 0.97x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | All Products\" at 1.97x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | Bundles\" at 1.88x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Keyword \"gender reveal powder cannon\" bleeding — $44.08 AUD with zero conversions",
+        "Shopping product \"DIY -Gender Reveal Smoke Box Trend Pink Blue Holi Powder Australia Pink\" bleeding — $44.62 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal | Double MEGA Powder Blaster/ Extinguisher Australia | G 1 x Pink 1 x Blue\" bleeding — $49.28 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal Smoke Bombs Prank / White Smoke\" bleeding — $46.41 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Powder XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $55.45 AUD, 0 conversions",
+        "Shopping product \"DIY Hire Gender Reveal Balloon Garland Australia | Gender Reveal Decor\" bleeding — $54.22 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Confetti XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $49.07 AUD, 0 conversions"
+      ]
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T04:15:09.031Z"
+  },
+  {
+    "id": "e7b4da10-6380-4db7-9d1c-9c6d0d2e0ed8",
+    "eventType": "scan_completed",
+    "recommendationId": null,
+    "details": {
+      "findings": 8,
+      "newRecommendations": 0,
+      "counts": {
+        "campaigns": 5,
+        "keywords": 97,
+        "searchTerms": 18,
+        "ads": 29,
+        "zeroImpressionKeywords": 8,
+        "shoppingProducts": 292,
+        "findings": 8,
+        "needsReview": 17
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T04:15:09.043Z"
+  },
+  {
+    "id": "2659231f-0b02-4936-985e-a6ded9676c5d",
+    "eventType": "scan_started",
+    "recommendationId": null,
+    "details": {
+      "timestamp": "2026-05-20T05:15:00.027Z"
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T05:15:00.032Z"
+  },
+  {
+    "id": "c2e2804a-e92f-40fc-b5a9-e858655ed767",
+    "eventType": "findings_suppressed",
+    "recommendationId": null,
+    "details": {
+      "count": 7,
+      "byReason": {
+        "suppressed: bid finding on auto-bid strategy \"MAXIMIZE_CONVERSION_VALUE\" — manual bid changes are ignored by Google": 7
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T05:15:10.345Z"
+  },
+  {
+    "id": "9b79a22c-7685-4b2d-88a6-7b79bf735c4e",
+    "eventType": "preflight_needs_review",
+    "recommendationId": null,
+    "details": {
+      "count": 17,
+      "byVerdict": {
+        "block": 2,
+        "needs-review": 15
+      },
+      "titles": [
+        "Reallocation opportunity — \"GRI | Search | Cannons\" at 0.97x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | All Products\" at 1.97x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | Bundles\" at 1.88x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Keyword \"gender reveal powder cannon\" bleeding — $44.08 AUD with zero conversions",
+        "Shopping product \"DIY -Gender Reveal Smoke Box Trend Pink Blue Holi Powder Australia Pink\" bleeding — $44.62 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal | Double MEGA Powder Blaster/ Extinguisher Australia | G 1 x Pink 1 x Blue\" bleeding — $49.28 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal Smoke Bombs Prank / White Smoke\" bleeding — $46.41 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Powder XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $55.45 AUD, 0 conversions",
+        "Shopping product \"DIY Hire Gender Reveal Balloon Garland Australia | Gender Reveal Decor\" bleeding — $54.22 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Confetti XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $49.07 AUD, 0 conversions"
+      ]
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T05:15:10.351Z"
+  },
+  {
+    "id": "fafdab43-4fc4-41ea-923b-51f4451cc29b",
+    "eventType": "scan_completed",
+    "recommendationId": null,
+    "details": {
+      "findings": 8,
+      "newRecommendations": 0,
+      "counts": {
+        "campaigns": 5,
+        "keywords": 97,
+        "searchTerms": 18,
+        "ads": 29,
+        "zeroImpressionKeywords": 8,
+        "shoppingProducts": 292,
+        "findings": 8,
+        "needsReview": 17
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T05:15:10.364Z"
+  },
+  {
+    "id": "27557f96-b9aa-4719-9f3c-ed24f202c0d2",
+    "eventType": "scan_started",
+    "recommendationId": null,
+    "details": {
+      "timestamp": "2026-05-20T06:15:00.035Z"
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T06:15:00.042Z"
+  },
+  {
+    "id": "69cdb2e0-1bee-4cdb-b29b-38da0aa70a3a",
+    "eventType": "findings_suppressed",
+    "recommendationId": null,
+    "details": {
+      "count": 7,
+      "byReason": {
+        "suppressed: bid finding on auto-bid strategy \"MAXIMIZE_CONVERSION_VALUE\" — manual bid changes are ignored by Google": 7
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T06:15:08.746Z"
+  },
+  {
+    "id": "5bbf3c59-e3cf-4cb6-aaac-e56a7aa4527c",
+    "eventType": "preflight_needs_review",
+    "recommendationId": null,
+    "details": {
+      "count": 17,
+      "byVerdict": {
+        "block": 2,
+        "needs-review": 15
+      },
+      "titles": [
+        "Reallocation opportunity — \"GRI | Search | Cannons\" at 0.97x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | All Products\" at 1.97x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | Bundles\" at 1.88x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Keyword \"gender reveal powder cannon\" bleeding — $44.08 AUD with zero conversions",
+        "Shopping product \"DIY -Gender Reveal Smoke Box Trend Pink Blue Holi Powder Australia Pink\" bleeding — $44.62 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal | Double MEGA Powder Blaster/ Extinguisher Australia | G 1 x Pink 1 x Blue\" bleeding — $49.28 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal Smoke Bombs Prank / White Smoke\" bleeding — $46.41 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Powder XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $55.45 AUD, 0 conversions",
+        "Shopping product \"DIY Hire Gender Reveal Balloon Garland Australia | Gender Reveal Decor\" bleeding — $54.22 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Confetti XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $49.07 AUD, 0 conversions"
+      ]
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T06:15:08.751Z"
+  },
+  {
+    "id": "f913df9b-e34f-42db-94d0-ab291b420330",
+    "eventType": "scan_completed",
+    "recommendationId": null,
+    "details": {
+      "findings": 8,
+      "newRecommendations": 0,
+      "counts": {
+        "campaigns": 5,
+        "keywords": 97,
+        "searchTerms": 18,
+        "ads": 29,
+        "zeroImpressionKeywords": 8,
+        "shoppingProducts": 292,
+        "findings": 8,
+        "needsReview": 17
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T06:15:08.763Z"
+  },
+  {
+    "id": "c8b7150b-394e-4cc1-97bf-13a8b2bb6908",
+    "eventType": "scan_started",
+    "recommendationId": null,
+    "details": {
+      "timestamp": "2026-05-20T10:15:00.046Z"
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T10:15:00.056Z"
+  },
+  {
+    "id": "dbf2ebf0-678e-43f0-a2bd-098f37abf839",
+    "eventType": "findings_suppressed",
+    "recommendationId": null,
+    "details": {
+      "count": 7,
+      "byReason": {
+        "suppressed: bid finding on auto-bid strategy \"MAXIMIZE_CONVERSION_VALUE\" — manual bid changes are ignored by Google": 7
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T10:15:11.974Z"
+  },
+  {
+    "id": "6838c6b5-6abb-46b1-8d8e-73516fe248fe",
+    "eventType": "preflight_needs_review",
+    "recommendationId": null,
+    "details": {
+      "count": 17,
+      "byVerdict": {
+        "block": 2,
+        "needs-review": 15
+      },
+      "titles": [
+        "Reallocation opportunity — \"GRI | Search | Cannons\" at 0.97x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | All Products\" at 1.97x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Reallocation opportunity — \"GRI PMAX | Bundles\" at 1.88x ROAS (target 3x) while 1 campaign(s) exceed their targets",
+        "Keyword \"gender reveal powder cannon\" bleeding — $44.08 AUD with zero conversions",
+        "Shopping product \"DIY -Gender Reveal Smoke Box Trend Pink Blue Holi Powder Australia Pink\" bleeding — $44.62 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal | Double MEGA Powder Blaster/ Extinguisher Australia | G 1 x Pink 1 x Blue\" bleeding — $49.28 AUD, 0 conversions",
+        "Shopping product \"Gender Reveal Smoke Bombs Prank / White Smoke\" bleeding — $46.41 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Powder XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $55.45 AUD, 0 conversions",
+        "Shopping product \"DIY Hire Gender Reveal Balloon Garland Australia | Gender Reveal Decor\" bleeding — $54.22 AUD, 0 conversions",
+        "Shopping product \"2 Pack Gender Reveal Confetti XL Cannon Bundle Pink Blue Australia 1 Pink + 1 Blue\" bleeding — $49.07 AUD, 0 conversions"
+      ]
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T10:15:11.983Z"
+  },
+  {
+    "id": "33c67248-b507-4bb2-a72f-f66fdc7cec48",
+    "eventType": "scan_completed",
+    "recommendationId": null,
+    "details": {
+      "findings": 6,
+      "newRecommendations": 0,
+      "counts": {
+        "campaigns": 5,
+        "keywords": 97,
+        "searchTerms": 18,
+        "ads": 29,
+        "zeroImpressionKeywords": 6,
+        "shoppingProducts": 292,
+        "findings": 6,
+        "needsReview": 17
+      }
+    },
+    "triggeredBy": "agent",
+    "createdAt": "2026-05-20T10:15:12.021Z"
   }
 ]

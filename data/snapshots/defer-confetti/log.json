@@ -1,0 +1,9 @@
+{
+  "shippedAt": "2026-05-29T03:57:04.123Z",
+  "themeId": "163830661209",
+  "assetKey": "layout/theme.liquid",
+  "originalLength": 50558,
+  "patchedLength": 50762,
+  "backupPath": "data/snapshots/defer-confetti/theme.original.liquid",
+  "change": "wrapped confetti() in DOMContentLoaded check"
+}

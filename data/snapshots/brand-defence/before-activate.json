@@ -1,0 +1,93 @@
+{
+  "takenAt": "2026-05-17T02:46:12.201Z",
+  "campaign": {
+    "campaign": {
+      "resource_name": "customers/9431746480/campaigns/23425232813",
+      "status": 3,
+      "bidding_strategy_type": 11,
+      "name": "GRI | Search | Brand Defence",
+      "id": 23425232813
+    },
+    "campaign_budget": {
+      "resource_name": "customers/9431746480/campaignBudgets/15272650540",
+      "amount_micros": 10000000
+    }
+  },
+  "keywords": [
+    {
+      "ad_group": {
+        "resource_name": "customers/9431746480/adGroups/193897092609",
+        "id": 193897092609
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/9431746480/adGroupCriteria/193897092609~46415533971",
+        "status": 2,
+        "keyword": {
+          "match_type": 2,
+          "text": "gender reveal ideas"
+        },
+        "criterion_id": 46415533971
+      }
+    },
+    {
+      "ad_group": {
+        "resource_name": "customers/9431746480/adGroups/193897092609",
+        "id": 193897092609
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/9431746480/adGroupCriteria/193897092609~329472237056",
+        "status": 2,
+        "keyword": {
+          "match_type": 3,
+          "text": "gender reveal ideas"
+        },
+        "criterion_id": 329472237056
+      }
+    },
+    {
+      "ad_group": {
+        "resource_name": "customers/9431746480/adGroups/193897092609",
+        "id": 193897092609
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/9431746480/adGroupCriteria/193897092609~837162955819",
+        "status": 3,
+        "keyword": {
+          "match_type": 2,
+          "text": "gender reveal ideas reviews"
+        },
+        "criterion_id": 837162955819
+      }
+    },
+    {
+      "ad_group": {
+        "resource_name": "customers/9431746480/adGroups/193897092609",
+        "id": 193897092609
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/9431746480/adGroupCriteria/193897092609~1037626373007",
+        "status": 3,
+        "keyword": {
+          "match_type": 2,
+          "text": "genderrevealideas"
+        },
+        "criterion_id": 1037626373007
+      }
+    },
+    {
+      "ad_group": {
+        "resource_name": "customers/9431746480/adGroups/193897092609",
+        "id": 193897092609
+      },
+      "ad_group_criterion": {
+        "resource_name": "customers/9431746480/adGroupCriteria/193897092609~2461472297918",
+        "status": 3,
+        "keyword": {
+          "match_type": 2,
+          "text": "GRI gender reveal"
+        },
+        "criterion_id": 2461472297918
+      }
+    }
+  ]
+}

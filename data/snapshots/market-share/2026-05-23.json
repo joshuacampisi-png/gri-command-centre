@@ -1,0 +1,1386 @@
+[
+  {
+    "query": "gender reveal",
+    "slots": [
+      {
+        "pos": 1,
+        "domain": "genderrevealsaustralia.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 3,
+        "domain": "en.wikipedia.org",
+        "type": "Other"
+      },
+      {
+        "pos": 4,
+        "domain": "www.perthgenderreveals.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 5,
+        "domain": "www.thebump.com",
+        "type": "Other"
+      },
+      {
+        "pos": 6,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      },
+      {
+        "pos": 9,
+        "domain": "genderrevealcelebrations.com",
+        "type": "Other"
+      },
+      {
+        "pos": 10,
+        "domain": "www.spotlightstores.com",
+        "type": "BigBox"
+      }
+    ],
+    "gri": 6,
+    "confetti": null,
+    "etsy": null,
+    "amazon": null,
+    "griCtr": 0.04,
+    "conCtr": 0
+  },
+  {
+    "query": "gender reveal ideas",
+    "slots": [
+      {
+        "pos": 1,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      },
+      {
+        "pos": 2,
+        "domain": "www.thebump.com",
+        "type": "Other"
+      },
+      {
+        "pos": 5,
+        "domain": "purebaby.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 7,
+        "domain": "www.pinterest.com",
+        "type": "Social"
+      },
+      {
+        "pos": 8,
+        "domain": "www.facebook.com",
+        "type": "Social"
+      },
+      {
+        "pos": 9,
+        "domain": "genderrevealcelebrations.com",
+        "type": "Other"
+      },
+      {
+        "pos": 10,
+        "domain": "www.etsy.com",
+        "type": "Etsy"
+      }
+    ],
+    "gri": 1,
+    "confetti": null,
+    "etsy": 10,
+    "amazon": null,
+    "griCtr": 0.3,
+    "conCtr": 0
+  },
+  {
+    "query": "gender reveal australia",
+    "slots": [
+      {
+        "pos": 1,
+        "domain": "genderrevealsaustralia.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 2,
+        "domain": "www.genderrevealer.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 5,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      },
+      {
+        "pos": 8,
+        "domain": "www.babygendersurprise.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 9,
+        "domain": "genderrevealcannon.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 10,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      }
+    ],
+    "gri": 5,
+    "confetti": null,
+    "etsy": null,
+    "amazon": null,
+    "griCtr": 0.05,
+    "conCtr": 0
+  },
+  {
+    "query": "gender reveal cannons",
+    "slots": [
+      {
+        "pos": 2,
+        "domain": "www.amazon.com.au",
+        "type": "Amazon"
+      },
+      {
+        "pos": 3,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      },
+      {
+        "pos": 4,
+        "domain": "confettified.com.au",
+        "type": "Confettified"
+      },
+      {
+        "pos": 5,
+        "domain": "genderrevealcannon.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 6,
+        "domain": "www.genderrevealer.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 7,
+        "domain": "www.pinterest.com",
+        "type": "Social"
+      },
+      {
+        "pos": 8,
+        "domain": "www.facebook.com",
+        "type": "Social"
+      },
+      {
+        "pos": 9,
+        "domain": "kingconfetti.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 10,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      }
+    ],
+    "gri": 3,
+    "confetti": 4,
+    "etsy": null,
+    "amazon": 2,
+    "griCtr": 0.1,
+    "conCtr": 0.07
+  },
+  {
+    "query": "gender reveal cannon",
+    "slots": [
+      {
+        "pos": 2,
+        "domain": "www.amazon.com.au",
+        "type": "Amazon"
+      },
+      {
+        "pos": 3,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      },
+      {
+        "pos": 4,
+        "domain": "www.genderrevealer.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 5,
+        "domain": "genderrevealcannon.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 8,
+        "domain": "confettified.com.au",
+        "type": "Confettified"
+      },
+      {
+        "pos": 9,
+        "domain": "www.amazon.com.au",
+        "type": "Amazon"
+      },
+      {
+        "pos": 10,
+        "domain": "www.pinterest.com",
+        "type": "Social"
+      }
+    ],
+    "gri": 3,
+    "confetti": 8,
+    "etsy": null,
+    "amazon": 2,
+    "griCtr": 0.1,
+    "conCtr": 0.025
+  },
+  {
+    "query": "gender reveal smoke bomb",
+    "slots": [
+      {
+        "pos": 1,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      },
+      {
+        "pos": 2,
+        "domain": "confettified.com.au",
+        "type": "Confettified"
+      },
+      {
+        "pos": 3,
+        "domain": "www.amazon.com",
+        "type": "Amazon"
+      },
+      {
+        "pos": 4,
+        "domain": "partyplanet.net.au",
+        "type": "Other"
+      },
+      {
+        "pos": 5,
+        "domain": "www.youtube.com",
+        "type": "Social"
+      },
+      {
+        "pos": 6,
+        "domain": "www.genderrevealexpress.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 7,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      },
+      {
+        "pos": 8,
+        "domain": "www.reddit.com",
+        "type": "Forum"
+      },
+      {
+        "pos": 9,
+        "domain": "genderrevealcannon.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 10,
+        "domain": "discountpartywarehouse.com.au",
+        "type": "Other"
+      }
+    ],
+    "gri": 1,
+    "confetti": 2,
+    "etsy": null,
+    "amazon": 3,
+    "griCtr": 0.3,
+    "conCtr": 0.15
+  },
+  {
+    "query": "gender reveal smoke bombs",
+    "slots": [
+      {
+        "pos": 1,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      },
+      {
+        "pos": 2,
+        "domain": "confettified.com.au",
+        "type": "Confettified"
+      },
+      {
+        "pos": 3,
+        "domain": "www.amazon.com",
+        "type": "Amazon"
+      },
+      {
+        "pos": 4,
+        "domain": "partyplanet.net.au",
+        "type": "Other"
+      },
+      {
+        "pos": 6,
+        "domain": "genderrevealcannon.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 9,
+        "domain": "preciouspreviews.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 10,
+        "domain": "www.reddit.com",
+        "type": "Forum"
+      }
+    ],
+    "gri": 1,
+    "confetti": 2,
+    "etsy": null,
+    "amazon": 3,
+    "griCtr": 0.3,
+    "conCtr": 0.15
+  },
+  {
+    "query": "gender reveal extinguisher",
+    "slots": [
+      {
+        "pos": 2,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      },
+      {
+        "pos": 3,
+        "domain": "aussiereveals.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 4,
+        "domain": "www.amazon.com",
+        "type": "Amazon"
+      },
+      {
+        "pos": 5,
+        "domain": "www.tiktok.com",
+        "type": "Social"
+      },
+      {
+        "pos": 6,
+        "domain": "www.babygendersurprise.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 7,
+        "domain": "www.pinterest.com",
+        "type": "Social"
+      }
+    ],
+    "gri": 2,
+    "confetti": null,
+    "etsy": null,
+    "amazon": 4,
+    "griCtr": 0.15,
+    "conCtr": 0
+  },
+  {
+    "query": "gender reveal kit",
+    "slots": [
+      {
+        "pos": 1,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      },
+      {
+        "pos": 2,
+        "domain": "bettervaluepharmacy.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 3,
+        "domain": "www.moobaba.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 4,
+        "domain": "intelligender.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 5,
+        "domain": "genderrevealcelebrations.com",
+        "type": "Other"
+      },
+      {
+        "pos": 7,
+        "domain": "www.instagram.com",
+        "type": "Social"
+      },
+      {
+        "pos": 8,
+        "domain": "www.amazingco.me",
+        "type": "Other"
+      }
+    ],
+    "gri": 1,
+    "confetti": null,
+    "etsy": null,
+    "amazon": null,
+    "griCtr": 0.3,
+    "conCtr": 0
+  },
+  {
+    "query": "gender reveal bundle",
+    "slots": [
+      {
+        "pos": 1,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      },
+      {
+        "pos": 3,
+        "domain": "genderrevealsaustralia.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 4,
+        "domain": "www.babygendersurprise.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 5,
+        "domain": "www.genderrevealexpress.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 6,
+        "domain": "www.thepartycupboard.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 7,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      },
+      {
+        "pos": 8,
+        "domain": "genderrevealcelebrations.com",
+        "type": "Other"
+      },
+      {
+        "pos": 9,
+        "domain": "www.perthgenderreveals.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 10,
+        "domain": "www.instagram.com",
+        "type": "Social"
+      }
+    ],
+    "gri": 1,
+    "confetti": null,
+    "etsy": null,
+    "amazon": null,
+    "griCtr": 0.3,
+    "conCtr": 0
+  },
+  {
+    "query": "gender reveal party",
+    "slots": [
+      {
+        "pos": 1,
+        "domain": "www.spotlightstores.com",
+        "type": "BigBox"
+      },
+      {
+        "pos": 3,
+        "domain": "en.wikipedia.org",
+        "type": "Other"
+      },
+      {
+        "pos": 4,
+        "domain": "genderrevealsaustralia.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 6,
+        "domain": "www.thebump.com",
+        "type": "Other"
+      },
+      {
+        "pos": 9,
+        "domain": "www.pinterest.com",
+        "type": "Social"
+      },
+      {
+        "pos": 10,
+        "domain": "www.thepartycupboard.com.au",
+        "type": "Other"
+      }
+    ],
+    "gri": null,
+    "confetti": null,
+    "etsy": null,
+    "amazon": null,
+    "griCtr": 0,
+    "conCtr": 0
+  },
+  {
+    "query": "gender reveal balloons",
+    "slots": [
+      {
+        "pos": 5,
+        "domain": "thecocoballoon.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 6,
+        "domain": "partysplendour.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 7,
+        "domain": "www.bigw.com.au",
+        "type": "BigBox"
+      },
+      {
+        "pos": 9,
+        "domain": "www.pinterest.com",
+        "type": "Social"
+      },
+      {
+        "pos": 10,
+        "domain": "www.burntbuttercakes.com.au",
+        "type": "Other"
+      }
+    ],
+    "gri": null,
+    "confetti": null,
+    "etsy": null,
+    "amazon": null,
+    "griCtr": 0,
+    "conCtr": 0
+  },
+  {
+    "query": "gender reveal decorations",
+    "slots": [
+      {
+        "pos": 2,
+        "domain": "preciouspreviews.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 3,
+        "domain": "www.discountpartysupplies.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 4,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      },
+      {
+        "pos": 5,
+        "domain": "www.spotlightstores.com",
+        "type": "BigBox"
+      },
+      {
+        "pos": 6,
+        "domain": "www.pinterest.com",
+        "type": "Social"
+      },
+      {
+        "pos": 7,
+        "domain": "www.bigw.com.au",
+        "type": "BigBox"
+      },
+      {
+        "pos": 8,
+        "domain": "www.pinterest.com",
+        "type": "Social"
+      },
+      {
+        "pos": 9,
+        "domain": "www.genderrevealexpress.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 10,
+        "domain": "www.thepartycupboard.com.au",
+        "type": "Other"
+      }
+    ],
+    "gri": 4,
+    "confetti": null,
+    "etsy": null,
+    "amazon": null,
+    "griCtr": 0.07,
+    "conCtr": 0
+  },
+  {
+    "query": "gender reveal powder",
+    "slots": [
+      {
+        "pos": 2,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      },
+      {
+        "pos": 3,
+        "domain": "holicolourpowder.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 4,
+        "domain": "www.perthgenderreveals.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 6,
+        "domain": "ali-ish.com",
+        "type": "Other"
+      },
+      {
+        "pos": 7,
+        "domain": "www.amazon.com.au",
+        "type": "Amazon"
+      },
+      {
+        "pos": 8,
+        "domain": "www.pinterest.com",
+        "type": "Social"
+      },
+      {
+        "pos": 9,
+        "domain": "www.genderrevealexpress.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 10,
+        "domain": "confettified.com.au",
+        "type": "Confettified"
+      }
+    ],
+    "gri": 2,
+    "confetti": 10,
+    "etsy": null,
+    "amazon": 7,
+    "griCtr": 0.15,
+    "conCtr": 0.018
+  },
+  {
+    "query": "gender reveal confetti",
+    "slots": [
+      {
+        "pos": 2,
+        "domain": "www.spotlightstores.com",
+        "type": "BigBox"
+      },
+      {
+        "pos": 3,
+        "domain": "kingconfetti.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 4,
+        "domain": "www.pinterest.com",
+        "type": "Social"
+      },
+      {
+        "pos": 5,
+        "domain": "www.amazon.com.au",
+        "type": "Amazon"
+      },
+      {
+        "pos": 6,
+        "domain": "genderrevealcannon.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 9,
+        "domain": "confettified.com.au",
+        "type": "Confettified"
+      },
+      {
+        "pos": 10,
+        "domain": "www.discountpartysupplies.com.au",
+        "type": "Other"
+      }
+    ],
+    "gri": null,
+    "confetti": 9,
+    "etsy": null,
+    "amazon": 5,
+    "griCtr": 0,
+    "conCtr": 0.02
+  },
+  {
+    "query": "baby gender reveal",
+    "slots": [
+      {
+        "pos": 3,
+        "domain": "thebasewarehouse.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 4,
+        "domain": "genderrevealsaustralia.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 6,
+        "domain": "www.thebump.com",
+        "type": "Other"
+      },
+      {
+        "pos": 7,
+        "domain": "purebaby.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 8,
+        "domain": "www.pinterest.com",
+        "type": "Social"
+      },
+      {
+        "pos": 9,
+        "domain": "www.partytimeonline.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 10,
+        "domain": "genderrevealcelebrations.com",
+        "type": "Other"
+      }
+    ],
+    "gri": null,
+    "confetti": null,
+    "etsy": null,
+    "amazon": null,
+    "griCtr": 0,
+    "conCtr": 0
+  },
+  {
+    "query": "gender reveal blaster",
+    "slots": [
+      {
+        "pos": 2,
+        "domain": "confettified.com.au",
+        "type": "Confettified"
+      },
+      {
+        "pos": 3,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      },
+      {
+        "pos": 4,
+        "domain": "kingconfetti.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 6,
+        "domain": "www.tiktok.com",
+        "type": "Social"
+      },
+      {
+        "pos": 8,
+        "domain": "www.genderrevealexpress.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 9,
+        "domain": "genderrevealcannon.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 10,
+        "domain": "www.amazon.com.au",
+        "type": "Amazon"
+      }
+    ],
+    "gri": 3,
+    "confetti": 2,
+    "etsy": null,
+    "amazon": 10,
+    "griCtr": 0.1,
+    "conCtr": 0.15
+  },
+  {
+    "query": "gender reveal sydney",
+    "slots": [
+      {
+        "pos": 4,
+        "domain": "www.instagram.com",
+        "type": "Social"
+      },
+      {
+        "pos": 5,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      },
+      {
+        "pos": 6,
+        "domain": "www.babygendersurprise.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 7,
+        "domain": "blackvelvetcakes.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 8,
+        "domain": "www.reddit.com",
+        "type": "Forum"
+      },
+      {
+        "pos": 10,
+        "domain": "www.kaboomconfetti.com.au",
+        "type": "Other"
+      }
+    ],
+    "gri": 5,
+    "confetti": null,
+    "etsy": null,
+    "amazon": null,
+    "griCtr": 0.05,
+    "conCtr": 0
+  },
+  {
+    "query": "gender reveal melbourne",
+    "slots": [
+      {
+        "pos": 3,
+        "domain": "www.genderrevealer.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 4,
+        "domain": "genderrevealcannon.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 5,
+        "domain": "www.burntbuttercakes.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 6,
+        "domain": "thecupcakequeens.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 7,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      },
+      {
+        "pos": 9,
+        "domain": "www.kaboomconfetti.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 10,
+        "domain": "foodvoyageur.com",
+        "type": "Other"
+      }
+    ],
+    "gri": 7,
+    "confetti": null,
+    "etsy": null,
+    "amazon": null,
+    "griCtr": 0.03,
+    "conCtr": 0
+  },
+  {
+    "query": "gender reveal brisbane",
+    "slots": [
+      {
+        "pos": 4,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      },
+      {
+        "pos": 5,
+        "domain": "preciouspreviews.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 6,
+        "domain": "cutecakesandco.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 7,
+        "domain": "www.balloonhq.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 9,
+        "domain": "genderrevealsaustralia.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 10,
+        "domain": "riverquayfish.com.au",
+        "type": "Other"
+      }
+    ],
+    "gri": 4,
+    "confetti": null,
+    "etsy": null,
+    "amazon": null,
+    "griCtr": 0.07,
+    "conCtr": 0
+  },
+  {
+    "query": "gender reveal perth",
+    "slots": [
+      {
+        "pos": 1,
+        "domain": "www.perthgenderreveals.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 2,
+        "domain": "www.instagram.com",
+        "type": "Social"
+      },
+      {
+        "pos": 3,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      },
+      {
+        "pos": 6,
+        "domain": "www.partysource.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 7,
+        "domain": "www.facebook.com",
+        "type": "Social"
+      },
+      {
+        "pos": 8,
+        "domain": "sweetlybakedperth.com",
+        "type": "Other"
+      },
+      {
+        "pos": 9,
+        "domain": "www.spotlightstores.com",
+        "type": "BigBox"
+      },
+      {
+        "pos": 10,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      }
+    ],
+    "gri": 3,
+    "confetti": null,
+    "etsy": null,
+    "amazon": null,
+    "griCtr": 0.1,
+    "conCtr": 0
+  },
+  {
+    "query": "gender reveal adelaide",
+    "slots": [
+      {
+        "pos": 4,
+        "domain": "www.adelaidestarlightentertainment.com",
+        "type": "Other"
+      },
+      {
+        "pos": 5,
+        "domain": "www.instagram.com",
+        "type": "Social"
+      },
+      {
+        "pos": 6,
+        "domain": "www.hayleysflowershop.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 7,
+        "domain": "www.spotlightstores.com",
+        "type": "BigBox"
+      },
+      {
+        "pos": 8,
+        "domain": "puffandpop.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 9,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      },
+      {
+        "pos": 10,
+        "domain": "feast.org.au",
+        "type": "Other"
+      }
+    ],
+    "gri": 9,
+    "confetti": null,
+    "etsy": null,
+    "amazon": null,
+    "griCtr": 0.02,
+    "conCtr": 0
+  },
+  {
+    "query": "gender reveal gold coast",
+    "slots": [
+      {
+        "pos": 4,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      },
+      {
+        "pos": 5,
+        "domain": "eatsandtreats.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 6,
+        "domain": "myfavouritebaker.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 7,
+        "domain": "sky-ads.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 8,
+        "domain": "www.facebook.com",
+        "type": "Social"
+      },
+      {
+        "pos": 9,
+        "domain": "upevents.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 10,
+        "domain": "www.genderrevealexpress.com.au",
+        "type": "Other"
+      }
+    ],
+    "gri": 4,
+    "confetti": null,
+    "etsy": null,
+    "amazon": null,
+    "griCtr": 0.07,
+    "conCtr": 0
+  },
+  {
+    "query": "gender reveal ideas sydney",
+    "slots": [
+      {
+        "pos": 2,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      },
+      {
+        "pos": 3,
+        "domain": "genderrevealideasnz.com",
+        "type": "GRI"
+      },
+      {
+        "pos": 4,
+        "domain": "www.instagram.com",
+        "type": "Social"
+      },
+      {
+        "pos": 7,
+        "domain": "www.babygendersurprise.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 8,
+        "domain": "www.pinterest.com",
+        "type": "Social"
+      },
+      {
+        "pos": 9,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      },
+      {
+        "pos": 10,
+        "domain": "genderrevealsaustralia.com.au",
+        "type": "Other"
+      }
+    ],
+    "gri": 2,
+    "confetti": null,
+    "etsy": null,
+    "amazon": null,
+    "griCtr": 0.15,
+    "conCtr": 0
+  },
+  {
+    "query": "gender reveal ideas melbourne",
+    "slots": [
+      {
+        "pos": 1,
+        "domain": "genderrevealcannon.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 2,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      },
+      {
+        "pos": 3,
+        "domain": "sanlorenzorestaurant.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 5,
+        "domain": "www.genderrevealer.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 6,
+        "domain": "www.instagram.com",
+        "type": "Social"
+      },
+      {
+        "pos": 7,
+        "domain": "www.hoshii.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 8,
+        "domain": "genderrevealsaustralia.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 9,
+        "domain": "aussiereveals.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 10,
+        "domain": "www.thebigletterco.com.au",
+        "type": "Other"
+      }
+    ],
+    "gri": 2,
+    "confetti": null,
+    "etsy": null,
+    "amazon": null,
+    "griCtr": 0.15,
+    "conCtr": 0
+  },
+  {
+    "query": "gender reveal ideas brisbane",
+    "slots": [
+      {
+        "pos": 1,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      },
+      {
+        "pos": 2,
+        "domain": "www.brisbanenewbornphotography.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 4,
+        "domain": "genderrevealsaustralia.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 6,
+        "domain": "preciouspreviews.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 7,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      },
+      {
+        "pos": 8,
+        "domain": "www.balloonhq.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 9,
+        "domain": "allfiredup.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 10,
+        "domain": "www.facebook.com",
+        "type": "Social"
+      }
+    ],
+    "gri": 1,
+    "confetti": null,
+    "etsy": null,
+    "amazon": null,
+    "griCtr": 0.3,
+    "conCtr": 0
+  },
+  {
+    "query": "gender reveal ideas perth",
+    "slots": [
+      {
+        "pos": 1,
+        "domain": "www.perthgenderreveals.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 2,
+        "domain": "www.instagram.com",
+        "type": "Social"
+      },
+      {
+        "pos": 4,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      },
+      {
+        "pos": 6,
+        "domain": "www.spotlightstores.com",
+        "type": "BigBox"
+      },
+      {
+        "pos": 8,
+        "domain": "www.partysource.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 9,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      },
+      {
+        "pos": 10,
+        "domain": "www.facebook.com",
+        "type": "Social"
+      }
+    ],
+    "gri": 4,
+    "confetti": null,
+    "etsy": null,
+    "amazon": null,
+    "griCtr": 0.07,
+    "conCtr": 0
+  },
+  {
+    "query": "gender reveal ideas adelaide",
+    "slots": [
+      {
+        "pos": 1,
+        "domain": "genderrevealideas.com.au",
+        "type": "GRI"
+      },
+      {
+        "pos": 2,
+        "domain": "www.adelaidestarlightentertainment.com",
+        "type": "Other"
+      },
+      {
+        "pos": 3,
+        "domain": "www.instagram.com",
+        "type": "Social"
+      },
+      {
+        "pos": 4,
+        "domain": "www.spotlightstores.com",
+        "type": "BigBox"
+      },
+      {
+        "pos": 5,
+        "domain": "www.hayleysflowershop.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 6,
+        "domain": "www.genderrevealexpress.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 7,
+        "domain": "adelaidemumsgroup.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 8,
+        "domain": "genderrevealideasnz.com",
+        "type": "GRI"
+      },
+      {
+        "pos": 9,
+        "domain": "www.instagram.com",
+        "type": "Social"
+      }
+    ],
+    "gri": 1,
+    "confetti": null,
+    "etsy": null,
+    "amazon": null,
+    "griCtr": 0.3,
+    "conCtr": 0
+  },
+  {
+    "query": "pregnancy announcement",
+    "slots": [
+      {
+        "pos": 1,
+        "domain": "mamabearbaby.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 2,
+        "domain": "thehumblegiftco.com.au",
+        "type": "Other"
+      },
+      {
+        "pos": 3,
+        "domain": "www.canva.com",
+        "type": "Other"
+      },
+      {
+        "pos": 4,
+        "domain": "www.thebump.com",
+        "type": "Other"
+      },
+      {
+        "pos": 5,
+        "domain": "www.pinterest.com",
+        "type": "Social"
+      },
+      {
+        "pos": 8,
+        "domain": "www.etsy.com",
+        "type": "Etsy"
+      },
+      {
+        "pos": 9,
+        "domain": "www.happiestbaby.com",
+        "type": "Other"
+      },
+      {
+        "pos": 10,
+        "domain": "purebaby.com.au",
+        "type": "Other"
+      }
+    ],
+    "gri": null,
+    "confetti": null,
+    "etsy": 8,
+    "amazon": null,
+    "griCtr": 0,
+    "conCtr": 0
+  }
+]

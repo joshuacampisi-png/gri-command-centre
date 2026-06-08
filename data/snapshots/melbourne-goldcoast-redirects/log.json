@@ -1,0 +1,33 @@
+{
+  "shippedAt": "2026-05-28T09:42:41.853Z",
+  "createdRedirectIds": [
+    384118358105,
+    384118390873,
+    384118423641,
+    384118456409
+  ],
+  "created": [
+    {
+      "from": "/collections/gender-reveal-balloons-melbourne",
+      "to": "/collections/gender-reveal-ideas-melbourne",
+      "id": 384118358105
+    },
+    {
+      "from": "/collections/gender-reveal-cannons-nbsp-melbourne",
+      "to": "/collections/gender-reveal-ideas-melbourne",
+      "id": 384118390873
+    },
+    {
+      "from": "/collections/gender-reveal-cannons-gold-coast",
+      "to": "/collections/gender-reveal-ideas-gold-coast",
+      "id": 384118423641
+    },
+    {
+      "from": "/collections/gender-reveal-balloons-gold-coast",
+      "to": "/collections/gender-reveal-ideas-gold-coast",
+      "id": 384118456409
+    }
+  ],
+  "skipped": [],
+  "errors": []
+}

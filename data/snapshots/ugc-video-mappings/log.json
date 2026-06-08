@@ -1,0 +1,137 @@
+{
+  "shippedAt": "2026-05-29T04:10:08.276Z",
+  "changes": {
+    "indexJson": [
+      {
+        "blockId": "video_rMW9Fn",
+        "filename": "shopify://files/videos/tnt 26.11.mp4",
+        "oldProduct": "gender-reveal-soccer-ball",
+        "newProduct": "tnt-gender-reveal-australia",
+        "reason": "TNT video was linked to soccer ball"
+      },
+      {
+        "blockId": "video_dDTXFd",
+        "filename": "shopify://files/videos/soph mini blaster 21.05.25.mp4",
+        "oldProduct": "gender-reveal-extinguishers-australia",
+        "newProduct": "gender-reveal-extinguisher-australia",
+        "reason": "Mini Blaster handle typo (had extra s)"
+      }
+    ],
+    "auJson": [
+      {
+        "position": 1,
+        "blockId": "video_w49QA",
+        "oldProduct": "",
+        "newProduct": "gender-reveal-powder-cannons-extinguisher"
+      },
+      {
+        "position": 2,
+        "blockId": "video_PekbJ",
+        "oldProduct": "",
+        "newProduct": "mega-gender-reveal-powder-blaster"
+      },
+      {
+        "position": 3,
+        "blockId": "video_EBiGb",
+        "oldProduct": "",
+        "newProduct": "mega-gender-reveal-powder-blaster"
+      },
+      {
+        "position": 4,
+        "blockId": "video_cwJR8",
+        "oldProduct": "",
+        "newProduct": "gender-reveal-confetti-cannons-australia"
+      },
+      {
+        "position": 5,
+        "blockId": "video_brUnE",
+        "oldProduct": "",
+        "newProduct": "gender-reveal-smoke-bomb-bundle"
+      },
+      {
+        "position": 6,
+        "blockId": "video_K9LEd",
+        "oldProduct": "",
+        "newProduct": "gender-reveal-smoke-bombs"
+      },
+      {
+        "position": 7,
+        "blockId": "video_7zaTH",
+        "oldProduct": "",
+        "newProduct": "gender-reveal-smoke-bombs"
+      },
+      {
+        "position": 8,
+        "blockId": "video_tJ8BE",
+        "oldProduct": "",
+        "newProduct": "tnt-gender-reveal-australia"
+      },
+      {
+        "position": 9,
+        "blockId": "video_Qj7kU",
+        "oldProduct": "",
+        "newProduct": "tnt-gender-reveal-australia"
+      },
+      {
+        "position": 10,
+        "blockId": "video_RiQmP",
+        "oldProduct": "",
+        "newProduct": "gender-reveal-exploding-soccer-ball"
+      },
+      {
+        "position": 11,
+        "blockId": "video_mVxw4",
+        "oldProduct": "",
+        "newProduct": "tnt-gender-reveal-australia"
+      },
+      {
+        "position": 12,
+        "blockId": "video_MRbgM",
+        "oldProduct": "",
+        "newProduct": "tnt-gender-reveal-australia"
+      },
+      {
+        "position": 13,
+        "blockId": "video_8Vw9f",
+        "oldProduct": "",
+        "newProduct": "gender-reveal-extinguisher-australia"
+      },
+      {
+        "position": 14,
+        "blockId": "video_PbJAY",
+        "oldProduct": "",
+        "newProduct": "gender-reveal-rugby-ball"
+      },
+      {
+        "position": 15,
+        "blockId": "video_yDL6f",
+        "oldProduct": "",
+        "newProduct": "gender-reveal-powder-cannons-extinguisher"
+      },
+      {
+        "position": 16,
+        "blockId": "video_Tdjim",
+        "oldProduct": "",
+        "newProduct": "gender-reveal-burn-away-topper"
+      },
+      {
+        "position": 17,
+        "blockId": "video_DaYPg",
+        "oldProduct": "",
+        "newProduct": "gender-reveal-powder-cannons-extinguisher"
+      },
+      {
+        "position": 18,
+        "blockId": "video_pQYeL",
+        "oldProduct": "",
+        "newProduct": "gender-reveal-powder-cannons-extinguisher"
+      },
+      {
+        "position": 19,
+        "blockId": "video_gXae6",
+        "oldProduct": "",
+        "newProduct": "gender-reveal-powder-cannons-extinguisher"
+      }
+    ]
+  }
+}

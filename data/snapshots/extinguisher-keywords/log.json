@@ -1,0 +1,128 @@
+{
+  "shippedAt": "2026-05-29T01:13:53.105Z",
+  "campaignId": "21094179575",
+  "adGroupId": "165478691408",
+  "addedPositives": [
+    {
+      "text": "gender reveal mega blaster",
+      "match": 2,
+      "proof": "126k PMAX imp, 45.3 conv, $6,161 rev"
+    },
+    {
+      "text": "gender reveal blasters",
+      "match": 2,
+      "proof": "7,450 PMAX imp, 6.9 conv, $1,254 rev"
+    },
+    {
+      "text": "gender reveal extinguisher near me",
+      "match": 2,
+      "proof": "5,182 PMAX imp, 1.0 conv, $463 rev"
+    },
+    {
+      "text": "gender reveal extinguishers",
+      "match": 2,
+      "proof": "75 Search imp, 2.1 conv, $376 rev"
+    },
+    {
+      "text": "gender reveal colour blaster",
+      "match": 2,
+      "proof": "5,266 PMAX imp, 1.6 conv, $253 rev"
+    },
+    {
+      "text": "gender reveal blaster",
+      "match": 2,
+      "proof": "124 Search imp, 1.0 conv, $260 rev"
+    },
+    {
+      "text": "gender reveal powder extinguisher",
+      "match": 2,
+      "proof": "134 imp, 1.0 conv, $92 rev"
+    },
+    {
+      "text": "gender extinguisher",
+      "match": 2,
+      "proof": "92 imp, 1.0 conv, $49 rev"
+    },
+    {
+      "text": "gender reveal smoke blaster",
+      "match": 2,
+      "proof": "44 imp, 1.0 conv, $54 rev"
+    }
+  ],
+  "addedPositiveResources": [
+    "customers/9431746480/adGroupCriteria/165478691408~2416317816141",
+    "customers/9431746480/adGroupCriteria/165478691408~963388950699",
+    "customers/9431746480/adGroupCriteria/165478691408~1419887410225",
+    "customers/9431746480/adGroupCriteria/165478691408~1570023376059",
+    "customers/9431746480/adGroupCriteria/165478691408~1419822797504",
+    "customers/9431746480/adGroupCriteria/165478691408~766327209587",
+    "customers/9431746480/adGroupCriteria/165478691408~932252070221",
+    "customers/9431746480/adGroupCriteria/165478691408~1645723669861",
+    "customers/9431746480/adGroupCriteria/165478691408~1832371808562"
+  ],
+  "addedNegatives": [
+    {
+      "text": "co2 fire extinguisher",
+      "match": 2,
+      "reason": "1,300/mo wrong product"
+    },
+    {
+      "text": "water fire extinguisher",
+      "match": 2,
+      "reason": "1,000/mo real fire product"
+    },
+    {
+      "text": "foam fire extinguisher",
+      "match": 2,
+      "reason": "1,000/mo real fire product"
+    },
+    {
+      "text": "fire extinguisher service",
+      "match": 3,
+      "reason": "880/mo inspection/service intent"
+    },
+    {
+      "text": "fire extinguisher inspection",
+      "match": 3,
+      "reason": "590/mo safety service"
+    },
+    {
+      "text": "fire extinguisher bracket",
+      "match": 2,
+      "reason": "720/mo mounting hardware"
+    },
+    {
+      "text": "fire extinguisher cabinet",
+      "match": 2,
+      "reason": "260/mo storage product"
+    },
+    {
+      "text": "fire extinguisher refill",
+      "match": 2,
+      "reason": "170/mo refill service"
+    },
+    {
+      "text": "real fire extinguisher",
+      "match": 2,
+      "reason": "real safety product"
+    },
+    {
+      "text": "fire extinguisher for sale",
+      "match": 3,
+      "reason": "real product buyers"
+    }
+  ],
+  "addedNegativeResources": [
+    "customers/9431746480/campaignCriteria/21094179575~503545200",
+    "customers/9431746480/campaignCriteria/21094179575~332308020",
+    "customers/9431746480/campaignCriteria/21094179575~313676527",
+    "customers/9431746480/campaignCriteria/21094179575~293724744",
+    "customers/9431746480/campaignCriteria/21094179575~750698106",
+    "customers/9431746480/campaignCriteria/21094179575~412098365",
+    "customers/9431746480/campaignCriteria/21094179575~1440459052",
+    "customers/9431746480/campaignCriteria/21094179575~1867543648",
+    "customers/9431746480/campaignCriteria/21094179575~896917681101",
+    "customers/9431746480/campaignCriteria/21094179575~277703316"
+  ],
+  "errors": []
+}

@@ -8,7 +8,7 @@ import { join } from 'path'
 import multer from 'multer'
 import { dataFile, dataDir } from '../lib/data-dir.js'
 import { callClaude } from '../lib/claude-guard.js'
-import { isInstagramConfigured, publishImage, publishCarousel, publishReel } from '../lib/instagram-publisher.js'
+import { isInstagramConfigured, publishImage, publishCarousel, publishReel, igGet, igAccountId } from '../lib/instagram-publisher.js'
 
 const router = Router()
 
@@ -46,8 +46,13 @@ const upload = multer({
     // accept everything and either convert or fail loudly downstream.
     const mt = (file.mimetype || '').toLowerCase()
     const ext = (file.originalname || '').toLowerCase().split('.').pop()
+    // Reject HEIC/HEIF upfront — Meta IG API does not accept them and they fail
+    // silently on the publish step, leaving the post in PUBLISHING state forever.
+    if (ext === 'heic' || ext === 'heif' || mt === 'image/heic' || mt === 'image/heif') {
+      return cb(new Error(`HEIC files aren't supported by Instagram. Convert "${file.originalname}" to JPG/PNG first (iPhone: Settings → Camera → Formats → Most Compatible).`), false)
+    }
     const okMime = mt.startsWith('image/') || mt.startsWith('video/')
-    const okExt = ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif', 'gif', 'bmp', 'mp4', 'mov', 'm4v', 'webm', 'avi'].includes(ext)
+    const okExt = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'mp4', 'mov', 'm4v', 'webm', 'avi'].includes(ext)
     if (okMime || okExt) {
       cb(null, true)
     } else {
@@ -59,9 +64,36 @@ const upload = multer({
 
 // ── Routes ──────────────────────────────────────────────────────────────────
 
-// Status check
-router.get('/status', (_req, res) => {
-  res.json({ configured: isInstagramConfigured() })
+// Status check — actually pings Meta so we know if auth is alive (not just configured)
+router.get('/status', async (_req, res) => {
+  const configured = isInstagramConfigured()
+  if (!configured) return res.json({ configured: false, healthy: false, error: 'No token/account configured' })
+  try {
+    const me = await igGet(`/${igAccountId()}`, { fields: 'username,name' })
+    const appUrlRaw = process.env.APP_URL || process.env.RAILWAY_PUBLIC_URL || ''
+    const appUrlOk = /^https?:\/\//.test(appUrlRaw) && !appUrlRaw.includes('localhost')
+    res.json({ configured: true, healthy: true, username: me.username, name: me.name, appUrlOk, appUrl: appUrlRaw || null })
+  } catch (err) {
+    res.json({ configured: true, healthy: false, error: err.message })
+  }
+})
+
+// Retry a FAILED post — resets attempts so the cron picks it up again
+router.post('/entries/:id/retry', (req, res) => {
+  const posts = loadPosts()
+  const post = posts.find(p => p.id === req.params.id)
+  if (!post) return res.status(404).json({ error: 'Post not found' })
+  if (post.status === 'PUBLISHED') return res.status(400).json({ error: 'Already published' })
+  post.status = 'SCHEDULED'
+  post.attempts = 0
+  post.error = null
+  post.lastAttemptAt = null
+  // If scheduledAt is in the past, push it 1 minute out so cron fires next tick
+  if (!post.scheduledAt || new Date(post.scheduledAt) <= new Date()) {
+    post.scheduledAt = new Date(Date.now() + 60 * 1000).toISOString()
+  }
+  savePosts(posts)
+  res.json({ ok: true, post })
 })
 
 // List all posts
@@ -149,7 +181,15 @@ router.post('/entries/:id/publish-now', async (req, res) => {
   savePosts(posts)
 
   try {
-    const appUrl = process.env.APP_URL || process.env.RAILWAY_PUBLIC_URL || `http://localhost:${process.env.PORT || 8787}`
+    let appUrl = process.env.APP_URL || process.env.RAILWAY_PUBLIC_URL
+    // In production, refuse to publish images via localhost — Meta can't fetch from it.
+    // Use the inbound request's host as a last resort so it never silently posts garbage.
+    if (!appUrl || appUrl.includes('localhost')) {
+      const proto = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http')
+      const host = req.headers['x-forwarded-host'] || req.headers.host
+      if (host && !host.includes('localhost')) appUrl = `${proto}://${host}`
+      else if (post.type !== 'reel') throw new Error('APP_URL not configured — Meta cannot fetch media from localhost. Set APP_URL in Railway env to the public domain.')
+    }
     const fullUrls = (post.mediaUrls || []).map(u => u.startsWith('http') ? u : `${appUrl}${u}`)
 
     let result

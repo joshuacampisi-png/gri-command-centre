@@ -1,0 +1,1071 @@
+{
+  "sections": {
+    "slideshow_U7f3AH": {
+      "type": "slideshow",
+      "blocks": {
+        "slide_9djcXh": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify:\/\/shop_images\/GRI_Hero_Desktop_2026-05.webp",
+            "mobile_image": "shopify:\/\/shop_images\/GRI_Hero_Mobile_2026-05_v2.webp",
+            "heading": "Image slide",
+            "heading_size": "h1",
+            "subheading": "Tell your brand's story through images",
+            "button_label": "Button label",
+            "link": "shopify:\/\/collections\/gender-reveal-bundles",
+            "button_style_secondary": false,
+            "box_align": "middle-center",
+            "show_text_box": true,
+            "text_alignment": "center",
+            "image_overlay_opacity": 0,
+            "color_scheme": "background-1",
+            "text_alignment_mobile": "center"
+          }
+        }
+      },
+      "block_order": [
+        "slide_9djcXh"
+      ],
+      "custom_css": [
+        ".slider-button,.slider-button:not([disabled]):hover {color: #3bb4c0;}",
+        ".slider-counter__link--dots .dot {border-color: #3bb4c0;}",
+        ".slider-counter__link--active.slider-counter__link--dots .dot {background: #3bb4c0;}",
+        ".banner__text.rte {margin-top: 0; margin-bottom: 2rem;}"
+      ],
+      "settings": {
+        "layout": "full_bleed",
+        "slide_height": "adapt_image",
+        "slider_visual": "dots",
+        "auto_rotate": false,
+        "change_slides_speed": 9,
+        "image_behavior": "none",
+        "show_text_below": false,
+        "accessibility_info": "Slideshow about our brand"
+      }
+    },
+    "social_proof_hXM73G": {
+      "type": "social_proof",
+      "settings": {}
+    },
+    "split_hero_njErYi": {
+      "type": "split-hero",
+      "blocks": {
+        "hero_item_RUCWGQ": {
+          "type": "hero_item",
+          "settings": {
+            "hero_banner": "shopify:\/\/shop_images\/Crowd_Favourite.png",
+            "color_overlay": "pink",
+            "hero_subtitle": "Crowd",
+            "hero_title": "Favourites",
+            "button_url": "shopify:\/\/collections\/best-gender-reveal-ideas",
+            "button_text": "Shop Range"
+          }
+        },
+        "hero_item_zPyFpr": {
+          "type": "hero_item",
+          "settings": {
+            "hero_banner": "shopify:\/\/shop_images\/Best_Seller_1.png",
+            "color_overlay": "blue",
+            "hero_subtitle": "Top 5",
+            "hero_title": "Best Sellers",
+            "button_url": "shopify:\/\/collections\/top-5-gender-reveal-ideas",
+            "button_text": "Shop Range"
+          }
+        }
+      },
+      "block_order": [
+        "hero_item_RUCWGQ",
+        "hero_item_zPyFpr"
+      ],
+      "settings": {
+        "padding_top": 60,
+        "padding_bottom": 0
+      }
+    },
+    "video_carousel_6HwtRR": {
+      "type": "video-carousel",
+      "blocks": {
+        "video_4xHPUx": {
+          "type": "video",
+          "settings": {
+            "html5_video": "shopify:\/\/files\/videos\/SnapInsta-Ai_3640009199883972127.mp4",
+            "product": "gender-reveal-powder-cannons-extinguisher",
+            "collection": ""
+          }
+        },
+        "video_g8FhFL": {
+          "type": "video",
+          "settings": {
+            "html5_video": "shopify:\/\/files\/videos\/SnapInsta-Ai_3640129744906943654.mp4",
+            "product": "mega-gender-reveal-powder-blaster",
+            "collection": ""
+          }
+        },
+        "video_6bKFaa": {
+          "type": "video",
+          "settings": {
+            "html5_video": "shopify:\/\/files\/videos\/08.07.25 Sophie .mp4",
+            "product": "mega-gender-reveal-powder-blaster",
+            "collection": ""
+          }
+        },
+        "video_P9kBan": {
+          "type": "video",
+          "settings": {
+            "html5_video": "shopify:\/\/files\/videos\/snapins-ai_3566265274059909522_387dfb94-69ea-4857-9dcb-c5e95f0f8d16.mp4",
+            "product": "gender-reveal-confetti-cannons-australia",
+            "collection": ""
+          }
+        },
+        "video_qgqYAD": {
+          "type": "video",
+          "settings": {
+            "html5_video": "shopify:\/\/files\/videos\/smoke. bombs_9a4301fa-97fa-44b1-9358-ff4654f1e153.mp4",
+            "product": "gender-reveal-smoke-bomb-bundle",
+            "collection": ""
+          }
+        },
+        "video_bmi7gh": {
+          "type": "video",
+          "settings": {
+            "html5_video": "shopify:\/\/files\/videos\/smoke colours bomb.mp4",
+            "product": "gender-reveal-smoke-bombs",
+            "collection": ""
+          }
+        },
+        "video_x9XUxq": {
+          "type": "video",
+          "settings": {
+            "html5_video": "shopify:\/\/files\/videos\/SnapInsta-Ai_3722120300608476230_a1ac20f1-6e1c-45c8-8e7e-39f80f93e474.mp4",
+            "product": "gender-reveal-smoke-bombs",
+            "collection": ""
+          }
+        },
+        "video_L9gRLc": {
+          "type": "video",
+          "settings": {
+            "html5_video": "shopify:\/\/files\/videos\/snapins-ai_3747038705694132794_00c04424-e48a-4c5d-ae62-14dad52969f1.mp4",
+            "product": "tnt-gender-reveal-australia",
+            "collection": ""
+          }
+        },
+        "video_WBkGT7": {
+          "type": "video",
+          "settings": {
+            "html5_video": "shopify:\/\/files\/videos\/8.8.2025mp4_c232cdc6-46e4-42bb-84f6-517f691cd35d.mp4",
+            "product": "tnt-gender-reveal-australia",
+            "collection": ""
+          }
+        },
+        "video_kCznXc": {
+          "type": "video",
+          "settings": {
+            "html5_video": "shopify:\/\/files\/videos\/SnapInsta-Ai_3719956040147362931.mp4",
+            "product": "gender-reveal-exploding-soccer-ball",
+            "collection": ""
+          }
+        },
+        "video_rMW9Fn": {
+          "type": "video",
+          "settings": {
+            "html5_video": "shopify:\/\/files\/videos\/tnt 26.11.mp4",
+            "product": "gender-reveal-soccer-ball",
+            "collection": ""
+          }
+        },
+        "video_CUAdPX": {
+          "type": "video",
+          "settings": {
+            "html5_video": "shopify:\/\/files\/videos\/snapins-ai_3606337044013679292_113274f6-476e-4a46-a878-7e1fd3dcfc1b.mp4",
+            "product": "tnt-gender-reveal-australia",
+            "collection": ""
+          }
+        },
+        "video_dDTXFd": {
+          "type": "video",
+          "settings": {
+            "html5_video": "shopify:\/\/files\/videos\/Soph Mini Blaster 21.05.25.MP4",
+            "product": "gender-reveal-extinguishers-australia",
+            "collection": ""
+          }
+        },
+        "video_dDwQgc": {
+          "type": "video",
+          "settings": {
+            "html5_video": "shopify:\/\/files\/videos\/SnapInsta-Ai_3735596321622053789_2fa25c76-5a1a-40f4-b584-8cbf238c6ec6.mp4",
+            "product": "gender-reveal-rugby-ball",
+            "collection": ""
+          }
+        },
+        "video_h8TFxP": {
+          "type": "video",
+          "settings": {
+            "html5_video": "shopify:\/\/files\/videos\/SnapInsta-Ai_3743146355654325665_ab1d4578-fc8c-439d-bcc1-2f93c34d03d1.mp4",
+            "product": "gender-reveal-powder-cannons-extinguisher",
+            "collection": ""
+          }
+        },
+        "video_36BWP6": {
+          "type": "video",
+          "settings": {
+            "html5_video": "shopify:\/\/files\/videos\/Burn Away Cake Topper Sun 15.06.25_74a51f98-6c44-4bee-b8b2-dbd04f33fca7.mp4",
+            "product": "gender-reveal-burn-away-topper",
+            "collection": ""
+          }
+        },
+        "video_BR7gKJ": {
+          "type": "video",
+          "settings": {
+            "html5_video": "shopify:\/\/files\/videos\/IMG_2966.mp4",
+            "product": "gender-reveal-powder-cannons-extinguisher",
+            "collection": ""
+          }
+        },
+        "video_xLhnKa": {
+          "type": "video",
+          "settings": {
+            "html5_video": "shopify:\/\/files\/videos\/SnapInsta-Ai_3751118595658230023_8239cd2a-7d90-4bb1-a1b9-ad6892b62b2f.mp4",
+            "product": "gender-reveal-powder-cannons-extinguisher",
+            "collection": ""
+          }
+        },
+        "video_4jrJYE": {
+          "type": "video",
+          "settings": {
+            "html5_video": "shopify:\/\/files\/videos\/01.07.25_4cec9323-3b4a-401c-a18b-7ea15e4c6c41.mp4",
+            "product": "gender-reveal-powder-cannons-extinguisher",
+            "collection": ""
+          }
+        }
+      },
+      "block_order": [
+        "video_4xHPUx",
+        "video_g8FhFL",
+        "video_6bKFaa",
+        "video_P9kBan",
+        "video_qgqYAD",
+        "video_bmi7gh",
+        "video_x9XUxq",
+        "video_L9gRLc",
+        "video_WBkGT7",
+        "video_kCznXc",
+        "video_rMW9Fn",
+        "video_CUAdPX",
+        "video_dDTXFd",
+        "video_dDwQgc",
+        "video_h8TFxP",
+        "video_36BWP6",
+        "video_BR7gKJ",
+        "video_xLhnKa",
+        "video_4jrJYE"
+      ],
+      "name": "Video carousel",
+      "settings": {
+        "badge_text": "Real Reveals, Real Families",
+        "heading_start": "See It",
+        "heading_highlight": "In Action",
+        "subheading": "Watch real Australian families create unforgettable gender reveal moments with our products",
+        "cta_text": "<p>Tag <strong>@gender.reveal.ideass<\/strong> in your reveal video for a chance to be featured<\/p>",
+        "cta_button_text": "Share Your Reveal",
+        "cta_url": "",
+        "padding_top": 60,
+        "padding_bottom": 40
+      }
+    },
+    "slide_with_text_mVgGMg": {
+      "type": "slide-with-text",
+      "blocks": {
+        "image_k7weJb": {
+          "type": "image",
+          "settings": {
+            "image": "shopify:\/\/shop_images\/2C23CA98-A45A-4445-861C-62D31CA1413A.png",
+            "slide_title": "Bea",
+            "slide_subtitle": "Operations Manager",
+            "subtitle_icon": "shopify:\/\/shop_images\/operation-management-22.png",
+            "slide_description": "<p>Bea is dedicated to providing realtime customer service and ensuring your gender reveal is perfectly organised from start to finish.<\/p>"
+          }
+        },
+        "image_VA8bDY": {
+          "type": "image",
+          "settings": {
+            "image": "shopify:\/\/shop_images\/8B7A0951-EBE4-4ABA-8443-341DD6F76984.png",
+            "slide_title": "Soph",
+            "slide_subtitle": "Lead Content Creator",
+            "subtitle_icon": "shopify:\/\/shop_images\/camera.png",
+            "slide_description": "<p>Soph manages all our social media, bringing our products to life on camera. As the face of Gender Reveal Ideas, she makes every reveal look amazing.<\/p>"
+          }
+        },
+        "image_88kbXw": {
+          "type": "image",
+          "settings": {
+            "image": "shopify:\/\/shop_images\/CD8DDB49-DC75-4501-A146-2DABF34CDAF6.png",
+            "slide_title": "Kent",
+            "slide_subtitle": "Chief Dispatch Officer",
+            "subtitle_icon": "shopify:\/\/shop_images\/logistics-delivery.png",
+            "slide_description": "<p>Kent oversees our dispatch team, making sure every gender reveal order is packed discreetly and shipped quickly and safely.<\/p>"
+          }
+        }
+      },
+      "block_order": [
+        "image_k7weJb",
+        "image_VA8bDY",
+        "image_88kbXw"
+      ],
+      "disabled": true,
+      "name": "Slide with Text",
+      "settings": {
+        "title": "Meet the Team Behind <strong>Gender Reveal Ideas<\/strong>"
+      }
+    },
+    "stack_and_save_ixU8Lh": {
+      "type": "stack-and-save",
+      "disabled": true,
+      "settings": {
+        "section_title": "Stack and Save",
+        "section_subtitle": "<p>Buy more, save more – enjoy discounts of up to 20%! <\/p><p>The more you stack, the more you save!<\/p>",
+        "cover_photo": "shopify:\/\/shop_images\/stack-and-save-hero_52f2e8c8-ce02-41b8-a11a-1a0c78afdb1e.webp",
+        "mobile_cover_photo": "shopify:\/\/shop_images\/stack-and-save-hero-mobile.webp",
+        "cta_link": "shopify:\/\/pages\/stack-and-save",
+        "cta_text": "Start Stacking!"
+      }
+    },
+    "featured_product_new_gdgfKB": {
+      "type": "featured-product-new",
+      "name": "Featured Product (NEW)",
+      "settings": {
+        "desktop_image": "shopify:\/\/shop_images\/TNT_Banner_-_Desktop_2.png",
+        "mobile_image": "shopify:\/\/shop_images\/TNT_Banner_-_Mobile_2.png",
+        "title": "SELF HIRE TNT REVEAL",
+        "dsecription": "<p>AUSTRALIA'S MOST EXPLOSIVE GENDER REVEAL IS NOW AVAILABLE TO HIRE, EFFORTLESS SETUP, UNFORGETTABLE RESULTS!<\/p>",
+        "cta_link": "shopify:\/\/products\/tnt-gender-reveal-australia",
+        "cta_text": "Book Now!"
+      }
+    },
+    "featured_collection_QTH7dx": {
+      "type": "featured-collection",
+      "custom_css": [],
+      "settings": {
+        "title": "Gender Reveal ideas Australia",
+        "heading_size": "h1",
+        "heading_tag": "h2",
+        "description": "",
+        "show_description": false,
+        "description_style": "body",
+        "collection": "gender-reveal-ideas",
+        "products_to_show": 10,
+        "columns_desktop": 5,
+        "full_width": false,
+        "show_view_all": true,
+        "view_all_style": "solid",
+        "enable_desktop_slider": false,
+        "color_scheme": "",
+        "image_ratio": "adapt",
+        "image_shape": "default",
+        "show_secondary_image": true,
+        "show_vendor": false,
+        "show_rating": false,
+        "enable_quick_add": true,
+        "columns_mobile": "2",
+        "swipe_on_mobile": false,
+        "padding_top": 60,
+        "padding_bottom": 60
+      }
+    },
+    "rich_text_h4U8py": {
+      "type": "rich-text",
+      "blocks": {
+        "heading_inWWkN": {
+          "type": "heading",
+          "settings": {
+            "heading": "As Seen On",
+            "heading_size": "h2",
+            "heading_tag": "h2"
+          }
+        }
+      },
+      "block_order": [
+        "heading_inWWkN"
+      ],
+      "settings": {
+        "desktop_content_position": "center",
+        "content_alignment": "center",
+        "color_scheme": "background-2",
+        "full_width": true,
+        "padding_top": 20,
+        "padding_bottom": 0
+      }
+    },
+    "marquee_image_section_fnyhHz": {
+      "type": "marquee-image-section",
+      "blocks": {
+        "marquee_image_96jT9z": {
+          "type": "marquee_image",
+          "settings": {
+            "image_thumbnail": "shopify:\/\/shop_images\/ABC.png"
+          }
+        },
+        "marquee_image_FbCLAw": {
+          "type": "marquee_image",
+          "settings": {
+            "image_thumbnail": "shopify:\/\/shop_images\/weekend-sunrise_82fba762-cf64-40c4-9dc5-b75ec4a98420.png"
+          }
+        },
+        "marquee_image_efNBEV": {
+          "type": "marquee_image",
+          "settings": {
+            "image_thumbnail": "shopify:\/\/shop_images\/Sea90_02f8c9e8-38ac-4778-b001-7f0abcdea8af.png"
+          }
+        },
+        "marquee_image_NAbxMQ": {
+          "type": "marquee_image",
+          "settings": {
+            "image_thumbnail": "shopify:\/\/shop_images\/GC-Bulletin_1542009f-9cbc-4855-8fa8-e6d811c1b1ea.png"
+          }
+        },
+        "marquee_image_ebr4Hz": {
+          "type": "marquee_image",
+          "settings": {
+            "image_thumbnail": "shopify:\/\/shop_images\/9network_79689404-00a8-4c95-b62b-198457b51f42.png"
+          }
+        }
+      },
+      "block_order": [
+        "marquee_image_96jT9z",
+        "marquee_image_FbCLAw",
+        "marquee_image_efNBEV",
+        "marquee_image_NAbxMQ",
+        "marquee_image_ebr4Hz"
+      ],
+      "custom_css": [
+        ".marquee_image {background: #f3f3f3;}",
+        ".marquee-image-section {padding: 1.5rem 0 2rem; max-height: max-content; max-width: 140rem; margin: 0 auto;}",
+        ".marquee-image-section,.marquee-image-section .marquee-image__inner {gap: 4rem;}",
+        ".marquee-image__inner,.marquee-image-section .marquee-banner__image img {max-height: 12rem; height: 4rem;}",
+        "@media (min-width: 750px) {.marquee-image-section, .marquee-image-section .marquee-image__inner {gap: 15rem; } .marquee-image__inner, .marquee-image-section .marquee-banner__image img {height: 10rem; }}"
+      ],
+      "settings": {
+        "section_bg": "linear-gradient(90deg, rgba(0, 0, 0, 1), rgba(41, 41, 41, 1) 100%)"
+      }
+    },
+    "hero_desc_section_7HYdqG": {
+      "type": "hero-desc-section",
+      "settings": {
+        "custom_liquid": "",
+        "hero_background": "shopify:\/\/shop_images\/hero-description-banner-desktop.jpg",
+        "mobile_hero_background": "shopify:\/\/shop_images\/Discovery_Section_-_Mobile_2.png",
+        "hero_desc_heading": "Discover the #1 Gender Reveal Retailer in Australia!",
+        "hero_desc_subheading": "At Gender Reveal Ideas Australia, we provide an extensive array of Gender Reveal Ideas & Products with Free Priority Shipping across Australia. Join our community and ensure your moment is truly unforgettable!"
+      }
+    },
+    "marquee_image_section_nVKGMn": {
+      "type": "marquee-image-section",
+      "blocks": {
+        "marquee_image_GBDpJh": {
+          "type": "marquee_image",
+          "settings": {
+            "image_thumbnail": "shopify:\/\/shop_images\/image_436_e23d19a2-73c6-475c-8bdd-68dac6175723.png"
+          }
+        },
+        "marquee_image_Q9WjAm": {
+          "type": "marquee_image",
+          "settings": {
+            "image_thumbnail": "shopify:\/\/shop_images\/gri-mini-logo-white_624599ad-e9a2-41d6-858d-d393fd998e0a.png"
+          }
+        },
+        "marquee_image_9hqD7d": {
+          "type": "marquee_image",
+          "settings": {
+            "image_thumbnail": "shopify:\/\/shop_images\/image_435_60b91be8-ee63-4f52-b4fc-1df85feb33b4.png"
+          }
+        },
+        "marquee_image_Hy7kq3": {
+          "type": "marquee_image",
+          "settings": {
+            "image_thumbnail": "shopify:\/\/shop_images\/gri-mini-logo-white_624599ad-e9a2-41d6-858d-d393fd998e0a.png"
+          }
+        },
+        "marquee_image_C3bryf": {
+          "type": "marquee_image",
+          "settings": {
+            "image_thumbnail": "shopify:\/\/shop_images\/new-year-sale_5f3e9dff-3367-4820-805b-8c40ee0b6135.png"
+          }
+        },
+        "marquee_image_jhBbGw": {
+          "type": "marquee_image",
+          "settings": {
+            "image_thumbnail": "shopify:\/\/shop_images\/gri-mini-logo-white_624599ad-e9a2-41d6-858d-d393fd998e0a.png"
+          }
+        }
+      },
+      "block_order": [
+        "marquee_image_GBDpJh",
+        "marquee_image_Q9WjAm",
+        "marquee_image_9hqD7d",
+        "marquee_image_Hy7kq3",
+        "marquee_image_C3bryf",
+        "marquee_image_jhBbGw"
+      ],
+      "settings": {
+        "section_bg": "#3AB4C0"
+      }
+    },
+    "testimonials_kkzbjx": {
+      "type": "testimonials",
+      "blocks": {
+        "reviews_q8nJVG": {
+          "type": "reviews",
+          "settings": {
+            "review_image": "shopify:\/\/shop_images\/1716192116__33__huge_0b48bac7-740d-4cb7-8f9c-be8b2060a468.jpg",
+            "review_content": "<p>My husband and I just did our gender reveal using GRI products and we were absolutely blown away! The quality of the products was exceptional and exceeded our expectations. We used the bio confetti cannon and the mega powder blaster. I was particularly impressed that the confetti was biodegradable - no clean up! And the powder blaster lasted for ages, which meant we were able to get some great photos to share with family abroad. Thanks so much for making this moment for us so special!<\/p>",
+            "name": "Bonita Mills"
+          }
+        },
+        "reviews_iCHxze": {
+          "type": "reviews",
+          "settings": {
+            "review_image": "shopify:\/\/shop_images\/1716191778__28__huge_32d515e8-2f6b-4606-8956-11e4943a6f18.jpg",
+            "review_content": "<p>I absolutely loved their customer service as I was in regular touch via email and they were so fast in replying to emails. They knew that I was the mom-to-be so were very mindful not to disclose the gender to me and communicated with my friend constantly. I also received discounts on the Mega Blasters as the mini ones were sold out. Thank you so much for making our gender reveal so wonderful!!!<\/p>",
+            "name": "Binisha Gautam"
+          }
+        },
+        "reviews_NzhfCG": {
+          "type": "reviews",
+          "settings": {
+            "review_image": "shopify:\/\/shop_images\/1720304859__img_4277__huge.jpg",
+            "review_content": "<p>Great service! Kent was nice enough to deliver these to our place which was amazing.<\/p><p>Communication was clear which made it easier to collect.<\/p><p>Gender reveal with our smoke poppers and fire extinguishers were bloody awesome!!<\/p><p>Thank you again for making this so special, we had a blast with everyone even though it was raining hahahaha! 😊<\/p>",
+            "name": "Storm Seppala"
+          }
+        },
+        "reviews_G4dAHJ": {
+          "type": "reviews",
+          "settings": {
+            "review_image": "shopify:\/\/shop_images\/1721796846__img_7975__huge.jpg",
+            "review_content": "<p>If you are looking for an amazing gender reveal this is the place…Thankyou for making our day so special! Josh was so helpful with helping us choose the right product for our reveal! With our two little boys… He knew his products, and the quality and experience was 10\/10. Product itself was amazing! We were surprised with a girl and the pink extinguishers and cannnon popper, was so bright, colourful and made it extremely special! Thankyou again<\/p>",
+            "name": "Alexandra Russell"
+          }
+        },
+        "reviews_Gpqt9N": {
+          "type": "reviews",
+          "settings": {
+            "review_image": "shopify:\/\/shop_images\/1728548330__screenshot_20241010_181656_facebook__huge.jpg",
+            "review_content": "<p>4 months ago We purchased a few Bio cannons along with a few other products for our special day. They’re so simple to use and give a burst of excitement and colour to our already exciting reveal. Purchasing and customer service was a pleasant and hassle free experience. Very satisfied!<\/p>",
+            "name": "Matilda S."
+          }
+        },
+        "reviews_bxiTCf": {
+          "type": "reviews",
+          "settings": {
+            "review_image": "shopify:\/\/shop_images\/1729843838__screenshot2024-10-25181015__huge.png",
+            "review_content": "<p>I recently purchased a cannon for a gender reveal from Gender Reveal Ideas and I couldn't be happier with my experience! The delivery was incredibly fast, and the quality of the product exceeded my expectations. The cannon worked perfectly, adding excitement to our special day. I highly recommend for anyone looking to make their gender reveal unforgettable!<\/p>",
+            "name": "Igor Valente"
+          }
+        },
+        "reviews_rdEMeY": {
+          "type": "reviews",
+          "settings": {
+            "review_image": "shopify:\/\/shop_images\/1736741274__img_4861__huge.jpg",
+            "review_content": "<p>Purchased a few products and everything went really smooth. From order to delivery. I had to also get in touch with the owner to find out about a few questions I had and nothing was too much trouble. After chatting for a bit about other things I uncovered the guy even had a salami hook up and he personally delivered some to me!! Absolute legend!!! If you need gender reveal products or even a salami hook up….. these guys are your people!!!<\/p>",
+            "name": "Mikel Ramirez"
+          }
+        },
+        "reviews_6Mh4eP": {
+          "type": "reviews",
+          "settings": {
+            "review_image": "shopify:\/\/shop_images\/Screenshot_2025-02-03_at_10.59.51_AM.png",
+            "review_content": "<p>You know some business's give you that feel good experience, that is what you get when you shop here.<br\/>With endless questions from both myself and my daughter I felt for sure we would be on the ''Do no answer'' list lol<br\/>Honestly do not buy elsewhere.<br\/>I do really recommend the smoke bomb or cannon it goes for over a min, if you want smoke to last for photos.  My daughter had the glitter smoke which was great for her.<\/p>",
+            "name": "Shelly Ives"
+          }
+        },
+        "reviews_Kghn3h": {
+          "type": "reviews",
+          "settings": {
+            "review_image": "shopify:\/\/shop_images\/Screenshot_2025-02-03_at_11.00.03_AM.png",
+            "review_content": "<p>Me and my husband had the most incredible day thanks to the girls at the gender reveal ideas! They made us feel so special and made our reveal truly beautiful - better than we imagined!! We had the mega blaster and the confetti canons and i highly recommend both products!! If you are stuck for ideas for your reveal, be sure to check the gender reveal ideas, i guarantee you will find something!! ❤️❤️<\/p>",
+            "name": "Charlotte Amber"
+          }
+        },
+        "reviews_jGhCR9": {
+          "type": "reviews",
+          "settings": {
+            "review_image": "shopify:\/\/shop_images\/Screenshot_2025-02-03_at_11.00.20_AM.png",
+            "review_content": "<p>Highly recommend this company! Ordered last minute for pickup and they were closed when I needed to pick it up (my fault) buy were very accommodating and did what they could for me to still be able to collect it. Really appreciated this! Very fast in replying to any messages as well. Best customer service and product.<\/p>",
+            "name": "Niky Nguyen"
+          }
+        }
+      },
+      "block_order": [
+        "reviews_q8nJVG",
+        "reviews_iCHxze",
+        "reviews_NzhfCG",
+        "reviews_G4dAHJ",
+        "reviews_Gpqt9N",
+        "reviews_bxiTCf",
+        "reviews_rdEMeY",
+        "reviews_6Mh4eP",
+        "reviews_Kghn3h",
+        "reviews_jGhCR9"
+      ],
+      "settings": {}
+    },
+    "featured_video_and_product_bhVngC": {
+      "type": "featured-video-and-product",
+      "settings": {
+        "video": "shopify:\/\/files\/videos\/SmokeBomb_GRI_YtGuide_final.mp4",
+        "video_poster": "shopify:\/\/shop_images\/DRY_ICE_REVEAL_THUMBNAIL.png",
+        "enable_video_looping": true,
+        "section_title": "Trending Now!",
+        "image_header": "shopify:\/\/shop_images\/Desktop_-_Smoke_Bomb_Text.png",
+        "product_title": "",
+        "product_url": "shopify:\/\/collections\/gender-reveal-smoke-bombs-australia",
+        "product_image": "shopify:\/\/shop_images\/smoke-bomb2.png",
+        "info_background": "shopify:\/\/shop_images\/Desktop_BG.png",
+        "video_background": "linear-gradient(3deg, rgba(NaN, NaN, NaN, 1) 14%, rgba(228, 63, 123, 1) 89%)",
+        "video_title_color": "#ffffff"
+      }
+    },
+    "instagram_n4tmaf": {
+      "type": "instagram",
+      "settings": {}
+    },
+    "marquee_image_section_pajgFG": {
+      "type": "marquee-image-section",
+      "blocks": {
+        "marquee_image_6fTQEN": {
+          "type": "marquee_image",
+          "settings": {
+            "image_thumbnail": "shopify:\/\/shop_images\/image_436_e23d19a2-73c6-475c-8bdd-68dac6175723.png"
+          }
+        },
+        "marquee_image_tNwTtX": {
+          "type": "marquee_image",
+          "settings": {
+            "image_thumbnail": "shopify:\/\/shop_images\/gri-mini-logo-white_624599ad-e9a2-41d6-858d-d393fd998e0a.png"
+          }
+        },
+        "marquee_image_yMzjaC": {
+          "type": "marquee_image",
+          "settings": {
+            "image_thumbnail": "shopify:\/\/shop_images\/image_435_60b91be8-ee63-4f52-b4fc-1df85feb33b4.png"
+          }
+        },
+        "marquee_image_jC6xUy": {
+          "type": "marquee_image",
+          "settings": {
+            "image_thumbnail": "shopify:\/\/shop_images\/gri-mini-logo-white_624599ad-e9a2-41d6-858d-d393fd998e0a.png"
+          }
+        },
+        "marquee_image_BKmkiM": {
+          "type": "marquee_image",
+          "settings": {
+            "image_thumbnail": "shopify:\/\/shop_images\/new-year-sale_ae1f4487-7587-41fa-b389-f1e7892da1f6.png"
+          }
+        },
+        "marquee_image_GwV96c": {
+          "type": "marquee_image",
+          "settings": {
+            "image_thumbnail": "shopify:\/\/shop_images\/gri-mini-logo-white_624599ad-e9a2-41d6-858d-d393fd998e0a.png"
+          }
+        }
+      },
+      "block_order": [
+        "marquee_image_6fTQEN",
+        "marquee_image_tNwTtX",
+        "marquee_image_yMzjaC",
+        "marquee_image_jC6xUy",
+        "marquee_image_BKmkiM",
+        "marquee_image_GwV96c"
+      ],
+      "settings": {
+        "section_bg": "#3AB4C0"
+      }
+    },
+    "multicolumn_dh4KH6": {
+      "type": "multicolumn",
+      "blocks": {
+        "column_CU9jP8": {
+          "type": "column",
+          "settings": {
+            "image": "shopify:\/\/shop_images\/Bundles_873221d5-f2bb-4e18-a40d-342565a4985b.png",
+            "title": "",
+            "text": "",
+            "link_label": "",
+            "link": "shopify:\/\/collections\/gender-reveal-bundles"
+          }
+        },
+        "column_7ATPij": {
+          "type": "column",
+          "disabled": true,
+          "settings": {
+            "image": "shopify:\/\/shop_images\/Cannons_13da60fc-b5bc-4d58-a97c-46231e43384d.png",
+            "title": "",
+            "text": "",
+            "link_label": "",
+            "link": "\/collections\/gender-reveal-confetti-cannons"
+          }
+        },
+        "column_LaJ7CK": {
+          "type": "column",
+          "disabled": true,
+          "settings": {
+            "image": "shopify:\/\/shop_images\/Extinguisher_1176dfae-82bd-4205-b9bd-cf76a6148509.png",
+            "title": "",
+            "text": "",
+            "link_label": "",
+            "link": "shopify:\/\/collections\/gender-reveal-extinguishers-australia"
+          }
+        },
+        "column_nqb6HF": {
+          "type": "column",
+          "settings": {
+            "image": "shopify:\/\/shop_images\/Smoke_Bombs_7fd2437e-8489-46e4-bb07-3ab64f370166.png",
+            "title": "",
+            "text": "",
+            "link_label": "",
+            "link": "shopify:\/\/collections\/gender-reveal-smoke-bombs"
+          }
+        },
+        "column_DeCgtC": {
+          "type": "column",
+          "settings": {
+            "image": "shopify:\/\/shop_images\/Decorations_50671da0-8edd-42eb-a192-266ddff4f8c2.png",
+            "title": "",
+            "text": "",
+            "link_label": "",
+            "link": "\/collections\/gender-reveal-balloons"
+          }
+        },
+        "column_Y3biJb": {
+          "type": "column",
+          "settings": {
+            "image": "shopify:\/\/shop_images\/Sports_31b41991-dfc1-44c9-8759-e15a459ae41e.png",
+            "title": "",
+            "text": "",
+            "link_label": "",
+            "link": "\/collections\/gender-reveal-sports"
+          }
+        }
+      },
+      "block_order": [
+        "column_CU9jP8",
+        "column_7ATPij",
+        "column_LaJ7CK",
+        "column_nqb6HF",
+        "column_DeCgtC",
+        "column_Y3biJb"
+      ],
+      "custom_css": [
+        "@media (max-width: 990px) {.multicolumn-list {justify-content: center; }}",
+        "@media (min-width: 991px) {.multicolumn-card__image-wrapper .media {max-width: 100%; }}",
+        ".multicolumn-card__image-wrapper .media img {width: 100%; height: auto;}",
+        ".multicolumn-card__image-wrapper .media {box-shadow: 0.4rem 0.4rem 1rem rgba(0, 0, 0, 0.2);}"
+      ],
+      "settings": {
+        "title": "",
+        "heading_size": "h2",
+        "image_width": "full",
+        "image_ratio": "adapt",
+        "columns_desktop": 4,
+        "column_alignment": "left",
+        "background_style": "none",
+        "button_label": "",
+        "button_link": "\/collections\/all",
+        "color_scheme": "",
+        "columns_mobile": "2",
+        "swipe_on_mobile": false,
+        "padding_top": 80,
+        "padding_bottom": 40,
+        "add_border_effect": true
+      }
+    },
+    "rich_text_FDVXU8": {
+      "type": "rich-text",
+      "blocks": {
+        "image_B4cdhj": {
+          "type": "image",
+          "settings": {
+            "heading_image": "shopify:\/\/shop_images\/PinkOutline.png"
+          }
+        },
+        "caption_m8X8ge": {
+          "type": "caption",
+          "settings": {
+            "caption": "Join our Gender Reveal Community",
+            "text_style": "caption-with-letter-spacing",
+            "text_size": "small"
+          }
+        },
+        "heading_wANjDc": {
+          "type": "heading",
+          "settings": {
+            "heading": "<strong>Over 70,000+ Happy Customers<\/strong>",
+            "heading_size": "h1",
+            "heading_tag": "h2"
+          }
+        }
+      },
+      "block_order": [
+        "image_B4cdhj",
+        "caption_m8X8ge",
+        "heading_wANjDc"
+      ],
+      "custom_css": [
+        ".rich-text__blocks > * + * {margin-top: 1rem;}"
+      ],
+      "settings": {
+        "desktop_content_position": "center",
+        "content_alignment": "center",
+        "color_scheme": "",
+        "full_width": true,
+        "padding_top": 40,
+        "padding_bottom": 0
+      }
+    },
+    "17050721882400e9b5": {
+      "type": "apps",
+      "blocks": {
+        "judge_me_reviews_featured_carousel_ACybQD": {
+          "type": "shopify:\/\/apps\/judge-me-reviews\/blocks\/featured_carousel\/61ccd3b1-a9f2-4160-9fe9-4fec8413e5d8",
+          "settings": {
+            "maxwidth": 1600
+          }
+        }
+      },
+      "block_order": [
+        "judge_me_reviews_featured_carousel_ACybQD"
+      ],
+      "custom_css": [
+        "@media (min-width: 990px) {.jdgm-carousel-wrapper .jdgm-widget.jdgm-carousel {width: 100% !important; }}",
+        ".jdgm-carousel__item-wrapper {height: 100% !important;}",
+        ".jdgm-carousel-item {vertical-align: top;}",
+        ".jdgm-carousel--aligned-theme .jdgm-carousel-item__product-image {width: 100%; height: auto; display: block;}",
+        ".jdgm-carousel--aligned-theme .jdgm-carousel-item__review-wrapper {width: 100%; display: block; height: auto; padding: 1rem !important;}",
+        ".jdgm-carousel-item__review-body > p {font-size: 1.2rem;}"
+      ],
+      "settings": {
+        "include_margins": true
+      }
+    },
+    "featured_blog_fJARCC": {
+      "type": "featured-blog",
+      "settings": {
+        "heading": "Gender Reveal Ideas & Blog Hub",
+        "heading_size": "h1",
+        "blog": "news",
+        "post_limit": 4,
+        "columns_desktop": 4,
+        "color_scheme": "background-2",
+        "show_image": true,
+        "show_date": true,
+        "show_author": false,
+        "show_view_all": true,
+        "padding_top": 80,
+        "padding_bottom": 80
+      }
+    },
+    "collapsible_content_PteKmH": {
+      "type": "collapsible-content",
+      "blocks": {
+        "collapsible_row_U6BcxG": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "What gender reveal party supplies do you offer?",
+            "icon": "none",
+            "row_content": "<p>We offer a wide range of gender reveal party supplies, including <a href=\"https:\/\/genderrevealideas.com.au\/collections\/gender-reveal-smoke-bombs-australia\"><span style=\"text-decoration:underline\">smoke bombs<\/span><\/a>, <a href=\"https:\/\/genderrevealideas.com.au\/collections\/gender-reveal-cannons\"><span style=\"text-decoration:underline\">confetti cannons<\/span><\/a>, <a href=\"https:\/\/genderrevealideas.com.au\/collections\/powder-gender-reveals-australia\"><span style=\"text-decoration:underline\">powder blasters<\/span><\/a>, and more! Whether you’re looking for low-mess kits or elaborate bundles, we have everything you need to create an unforgettable gender reveal. Shop our full range of party supplies to complete your celebration!<\/p>",
+            "page": ""
+          }
+        },
+        "collapsible_row_UPaxFy": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "What are some unique baby gender reveal ideas?",
+            "icon": "none",
+            "row_content": "<p><a href=\"https:\/\/genderrevealideas.com.au\/blogs\/news\"><span style=\"text-decoration:underline\">Looking for baby gender reveal ideas? <\/span><\/a>We offer a variety of exciting options, from sports-themed kits to fun confetti bursts and smoke bomb reveals. Whether you prefer a dramatic moment or a more intimate celebration, our kits and bundles will make your reveal memorable. Explore our collection for inspiration!<\/p>",
+            "page": ""
+          }
+        },
+        "collapsible_row_6KGwRM": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "What should I include in my baby gender reveal?",
+            "icon": "none",
+            "row_content": "<p>For a complete baby gender reveal, you’ll need a <a href=\"https:\/\/genderrevealideas.com.au\/collections\/gender-reveal-bundles\"><span style=\"text-decoration:underline\">gender reveal kit <\/span><\/a>or one of our reveal products (smoke bombs, cannons, blasters or more), <a href=\"https:\/\/genderrevealideas.com.au\/collections\/gender-reveal-balloons\"><span style=\"text-decoration:underline\">decorations<\/span><\/a>, and fun accessories. Our gender reveal bundles have everything pre-curated, so you can easily find the perfect set for your celebration!<\/p>",
+            "page": ""
+          }
+        },
+        "collapsible_row_afLByc": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "How do I know which gender reveal bundle to choose?",
+            "icon": "none",
+            "row_content": "<p>Choosing the right gender reveal product depends on your preferred style. Whether you want a low-mess reveal with our Mini Blasters or an explosive moment with confetti cannons, we have a variety of options to suit your celebration. Browse our <a href=\"https:\/\/genderrevealideas.com.au\/collections\/gender-reveal-bundles\"><span style=\"text-decoration:underline\">gender reveal bundles<\/span><\/a> for a curated experience!<\/p>",
+            "page": ""
+          }
+        },
+        "collapsible_row_tk7CLx": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "Can I get a bundle for my baby reveal party?",
+            "icon": "none",
+            "row_content": "<p>Yes! Our gender reveal bundles are perfect for your reveal party. Each bundle includes carefully selected items such as smoke bombs, confetti cannons, powder blasters, and even themed decorations, ensuring your reveal is seamless and fun.<\/p>",
+            "page": ""
+          }
+        },
+        "collapsible_row_VxdJY9": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "When is the best time for a baby gender reveal?",
+            "icon": "none",
+            "row_content": "<p>The best time for a baby gender reveal is typically between the 18th and 20th week of pregnancy, when the gender can be accurately determined through an ultrasound. Our gender reveal kits are designed to make your reveal easy, exciting, and unforgettable!<\/p>",
+            "page": ""
+          }
+        },
+        "collapsible_row_4xTMYi": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "Do gender reveal smoke bombs stain?",
+            "icon": "none",
+            "row_content": "<p>Gender Reveal Smoke Bombs can stain if discharged directly onto materials like clothing, furniture, or walls - particularly in enclosed or indoor spaces. However, when used in an open, well-ventilated area, there's little to no risk of staining, as the smoke disperses into the air. Any residue that does occur is typically washable. For best results, we recommend using smoke bombs outdoors or indoors with windows open and plenty of ventilation to minimise any risk of staining.<\/p>",
+            "page": ""
+          }
+        },
+        "collapsible_row_iRKJQT": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "Are gender reveal smoke bombs legal?",
+            "icon": "none",
+            "row_content": "<p>Yes – but only ours are officially legal in Australia. Gender Reveal Ideas is proud to offer the only government-approved gender reveal smoke bombs on the market, registered with Resources Safety & Health Queensland.<\/p><p>Many other websites sell illegal imitations that have not been approved and may pose safety risks. Our smoke bombs are made using non-toxic, natural ingredients and are classified as a Schedule 6 item under the Explosives Regulation, meaning they are safe, compliant, and risk-free for you and your loved ones.<\/p><p>For a safe and legal gender reveal, always purchase directly from Gender Reveal Ideas<strong>.<\/strong><\/p>",
+            "page": ""
+          }
+        },
+        "collapsible_row_TczMPL": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "Are gender reveal products harmful to the environment?",
+            "icon": "none",
+            "row_content": "<p>Our gender reveal products are made with biodegradable materials, ensuring they are safe for the environment when used as directed. We encourage you to dispose of them properly after your reveal to minimise any environmental impact.<\/p>",
+            "page": ""
+          }
+        },
+        "collapsible_row_CjFyid": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "Can I place a pick-up order?",
+            "icon": "none",
+            "row_content": "<p>Yes, we do offer pick-up orders! Simply select the \"Pick Up\" option during checkout, and your order will be ready for collection on the same day from our Gold Coast store. <\/p>",
+            "page": ""
+          }
+        },
+        "collapsible_row_Y7LGy7": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "Can I purchase an item and have a friend specify the colour?",
+            "icon": "none",
+            "row_content": "<p>Yes, we do allow purchases with colour specifications from friends! If you choose the \"To Be Announced\" option, just provide your order number to your friend. They can then discreetly inform us, and we'll ensure the right colour reaches you or them without any hints. <\/p>",
+            "page": ""
+          }
+        },
+        "collapsible_row_qbYBnJ": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "Can I track my order?",
+            "icon": "none",
+            "row_content": "<p>Yes, we do provide order tracking! Once your order is fulfilled, you'll receive a tracking number. This allows you to follow its journey every step of the way.<\/p>",
+            "page": ""
+          }
+        },
+        "collapsible_row_CJjTji": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "Where can I buy gender reveal cannons?",
+            "icon": "none",
+            "row_content": "<p>Our gender reveal cannons are available online. Browse our wide selection of confetti and powder cannons, designed for an exciting and colourful gender reveal.<\/p>",
+            "page": ""
+          }
+        },
+        "collapsible_row_VKmN4f": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "Where can I buy smoke cannons for gender reveal?",
+            "icon": "none",
+            "row_content": "<p>Yes, we do have smoke cannons for gender reveals! They're available on our website at <a href=\"http:\/\/www.genderrevealideas.com.au\/\"><span style=\"text-decoration:underline\">www.genderrevealideas.com.au<\/span><\/a>, and we offer free shipping across Australia on all orders.<\/p>",
+            "page": ""
+          }
+        },
+        "collapsible_row_E7VmFy": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "Where can I buy gender reveal sports balls?",
+            "icon": "none",
+            "row_content": "<p>Yes, we do sell gender reveal sports balls! Explore our diverse selection right here at <a href=\"http:\/\/www.genderrevealideas.com.au\/\"><span style=\"text-decoration:underline\">www.genderrevealideas.com.au<\/span><\/a>. And remember, shipping across Australia is free on every <\/p>",
+            "page": ""
+          }
+        },
+        "collapsible_row_UMYi4y": {
+          "type": "collapsible_row",
+          "settings": {
+            "heading": "What happens if my express parcel arrives late?",
+            "icon": "none",
+            "row_content": "<p>Please refer to our <a href=\"https:\/\/genderrevealideas.com.au\/pages\/shipping\"><span style=\"text-decoration:underline\">shipping policy<\/span><\/a>. <\/p>",
+            "page": ""
+          }
+        }
+      },
+      "block_order": [
+        "collapsible_row_U6BcxG",
+        "collapsible_row_UPaxFy",
+        "collapsible_row_6KGwRM",
+        "collapsible_row_afLByc",
+        "collapsible_row_tk7CLx",
+        "collapsible_row_VxdJY9",
+        "collapsible_row_4xTMYi",
+        "collapsible_row_iRKJQT",
+        "collapsible_row_TczMPL",
+        "collapsible_row_CjFyid",
+        "collapsible_row_Y7LGy7",
+        "collapsible_row_qbYBnJ",
+        "collapsible_row_CJjTji",
+        "collapsible_row_VKmN4f",
+        "collapsible_row_E7VmFy",
+        "collapsible_row_UMYi4y"
+      ],
+      "name": "t:sections.collapsible_content.presets.name",
+      "settings": {
+        "caption": "",
+        "heading": "Frequently Asked Questions",
+        "heading_size": "h1",
+        "heading_alignment": "center",
+        "layout": "section",
+        "color_scheme": "",
+        "container_color_scheme": "",
+        "open_first_collapsible_row": false,
+        "image_ratio": "adapt",
+        "desktop_layout": "image_second",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    }
+  },
+  "order": [
+    "slideshow_U7f3AH",
+    "social_proof_hXM73G",
+    "split_hero_njErYi",
+    "video_carousel_6HwtRR",
+    "slide_with_text_mVgGMg",
+    "stack_and_save_ixU8Lh",
+    "featured_product_new_gdgfKB",
+    "featured_collection_QTH7dx",
+    "rich_text_h4U8py",
+    "marquee_image_section_fnyhHz",
+    "hero_desc_section_7HYdqG",
+    "marquee_image_section_nVKGMn",
+    "testimonials_kkzbjx",
+    "featured_video_and_product_bhVngC",
+    "instagram_n4tmaf",
+    "marquee_image_section_pajgFG",
+    "multicolumn_dh4KH6",
+    "rich_text_FDVXU8",
+    "17050721882400e9b5",
+    "featured_blog_fJARCC",
+    "collapsible_content_PteKmH"
+  ]
+}

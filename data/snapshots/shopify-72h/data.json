@@ -1,0 +1,375 @@
+{
+  "byDay": {
+    "2026-06-03": {
+      "orders": 24,
+      "revenue": 2931.67,
+      "cancelled": 0,
+      "sources": [
+        [
+          "web",
+          22
+        ],
+        [
+          "pos",
+          2
+        ]
+      ],
+      "refSites": [
+        [
+          "www.google.com",
+          12
+        ],
+        [
+          "(direct)",
+          11
+        ],
+        [
+          "l.facebook.com",
+          1
+        ]
+      ]
+    },
+    "2026-06-02": {
+      "orders": 26,
+      "revenue": 2463.49,
+      "cancelled": 0,
+      "sources": [
+        [
+          "web",
+          23
+        ],
+        [
+          "eBay",
+          2
+        ],
+        [
+          "pos",
+          1
+        ]
+      ],
+      "refSites": [
+        [
+          "(direct)",
+          11
+        ],
+        [
+          "www.google.com",
+          14
+        ],
+        [
+          "android-app:",
+          1
+        ]
+      ]
+    },
+    "2026-06-01": {
+      "orders": 12,
+      "revenue": 1574.7600000000002,
+      "cancelled": 0,
+      "sources": [
+        [
+          "web",
+          12
+        ]
+      ],
+      "refSites": [
+        [
+          "www.google.com",
+          9
+        ],
+        [
+          "(direct)",
+          1
+        ],
+        [
+          "l.instagram.com",
+          1
+        ],
+        [
+          "instagram.com",
+          1
+        ]
+      ]
+    }
+  },
+  "utmSources": [
+    [
+      "Klaviyo",
+      2
+    ],
+    [
+      "google",
+      19
+    ],
+    [
+      "ig",
+      2
+    ],
+    [
+      "facebook",
+      1
+    ]
+  ],
+  "utmMediums": [
+    [
+      "email",
+      2
+    ],
+    [
+      "product_sync",
+      19
+    ],
+    [
+      "social",
+      2
+    ],
+    [
+      "paid",
+      2
+    ]
+  ],
+  "utmCampaigns": [
+    [
+      "sag_organic",
+      20
+    ],
+    [
+      "120226215760060711",
+      1
+    ],
+    [
+      "120233436381360711",
+      1
+    ]
+  ],
+  "ordersWithoutUtm": [
+    {
+      "id": "#12878",
+      "total": "112.97",
+      "ref": "https://www.google.com/",
+      "landing": "/collections/gender-reveal-cannons?gad_campaignid=21094179575&gad_source=1&gbrai"
+    },
+    {
+      "id": "#12874",
+      "total": "82.95",
+      "ref": null,
+      "landing": "/products/2x-pack-gender-reveal-smoke-bombs"
+    },
+    {
+      "id": "#12872",
+      "total": "112.97",
+      "ref": null,
+      "landing": "/products/gender-reveal-extinguisher-bundle"
+    },
+    {
+      "id": "#12870",
+      "total": "54.95",
+      "ref": "https://www.google.com/",
+      "landing": "/?gad_source=1&gad_campaignid=22841777514&gbraid=0AAAAA9bZ8TvD8l_EWfBOqoxj8p3fOo"
+    },
+    {
+      "id": "#12867",
+      "total": "76.99",
+      "ref": "https://l.facebook.com/",
+      "landing": "/products/gender-reveal-smoke-bombs?brid=YWdncwGd-lLIOv0TpOTkjz9c1taq&fbclid=IwY"
+    },
+    {
+      "id": "#12866",
+      "total": "84.99",
+      "ref": null,
+      "landing": "/"
+    },
+    {
+      "id": "#12865",
+      "total": "22.99",
+      "ref": null,
+      "landing": "/products/double-powder-double-the-effect-copy?_pos=7&_sid=5db920c04&_ss=r"
+    },
+    {
+      "id": "#12864",
+      "total": "154.93",
+      "ref": null,
+      "landing": ""
+    },
+    {
+      "id": "#12863",
+      "total": "372.98",
+      "ref": null,
+      "landing": "/"
+    },
+    {
+      "id": "#12862",
+      "total": "297.99",
+      "ref": null,
+      "landing": "/products/mega-gender-reveal-powder-blaster"
+    },
+    {
+      "id": "#12861",
+      "total": "372.98",
+      "ref": "https://www.google.com/",
+      "landing": "/products/tnt-gender-reveal-australia?srsltid=AfmBOopHXN5UVTWDkofiO4EVbfnoodcYkI"
+    },
+    {
+      "id": "#12858",
+      "total": "47.98",
+      "ref": null,
+      "landing": "/products/gender-reveal-exploding-soccer-ball"
+    },
+    {
+      "id": "#12857",
+      "total": "49.98",
+      "ref": null,
+      "landing": ""
+    },
+    {
+      "id": "#12855",
+      "total": "89.95",
+      "ref": "https://www.google.com/",
+      "landing": "/products/gender-reveal-smoke-bombs"
+    },
+    {
+      "id": "#12854",
+      "total": "154.90",
+      "ref": null,
+      "landing": "/"
+    },
+    {
+      "id": "#12853",
+      "total": "147.98",
+      "ref": null,
+      "landing": "/products/gender-reveal-smoke-bombs"
+    },
+    {
+      "id": "#12852",
+      "total": "70.79",
+      "ref": null,
+      "landing": "/products/gender-reveal-smoke-bombs"
+    },
+    {
+      "id": "#12851",
+      "total": "60.95",
+      "ref": null,
+      "landing": "/"
+    },
+    {
+      "id": "#12850",
+      "total": "112.97",
+      "ref": "https://www.google.com/url?q=https://genderrevealideas.com.au/?srsltid=AfmBOop2Fn7V4zZyUZ0wwko5WI_sjuv9s5-tZjcjrVZlUC96KjD3nDLv&sa=U&sqi=2&ved=2ahUKEwi1iZjynuiUAxWMr1YBHdVWHtsQFnoECCkQAQ&usg=AOvVaw2_fFcOAQHTa3zEqR3gF9dx",
+      "landing": "/?srsltid=AfmBOop2Fn7V4zZyUZ0wwko5WI_sjuv9s5-tZjcjrVZlUC96KjD3nDLv"
+    },
+    {
+      "id": "#12848",
+      "total": "127.98",
+      "ref": "https://www.google.com/",
+      "landing": "/collections/gender-reveal-bundles?gad_campaignid=22841777514&gad_source=1&gbrai"
+    },
+    {
+      "id": "#12847",
+      "total": "41.99",
+      "ref": null,
+      "landing": "/collections/gender-reveal-extinguishers-australia"
+    },
+    {
+      "id": "#12845",
+      "total": "252.98",
+      "ref": "https://www.google.com/",
+      "landing": "/?gad_source=1&gad_campaignid=21777521744&gbraid=0AAAAA9bZ8TsA3iriHY2_Qr_ke-JrBC"
+    },
+    {
+      "id": "26-14691-26608",
+      "total": "22.90",
+      "ref": null,
+      "landing": ""
+    },
+    {
+      "id": "04-14726-63304",
+      "total": "46.05",
+      "ref": null,
+      "landing": ""
+    },
+    {
+      "id": "#12840",
+      "total": "19.99",
+      "ref": null,
+      "landing": "/products/deluxe-gold-mega-confetti-gender-reveal-balloon?variant=42433303543897"
+    },
+    {
+      "id": "#12839",
+      "total": "31.97",
+      "ref": "https://www.google.com/",
+      "landing": "/?gad_source=1&gad_campaignid=21777521744&gbraid=0AAAAA9bZ8Ts_0QN-zVzTUnvRCvgKdU"
+    },
+    {
+      "id": "#12838",
+      "total": "104.96",
+      "ref": "android-app://com.google.android.googlequicksearchbox/",
+      "landing": "/products/gender-reveal-smoke-bombs?country=AU&currency=AUD&gad_campaignid=21110"
+    },
+    {
+      "id": "#12836",
+      "total": "207.96",
+      "ref": "https://www.google.com/",
+      "landing": "/?srsltid=AfmBOopFOxEJV9GmFEmiTq21oUVjI4Yc6hQiPj1QHi42jRNJ3lYFclvO"
+    },
+    {
+      "id": "#12835",
+      "total": "72.98",
+      "ref": "https://www.google.com/",
+      "landing": "/collections/gender-reveal-cannons?gad_campaignid=21094179575&gad_source=1&gclid"
+    },
+    {
+      "id": "#12834",
+      "total": "139.96",
+      "ref": null,
+      "landing": ""
+    },
+    {
+      "id": "#12833",
+      "total": "67.97",
+      "ref": "https://www.google.com/",
+      "landing": "/products/boy-girl-gender-reveal-balloons?srsltid=AfmBOopXIWgqc-hgN2NwDJaVge9Pc3"
+    },
+    {
+      "id": "#12832",
+      "total": "47.94",
+      "ref": "https://www.google.com/",
+      "landing": "/?gad_source=1&gad_campaignid=21777521744&gbraid=0AAAAA9bZ8TsyUvhl0bEH4eKDl_6VTu"
+    },
+    {
+      "id": "#12830",
+      "total": "102.98",
+      "ref": "https://www.google.com/",
+      "landing": "/collections/powder-gender-reveals?srsltid=AfmBOorVJkIxnUWqfxF1vwoiHJzm-7HpgnpL_"
+    },
+    {
+      "id": "#12829",
+      "total": "44.99",
+      "ref": "https://www.google.com/",
+      "landing": "/blogs/news/how-to-dry-ice-gender-reveal?srsltid=AfmBOorF5JsxU2UdyKu0S9ibxneT8WP"
+    },
+    {
+      "id": "#12826",
+      "total": "217.94",
+      "ref": null,
+      "landing": "/"
+    },
+    {
+      "id": "#12819",
+      "total": "217.98",
+      "ref": "https://www.google.com/",
+      "landing": "/collections/gender-reveal-smoke-bombs-australia?srsltid=AfmBOopr6XmEU78SU2k7jkm"
+    },
+    {
+      "id": "#12818",
+      "total": "102.95",
+      "ref": "https://www.google.com/",
+      "landing": "/?gad_source=1&gad_campaignid=21777521744&gbraid=0AAAAA9bZ8Tsfh-k_te9tfWLGvytp3X"
+    },
+    {
+      "id": "#12817",
+      "total": "152.99",
+      "ref": "https://instagram.com/",
+      "landing": "/products/tnt-gender-reveal-australia?utm_medium=paid&utm_id=120233436381360711&"
+    }
+  ]
+}

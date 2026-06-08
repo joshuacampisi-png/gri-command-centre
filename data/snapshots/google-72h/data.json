@@ -1,0 +1,672 @@
+{
+  "byDay": {
+    "2026-06-01": {
+      "imp": 14180,
+      "clk": 218,
+      "spend": 314.076479,
+      "conv": 10.171429999999999,
+      "val": 926.5911523999999,
+      "allConv": 1292.17143,
+      "allVal": 5737.222413936,
+      "is": [
+        0.2987012987012987,
+        0.4081990189208129,
+        0.5435897435897435,
+        0.4593088071348941,
+        0.3959731543624161
+      ],
+      "lb": [
+        0.6168831168831169,
+        0.022775052557813594,
+        0.007692307692307693,
+        0,
+        0.4563758389261745
+      ],
+      "lr": [
+        0.08441558441558442,
+        0.5690259285213735,
+        0.44871794871794873,
+        0.5406911928651059,
+        0.1476510067114094
+      ],
+      "top": [
+        0.2792207792207792,
+        0.28859060402684567
+      ],
+      "abs": [
+        0.18181818181818182,
+        0.2684563758389262
+      ]
+    },
+    "2026-06-02": {
+      "imp": 18822,
+      "clk": 229,
+      "spend": 323.79246099999995,
+      "conv": 6.201478,
+      "val": 515.05840776,
+      "allConv": 1265.201478,
+      "allVal": 4892.40840776,
+      "is": [
+        0.26720647773279355,
+        0.28344370860927154,
+        0.2727272727272727,
+        0.39763779527559057,
+        0.23469387755102042
+      ],
+      "lb": [
+        0.5182186234817814,
+        0.6423841059602649,
+        0,
+        0,
+        0.6683673469387755
+      ],
+      "lr": [
+        0.2145748987854251,
+        0.07417218543046358,
+        0.7272727272727273,
+        0.6023622047244095,
+        0.09693877551020408
+      ],
+      "top": [
+        0.242914979757085,
+        0.1683673469387755
+      ],
+      "abs": [
+        0.19838056680161945,
+        0.14795918367346939
+      ]
+    },
+    "2026-06-03": {
+      "imp": 18717,
+      "clk": 256,
+      "spend": 333.46702799999997,
+      "conv": 7.261106,
+      "val": 736.8182221899999,
+      "allConv": 1318.261106,
+      "allVal": 6898.96822219,
+      "is": [
+        0.38047138047138046,
+        0.2944693572496263,
+        0.0999,
+        0.3665338645418327,
+        0.1553398058252427
+      ],
+      "lb": [
+        0.2996632996632997,
+        0.0014947683109118087,
+        0,
+        0,
+        0.8252427184466019
+      ],
+      "lr": [
+        0.31986531986531985,
+        0.7040358744394619,
+        0.9001,
+        0.6334661354581673,
+        0.019417475728155338
+      ],
+      "top": [
+        0.3468013468013468,
+        0.11650485436893204
+      ],
+      "abs": [
+        0.29292929292929293,
+        0.10679611650485436
+      ]
+    }
+  },
+  "searchTerms": [
+    {
+      "term": "gender reveal ideas",
+      "imp": 137,
+      "clk": 28,
+      "spend": 40.075554,
+      "conv": 1,
+      "val": 102.98,
+      "camps": [
+        "GRI | Search | Cannons",
+        "GRI | Search | Brand Defence"
+      ]
+    },
+    {
+      "term": "gender reveal",
+      "imp": 42,
+      "clk": 12,
+      "spend": 41.988434,
+      "conv": 1.088962,
+      "val": 67.50284918,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "gender reveal smoke bombs",
+      "imp": 17,
+      "clk": 4,
+      "spend": 3.587767,
+      "conv": 0.271356,
+      "val": 28.75559532,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "gender reveal powder",
+      "imp": 14,
+      "clk": 3,
+      "spend": 7.78171,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "gender reveal cannons",
+      "imp": 11,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "gender reveal cannon",
+      "imp": 8,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "gender reveal smoke",
+      "imp": 7,
+      "clk": 1,
+      "spend": 1.101313,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "gender reveal smoke bomb",
+      "imp": 5,
+      "clk": 2,
+      "spend": 5.610103,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "simple gender reveal ideas",
+      "imp": 5,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Brand Defence"
+      ]
+    },
+    {
+      "term": "gender reveal confetti cannon",
+      "imp": 4,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "easy last minute gender reveal ideas",
+      "imp": 4,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Brand Defence"
+      ]
+    },
+    {
+      "term": "simple gender reveal ideas at home",
+      "imp": 4,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Brand Defence"
+      ]
+    },
+    {
+      "term": "gender reveal powder cannon",
+      "imp": 3,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "smoke bomb gender reveal",
+      "imp": 3,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "baby gender reveal ideas",
+      "imp": 3,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons",
+        "GRI | Search | Brand Defence"
+      ]
+    },
+    {
+      "term": "confetti cannon",
+      "imp": 3,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "gender reveal balloon",
+      "imp": 3,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "gender reveal express",
+      "imp": 3,
+      "clk": 2,
+      "spend": 1.981648,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "gender reveals",
+      "imp": 3,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "baby reveal smoke cannon",
+      "imp": 2,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "gender reveal extinguisher",
+      "imp": 2,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "gender reveal football with powder",
+      "imp": 2,
+      "clk": 1,
+      "spend": 3.92,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "gender reveal mega blaster",
+      "imp": 2,
+      "clk": 1,
+      "spend": 3.004485,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "gender reveal powders",
+      "imp": 2,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "gender reveal smoke cannon in store",
+      "imp": 2,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "golf ball gender reveal",
+      "imp": 2,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "aussie gender reveal",
+      "imp": 2,
+      "clk": 2,
+      "spend": 4.904489,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "confetti",
+      "imp": 2,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "confettified",
+      "imp": 2,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "gender reveal brisbane",
+      "imp": 2,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "gender reveal confetti",
+      "imp": 2,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "gender reveal decorations",
+      "imp": 2,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "gender reveal nitrogen",
+      "imp": 2,
+      "clk": 1,
+      "spend": 2.78,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "gender reveal smoke popper",
+      "imp": 2,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "gold coast gender reveal",
+      "imp": 2,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "smoke emitters",
+      "imp": 2,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "fun gender reveal ideas",
+      "imp": 2,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Brand Defence"
+      ]
+    },
+    {
+      "term": "gender reveal gift ideas",
+      "imp": 2,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Brand Defence"
+      ]
+    },
+    {
+      "term": "gender reveal ideas intimate",
+      "imp": 2,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Brand Defence"
+      ]
+    },
+    {
+      "term": "gender reveal present ideas",
+      "imp": 2,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Brand Defence"
+      ]
+    },
+    {
+      "term": "ideas for gender reveal",
+      "imp": 2,
+      "clk": 1,
+      "spend": 1.814947,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Brand Defence"
+      ]
+    },
+    {
+      "term": "intimate gender reveal ideas",
+      "imp": 2,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Brand Defence"
+      ]
+    },
+    {
+      "term": "virtual gender reveal ideas",
+      "imp": 2,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Brand Defence"
+      ]
+    },
+    {
+      "term": "cannon shooter gender reveal",
+      "imp": 1,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "gender powder cannon",
+      "imp": 1,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "gender reveal football",
+      "imp": 1,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "gender reveal smoke cannon",
+      "imp": 1,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "gender reveal smoke extinguisher",
+      "imp": 1,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "gender reveal tnt",
+      "imp": 1,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    },
+    {
+      "term": "green smoke gender reveal",
+      "imp": 1,
+      "clk": 0,
+      "spend": 0,
+      "conv": 0,
+      "val": 0,
+      "camps": [
+        "GRI | Search | Cannons"
+      ]
+    }
+  ]
+}

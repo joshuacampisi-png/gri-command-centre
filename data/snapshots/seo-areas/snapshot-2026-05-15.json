@@ -1,0 +1,79 @@
+{
+  "takenAt": "2026-05-15T10:13:12.529Z",
+  "areas": [
+    "gender-reveal-ideas-nsw",
+    "gender-reveal-ideas-victoria",
+    "gender-reveal-ideas-queensland",
+    "gender-reveal-ideas-wa",
+    "gender-reveal-ideas-sa",
+    "gender-reveal-ideas-tasmania",
+    "gender-reveal-ideas-act",
+    "gender-reveal-ideas-nt",
+    "gender-reveal-ideas-central-coast",
+    "gender-reveal-ideas-geelong",
+    "gender-reveal-ideas-cairns",
+    "gender-reveal-ideas-launceston"
+  ],
+  "created": [
+    {
+      "handle": "gender-reveal-ideas-nsw",
+      "id": "gid://shopify/Collection/468165525593",
+      "kind": "state"
+    },
+    {
+      "handle": "gender-reveal-ideas-wa",
+      "id": "gid://shopify/Collection/468165558361",
+      "kind": "state"
+    },
+    {
+      "handle": "gender-reveal-ideas-sa",
+      "id": "gid://shopify/Collection/468165591129",
+      "kind": "state"
+    },
+    {
+      "handle": "gender-reveal-ideas-tasmania",
+      "id": "gid://shopify/Collection/468165623897",
+      "kind": "state"
+    },
+    {
+      "handle": "gender-reveal-ideas-act",
+      "id": "gid://shopify/Collection/468165656665",
+      "kind": "state"
+    },
+    {
+      "handle": "gender-reveal-ideas-nt",
+      "id": "gid://shopify/Collection/468165689433",
+      "kind": "state"
+    },
+    {
+      "handle": "gender-reveal-ideas-central-coast",
+      "id": "gid://shopify/Collection/468165722201",
+      "kind": "region"
+    },
+    {
+      "handle": "gender-reveal-ideas-geelong",
+      "id": "gid://shopify/Collection/468165787737",
+      "kind": "region"
+    },
+    {
+      "handle": "gender-reveal-ideas-cairns",
+      "id": "gid://shopify/Collection/468165820505",
+      "kind": "region"
+    },
+    {
+      "handle": "gender-reveal-ideas-launceston",
+      "id": "gid://shopify/Collection/468165853273",
+      "kind": "region"
+    }
+  ],
+  "skipped": [
+    {
+      "handle": "gender-reveal-ideas-victoria",
+      "id": "gid://shopify/Collection/282308018265"
+    },
+    {
+      "handle": "gender-reveal-ideas-queensland",
+      "id": "gid://shopify/Collection/282307821657"
+    }
+  ]
+}

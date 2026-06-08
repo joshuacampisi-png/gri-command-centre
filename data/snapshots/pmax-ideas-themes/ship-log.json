@@ -1,0 +1,45 @@
+{
+  "startedAt": "2026-05-17T03:09:33.475Z",
+  "snapshot": "data/snapshots/pmax-ideas-themes/before.json",
+  "created": [],
+  "failed": [
+    {
+      "ag_id": "6500812492",
+      "ag_name": "All Products",
+      "theme": "gender reveal ideas",
+      "error": "The search theme requested to be added violates certain policy."
+    },
+    {
+      "ag_id": "6500812492",
+      "ag_name": "All Products",
+      "theme": "gender reveal ideas australia",
+      "error": "The search theme requested to be added violates certain policy."
+    },
+    {
+      "ag_id": "6500812492",
+      "ag_name": "All Products",
+      "theme": "best gender reveal ideas",
+      "error": "The search theme requested to be added violates certain policy."
+    },
+    {
+      "ag_id": "6598765304",
+      "ag_name": "Bundles",
+      "theme": "gender reveal ideas",
+      "error": "The search theme requested to be added violates certain policy."
+    },
+    {
+      "ag_id": "6598765304",
+      "ag_name": "Bundles",
+      "theme": "gender reveal ideas australia",
+      "error": "The search theme requested to be added violates certain policy."
+    },
+    {
+      "ag_id": "6598765304",
+      "ag_name": "Bundles",
+      "theme": "best gender reveal ideas",
+      "error": "The search theme requested to be added violates certain policy."
+    }
+  ],
+  "batchError": "The search theme requested to be added violates certain policy.",
+  "completedAt": "2026-05-17T03:09:47.331Z"
+}

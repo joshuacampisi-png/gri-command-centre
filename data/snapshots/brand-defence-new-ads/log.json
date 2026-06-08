@@ -1,0 +1,12 @@
+{
+  "shippedAt": "2026-05-19T08:07:07.013Z",
+  "adGroupId": "193897092609",
+  "oldAdIds": [
+    791143034799,
+    791143034802
+  ],
+  "newAdIds": [
+    "809389427687"
+  ],
+  "rollbackCommand": "node scripts/brand-defence-new-ads.js --rollback"
+}

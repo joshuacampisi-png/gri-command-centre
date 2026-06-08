@@ -1,0 +1,1079 @@
+{
+  "fetchedAt": "2026-05-29T00:42:16.341Z",
+  "totalMonthlyVolume": 58340,
+  "totalDailyVolume": 1945,
+  "buckets": {
+    "CORE BRAND/GENERIC (gender reveal-only)": {
+      "keywordCount": 18,
+      "monthlyVolume": 4160
+    },
+    "CANNONS": {
+      "keywordCount": 10,
+      "monthlyVolume": 3240
+    },
+    "SMOKE BOMBS": {
+      "keywordCount": 9,
+      "monthlyVolume": 1370
+    },
+    "EXTINGUISHER / BLASTER": {
+      "keywordCount": 9,
+      "monthlyVolume": 390
+    },
+    "SPORTS BALLS": {
+      "keywordCount": 11,
+      "monthlyVolume": 470
+    },
+    "BALLOONS / DECOR": {
+      "keywordCount": 17,
+      "monthlyVolume": 9880
+    },
+    "BURNOUT": {
+      "keywordCount": 5,
+      "monthlyVolume": 180
+    },
+    "CAKE / FOOD": {
+      "keywordCount": 7,
+      "monthlyVolume": 7330
+    },
+    "OTHER PRODUCTS": {
+      "keywordCount": 18,
+      "monthlyVolume": 1370
+    },
+    "GEO MODIFIERS (city)": {
+      "keywordCount": 12,
+      "monthlyVolume": 480
+    },
+    "QUESTION / RESEARCH": {
+      "keywordCount": 7,
+      "monthlyVolume": 110
+    },
+    "BABY SHOWER (adjacent)": {
+      "keywordCount": 13,
+      "monthlyVolume": 19500
+    },
+    "THEMED BIRTHDAY (adjacent — Paw/Mario/etc)": {
+      "keywordCount": 11,
+      "monthlyVolume": 3280
+    }
+  },
+  "keywords": [
+    {
+      "keyword": "baby shower",
+      "monthly": 6600,
+      "cpc": 0.65,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "baby shower games",
+      "monthly": 6600,
+      "cpc": 0.41,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal ideas",
+      "monthly": 5400,
+      "cpc": 0.53,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal cake",
+      "monthly": 5400,
+      "cpc": 0.56,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "baby shower decorations",
+      "monthly": 4400,
+      "cpc": 1.2,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal",
+      "monthly": 3600,
+      "cpc": 1.65,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "baby announcement",
+      "monthly": 2400,
+      "cpc": 0.54,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "pregnancy announcement",
+      "monthly": 2400,
+      "cpc": 0.51,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "confetti cannon",
+      "monthly": 1900,
+      "cpc": 1.84,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "baby shower ideas",
+      "monthly": 1900,
+      "cpc": 0.58,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal balloons",
+      "monthly": 1600,
+      "cpc": 0.48,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal balloon",
+      "monthly": 1600,
+      "cpc": 0.48,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal cupcakes",
+      "monthly": 1600,
+      "cpc": 0.63,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal decorations",
+      "monthly": 880,
+      "cpc": 0.84,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal smoke bombs",
+      "monthly": 880,
+      "cpc": 1.56,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal poppers",
+      "monthly": 880,
+      "cpc": 1.1,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "paw patrol balloons",
+      "monthly": 590,
+      "cpc": 1.02,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal cannon",
+      "monthly": 480,
+      "cpc": 2.17,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal cannons",
+      "monthly": 480,
+      "cpc": 2.17,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "paw patrol party",
+      "monthly": 480,
+      "cpc": 1.73,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "bluey birthday",
+      "monthly": 480,
+      "cpc": 0.47,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "bluey party",
+      "monthly": 480,
+      "cpc": 0.53,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal party",
+      "monthly": 320,
+      "cpc": 0.79,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal box",
+      "monthly": 320,
+      "cpc": 0.49,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "paw patrol birthday",
+      "monthly": 320,
+      "cpc": 1.14,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal australia",
+      "monthly": 260,
+      "cpc": 2.45,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal confetti cannon",
+      "monthly": 260,
+      "cpc": 1.99,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal balloon box",
+      "monthly": 260,
+      "cpc": 0.57,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "spider man party",
+      "monthly": 260,
+      "cpc": 1.14,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal smoke",
+      "monthly": 210,
+      "cpc": 1.86,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal golf ball",
+      "monthly": 210,
+      "cpc": 1.35,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal cookies",
+      "monthly": 210,
+      "cpc": 0.26,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal tnt",
+      "monthly": 210,
+      "cpc": 0.99,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal ideas easy",
+      "monthly": 210,
+      "cpc": 0.29,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "mario party decorations",
+      "monthly": 210,
+      "cpc": 0.79,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "toy story party",
+      "monthly": 210,
+      "cpc": 1.28,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal extinguisher",
+      "monthly": 170,
+      "cpc": 1.71,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal backdrop",
+      "monthly": 170,
+      "cpc": 1.03,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal powder",
+      "monthly": 140,
+      "cpc": 1.98,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal ideas unique",
+      "monthly": 140,
+      "cpc": 0.29,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal near me",
+      "monthly": 110,
+      "cpc": 0.44,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "coloured smoke bomb",
+      "monthly": 110,
+      "cpc": 1.18,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "colored smoke bomb",
+      "monthly": 110,
+      "cpc": 1.18,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal fire extinguisher",
+      "monthly": 110,
+      "cpc": 2.64,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal cake topper",
+      "monthly": 110,
+      "cpc": 0.46,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal confetti",
+      "monthly": 110,
+      "cpc": 1.04,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "pregnancy reveal",
+      "monthly": 110,
+      "cpc": 0.49,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "frozen birthday party",
+      "monthly": 110,
+      "cpc": 1.78,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal football",
+      "monthly": 90,
+      "cpc": 2.17,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal sydney",
+      "monthly": 90,
+      "cpc": 0.93,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal perth",
+      "monthly": 90,
+      "cpc": 1.97,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "toy story birthday",
+      "monthly": 90,
+      "cpc": 0.52,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal powder cannon",
+      "monthly": 70,
+      "cpc": 2.14,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal soccer ball",
+      "monthly": 70,
+      "cpc": 0.94,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal burnout",
+      "monthly": 70,
+      "cpc": 1.33,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal car burnout",
+      "monthly": 70,
+      "cpc": 1.33,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal melbourne",
+      "monthly": 70,
+      "cpc": 1.17,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal brisbane",
+      "monthly": 70,
+      "cpc": 1.43,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal adelaide",
+      "monthly": 70,
+      "cpc": 1.07,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal banner",
+      "monthly": 50,
+      "cpc": 0.59,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal gold coast",
+      "monthly": 50,
+      "cpc": 1.59,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "super mario birthday",
+      "monthly": 50,
+      "cpc": 0.54,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal online",
+      "monthly": 40,
+      "cpc": 0.75,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "powder cannon",
+      "monthly": 40,
+      "cpc": 1.1,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "blue smoke bomb",
+      "monthly": 40,
+      "cpc": 1.79,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal powder extinguisher",
+      "monthly": 40,
+      "cpc": 0.41,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal balloon garland",
+      "monthly": 40,
+      "cpc": 0.4,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal burnout powder",
+      "monthly": 40,
+      "cpc": 1.56,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal for twins",
+      "monthly": 40,
+      "cpc": 0.96,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "twins gender reveal",
+      "monthly": 40,
+      "cpc": 0.96,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal balloon arch",
+      "monthly": 30,
+      "cpc": 0.74,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal ideas for twins",
+      "monthly": 30,
+      "cpc": 0.45,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal dog",
+      "monthly": 30,
+      "cpc": null,
+      "competition": "MEDIUM"
+    },
+    {
+      "keyword": "gender reveal ideas cheap",
+      "monthly": 30,
+      "cpc": 0.28,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "creative gender reveal",
+      "monthly": 30,
+      "cpc": 0.43,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "simple gender reveal",
+      "monthly": 30,
+      "cpc": 0.02,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal ideas creative",
+      "monthly": 30,
+      "cpc": 0.23,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "how to do a gender reveal",
+      "monthly": 30,
+      "cpc": 1.08,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal pack",
+      "monthly": 20,
+      "cpc": 0.54,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal products",
+      "monthly": 20,
+      "cpc": 0.66,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "pink smoke bomb",
+      "monthly": 20,
+      "cpc": 1.41,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal blaster",
+      "monthly": 20,
+      "cpc": 1.45,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal powder blaster",
+      "monthly": 20,
+      "cpc": 1.41,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal cricket ball",
+      "monthly": 20,
+      "cpc": 0.97,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal baseball",
+      "monthly": 20,
+      "cpc": 0.88,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal sports",
+      "monthly": 20,
+      "cpc": 1.29,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "sports gender reveal",
+      "monthly": 20,
+      "cpc": 1.29,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal balloon kit",
+      "monthly": 20,
+      "cpc": 0.66,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal helium balloons",
+      "monthly": 20,
+      "cpc": 0.32,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal scratchies",
+      "monthly": 20,
+      "cpc": 0.64,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal plates",
+      "monthly": 20,
+      "cpc": 2.25,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal hire",
+      "monthly": 20,
+      "cpc": 0.74,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "unique gender reveal",
+      "monthly": 20,
+      "cpc": 0.36,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "easy gender reveal",
+      "monthly": 20,
+      "cpc": 0.38,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal at home",
+      "monthly": 20,
+      "cpc": null,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal canberra",
+      "monthly": 20,
+      "cpc": 0.71,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "what is a gender reveal",
+      "monthly": 20,
+      "cpc": null,
+      "competition": "LOW"
+    },
+    {
+      "keyword": "when to do gender reveal",
+      "monthly": 20,
+      "cpc": null,
+      "competition": "LOW"
+    },
+    {
+      "keyword": "gender reveal buy",
+      "monthly": 10,
+      "cpc": 0.95,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal bundle",
+      "monthly": 10,
+      "cpc": null,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal celebration",
+      "monthly": 10,
+      "cpc": null,
+      "competition": "LOW"
+    },
+    {
+      "keyword": "gender reveal cannon australia",
+      "monthly": 10,
+      "cpc": null,
+      "competition": "LOW"
+    },
+    {
+      "keyword": "powder extinguisher gender reveal",
+      "monthly": 10,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "powder blaster",
+      "monthly": 10,
+      "cpc": 0.91,
+      "competition": "MEDIUM"
+    },
+    {
+      "keyword": "gender reveal mega blaster",
+      "monthly": 10,
+      "cpc": 3.54,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal basketball",
+      "monthly": 10,
+      "cpc": 1.44,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal rugby ball",
+      "monthly": 10,
+      "cpc": 4.24,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal foil balloons",
+      "monthly": 10,
+      "cpc": 0.96,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal cake smash",
+      "monthly": 10,
+      "cpc": null,
+      "competition": "LOW"
+    },
+    {
+      "keyword": "gender reveal piñata",
+      "monthly": 10,
+      "cpc": null,
+      "competition": "LOW"
+    },
+    {
+      "keyword": "gender reveal pinata",
+      "monthly": 10,
+      "cpc": null,
+      "competition": "LOW"
+    },
+    {
+      "keyword": "gender reveal sash",
+      "monthly": 10,
+      "cpc": null,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal dog bandana",
+      "monthly": 10,
+      "cpc": 0.32,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal prediction cards",
+      "monthly": 10,
+      "cpc": null,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal cups",
+      "monthly": 10,
+      "cpc": null,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal napkins",
+      "monthly": 10,
+      "cpc": 0.76,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal photo booth",
+      "monthly": 10,
+      "cpc": 0.15,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "pet gender reveal",
+      "monthly": 10,
+      "cpc": 0.27,
+      "competition": "MEDIUM"
+    },
+    {
+      "keyword": "family gender reveal",
+      "monthly": 10,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "cheap gender reveal",
+      "monthly": 10,
+      "cpc": 3.25,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "big gender reveal",
+      "monthly": 10,
+      "cpc": null,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "small gender reveal",
+      "monthly": 10,
+      "cpc": null,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal for family",
+      "monthly": 10,
+      "cpc": 0.36,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal indoor",
+      "monthly": 10,
+      "cpc": 0.35,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal outdoor",
+      "monthly": 10,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "gender reveal newcastle",
+      "monthly": 10,
+      "cpc": 0.82,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal sunshine coast",
+      "monthly": 10,
+      "cpc": 0.27,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "how to gender reveal",
+      "monthly": 10,
+      "cpc": null,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "how to plan a gender reveal",
+      "monthly": 10,
+      "cpc": null,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal explained",
+      "monthly": 10,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "gender reveal countdown",
+      "monthly": 10,
+      "cpc": null,
+      "competition": "LOW"
+    },
+    {
+      "keyword": "where to buy gender reveal",
+      "monthly": 10,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "gender reveal delivery",
+      "monthly": 10,
+      "cpc": null,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal next day delivery",
+      "monthly": 10,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "gender reveal same day",
+      "monthly": 10,
+      "cpc": 0.79,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "pink or blue gender reveal",
+      "monthly": 10,
+      "cpc": 0.19,
+      "competition": "HIGH"
+    },
+    {
+      "keyword": "gender reveal kit",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "gender reveal supplies",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "gender reveal sale",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "gender reveal cannon kit",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "baby reveal cannon",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "baby shower cannon",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "gender reveal smoke bomb",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "smoke bomb gender reveal",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "gender reveal coloured smoke",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "mini blaster gender reveal",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "gender reveal afl ball",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "gender reveal nfl ball",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "gender reveal latex balloons",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "tyre burnout gender reveal",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "tire burnout gender reveal",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "gender reveal darwin",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "gender reveal hobart",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "gender reveal wollongong",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "baby reveal",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "baby reveal ideas",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "baby shower party",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "baby shower supplies",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "baby shower australia",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "baby shower balloons",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "baby shower cake",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "baby shower cake topper",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "oh baby",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "oh baby decorations",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "gender reveal store australia",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "gender reveal free shipping",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "its a boy gender reveal",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "its a girl gender reveal",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    },
+    {
+      "keyword": "boy or girl gender reveal",
+      "monthly": 0,
+      "cpc": null,
+      "competition": null
+    }
+  ],
+  "yourCurrentSessions": 850,
+  "grRelevantDailyDemand": 966,
+  "captureRate": "88.0%",
+  "realisticDailyCeiling": 193
+}

@@ -1,0 +1,7 @@
+{
+  "shippedAt": "2026-05-19T07:43:33.546Z",
+  "budgetId": "14807748208",
+  "previousAmountMicros": 75000000,
+  "newAmountMicros": 60000000,
+  "rollbackCommand": "node scripts/bundles-budget-cut.js --rollback"
+}

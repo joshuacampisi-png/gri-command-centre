@@ -1,0 +1,1432 @@
+{
+  "totalActive": 107,
+  "titleIssueCounts": {
+    "KW_NOT_IN_FIRST_30c": 39,
+    "NO_TRUST_SIGNAL": 96,
+    "DUP_WORDS": 9,
+    "TOO_SHORT": 19,
+    "EMOJI": 6,
+    "PRICE_IN_TITLE": 3,
+    "TOO_LONG": 1
+  },
+  "handleIssueCounts": {
+    "STOPWORDS": 5,
+    "DUP_TOKENS": 4,
+    "NO_PRIMARY_KW": 22,
+    "SUSPECT_TOKEN": 1
+  },
+  "scoreBuckets": {
+    "A (90-100)": 45,
+    "B (75-89)": 53,
+    "C (50-74)": 9,
+    "D (25-49)": 0,
+    "F (<25)": 0
+  },
+  "audit": [
+    {
+      "handle": "double-powder-double-the-effect",
+      "productTitle": "Double Powder, Double the Effect",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 31,
+      "titleIssues": [
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL",
+        "DUP_WORDS(double)"
+      ],
+      "handleIssues": [
+        "STOPWORDS(the)",
+        "DUP_TOKENS(double)",
+        "NO_PRIMARY_KW"
+      ],
+      "score": 52
+    },
+    {
+      "handle": "the-grandparent-moment-bundle",
+      "productTitle": "The Grandparent Moment Bundle",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 29,
+      "titleIssues": [
+        "TOO_SHORT(29c)",
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [
+        "STOPWORDS(the)",
+        "NO_PRIMARY_KW"
+      ],
+      "score": 60
+    },
+    {
+      "handle": "gender-reveal-burnout-powder",
+      "productTitle": "Mega BURNOUT💨 Smoke EXTREME Gender Reveal Burnout Powder 2KG",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 28,
+      "titleIssues": [
+        "EMOJI",
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL",
+        "DUP_WORDS(burnout)"
+      ],
+      "handleIssues": [],
+      "score": 68
+    },
+    {
+      "handle": "super-mario-party-set",
+      "productTitle": "Super Mario Theme Full Party Set (15 Person)",
+      "seoTitle": "Super Mario Theme Full Party Set (15 Person) | Party Supplies Australi",
+      "titleLength": 70,
+      "handleLength": 21,
+      "titleIssues": [
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL",
+        "DUP_WORDS(party)"
+      ],
+      "handleIssues": [
+        "NO_PRIMARY_KW"
+      ],
+      "score": 68
+    },
+    {
+      "handle": "baby-balloon-box",
+      "productTitle": "Large BABY Box & Balloon Set",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 16,
+      "titleIssues": [
+        "TOO_SHORT(28c)",
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [
+        "NO_PRIMARY_KW"
+      ],
+      "score": 68
+    },
+    {
+      "handle": "mario-balloon-set",
+      "productTitle": "Super Mario Foil Balloon Set",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 17,
+      "titleIssues": [
+        "TOO_SHORT(28c)",
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [
+        "NO_PRIMARY_KW"
+      ],
+      "score": 68
+    },
+    {
+      "handle": "baby-shower-gold-forks",
+      "productTitle": "Gold Re-Usable Party Forks",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 22,
+      "titleIssues": [
+        "TOO_SHORT(26c)",
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [
+        "NO_PRIMARY_KW"
+      ],
+      "score": 68
+    },
+    {
+      "handle": "the-mini-blaster-party-starter",
+      "productTitle": "The Mini Blaster Party Starter",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 30,
+      "titleIssues": [
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [
+        "STOPWORDS(the)",
+        "NO_PRIMARY_KW"
+      ],
+      "score": 68
+    },
+    {
+      "handle": "double-powder-upgrade",
+      "productTitle": "Double Powder Upgrade",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 21,
+      "titleIssues": [
+        "TOO_SHORT(21c)",
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [
+        "NO_PRIMARY_KW"
+      ],
+      "score": 68
+    },
+    {
+      "handle": "gold-oh-baby-foil-balloons",
+      "productTitle": "Large \"OH BABY\" Foil Balloon Set (Gold)",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 26,
+      "titleIssues": [
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [
+        "NO_PRIMARY_KW"
+      ],
+      "score": 76
+    },
+    {
+      "handle": "balloon-glue-dots",
+      "productTitle": "100 Double Sided Balloon Glue Dots",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 17,
+      "titleIssues": [
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [
+        "NO_PRIMARY_KW"
+      ],
+      "score": 76
+    },
+    {
+      "handle": "gender-reveal-extinguisher-bundle",
+      "productTitle": "💥Double MEGA Powder Extinguisher & Gender Reveal Cannon Bundle",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 33,
+      "titleIssues": [
+        "EMOJI",
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 76
+    },
+    {
+      "handle": "paw-patrol-chase-balloon-set",
+      "productTitle": "Paw Patrol Birthday Foil Balloon Set (Chase)",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 28,
+      "titleIssues": [
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [
+        "NO_PRIMARY_KW"
+      ],
+      "score": 76
+    },
+    {
+      "handle": "paw-patrol-rubble-balloon-set",
+      "productTitle": "Paw Patrol Birthday Foil Balloon Set (Rubble)",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 29,
+      "titleIssues": [
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [
+        "NO_PRIMARY_KW"
+      ],
+      "score": 76
+    },
+    {
+      "handle": "paw-patrol-marshall-balloon-set",
+      "productTitle": "Paw Patrol Birthday Foil Balloon Set (Marshall)",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 31,
+      "titleIssues": [
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [
+        "NO_PRIMARY_KW"
+      ],
+      "score": 76
+    },
+    {
+      "handle": "paw-patrol-birthday-balloon-set",
+      "productTitle": "Paw Patrol Birthday Foil Balloon Set (Skye)",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 31,
+      "titleIssues": [
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [
+        "NO_PRIMARY_KW"
+      ],
+      "score": 76
+    },
+    {
+      "handle": "oh-baby-cake-topper",
+      "productTitle": "\"Oh Baby\" Acrylic Cake Topper (Gold)",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 19,
+      "titleIssues": [
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [
+        "NO_PRIMARY_KW"
+      ],
+      "score": 76
+    },
+    {
+      "handle": "toy-story-birthday-party-set",
+      "productTitle": "Toy Story Birthday Party Set (15 Person)",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 28,
+      "titleIssues": [
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [
+        "NO_PRIMARY_KW"
+      ],
+      "score": 76
+    },
+    {
+      "handle": "gender-reveal-cannon-bundle-gender-geddon",
+      "productTitle": "Gender-Geddon | Australia's Largest Gender Reveal Bundle",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 41,
+      "titleIssues": [
+        "KW_NOT_IN_FIRST_30c",
+        "DUP_WORDS(gender)"
+      ],
+      "handleIssues": [
+        "DUP_TOKENS(gender)"
+      ],
+      "score": 76
+    },
+    {
+      "handle": "oh-baby-gender-reveal-napkins-gender-reveal-napkins",
+      "productTitle": "Oh Baby Gender Reveal/ Baby Shower Napkins",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 51,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL",
+        "DUP_WORDS(baby)"
+      ],
+      "handleIssues": [
+        "DUP_TOKENS(gender,reveal,napkins)"
+      ],
+      "score": 76
+    },
+    {
+      "handle": "baby-shower-plates-gender-reveal-plates",
+      "productTitle": "Oh Baby Gender Reveal/ Baby Shower Plates",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 39,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL",
+        "DUP_WORDS(baby)"
+      ],
+      "handleIssues": [
+        "DUP_TOKENS(plates)"
+      ],
+      "score": 76
+    },
+    {
+      "handle": "party-celebration-powder-cannon-xl-50cm",
+      "productTitle": "Orange Party Celebration Powder Cannon XL 50cm",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 39,
+      "titleIssues": [
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [
+        "NO_PRIMARY_KW"
+      ],
+      "score": 76
+    },
+    {
+      "handle": "green-party-powder-cannon-bio-xl-bundle",
+      "productTitle": "4 Pack - Green Party Powder Cannon BIO XL Bundle",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 39,
+      "titleIssues": [
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [
+        "NO_PRIMARY_KW"
+      ],
+      "score": 76
+    },
+    {
+      "handle": "orange-party-powder-cannon-bio-xl-bundle",
+      "productTitle": "4 Pack - Orange Party Powder Cannon BIO XL Bundle",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 40,
+      "titleIssues": [
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [
+        "NO_PRIMARY_KW"
+      ],
+      "score": 76
+    },
+    {
+      "handle": "gender-reveal-balloons",
+      "productTitle": "Baby Large Foil Balloon",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 22,
+      "titleIssues": [
+        "TOO_SHORT(23c)",
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 76
+    },
+    {
+      "handle": "buy-gender-reveal-bundles",
+      "productTitle": "Backyard Celebration Bundle",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 25,
+      "titleIssues": [
+        "TOO_SHORT(27c)",
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 76
+    },
+    {
+      "handle": "gender-reveal-burnout-smoke",
+      "productTitle": "The Race Day Reveal Bundle",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 27,
+      "titleIssues": [
+        "TOO_SHORT(26c)",
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 76
+    },
+    {
+      "handle": "the-low-mess-indoor-reveal-bundle",
+      "productTitle": "The Low Mess Indoor Reveal Bundle",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 33,
+      "titleIssues": [
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [
+        "STOPWORDS(the)"
+      ],
+      "score": 76
+    },
+    {
+      "handle": "exclusive-reveal-bundle",
+      "productTitle": "Exclusive Reveal Bundle",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 23,
+      "titleIssues": [
+        "TOO_SHORT(23c)",
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 76
+    },
+    {
+      "handle": "single-arch-balloon-garland",
+      "productTitle": "Classic Single or Double Arch Garland Hire",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 27,
+      "titleIssues": [
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [
+        "NO_PRIMARY_KW"
+      ],
+      "score": 76
+    },
+    {
+      "handle": "gender-reveal-nfl-ball",
+      "productTitle": "Sports Gender Reveal NFL Ball",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 22,
+      "titleIssues": [
+        "TOO_SHORT(29c)",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 84
+    },
+    {
+      "handle": "gender-reveal-powder-basketball",
+      "productTitle": "Gender Reveal Basketball",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 31,
+      "titleIssues": [
+        "TOO_SHORT(24c)",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 84
+    },
+    {
+      "handle": "gender-reveal-powder-baseball",
+      "productTitle": "Sports Gender Reveal Baseball",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 29,
+      "titleIssues": [
+        "TOO_SHORT(29c)",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 84
+    },
+    {
+      "handle": "gender-reveal-cannons-bundle-australia",
+      "productTitle": "4 Pack - Gender Reveal Confetti & Powder XL Cannon Bundle",
+      "seoTitle": "4 Pack Gender Reveal Cannon Bundle | $90 | Pink, Blue, Mix",
+      "titleLength": 58,
+      "handleLength": 38,
+      "titleIssues": [
+        "PRICE_IN_TITLE",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 84
+    },
+    {
+      "handle": "boy-girl-gender-reveal-balloons",
+      "productTitle": "BOY/ GIRL  Foil Air Fill Gender Reveal Balloons",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 31,
+      "titleIssues": [
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 84
+    },
+    {
+      "handle": "gender-reveal-party-bundle",
+      "productTitle": "Mega Reveal Gender Party Bundle",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 26,
+      "titleIssues": [
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 84
+    },
+    {
+      "handle": "gender-reveal-confetti-balloon",
+      "productTitle": "Custom Mega POP Latex Confetti Gender Reveal Balloon",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 30,
+      "titleIssues": [
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 84
+    },
+    {
+      "handle": "gender-reveal-smoke-bomb-australia",
+      "productTitle": "Gender Reveal Smoke Bombs",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 34,
+      "titleIssues": [
+        "TOO_SHORT(25c)",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 84
+    },
+    {
+      "handle": "gender-reveal-smoke-bundle",
+      "productTitle": "Double Gender Reveal Smoke & Cannon Bundle 🎉",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 26,
+      "titleIssues": [
+        "EMOJI",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 84
+    },
+    {
+      "handle": "gender-reveal-extinguisher-australia",
+      "productTitle": "Gender Reveal Extinguisher | MEGA Powder Blaster 💥",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 36,
+      "titleIssues": [
+        "EMOJI",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 84
+    },
+    {
+      "handle": "gender-reveal-afl-ball",
+      "productTitle": "Sports Gender Reveal AFL Ball",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 22,
+      "titleIssues": [
+        "TOO_SHORT(29c)",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 84
+    },
+    {
+      "handle": "gender-reveal-smoke-cannon-bundle",
+      "productTitle": "Gender Reveal Mega Smoke & Cannon Effect Bundle 🎉",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 33,
+      "titleIssues": [
+        "EMOJI",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 84
+    },
+    {
+      "handle": "gender-reveal-powder-extinguisher-australia",
+      "productTitle": "Quad Gender Reveal 💥 MEGA Powder Blaster/ Extinguisher",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 43,
+      "titleIssues": [
+        "EMOJI",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 84
+    },
+    {
+      "handle": "gender-reveal-burn-away-topper",
+      "productTitle": "6\" Viral Burn Away Cake Topper Kit",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 30,
+      "titleIssues": [
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 84
+    },
+    {
+      "handle": "baby-shower-box-australia",
+      "productTitle": "Gender Reveal/ Baby Shower Party Box Set",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 25,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [
+        "NO_PRIMARY_KW"
+      ],
+      "score": 84
+    },
+    {
+      "handle": "gender-reveal-sash",
+      "productTitle": "Satin \"Mom To Be\" Gender Reveal Sash",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 18,
+      "titleIssues": [
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 84
+    },
+    {
+      "handle": "gender-reveal-cups",
+      "productTitle": "Oh Baby Gender Reveal/ Baby Shower Cups",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 18,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL",
+        "DUP_WORDS(baby)"
+      ],
+      "handleIssues": [],
+      "score": 84
+    },
+    {
+      "handle": "gender-reveal-cricket-ball",
+      "productTitle": "Gender Reveal Cricket Ball",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 26,
+      "titleIssues": [
+        "TOO_SHORT(26c)",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 84
+    },
+    {
+      "handle": "gender-reveal-party-prediction-badges-20-pack-copy",
+      "productTitle": "Boutique Custom Gender Reveal Party Badges 20 Pack",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 50,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [
+        "SUSPECT_TOKEN"
+      ],
+      "score": 84
+    },
+    {
+      "handle": "deluxe-gold-mega-confetti-gender-reveal-balloon",
+      "productTitle": "Deluxe Gold Mega Confetti Gender Reveal Balloon",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 47,
+      "titleIssues": [
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 84
+    },
+    {
+      "handle": "afl-sports-bundle",
+      "productTitle": "Gender Reveal AFL Sports Bundle",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 17,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [
+        "NO_PRIMARY_KW"
+      ],
+      "score": 84
+    },
+    {
+      "handle": "gender-reveal-pin-the-dummy-game",
+      "productTitle": "Gender Reveal Pin The Dummy Game",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 32,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [
+        "STOPWORDS(the)"
+      ],
+      "score": 84
+    },
+    {
+      "handle": "gender-reveal-powder-cannon",
+      "productTitle": "Green Party Celebration Powder Cannon XL 50cm",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 27,
+      "titleIssues": [
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 84
+    },
+    {
+      "handle": "gender-reveal-poppers",
+      "productTitle": "Purple Party Celebration Powder Cannon XL 50cm",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 21,
+      "titleIssues": [
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 84
+    },
+    {
+      "handle": "purple-gender-reveal-powder-cannon-bio-xl-bundle",
+      "productTitle": "4 Pack - Purple Party Powder Cannon BIO XL Bundle",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 48,
+      "titleIssues": [
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 84
+    },
+    {
+      "handle": "gender-reveal-soccer-smoke-bomb-bundle",
+      "productTitle": "Game Day Gender Reveal Bundle",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 38,
+      "titleIssues": [
+        "TOO_SHORT(29c)",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 84
+    },
+    {
+      "handle": "double-trouble-twins-reveal-bundle",
+      "productTitle": "Double Trouble Twins Reveal Bundle",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 34,
+      "titleIssues": [
+        "KW_NOT_IN_FIRST_30c",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 84
+    },
+    {
+      "handle": "gender-reveal-ideas-near-me",
+      "productTitle": "2 Pack - Gender Reveal Confetti & Powder XL Cannon Bundle",
+      "seoTitle": "2 Pack Gender Reveal Confetti & Powder Cannon Bundle | $65",
+      "titleLength": 58,
+      "handleLength": 27,
+      "titleIssues": [
+        "PRICE_IN_TITLE",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 84
+    },
+    {
+      "handle": "gender-reveal-powder-cannons",
+      "productTitle": "2 Pack - Gender Reveal Powder XL Cannon Bundle",
+      "seoTitle": "Gender Reveal powder popper",
+      "titleLength": 27,
+      "handleLength": 28,
+      "titleIssues": [
+        "TOO_SHORT(27c)",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 84
+    },
+    {
+      "handle": "inflatable-baby-costume-gender-reveal",
+      "productTitle": "Custom Inflatable Baby Costume Gender Reveal",
+      "seoTitle": "Inflatable Baby Costume Gender Reveal | Dad Reveal Australia",
+      "titleLength": 60,
+      "handleLength": 37,
+      "titleIssues": [
+        "KW_NOT_IN_FIRST_30c",
+        "DUP_WORDS(reveal)"
+      ],
+      "handleIssues": [],
+      "score": 84
+    },
+    {
+      "handle": "official-gender-reveal-pet-bandana",
+      "productTitle": "Gender Reveal Dog Bandana",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 34,
+      "titleIssues": [
+        "TOO_SHORT(25c)",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 84
+    },
+    {
+      "handle": "2x-pack-gender-reveal-smoke-bombs",
+      "productTitle": "2x Pack Gender Reveal Smoke Bombs",
+      "seoTitle": "Gender Reveal Smoke Bombs",
+      "titleLength": 25,
+      "handleLength": 33,
+      "titleIssues": [
+        "TOO_SHORT(25c)",
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 84
+    },
+    {
+      "handle": "gender-reveal-golf-balls",
+      "productTitle": "Super Gender Reveal Golf Balls",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 24,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-baby-shower-balloon-kit",
+      "productTitle": "148 Piece Gender Reveal/ Baby Shower Luxury Balloon Kit",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 37,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-powder-cannon-australia",
+      "productTitle": "Gender Reveal Powder Cannon XL 50cm",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 37,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-exploding-soccer-ball",
+      "productTitle": "Sports Gender Reveal Soccer Ball",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 35,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-cannons",
+      "productTitle": "Gender Reveal Confetti & Powder Cannon XL 50cm",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 21,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-powder-cannon-bundle",
+      "productTitle": "4 Pack - Gender Reveal Powder Cannon BIO XL Bundle",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 34,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-foil-curtain",
+      "productTitle": "Gender Reveal Foil Party Curtain",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 26,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "87-piece-nature-gender-reveal-baby-shower-luxury-balloon-kit",
+      "productTitle": "87 Piece Nature Gender Reveal/ Baby Shower Luxury Balloon Kit",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 60,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-powder",
+      "productTitle": "Gender Reveal Powder (200g Net)",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 20,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "mini-powder-gender-reveal-blaster",
+      "productTitle": "Gender Reveal Powder Extinguisher | Mini Blaster",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 33,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-confetti-cannons",
+      "productTitle": "Gender Reveal Confetti Cannon XL 50cm",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 30,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-confetti-cannon-australia",
+      "productTitle": "4 Pack - Gender Reveal Confetti Cannon XL BIO Bundle",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 39,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-electric-card-spray-gun",
+      "productTitle": "Gender Reveal Electric Card Spray Gun",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 37,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "mega-gender-reveal-powder-blaster",
+      "productTitle": "Gender Reveal | Double MEGA Powder Blaster/ Extinguisher",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 33,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-powder-extinguisher",
+      "productTitle": "Gender Reveal Powder Extinguisher Bundle",
+      "seoTitle": "Gender Reveal Extinguisher Bundle | Pink Blue | Australia Same Day Dispatch",
+      "titleLength": 75,
+      "handleLength": 33,
+      "titleIssues": [
+        "TOO_LONG(75c)"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-rugby-ball",
+      "productTitle": "Sports Gender Reveal NRL Rugby Ball",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 24,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-scratchie",
+      "productTitle": "Gender Reveal Scratchie 10 Pack",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 23,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-smoke-bomb-bundle",
+      "productTitle": "4x Bundle Pack Gender Reveal Smoke Bombs",
+      "seoTitle": "gender reveal smoke bomb bundle",
+      "titleLength": 31,
+      "handleLength": 31,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "afl-gender-reveal-ball",
+      "productTitle": "AFL Gender Reveal Ball & Cannon Family Bundle",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 22,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-golf-ball",
+      "productTitle": "Golf Gender Reveal Cannon & Ball Family Bundle",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 23,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-soccer-ball",
+      "productTitle": "Gender Reveal Soccer & Cannon Family Bundle",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 25,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-powder-cannons-extinguisher",
+      "productTitle": "Gender Reveal Cannon & Extinguisher Double Bundle 🎉",
+      "seoTitle": "Gender Reveal Cannon & Extinguisher Bundle | Gender Reveals Australia",
+      "titleLength": 69,
+      "handleLength": 41,
+      "titleIssues": [
+        "DUP_WORDS(gender)"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "pokemon-gender-reveal",
+      "productTitle": "Gender Reveal Poké Ball 2 pack",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 21,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "prank-confetti-powder-gender-reveal",
+      "productTitle": "PRANK 2 Pack Gender Reveal Cannon",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 35,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-prank-cannon",
+      "productTitle": "PRANK 4 Pack Gender Reveal Cannon",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 26,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-extinguishers",
+      "productTitle": "Quad Family Gender Reveal Extinguisher Bundle",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 27,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-prediction-cards",
+      "productTitle": "Gender Reveal/ Baby Shower Prediction Cards",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 30,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-smoke-box",
+      "productTitle": "DIY -Gender Reveal Smoke Box Trend",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 23,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-wrist-bands",
+      "productTitle": "Custom Gender Reveal Party Wrist Bands - 20 Pack",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 25,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-scratchies",
+      "productTitle": "Gender Reveal Ideas 24 Pack Scratchies",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 24,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "tnt-gender-reveal-australia",
+      "productTitle": "TNT Gender Reveal Self Hire",
+      "seoTitle": "TNT Gender Reveal Self Hire Kit Australia | $349 | Gold Coast",
+      "titleLength": 61,
+      "handleLength": 27,
+      "titleIssues": [
+        "PRICE_IN_TITLE"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-party-kit",
+      "productTitle": "Full Gender Reveal Back Drop Kit",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 23,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal0ideas-party",
+      "productTitle": "Gender Reveal Party Voting Sheet",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 25,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-smoke-bombs-extinguisher-bundle",
+      "productTitle": "The Blaster & Smoke Reveal Kit",
+      "seoTitle": "gender reveal extinguisher smoke bundle",
+      "titleLength": 39,
+      "handleLength": 45,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-smoke-bomb-extinguisher-bundle",
+      "productTitle": "The Scratch & Reveal Party Bundle",
+      "seoTitle": "Gender Reveal Smoke Bomb & Extinguisher Bundle",
+      "titleLength": 46,
+      "handleLength": 44,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-confetti-cannons-australia",
+      "productTitle": "2 Pack - Gender Reveal Confetti XL Cannon Bundle",
+      "seoTitle": "gender reveal confetti cannons",
+      "titleLength": 30,
+      "handleLength": 40,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-boy-girl-party-glasses",
+      "productTitle": "Gender Reveal Boy & Girl Party Glasses 20pcs",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 36,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-balloon-garland",
+      "productTitle": "DIY Hire Gender Reveal Balloon Garland",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 29,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-balloon-box",
+      "productTitle": "Gender Reveal Helium Balloon Box Hire",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 25,
+      "titleIssues": [
+        "NO_TRUST_SIGNAL"
+      ],
+      "handleIssues": [],
+      "score": 92
+    },
+    {
+      "handle": "gender-reveal-confetti",
+      "productTitle": "Gender Reveal Confetti Decoration (120g Net)",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 22,
+      "titleIssues": [],
+      "handleIssues": [],
+      "score": 100
+    },
+    {
+      "handle": "gender-reveal-decorations",
+      "productTitle": "Value Gender Reveal Decoration Set",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 25,
+      "titleIssues": [],
+      "handleIssues": [],
+      "score": 100
+    },
+    {
+      "handle": "gender-reveal-decorations-set",
+      "productTitle": "Basic Gender Reveal Decoration Set",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 29,
+      "titleIssues": [],
+      "handleIssues": [],
+      "score": 100
+    },
+    {
+      "handle": "gender-reveal-party-products",
+      "productTitle": "Family Gender Reveal Decoration Set",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 28,
+      "titleIssues": [],
+      "handleIssues": [],
+      "score": 100
+    },
+    {
+      "handle": "gender-reveal-party-pack",
+      "productTitle": "Gender Reveal Mum & Dad Feature Pack",
+      "seoTitle": "",
+      "titleLength": 0,
+      "handleLength": 24,
+      "titleIssues": [],
+      "handleIssues": [],
+      "score": 100
+    },
+    {
+      "handle": "gender-reveal-photo-booth-props-60pcs-baby-shower-party-decor-set",
+      "productTitle": "Gender Reveal Photo Booth Props 60pcs – Baby Shower Party Decor Set",
+      "seoTitle": "Gender Reveal Photo Booth Props 60pcs – Baby Shower Party Decor Set Au",
+      "titleLength": 70,
+      "handleLength": 65,
+      "titleIssues": [],
+      "handleIssues": [],
+      "score": 100
+    }
+  ],
+  "duplicateTitles": []
+}

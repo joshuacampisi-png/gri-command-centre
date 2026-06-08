@@ -1,0 +1,24 @@
+{
+  "shippedAt": "2026-05-19T20:42:08.486Z",
+  "actions": [
+    {
+      "action": "pause",
+      "keyword": "gender reveal bomb",
+      "match": "PHRASE",
+      "resource_name": "customers/9431746480/adGroupCriteria/165478691408~305532665707"
+    },
+    {
+      "action": "pause",
+      "keyword": "gender reveal gun",
+      "match": "PHRASE",
+      "resource_name": "customers/9431746480/adGroupCriteria/165478691408~467302320690"
+    },
+    {
+      "action": "create",
+      "keyword": "gender reveal smoke bomb",
+      "match": "PHRASE",
+      "cpc": 1,
+      "resource_name": "customers/9431746480/adGroupCriteria/165478691488~567047195994"
+    }
+  ]
+}

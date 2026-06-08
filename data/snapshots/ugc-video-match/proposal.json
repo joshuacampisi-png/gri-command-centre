@@ -1,0 +1,295 @@
+{
+  "totalBlocks": 19,
+  "fixList": [
+    {
+      "rank": 1,
+      "blockId": "video_4xHPUx",
+      "filename": "SnapInsta-Ai_3640009199883972127.mp4",
+      "current": {
+        "handle": "gender-reveal-powder-cannons-extinguisher",
+        "title": "Gender Reveal Cannon & Extinguisher Double Bundle 🎉"
+      },
+      "suggested": {
+        "handle": null,
+        "title": "???",
+        "confidence": "UNKNOWN (needs Josh to specify)"
+      },
+      "needsAction": "🟡 NEEDS YOUR INPUT"
+    },
+    {
+      "rank": 2,
+      "blockId": "video_g8FhFL",
+      "filename": "SnapInsta-Ai_3640129744906943654.mp4",
+      "current": {
+        "handle": "mega-gender-reveal-powder-blaster",
+        "title": "Gender Reveal | Double MEGA Powder Blaster/ Extinguisher"
+      },
+      "suggested": {
+        "handle": null,
+        "title": "???",
+        "confidence": "UNKNOWN (needs Josh to specify)"
+      },
+      "needsAction": "🟡 NEEDS YOUR INPUT"
+    },
+    {
+      "rank": 3,
+      "blockId": "video_6bKFaa",
+      "filename": "08.07.25 Sophie .mp4",
+      "current": {
+        "handle": "mega-gender-reveal-powder-blaster",
+        "title": "Gender Reveal | Double MEGA Powder Blaster/ Extinguisher"
+      },
+      "suggested": {
+        "handle": null,
+        "title": "???",
+        "confidence": "UNKNOWN (needs Josh to specify)"
+      },
+      "needsAction": "🟡 NEEDS YOUR INPUT"
+    },
+    {
+      "rank": 4,
+      "blockId": "video_P9kBan",
+      "filename": "snapins-ai_3566265274059909522_387dfb94-69ea-4857-9dcb-c5e95f0f8d16.mp4",
+      "current": {
+        "handle": "gender-reveal-confetti-cannons-australia",
+        "title": "2 Pack - Gender Reveal Confetti XL Cannon Bundle"
+      },
+      "suggested": {
+        "handle": null,
+        "title": "???",
+        "confidence": "UNKNOWN (needs Josh to specify)"
+      },
+      "needsAction": "🟡 NEEDS YOUR INPUT"
+    },
+    {
+      "rank": 5,
+      "blockId": "video_qgqYAD",
+      "filename": "smoke. bombs_9a4301fa-97fa-44b1-9358-ff4654f1e153.mp4",
+      "current": {
+        "handle": "gender-reveal-smoke-bomb-bundle",
+        "title": "4x Bundle Pack Gender Reveal Smoke Bombs"
+      },
+      "suggested": {
+        "handle": null,
+        "title": "???",
+        "confidence": "UNKNOWN (needs Josh to specify)"
+      },
+      "needsAction": "🟡 NEEDS YOUR INPUT"
+    },
+    {
+      "rank": 6,
+      "blockId": "video_bmi7gh",
+      "filename": "smoke colours bomb.mp4",
+      "current": {
+        "handle": "gender-reveal-smoke-bombs",
+        "title": "Gender Reveal Smoke Bombs"
+      },
+      "suggested": {
+        "handle": "gender-reveal-smoke-bombs",
+        "title": "Gender Reveal Smoke Bombs",
+        "confidence": "HIGH (filename match)"
+      },
+      "needsAction": "✓ ALREADY CORRECT"
+    },
+    {
+      "rank": 7,
+      "blockId": "video_x9XUxq",
+      "filename": "SnapInsta-Ai_3722120300608476230_a1ac20f1-6e1c-45c8-8e7e-39f80f93e474.mp4",
+      "current": {
+        "handle": "gender-reveal-smoke-bombs",
+        "title": "Gender Reveal Smoke Bombs"
+      },
+      "suggested": {
+        "handle": null,
+        "title": "???",
+        "confidence": "UNKNOWN (needs Josh to specify)"
+      },
+      "needsAction": "🟡 NEEDS YOUR INPUT"
+    },
+    {
+      "rank": 8,
+      "blockId": "video_L9gRLc",
+      "filename": "snapins-ai_3747038705694132794_00c04424-e48a-4c5d-ae62-14dad52969f1.mp4",
+      "current": {
+        "handle": "tnt-gender-reveal-australia",
+        "title": "TNT Gender Reveal Self Hire"
+      },
+      "suggested": {
+        "handle": null,
+        "title": "???",
+        "confidence": "UNKNOWN (needs Josh to specify)"
+      },
+      "needsAction": "🟡 NEEDS YOUR INPUT"
+    },
+    {
+      "rank": 9,
+      "blockId": "video_WBkGT7",
+      "filename": "8.8.2025mp4_c232cdc6-46e4-42bb-84f6-517f691cd35d.mp4",
+      "current": {
+        "handle": "tnt-gender-reveal-australia",
+        "title": "TNT Gender Reveal Self Hire"
+      },
+      "suggested": {
+        "handle": null,
+        "title": "???",
+        "confidence": "UNKNOWN (needs Josh to specify)"
+      },
+      "needsAction": "🟡 NEEDS YOUR INPUT"
+    },
+    {
+      "rank": 10,
+      "blockId": "video_kCznXc",
+      "filename": "SnapInsta-Ai_3719956040147362931.mp4",
+      "current": {
+        "handle": "gender-reveal-exploding-soccer-ball",
+        "title": "Sports Gender Reveal Soccer Ball"
+      },
+      "suggested": {
+        "handle": null,
+        "title": "???",
+        "confidence": "UNKNOWN (needs Josh to specify)"
+      },
+      "needsAction": "🟡 NEEDS YOUR INPUT"
+    },
+    {
+      "rank": 11,
+      "blockId": "video_rMW9Fn",
+      "filename": "tnt 26.11.mp4",
+      "current": {
+        "handle": "gender-reveal-soccer-ball",
+        "title": "Gender Reveal Soccer & Cannon Family Bundle"
+      },
+      "suggested": {
+        "handle": "tnt-gender-reveal-australia",
+        "title": "TNT Gender Reveal Self Hire",
+        "confidence": "HIGH (filename match)"
+      },
+      "needsAction": "🔴 CHANGE → tnt-gender-reveal-australia"
+    },
+    {
+      "rank": 12,
+      "blockId": "video_CUAdPX",
+      "filename": "snapins-ai_3606337044013679292_113274f6-476e-4a46-a878-7e1fd3dcfc1b.mp4",
+      "current": {
+        "handle": "tnt-gender-reveal-australia",
+        "title": "TNT Gender Reveal Self Hire"
+      },
+      "suggested": {
+        "handle": null,
+        "title": "???",
+        "confidence": "UNKNOWN (needs Josh to specify)"
+      },
+      "needsAction": "🟡 NEEDS YOUR INPUT"
+    },
+    {
+      "rank": 13,
+      "blockId": "video_dDTXFd",
+      "filename": "Soph Mini Blaster 21.05.25.MP4",
+      "current": {
+        "handle": "gender-reveal-extinguishers-australia",
+        "title": "Gender Reveal Powder Extinguisher | Mini Blaster"
+      },
+      "suggested": {
+        "handle": "gender-reveal-extinguisher-australia",
+        "title": "Gender Reveal Extinguisher | MEGA Powder Blaster 💥",
+        "confidence": "HIGH (filename match)"
+      },
+      "needsAction": "🔴 CHANGE → gender-reveal-extinguisher-australia"
+    },
+    {
+      "rank": 14,
+      "blockId": "video_dDwQgc",
+      "filename": "SnapInsta-Ai_3735596321622053789_2fa25c76-5a1a-40f4-b584-8cbf238c6ec6.mp4",
+      "current": {
+        "handle": "gender-reveal-rugby-ball",
+        "title": "Sports Gender Reveal NRL Rugby Ball"
+      },
+      "suggested": {
+        "handle": null,
+        "title": "???",
+        "confidence": "UNKNOWN (needs Josh to specify)"
+      },
+      "needsAction": "🟡 NEEDS YOUR INPUT"
+    },
+    {
+      "rank": 15,
+      "blockId": "video_h8TFxP",
+      "filename": "SnapInsta-Ai_3743146355654325665_ab1d4578-fc8c-439d-bcc1-2f93c34d03d1.mp4",
+      "current": {
+        "handle": "gender-reveal-powder-cannons-extinguisher",
+        "title": "Gender Reveal Cannon & Extinguisher Double Bundle 🎉"
+      },
+      "suggested": {
+        "handle": null,
+        "title": "???",
+        "confidence": "UNKNOWN (needs Josh to specify)"
+      },
+      "needsAction": "🟡 NEEDS YOUR INPUT"
+    },
+    {
+      "rank": 16,
+      "blockId": "video_36BWP6",
+      "filename": "Burn Away Cake Topper Sun 15.06.25_74a51f98-6c44-4bee-b8b2-dbd04f33fca7.mp4",
+      "current": {
+        "handle": "gender-reveal-burn-away-topper",
+        "title": "6\" Viral Burn Away Cake Topper Kit"
+      },
+      "suggested": {
+        "handle": "gender-reveal-burn-away-topper",
+        "title": "6\" Viral Burn Away Cake Topper Kit",
+        "confidence": "HIGH (filename match)"
+      },
+      "needsAction": "✓ ALREADY CORRECT"
+    },
+    {
+      "rank": 17,
+      "blockId": "video_BR7gKJ",
+      "filename": "IMG_2966.mp4",
+      "current": {
+        "handle": "gender-reveal-powder-cannons-extinguisher",
+        "title": "Gender Reveal Cannon & Extinguisher Double Bundle 🎉"
+      },
+      "suggested": {
+        "handle": null,
+        "title": "???",
+        "confidence": "UNKNOWN (needs Josh to specify)"
+      },
+      "needsAction": "🟡 NEEDS YOUR INPUT"
+    },
+    {
+      "rank": 18,
+      "blockId": "video_xLhnKa",
+      "filename": "SnapInsta-Ai_3751118595658230023_8239cd2a-7d90-4bb1-a1b9-ad6892b62b2f.mp4",
+      "current": {
+        "handle": "gender-reveal-powder-cannons-extinguisher",
+        "title": "Gender Reveal Cannon & Extinguisher Double Bundle 🎉"
+      },
+      "suggested": {
+        "handle": null,
+        "title": "???",
+        "confidence": "UNKNOWN (needs Josh to specify)"
+      },
+      "needsAction": "🟡 NEEDS YOUR INPUT"
+    },
+    {
+      "rank": 19,
+      "blockId": "video_4jrJYE",
+      "filename": "01.07.25_4cec9323-3b4a-401c-a18b-7ea15e4c6c41.mp4",
+      "current": {
+        "handle": "gender-reveal-powder-cannons-extinguisher",
+        "title": "Gender Reveal Cannon & Extinguisher Double Bundle 🎉"
+      },
+      "suggested": {
+        "handle": null,
+        "title": "???",
+        "confidence": "UNKNOWN (needs Josh to specify)"
+      },
+      "needsAction": "🟡 NEEDS YOUR INPUT"
+    }
+  ],
+  "summary": {
+    "correct": 2,
+    "autoFix": 2,
+    "needsInput": 15
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "shippedAt": "2026-05-29T04:25:06.483Z",
+  "theme": "163830661209",
+  "asset": "sections/video-carousel.liquid",
+  "lineCount": 5,
+  "before": {
+    "wrongHandleCount": 5
+  },
+  "after": {
+    "wrongHandleCount": 0,
+    "correctHandleCount": 5
+  }
+}

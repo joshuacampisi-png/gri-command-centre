@@ -1,0 +1,1363 @@
+{{ 'component-card.css' | asset_url | stylesheet_tag }}
+
+<script>
+(function(){
+  var s = document.createElement('style');
+  s.textContent = '[id*="__ugc_video"]{display:none!important;height:0!important;padding:0!important;margin:0!important}'
+;
+  document.head.appendChild(s);
+  var el = document.querySelector('[id*="__ugc_video"]');
+  if (el) { el.style.display = 'none'; el.style.height = '0'; el.style.overflow = 'hidden'; }
+})();
+</script>
+
+<style>
+
+  #ugc-{{ section.id }} {
+    --gri-teal: #3AB4C0;
+    --gri-teal-dark: #2a9d96;
+    --gri-pink: #E43F7B;
+    --gri-pink-dark: #d63384;
+    --gri-pink-light: #fce4f0;
+    --gri-blue-light: #e0f4f3;
+    --ugc-bg: #FAF8F5;
+    --ugc-text: #1A1A1A;
+    --ugc-text-mid: #555;
+    --ugc-text-light: #888;
+    --ugc-radius: 24px;
+    --ugc-radius-md: 12px;
+    --ugc-radius-sm: 8px;
+    --ugc-ease: cubic-bezier(0.16, 1, 0.3, 1);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    padding: {{ section.settings.padding_top }}px 0 {{ section.settings.padding_bottom }}px;
+    position: relative;
+    overflow: hidden;
+    background: var(--ugc-bg);
+  }
+  #ugc-{{ section.id }} * { box-sizing: border-box; }
+
+  #ugc-{{ section.id }}::before {
+    content: '';
+    position: absolute;
+    top: -160px; left: -10%; width: 120%; height: 500px;
+    background: radial-gradient(ellipse at 30% 0%, var(--gri-pink-light) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 0%, var(--gri-blue-light) 0%, transparent 60%);
+    opacity: 0.5; z-index: 0; pointer-events: none;
+  }
+
+  .ugc-hdr-{{ section.id }} {
+    text-align: center; max-width: 680px; margin: 0 auto 36px;
+    padding: 0 24px; position: relative; z-index: 1;
+  }
+  .ugc-h2-{{ section.id }} { text-align: center; display: block; width: 100%; }
+  .ugc-badge-{{ section.id }} {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--gri-pink);
+    color: white; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 6px 16px; border-radius: 50px; margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(232, 67, 147, 0.18);
+  }
+  .ugc-badge-{{ section.id }} svg { width: 14px; height: 14px; fill: white; }
+  .ugc-h2-{{ section.id }} {
+    font-size: clamp(28px, 5vw, 48px);
+    font-weight: 900; line-height: 1.08;
+    letter-spacing: -0.03em; margin: 0 0 12px; color: var(--ugc-text);
+  }
+  .ugc-h2-{{ section.id }} span {
+    color: var(--gri-pink);
+  }
+  .ugc-sub-{{ section.id }} { font-size: 15px; color: var(--ugc-text-mid); line-height: 1.5; margin: 0; }
+
+  .ugc-scroll-{{ section.id }} {
+    display: flex; gap: 18px;
+    padding: 4px max(20px, calc((100vw - 1300px) / 2)) 4px;
+    overflow-x: auto; scroll-snap-type: x proximity; scroll-padding: 20px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; position: relative; z-index: 1;
+  }
+  .ugc-scroll-{{ section.id }}::-webkit-scrollbar { display: none; }
+
+  .ugc-card-{{ section.id }} {
+    flex: 0 0 260px; scroll-snap-align: center;
+    border-radius: var(--ugc-radius); overflow: hidden;
+    position: relative; background: #111;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+  }
+  @media (hover: hover) {
+    .ugc-card-{{ section.id }} {
+      transition: transform 0.5s var(--ugc-ease), box-shadow 0.5s var(--ugc-ease);
+    }
+    .ugc-card-{{ section.id }}:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.12);
+    }
+  }
+
+  .ugc-vid-{{ section.id }} {
+    position: relative; aspect-ratio: 9 / 14; overflow: hidden; background: #0a0a0a;
+  }
+  .ugc-vid-{{ section.id }} video {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+
+  .ugc-play-{{ section.id }} {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 52px; height: 52px;
+    background: rgba(255,255,255,0.18); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    border: 2px solid rgba(255,255,255,0.25); z-index: 5;
+    transition: opacity 0.3s ease; pointer-events: none;
+  }
+  .ugc-play-{{ section.id }}.hide { opacity: 0; }
+  .ugc-play-{{ section.id }} svg { width: 20px; height: 20px; fill: white; margin-left: 3px; }
+
+  .ugc-ig-{{ section.id }} {
+    position: absolute; top: 12px; right: 12px; z-index: 6;
+    width: 30px; height: 30px; border-radius: 8px;
+    background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .ugc-ig-{{ section.id }} svg { width: 16px; height: 16px; fill: white; }
+
+  .ugc-vol-{{ section.id }} {
+    position: absolute; top: 12px; left: 12px; z-index: 8;
+    width: 30px; height: 30px; border-radius: 50%;
+    background: rgba(0,0,0,0.45); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center;
+    border: none; cursor: pointer; padding: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .ugc-vol-{{ section.id }} svg { width: 16px; height: 16px; fill: white; }
+  .ugc-vol-{{ section.id }} .ugc-vol-on { display: none; }
+  .ugc-vol-{{ section.id }}.is-unmuted .ugc-vol-off { display: none; }
+  .ugc-vol-{{ section.id }}.is-unmuted .ugc-vol-on { display: block; }
+
+  .ugc-acts-{{ section.id }} {
+    position: absolute; right: 10px; bottom: 110px;
+    display: flex; flex-direction: column; gap: 14px; z-index: 8;
+  }
+  .ugc-abtn-{{ section.id }} {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    background: none; border: none; cursor: pointer; padding: 4px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .ugc-abtn-{{ section.id }} svg {
+    width: 26px; height: 26px; fill: white;
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4));
+    transition: all 0.25s var(--ugc-ease);
+  }
+  .ugc-abtn-{{ section.id }} span {
+    font-size: 11px; color: white; font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  }
+  .ugc-abtn-{{ section.id }}.is-liked svg {
+    fill: #FF3040;
+    filter: drop-shadow(0 0 8px rgba(255,48,64,0.5));
+    animation: ugcPop{{ section.id }} 0.4s var(--ugc-ease);
+  }
+  @keyframes ugcPop{{ section.id }} {
+    0%{transform:scale(1)}25%{transform:scale(1.4)}50%{transform:scale(0.9)}100%{transform:scale(1)}
+  }
+
+  .ugc-prod-{{ section.id }} {
+    position: absolute; bottom: 10px; left: 10px; right: 10px;
+    background: rgba(255,255,255,0.97);
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border-radius: var(--ugc-radius-md);
+    padding: 8px 10px; display: flex; align-items: center; gap: 10px;
+    z-index: 6; box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    text-decoration: none; color: inherit;
+  }
+  .ugc-prod-{{ section.id }} img {
+    width: 48px; height: 48px; border-radius: var(--ugc-radius-sm);
+    object-fit: contain; background: #f5f5f5; flex-shrink: 0;
+  }
+  .ugc-pinfo-{{ section.id }} { flex: 1; min-width: 0; overflow: hidden; }
+  .ugc-pname-{{ section.id }} {
+    font-size: 11px; font-weight: 700; color: var(--ugc-text);
+    line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .ugc-pprice-{{ section.id }} { display: flex; align-items: center; gap: 4px; margin-top: 2px; }
+  .ugc-pprice-{{ section.id }} .ugc-now { font-size: 13px; font-weight: 800; color: var(--gri-pink); }
+  .ugc-pprice-{{ section.id }} .ugc-was { font-size: 10px; color: var(--ugc-text-light); text-decoration: line-through; }
+
+  .ugc-atc-{{ section.id }} {
+    flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; border: none;
+    background: linear-gradient(135deg, var(--gri-pink), var(--gri-pink-dark));
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.3s var(--ugc-ease); position: relative; overflow: hidden;
+  }
+  .ugc-atc-{{ section.id }}:hover { transform: scale(1.1); box-shadow: 0 4px 16px rgba(232,67,147,0.4); }
+  .ugc-atc-{{ section.id }}:active { transform: scale(0.92); }
+  .ugc-atc-{{ section.id }} svg { width: 18px; height: 18px; fill: white; transition: transform 0.3s var(--ugc-ease); }
+  .ugc-atc-{{ section.id }} .ugc-chk { position: absolute; transform: scale(0) rotate(-180deg); transition: transform 0.3s var(--ugc-ease); }
+  .ugc-atc-{{ section.id }}.is-added svg:first-child { transform: scale(0) rotate(180deg); }
+  .ugc-atc-{{ section.id }}.is-added .ugc-chk { transform: scale(1) rotate(0); }
+  .ugc-atc-{{ section.id }}.is-added { background: linear-gradient(135deg, var(--gri-teal), var(--gri-teal-dark)); }
+
+  .ugc-nav-{{ section.id }} {
+    display: flex; justify-content: center; align-items: center; gap: 10px;
+    margin-top: 20px; padding: 0 24px; position: relative; z-index: 1;
+  }
+  .ugc-nbtn-{{ section.id }} {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 2px solid rgba(26,26,26,0.1); background: white;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s var(--ugc-ease);
+  }
+  .ugc-nbtn-{{ section.id }} svg { width: 16px; height: 16px; }
+  .ugc-nbtn-{{ section.id }}:hover { border-color: var(--gri-pink); background: var(--gri-pink-light); }
+  .ugc-nbtn-{{ section.id }} svg { width: 18px; height: 18px; fill: var(--ugc-text); }
+  .ugc-dots-{{ section.id }} { display: flex; gap: 5px; align-items: center; }
+  .ugc-dot-{{ section.id }} {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: rgba(26,26,26,0.12); transition: all 0.3s var(--ugc-ease);
+  }
+  .ugc-dot-{{ section.id }}.on {
+    width: 22px; border-radius: 50px;
+    background: linear-gradient(135deg, var(--gri-pink), var(--gri-teal));
+  }
+
+  .ugc-cta-{{ section.id }} {
+    max-width: 560px; margin: 16px auto 0; padding: 0 24px;
+    text-align: center; position: relative; z-index: 1;
+  }
+  .ugc-cta-{{ section.id }} p { font-size: 13px; color: var(--ugc-text-mid); margin: 0 0 10px; }
+  .ugc-cta-{{ section.id }} strong { color: var(--gri-pink); }
+  .ugc-ctab-{{ section.id }} {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 24px; border: 2px solid var(--gri-teal);
+    background: transparent; color: var(--gri-teal-dark);
+    font: inherit; font-size: 13px; font-weight: 700;
+    border-radius: 50px; cursor: pointer; transition: all 0.3s var(--ugc-ease);
+    text-decoration: none;
+  }
+  .ugc-ctab-{{ section.id }}:hover {
+    background: var(--gri-teal); color: white;
+    transform: translateY(-2px); box-shadow: 0 8px 24px rgba(60,188,180,0.3);
+  }
+  .ugc-ctab-{{ section.id }} svg { width: 16px; height: 16px; fill: currentColor; }
+
+  /* Colour picker popup */
+  .ugc-picker-overlay-{{ section.id }} {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5); z-index: 99998;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .ugc-picker-overlay-{{ section.id }}.on { opacity: 1; pointer-events: auto; }
+
+  .ugc-picker-{{ section.id }} {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: white; border-radius: 20px 20px 0 0;
+    padding: 24px 20px calc(24px + env(safe-area-inset-bottom, 0px));
+    z-index: 99999;
+    transform: translateY(100%);
+    transition: transform 0.35s var(--ugc-ease);
+    box-shadow: 0 -8px 40px rgba(0,0,0,0.15);
+    max-width: 500px; margin: 0 auto;
+  }
+  .ugc-picker-{{ section.id }}.on { transform: translateY(0); }
+
+  .ugc-picker-{{ section.id }} .pk-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+  }
+  .ugc-picker-{{ section.id }} .pk-img {
+    width: 56px; height: 56px; border-radius: 12px;
+    object-fit: contain; background: #f5f5f5;
+  }
+  .ugc-picker-{{ section.id }} .pk-info { flex: 1; min-width: 0; }
+  .ugc-picker-{{ section.id }} .pk-name {
+    font-size: 14px; font-weight: 700; color: var(--ugc-text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .ugc-picker-{{ section.id }} .pk-price {
+    font-size: 16px; font-weight: 800; color: var(--gri-pink); margin-top: 2px;
+  }
+  .ugc-picker-{{ section.id }} .pk-close {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: #f0f0f0; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .ugc-picker-{{ section.id }} .pk-close svg { width: 16px; height: 16px; fill: #666; }
+
+  .ugc-picker-{{ section.id }} .pk-label {
+    font-size: 12px; font-weight: 700; color: var(--ugc-text-mid);
+    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px;
+  }
+  .ugc-picker-{{ section.id }} .pk-options {
+    display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;
+  }
+  .ugc-picker-{{ section.id }} .pk-opt {
+    padding: 10px 20px; border-radius: 8px; border: 2px solid #e0e0e0;
+    background: white; font: inherit; font-size: 14px; font-weight: 600;
+    color: var(--ugc-text); cursor: pointer; transition: all 0.2s ease;
+  }
+  .ugc-picker-{{ section.id }} .pk-opt:hover { border-color: #000; }
+  .ugc-picker-{{ section.id }} .pk-opt.on {
+    border-color: #000; background: #000; color: #fff;
+  }
+  .ugc-picker-{{ section.id }} .pk-atc {
+    width: 100%; padding: 14px 22px; border: none; border-radius: 8px;
+    background: #000; color: #fff;
+    font-family: 'bolota', sans-serif; font-size: 16px; font-weight: 700;
+    cursor: pointer; transition: opacity 0.2s ease;
+    margin-top: 4px;
+  }
+  .ugc-picker-{{ section.id }} .pk-atc:hover { opacity: 0.9; }
+  .ugc-picker-{{ section.id }} .pk-atc:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .ugc-toast-{{ section.id }} {
+    position: fixed; bottom: 32px; left: 50%;
+    transform: translateX(-50%) translateY(120px);
+    background: var(--ugc-text); color: white;
+    padding: 14px 28px; border-radius: 50px;
+    font-size: 14px; font-weight: 600;
+    display: flex; align-items: center; gap: 8px;
+    z-index: 99999; transition: transform 0.4s var(--ugc-ease);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+    pointer-events: none; white-space: nowrap;
+  }
+  .ugc-toast-{{ section.id }}.on { transform: translateX(-50%) translateY(0); pointer-events: auto; }
+  .ugc-toast-{{ section.id }} svg { width: 18px; height: 18px; fill: var(--gri-teal); flex-shrink: 0; }
+
+  @media (max-width: 768px) {
+    .ugc-hdr-{{ section.id }} { margin-bottom: 32px; }
+    .ugc-card-{{ section.id }} { flex: 0 0 75vw; max-width: 280px; }
+    .ugc-scroll-{{ section.id }} { gap: 12px; padding: 4px 16px; scroll-padding: 16px; }
+    .ugc-acts-{{ section.id }} { bottom: 105px; gap: 10px; }
+    .ugc-abtn-{{ section.id }} svg { width: 22px; height: 22px; }
+    .ugc-prod-{{ section.id }} { padding: 8px; gap: 8px; }
+    .ugc-prod-{{ section.id }} img { width: 36px; height: 36px; }
+    .ugc-pname-{{ section.id }} { font-size: 10px; }
+    .ugc-pprice-{{ section.id }} .ugc-now { font-size: 12px; }
+    .ugc-pprice-{{ section.id }} .ugc-was { font-size: 9px; }
+    .ugc-atc-{{ section.id }} { width: 28px; height: 28px; }
+    .ugc-atc-{{ section.id }} svg { width: 14px; height: 14px; }
+    .ugc-play-{{ section.id }} { width: 44px; height: 44px; }
+    .ugc-play-{{ section.id }} svg { width: 18px; height: 18px; }
+  }
+
+  /* ── Reels-style fullscreen modal (real Instagram UI) ── */
+  .ugc-vid-{{ section.id }} { cursor: pointer; }
+  .ugc-reels-{{ section.id }} {
+    position: fixed; inset: 0;
+    z-index: 999999;
+    background: #000;
+    display: none;
+    align-items: center; justify-content: center;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  }
+  .ugc-reels-{{ section.id }}.on { display: flex; opacity: 1; }
+  /* Stage = 9:16 phone aspect, locked to viewport height */
+  .ugc-reels-stage-{{ section.id }} {
+    position: relative;
+    height: 100vh;
+    height: 100dvh;
+    aspect-ratio: 9 / 16;
+    max-width: 100vw;
+    background: #000;
+    overflow: hidden;
+    border-radius: 0;
+  }
+  @media (min-width: 769px) {
+    .ugc-reels-stage-{{ section.id }} { border-radius: 12px; max-height: calc(100vh - 24px); }
+  }
+  /* Video fills the stage edge-to-edge (Instagram-style cover) */
+  .ugc-reels-stage-{{ section.id }} video {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    background: #000;
+    display: block;
+  }
+  /* Subtle gradients top + bottom so overlay text reads cleanly on any video */
+  .ugc-reels-stage-{{ section.id }}::before,
+  .ugc-reels-stage-{{ section.id }}::after {
+    content: '';
+    position: absolute; left: 0; right: 0;
+    pointer-events: none;
+    z-index: 2;
+  }
+  .ugc-reels-stage-{{ section.id }}::before {
+    top: 0; height: 110px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.5) 0%, transparent 100%);
+  }
+  .ugc-reels-stage-{{ section.id }}::after {
+    bottom: 0; height: 200px;
+    background: linear-gradient(0deg, rgba(0,0,0,0.65) 0%, transparent 100%);
+  }
+  /* Close X — top-right INSIDE the stage */
+  .ugc-reels-close-{{ section.id }} {
+    position: absolute;
+    top: 14px; right: 14px;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.35);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 0;
+    color: #fff;
+    cursor: pointer;
+    z-index: 12;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s ease, transform .2s ease;
+  }
+  .ugc-reels-close-{{ section.id }}:hover { background: rgba(0,0,0,0.6); transform: scale(1.05); }
+  .ugc-reels-close-{{ section.id }} svg { width: 20px; height: 20px; fill: #fff; }
+  /* Reels header — IG-style top label */
+  .ugc-reels-top-{{ section.id }} {
+    position: absolute;
+    top: 18px; left: 18px;
+    z-index: 11;
+    color: #fff;
+    font-size: 17px;
+    font-weight: 700;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    letter-spacing: -0.01em;
+    pointer-events: none;
+  }
+  /* Bottom caption stack — handle, product, shop */
+  .ugc-reels-caption-{{ section.id }} {
+    position: absolute;
+    left: 14px; right: 84px; bottom: 18px;
+    color: #fff;
+    z-index: 11;
+    pointer-events: auto;
+    font-family: inherit;
+  }
+  .ugc-reels-caption-{{ section.id }} .handle {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 14px; font-weight: 700;
+    margin: 0 0 8px;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  }
+  .ugc-reels-caption-{{ section.id }} .handle .verified {
+    width: 14px; height: 14px;
+    background: #3897f0;
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .ugc-reels-caption-{{ section.id }} .handle .verified svg { width: 10px; height: 10px; fill: #fff; }
+  .ugc-reels-caption-{{ section.id }} .pname {
+    font-size: 13px; font-weight: 500; line-height: 1.35;
+    margin: 0 0 6px;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    max-width: 100%;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  .ugc-reels-caption-{{ section.id }} .pprice {
+    font-size: 13px; font-weight: 700;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    margin: 0 0 10px;
+  }
+  .ugc-reels-caption-{{ section.id }} .pprice .was {
+    text-decoration: line-through; opacity: 0.6; margin-left: 6px; font-weight: 400; font-size: 12px;
+  }
+  .ugc-reels-shop-{{ section.id }} {
+    display: inline-flex;
+    align-items: center;
+    padding: 9px 18px;
+    background: #fff;
+    color: #111;
+    border-radius: 999px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    pointer-events: auto;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    transition: transform 0.2s ease;
+    z-index: 11;
+  }
+  .ugc-reels-shop-{{ section.id }}:hover { transform: translateY(-1px); }
+  /* Right-side action stack — IG Reels style */
+  .ugc-reels-actions-{{ section.id }} {
+    position: absolute;
+    right: 10px; bottom: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    z-index: 11;
+    pointer-events: auto;
+  }
+  .ugc-reels-act-{{ section.id }} {
+    width: 56px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: none;
+    color: #fff;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .ugc-reels-act-{{ section.id }} .ico {
+    width: 44px; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.15s ease;
+  }
+  .ugc-reels-act-{{ section.id }}:active .ico { transform: scale(0.9); }
+  .ugc-reels-act-{{ section.id }} .ico svg { width: 32px; height: 32px; fill: #fff; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)); transition: fill 0.2s ease, transform 0.2s ease; }
+  .ugc-reels-act-{{ section.id }} .cnt {
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+    line-height: 1;
+  }
+  .ugc-reels-act-{{ section.id }}.js-reels-like.is-liked .ico svg { fill: #ed4956; transform: scale(1.05); }
+  .ugc-reels-ig-{{ section.id }} .ico {
+    width: 36px; height: 36px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+  }
+  .ugc-reels-ig-{{ section.id }} .ico svg { width: 22px; height: 22px; filter: none; }
+
+  /* iOS-safe scroll lock — preserves page scroll position so closing the modal returns the user exactly where they were */
+  body.ugc-reels-open-{{ section.id }} {
+    position: fixed;
+    width: 100%;
+    overflow: hidden;
+  }
+  @media (max-width: 768px) {
+    .ugc-reels-actions-{{ section.id }} { right: 6px; bottom: 14px; gap: 16px; }
+    .ugc-reels-caption-{{ section.id }} { left: 12px; right: 72px; bottom: 14px; }
+    .ugc-reels-top-{{ section.id }} { top: 14px; left: 14px; font-size: 16px; }
+  }
+</style>
+
+<section id="ugc-{{ section.id }}">
+
+  <div class="ugc-hdr-{{ section.id }}">
+    <div class="ugc-badge-{{ section.id }}">
+      <svg viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+      {{ section.settings.badge_text }}
+    </div>
+    <h2 class="ugc-h2-{{ section.id }}">{{ section.settings.heading_start }} <span>{{ section.settings.heading_highlight }}</span></h2>
+    <p class="ugc-sub-{{ section.id }}">{{ section.settings.subheading }}</p>
+  </div>
+
+  <div class="ugc-scroll-{{ section.id }}" id="ugc-sc-{{ section.id }}">
+    {%- for block in section.blocks -%}
+      <div class="ugc-card-{{ section.id }}" data-idx="{{ forloop.index0 }}" {{ block.shopify_attributes }}>
+        <div class="ugc-vid-{{ section.id }}">
+
+          {%- if block.settings.html5_video -%}
+            <video playsinline muted loop preload="none">
+              {%- for source in block.settings.html5_video.sources -%}
+                <source data-src="{{ source.url }}" type="{{ source.mime_type }}">
+              {%- endfor -%}
+            </video>
+          {%- endif -%}
+
+          <button class="ugc-vol-{{ section.id }} js-ugc-vol" type="button" aria-label="Toggle sound">
+            <svg class="ugc-vol-off" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+            <svg class="ugc-vol-on" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+          </button>
+
+          <div class="ugc-ig-{{ section.id }}">
+            <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+          </div>
+
+          <div class="ugc-play-{{ section.id }}">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+
+          <div class="ugc-acts-{{ section.id }}">
+            <button class="ugc-abtn-{{ section.id }} js-ugc-like" data-idx="{{ forloop.index0 }}" type="button">
+              <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              <span></span>
+            </button>
+            <button class="ugc-abtn-{{ section.id }} js-ugc-share" data-idx="{{ forloop.index0 }}" type="button">
+              <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+              <span></span>
+            </button>
+          </div>
+
+        </div>
+
+        {%- comment -%} Product card placeholder — filled by JS with real data {%- endcomment -%}
+        <div class="js-ugc-prod-slot" data-idx="{{ forloop.index0 }}"></div>
+      </div>
+    {%- endfor -%}
+  </div>
+
+  <div class="ugc-nav-{{ section.id }}">
+    <button class="ugc-nbtn-{{ section.id }} js-ugc-prev" type="button" aria-label="Previous">
+      <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+    </button>
+    <div class="ugc-dots-{{ section.id }}" id="ugc-dots-{{ section.id }}"></div>
+    <button class="ugc-nbtn-{{ section.id }} js-ugc-next" type="button" aria-label="Next">
+      <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+    </button>
+  </div>
+
+  {%- if section.settings.cta_text != blank -%}
+    <div class="ugc-cta-{{ section.id }}">
+      <p>{{ section.settings.cta_text }}</p>
+      {%- if section.settings.cta_button_text != blank -%}
+        <a href="{{ section.settings.cta_url | default: 'https://www.instagram.com/gender.reveal.ideass/' }}" target="_blank" rel="noopener" class="ugc-ctab-{{ section.id }}">
+          <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>
+          {{ section.settings.cta_button_text }}
+        </a>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+
+  <div class="ugc-picker-overlay-{{ section.id }}" id="ugc-pk-overlay-{{ section.id }}"></div>
+  <div class="ugc-picker-{{ section.id }}" id="ugc-pk-{{ section.id }}">
+    <div class="pk-header">
+      <img class="pk-img" id="ugc-pk-img-{{ section.id }}" src="" alt="">
+      <div class="pk-info">
+        <div class="pk-name" id="ugc-pk-name-{{ section.id }}"></div>
+        <div class="pk-price" id="ugc-pk-price-{{ section.id }}"></div>
+      </div>
+      <button class="pk-close" id="ugc-pk-close-{{ section.id }}" type="button">
+        <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
+    </div>
+    <div class="pk-label">Choose your colour</div>
+    <div class="pk-options" id="ugc-pk-opts-{{ section.id }}"></div>
+    <button class="pk-atc" id="ugc-pk-atc-{{ section.id }}" type="button" disabled>Add to Cart</button>
+  </div>
+
+  <div class="ugc-toast-{{ section.id }}" id="ugc-toast-{{ section.id }}">
+    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+    <span id="ugc-tmsg-{{ section.id }}"></span>
+  </div>
+
+  {%- comment -%} Reels-style fullscreen modal {%- endcomment -%}
+  <div class="ugc-reels-{{ section.id }}" id="ugc-reels-{{ section.id }}" role="dialog" aria-modal="true" aria-label="Reel viewer">
+    <button class="ugc-reels-close-{{ section.id }}" id="ugc-reels-close-{{ section.id }}" type="button" aria-label="Close video">
+      <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+    </button>
+    <div class="ugc-reels-stage-{{ section.id }}" id="ugc-reels-stage-{{ section.id }}">
+      <video id="ugc-reels-vid-{{ section.id }}" playsinline loop controls></video>
+      <div class="ugc-reels-caption-{{ section.id }}" id="ugc-reels-cap-{{ section.id }}">
+        <div class="pname"></div>
+        <div class="pprice"></div>
+      </div>
+      <a class="ugc-reels-shop-{{ section.id }}" id="ugc-reels-shop-{{ section.id }}" href="#">Shop this look →</a>
+
+      <div class="ugc-reels-actions-{{ section.id }}">
+        <button class="ugc-reels-act-{{ section.id }} js-reels-like" id="ugc-reels-like-{{ section.id }}" type="button" aria-label="Like">
+          <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></span>
+          <span class="cnt"></span>
+        </button>
+        <button class="ugc-reels-act-{{ section.id }} js-reels-share" id="ugc-reels-share-{{ section.id }}" type="button" aria-label="Share">
+          <span class="ico"><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></span>
+          <span class="cnt"></span>
+        </button>
+        <a class="ugc-reels-act-{{ section.id }} ugc-reels-ig-{{ section.id }}" id="ugc-reels-ig-{{ section.id }}" href="{{ section.settings.cta_url | default: 'https://www.instagram.com/gender.reveal.ideass/' }}" target="_blank" rel="noopener" aria-label="View on Instagram">
+          <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></span>
+          <span class="cnt">View</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+(function(){
+  var SID = '{{ section.id }}';
+  var root = document.getElementById('ugc-' + SID);
+  if (!root) return;
+  var scroll = document.getElementById('ugc-sc-' + SID);
+  var cards = scroll.querySelectorAll('.ugc-card-' + SID);
+  var toast = document.getElementById('ugc-toast-' + SID);
+  var tmsg = document.getElementById('ugc-tmsg-' + SID);
+
+  /* ── ALL product data hardcoded from Shopify API (bulletproof) ── */
+  var PRODUCTS = [
+    {h:'gender-reveal-powder-cannons',t:'Gender Reveal Cannon & Extinguisher Double Bundle',p:'$129.99',cp:'$175.00',img:'https://cdn.shopify.com/s/files/1/0584/7410/2873/files/6_2fadc586-b033-4e08-a57a-854399b6f14c.png?v=1757372045',url:'/products/gender-reveal-powder-cannons'},
+    {h:'mega-gender-reveal-powder-blaster',t:'Gender Reveal | Double MEGA Powder Blaster/ Extinguisher',p:'$259.99',cp:'$420.00',img:'https://cdn.shopify.com/s/files/1/0584/7410/2873/files/2Both.png?v=1720495695',url:'/products/mega-gender-reveal-powder-blaster'},
+    {h:'mega-gender-reveal-powder-blaster',t:'Gender Reveal | Double MEGA Powder Blaster/ Extinguisher',p:'$259.99',cp:'$420.00',img:'https://cdn.shopify.com/s/files/1/0584/7410/2873/files/2Both.png?v=1720495695',url:'/products/mega-gender-reveal-powder-blaster'},
+    {h:'2-pack-gender-reveal-confetti-powder-xl-cannon-bundle',t:'2 Pack - Gender Reveal Confetti XL Cannon Bundle',p:'$64.95',cp:'$150.00',img:'https://cdn.shopify.com/s/files/1/0584/7410/2873/files/DualBioCannon-PinkandBlueConfetti.png?v=1769033052',url:'/products/2-pack-gender-reveal-confetti-powder-xl-cannon-bundle'},
+    {h:'gender-reveal-smoke-bombs',t:'4x Bundle Pack Gender Reveal Smoke Bombs',p:'$89.99',cp:'$150.00',img:'https://cdn.shopify.com/s/files/1/0584/7410/2873/files/SocMEd.png?v=1747709644',url:'/products/gender-reveal-smoke-bombs'},
+    {h:'gender-reveal-smoke-bomb-australia',t:'Gender Reveal Smoke Bombs',p:'$29.99',cp:'$44.99',img:'https://cdn.shopify.com/s/files/1/0584/7410/2873/files/MainPhoto_53e317a8-1309-45e5-81b3-a4b90fded85b.png?v=1769471303',url:'/products/gender-reveal-smoke-bomb-australia'},
+    {h:'gender-reveal-smoke-bomb-australia',t:'Gender Reveal Smoke Bombs',p:'$29.99',cp:'$44.99',img:'https://cdn.shopify.com/s/files/1/0584/7410/2873/files/MainPhoto_53e317a8-1309-45e5-81b3-a4b90fded85b.png?v=1769471303',url:'/products/gender-reveal-smoke-bomb-australia'},
+    {h:'tnt-gender-reveal-australia',t:'TNT Gender Reveal Self Hire',p:'$349.99',cp:'$600.00',img:'https://cdn.shopify.com/s/files/1/0584/7410/2873/files/07589622-16d6-4760-b794-b15d8dcad734.png?v=1768186720',url:'/products/tnt-gender-reveal-australia'},
+    {h:'tnt-gender-reveal-australia',t:'TNT Gender Reveal Self Hire',p:'$349.99',cp:'$600.00',img:'https://cdn.shopify.com/s/files/1/0584/7410/2873/files/07589622-16d6-4760-b794-b15d8dcad734.png?v=1768186720',url:'/products/tnt-gender-reveal-australia'},
+    {h:'gender-reveal-exploding-soccer-ball',t:'Sports Gender Reveal Soccer Ball',p:'$34.99',cp:'$45.00',img:'https://cdn.shopify.com/s/files/1/0584/7410/2873/files/Soccer.png?v=1721614075',url:'/products/gender-reveal-exploding-soccer-ball'},
+    {h:'gender-reveal-soccer-ball',t:'Gender Reveal Soccer & Cannon Family Bundle',p:'$69.99',cp:'$95.00',img:'https://cdn.shopify.com/s/files/1/0584/7410/2873/files/SOCCERBOTH_ac8abdb6-65d0-435d-8322-e6d0f6fa19a7.png?v=1744256289',url:'/products/gender-reveal-soccer-ball'},
+    {h:'tnt-gender-reveal-australia',t:'TNT Gender Reveal Self Hire',p:'$349.99',cp:'$600.00',img:'https://cdn.shopify.com/s/files/1/0584/7410/2873/files/07589622-16d6-4760-b794-b15d8dcad734.png?v=1768186720',url:'/products/tnt-gender-reveal-australia'},
+    {h:'mini-powder-gender-reveal-blaster',t:'Gender Reveal Powder Extinguisher | Mini Blaster',p:'$49.99',cp:'$60.00',img:'https://cdn.shopify.com/s/files/1/0584/7410/2873/files/Pink_Blue_59aac842-8dda-4b66-af75-ad0816820728.png?v=1757302893',url:'/products/mini-powder-gender-reveal-blaster'},
+    {h:'gender-reveal-rugby-ball',t:'Sports Gender Reveal NRL Rugby Ball',p:'$45.00',cp:'$60.00',img:'https://cdn.shopify.com/s/files/1/0584/7410/2873/files/Both_09fff176-d2b2-4278-b377-56679b0059ad.png?v=1723960203',url:'/products/gender-reveal-rugby-ball'},
+    {h:'gender-reveal-powder-cannons',t:'Gender Reveal Cannon & Extinguisher Double Bundle',p:'$129.99',cp:'$175.00',img:'https://cdn.shopify.com/s/files/1/0584/7410/2873/files/6_2fadc586-b033-4e08-a57a-854399b6f14c.png?v=1757372045',url:'/products/gender-reveal-powder-cannons'},
+    {h:'gender-reveal-burn-away-topper',t:'6" Viral Burn Away Cake Topper Kit',p:'$29.99',cp:'$40.00',img:'https://cdn.shopify.com/s/files/1/0584/7410/2873/files/MainPP.png?v=1726484970',url:'/products/gender-reveal-burn-away-topper'},
+    {h:'gender-reveal-powder-cannons',t:'Gender Reveal Cannon & Extinguisher Double Bundle',p:'$129.99',cp:'$175.00',img:'https://cdn.shopify.com/s/files/1/0584/7410/2873/files/6_2fadc586-b033-4e08-a57a-854399b6f14c.png?v=1757372045',url:'/products/gender-reveal-powder-cannons'},
+    {h:'gender-reveal-powder-cannons',t:'Gender Reveal Cannon & Extinguisher Double Bundle',p:'$129.99',cp:'$175.00',img:'https://cdn.shopify.com/s/files/1/0584/7410/2873/files/6_2fadc586-b033-4e08-a57a-854399b6f14c.png?v=1757372045',url:'/products/gender-reveal-powder-cannons'},
+    {h:'gender-reveal-powder-cannons',t:'Gender Reveal Cannon & Extinguisher Double Bundle',p:'$129.99',cp:'$175.00',img:'https://cdn.shopify.com/s/files/1/0584/7410/2873/files/6_2fadc586-b033-4e08-a57a-854399b6f14c.png?v=1757372045',url:'/products/gender-reveal-powder-cannons'}
+  ];
+
+  var LIKES = [124700,47300,89200,23800,156400,41600,67800,203500,98700,34200,52100,178300,112500,28900,73400,245800,56300,143200,87600];
+  var SHARES = [3200,1800,4100,1400,8700,2300,3600,12400,5200,1600,2800,9800,6100,1300,4500,15600,2900,7800,4200];
+
+  function fmt(n) {
+    if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+    if (n >= 100000) return Math.round(n/1000) + 'K';
+    if (n >= 1000) return (n/1000).toFixed(1) + 'K';
+    return n.toString();
+  }
+
+  /* ── Inject product cards via JS (bulletproof — no Liquid product resolution needed) ── */
+  root.querySelectorAll('.js-ugc-prod-slot').forEach(function(slot) {
+    var i = parseInt(slot.dataset.idx) || 0;
+    var p = PRODUCTS[i];
+    if (!p) return;
+    slot.innerHTML =
+      '<div class="ugc-prod-' + SID + '">' +
+        '<a href="' + p.url + '" style="display:flex;align-items:center;gap:inherit;flex:1;min-width:0;text-decoration:none;color:inherit">' +
+          '<img src="' + p.img + '" alt="' + p.t.replace(/"/g,'&quot;') + '" width="48" height="48" loading="lazy">' +
+          '<div class="ugc-pinfo-' + SID + '">' +
+            '<div class="ugc-pname-' + SID + '">' + p.t + '</div>' +
+            '<div class="ugc-pprice-' + SID + '">' +
+              '<span class="ugc-now">' + p.p + '</span>' +
+              '<span class="ugc-was">' + p.cp + '</span>' +
+            '</div>' +
+          '</div>' +
+        '</a>' +
+      '</div>';
+  });
+
+  /* ── Init like/share counts ── */
+  root.querySelectorAll('.js-ugc-like').forEach(function(btn) {
+    var i = parseInt(btn.dataset.idx) || 0;
+    var c = LIKES[i] || 25000;
+    btn.dataset.likes = c;
+    btn.querySelector('span').textContent = fmt(c);
+  });
+  root.querySelectorAll('.js-ugc-share').forEach(function(btn) {
+    var i = parseInt(btn.dataset.idx) || 0;
+    btn.querySelector('span').textContent = fmt(SHARES[i] || 1500);
+  });
+
+  /* ── Dots ── */
+  var dotsEl = document.getElementById('ugc-dots-' + SID);
+  var nd = Math.min(cards.length, 10);
+  for (var d = 0; d < nd; d++) {
+    var dot = document.createElement('div');
+    dot.className = 'ugc-dot-' + SID + (d === 0 ? ' on' : '');
+    dotsEl.appendChild(dot);
+  }
+  var dots = dotsEl.children;
+
+  scroll.addEventListener('scroll', function() {
+    var cw = cards[0].offsetWidth + 18;
+    var idx = Math.round(scroll.scrollLeft / cw);
+    var di = Math.min(Math.round(idx / (cards.length / nd)), nd - 1);
+    for (var i = 0; i < dots.length; i++) dots[i].classList.toggle('on', i === di);
+  });
+
+  /* ── Nav (1 card at a time) ── */
+  root.querySelector('.js-ugc-prev').addEventListener('click', function() { navScroll(-1); });
+  root.querySelector('.js-ugc-next').addEventListener('click', function() { navScroll(1); });
+  function navScroll(dir) {
+    var gap = window.innerWidth <= 768 ? 12 : 18;
+    var cw = cards[0].offsetWidth + gap;
+    scroll.scrollBy({ left: cw * dir, behavior: 'smooth' });
+  }
+
+  /* ── Lazy-load video sources + autoplay on scroll ──
+     - ZERO videos load on page load (preload="none", data-src)
+     - Videos only load when within 200px of the carousel viewport
+     - Only the visible video plays; others pause + free memory
+     ── */
+  function loadVideo(card) {
+    var vid = card.querySelector('video');
+    if (!vid || vid.dataset.loaded) return;
+    var sources = vid.querySelectorAll('source[data-src]');
+    if (sources.length) {
+      sources.forEach(function(s) { s.src = s.dataset.src; s.removeAttribute('data-src'); });
+      vid.load();
+    }
+    vid.dataset.loaded = '1';
+  }
+
+  if ('IntersectionObserver' in window) {
+    /* Preload observer — loads video src when card is near viewport (200px buffer) */
+    var preloadObs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(en) {
+        if (en.isIntersecting) {
+          loadVideo(en.target);
+          preloadObs.unobserve(en.target);
+        }
+      });
+    }, { rootMargin: '200px' });
+
+    /* Play observer — plays/pauses based on visibility */
+    var playObs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(en) {
+        var vid = en.target.querySelector('video');
+        var pb = en.target.querySelector('.ugc-play-' + SID);
+        if (!vid) return;
+        if (en.isIntersecting) {
+          loadVideo(en.target);
+          var p = vid.play();
+          if (p) p.then(function() { if (pb) pb.classList.add('hide'); }).catch(function(){});
+        } else {
+          vid.pause();
+          if (pb) pb.classList.remove('hide');
+        }
+      });
+    }, { threshold: 0.3 });
+
+    cards.forEach(function(c) { preloadObs.observe(c); playObs.observe(c); });
+  }
+
+  /* ── Volume toggle ── */
+  root.querySelectorAll('.js-ugc-vol').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault(); e.stopPropagation();
+      var card = this.closest('.ugc-card-' + SID);
+      var vid = card ? card.querySelector('video') : null;
+      if (!vid) return;
+      vid.muted = !vid.muted;
+      this.classList.toggle('is-unmuted', !vid.muted);
+    });
+  });
+
+  /* ── Like ── */
+  root.querySelectorAll('.js-ugc-like').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault(); e.stopPropagation();
+      var liked = this.classList.toggle('is-liked');
+      var base = parseInt(this.dataset.likes) || 25000;
+      this.querySelector('span').textContent = fmt(liked ? base + 1 : base);
+    });
+  });
+
+  /* ── Share (paper airplane icon — copies link, shows "Copied") ── */
+  root.querySelectorAll('.js-ugc-share').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault(); e.stopPropagation();
+      var self = this;
+      var i = parseInt(self.dataset.idx) || 0;
+      var p = PRODUCTS[i];
+      var shareUrl = window.location.origin + (p ? p.url : '/') + '?utm_source=ugc_share';
+      var label = self.querySelector('span');
+      var origText = label.textContent;
+
+      function onCopied() {
+        label.textContent = 'Copied';
+        setTimeout(function() { label.textContent = origText; }, 2000);
+      }
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareUrl).then(onCopied).catch(function() { fallbackCopy(shareUrl, onCopied); });
+      } else {
+        fallbackCopy(shareUrl, onCopied);
+      }
+    });
+  });
+
+  function fallbackCopy(text, cb) {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); if (cb) cb(); } catch(e) {}
+    document.body.removeChild(ta);
+  }
+
+
+  /* ── Fly-to-cart animation ── */
+  function flyToCart(imgSrc) {
+    var cartIcon = document.getElementById('cart-icon-bubble');
+    if (!cartIcon || !imgSrc) return;
+    var cartRect = cartIcon.getBoundingClientRect();
+    var fly = document.createElement('img');
+    fly.src = imgSrc;
+    fly.style.cssText = 'position:fixed;width:48px;height:48px;border-radius:12px;object-fit:contain;background:#f5f5f5;z-index:999999;pointer-events:none;transition:all 0.6s cubic-bezier(0.16,1,0.3,1);box-shadow:0 4px 16px rgba(0,0,0,0.2)';
+    fly.style.left = (window.innerWidth / 2 - 24) + 'px';
+    fly.style.top = (window.innerHeight / 2) + 'px';
+    document.body.appendChild(fly);
+    requestAnimationFrame(function() {
+      fly.style.left = cartRect.left + 'px';
+      fly.style.top = cartRect.top + 'px';
+      fly.style.width = '16px';
+      fly.style.height = '16px';
+      fly.style.opacity = '0.3';
+    });
+    setTimeout(function() { fly.remove(); }, 700);
+  }
+
+  /* ── Colour picker popup ── */
+  var pkOverlay = document.getElementById('ugc-pk-overlay-' + SID);
+  var pkPanel = document.getElementById('ugc-pk-' + SID);
+  var pkImg = document.getElementById('ugc-pk-img-' + SID);
+  var pkName = document.getElementById('ugc-pk-name-' + SID);
+  var pkPrice = document.getElementById('ugc-pk-price-' + SID);
+  var pkOpts = document.getElementById('ugc-pk-opts-' + SID);
+  var pkAtc = document.getElementById('ugc-pk-atc-' + SID);
+  var pkClose = document.getElementById('ugc-pk-close-' + SID);
+  var pickerState = { variants: [], selectedId: null, btn: null, img: '' };
+
+  function openPicker(prodData, cardBtn, img, name, price) {
+    pkImg.src = img || '';
+    pkName.textContent = name;
+    pkPrice.textContent = price;
+    pkOpts.innerHTML = '';
+    pickerState.selectedId = null;
+    pickerState.btn = cardBtn;
+    pickerState.img = img;
+
+    /* Find available variants */
+    var available = prodData.variants.filter(function(v) { return v.available; });
+    var allVariants = prodData.variants;
+
+    /* Single variant or single option value — skip picker, add directly */
+    if (allVariants.length <= 1) {
+      var vid = available.length ? available[0].id : allVariants[0].id;
+      addToCartDirect(vid, name, cardBtn, img);
+      return;
+    }
+
+    /* Build option buttons — use variant title (e.g. "Blue", "Pink", "Secret") */
+    allVariants.forEach(function(v) {
+      var optBtn = document.createElement('button');
+      optBtn.className = 'pk-opt';
+      optBtn.textContent = v.title;
+      optBtn.dataset.variantId = String(v.id);
+      if (!v.available) {
+        optBtn.style.opacity = '0.35';
+        optBtn.style.textDecoration = 'line-through';
+        optBtn.style.pointerEvents = 'none';
+      }
+      optBtn.addEventListener('click', function() {
+        pkOpts.querySelectorAll('.pk-opt').forEach(function(b) { b.classList.remove('on'); });
+        this.classList.add('on');
+        pickerState.selectedId = Number(this.dataset.variantId);
+        pkAtc.disabled = false;
+      });
+      pkOpts.appendChild(optBtn);
+    });
+
+    /* Auto-select if only 1 available */
+    if (available.length === 1) {
+      var autoBtn = pkOpts.querySelector('[data-variant-id="' + available[0].id + '"]');
+      if (autoBtn) { autoBtn.click(); }
+    }
+
+    pkAtc.disabled = (available.length !== 1);
+    pkAtc.textContent = 'Add to Cart';
+    pkOverlay.classList.add('on');
+    setTimeout(function() { pkPanel.classList.add('on'); }, 10);
+  }
+
+  function closePicker() {
+    pkPanel.classList.remove('on');
+    setTimeout(function() { pkOverlay.classList.remove('on'); }, 300);
+  }
+
+  pkOverlay.addEventListener('click', closePicker);
+  pkClose.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); closePicker(); });
+
+  function addToCartDirect(variantId, name, cardBtn, prodImg) {
+    fetch('/cart/add.js', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ items: [{ id: Number(variantId), quantity: 1 }] })
+    })
+    .then(function(r) {
+      if (!r.ok) throw new Error('Cart add failed: ' + r.status);
+      return r.json();
+    })
+    .then(function() {
+      closePicker();
+      flyToCart(prodImg);
+      if (cardBtn) {
+        cardBtn.classList.add('is-added');
+        setTimeout(function() { cardBtn.classList.remove('is-added'); }, 3000);
+      }
+      showToast('Added to Cart');
+    })
+    .catch(function(err) {
+      closePicker();
+      showToast('Could not add — try again');
+    });
+  }
+
+  /* Picker ATC button */
+  pkAtc.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!pickerState.selectedId) return;
+    this.textContent = 'Adding...';
+    this.disabled = true;
+    addToCartDirect(pickerState.selectedId, pkName.textContent, pickerState.btn, pickerState.img);
+  });
+
+  /* ── Add to cart — bind directly on each button (delegated handler misses mobile taps) ── */
+  /* ── ATC handler — called via inline onclick, zero duplicate risk ── */
+  window['ugcAtc_' + SID] = function(btn) {
+    if (btn.classList.contains('is-added') || btn.dataset.busy) return;
+    btn.dataset.busy = '1';
+
+    var handle = btn.dataset.handle;
+    var name = btn.dataset.name;
+    var card = btn.closest('.ugc-card-' + SID);
+    var idx = card ? parseInt(card.dataset.idx) : -1;
+    var p = (idx >= 0 && idx < PRODUCTS.length) ? PRODUCTS[idx] : null;
+
+    if (handle === 'tnt-gender-reveal-australia') {
+      window.location.href = '/products/tnt-gender-reveal-australia';
+      return;
+    }
+
+    fetch('/products/' + handle + '.js')
+      .then(function(r) { if (!r.ok) throw new Error('fail'); return r.json(); })
+      .then(function(prod) {
+        btn.dataset.busy = '';
+        openPicker(prod, btn, p ? p.img : '', name || prod.title, p ? p.p : ('$' + (prod.price / 100).toFixed(2)));
+      })
+      .catch(function() { btn.dataset.busy = ''; showToast('Could not load product'); });
+  };
+
+  /* ── Toast ── */
+  var tTimer;
+  function showToast(msg) {
+    clearTimeout(tTimer);
+    tmsg.textContent = msg;
+    toast.classList.add('on');
+    tTimer = setTimeout(function() { toast.classList.remove('on'); }, 2500);
+  }
+
+  /* Native scroll-snap handles 1-card-at-a-time swiping on mobile */
+
+  /* ── Reels-style fullscreen modal ── */
+  var reelsModal = document.getElementById('ugc-reels-' + SID);
+  var reelsClose = document.getElementById('ugc-reels-close-' + SID);
+  var reelsVid = document.getElementById('ugc-reels-vid-' + SID);
+  var reelsCap = document.getElementById('ugc-reels-cap-' + SID);
+  var reelsShop = document.getElementById('ugc-reels-shop-' + SID);
+  var reelsLikeBtn = document.getElementById('ugc-reels-like-' + SID);
+  var reelsShareBtn = document.getElementById('ugc-reels-share-' + SID);
+  var reelsState = { active: false, sourceCard: null, currentIdx: -1, savedScrollY: 0 };
+
+  function openReel(card) {
+    if (!card || !reelsModal || !reelsVid) return;
+    var srcVid = card.querySelector('video');
+    if (!srcVid) return;
+
+    /* Make sure the card video has loaded its sources first */
+    loadVideo(card);
+
+    /* Clone source URLs into modal video element */
+    reelsVid.innerHTML = '';
+    var sources = srcVid.querySelectorAll('source');
+    sources.forEach(function(s) {
+      var ns = document.createElement('source');
+      var url = s.getAttribute('src') || s.getAttribute('data-src');
+      if (url) ns.src = url;
+      if (s.type) ns.type = s.type;
+      reelsVid.appendChild(ns);
+    });
+    reelsVid.load();
+    reelsVid.muted = false;
+    reelsVid.volume = 1.0;
+    reelsVid.currentTime = 0;
+
+    /* Populate caption + shop link from product data */
+    var idx = parseInt(card.dataset.idx) || 0;
+    reelsState.currentIdx = idx;
+    var prod = PRODUCTS[idx];
+    if (prod) {
+      reelsCap.querySelector('.pname').textContent = prod.t;
+      var priceHtml = '<span class="now">' + prod.p + '</span>';
+      if (prod.cp) priceHtml += '<span class="was">' + prod.cp + '</span>';
+      reelsCap.querySelector('.pprice').innerHTML = priceHtml;
+      reelsShop.href = prod.url || '#';
+      reelsShop.style.display = 'inline-block';
+    } else {
+      reelsCap.querySelector('.pname').textContent = '';
+      reelsCap.querySelector('.pprice').innerHTML = '';
+      reelsShop.style.display = 'none';
+    }
+
+    /* Sync like + share counts from source card state */
+    if (reelsLikeBtn) {
+      var srcLikeBtn = card.querySelector('.js-ugc-like');
+      var liked = srcLikeBtn ? srcLikeBtn.classList.contains('is-liked') : false;
+      var likeBase = parseInt(srcLikeBtn ? srcLikeBtn.dataset.likes : LIKES[idx]) || (LIKES[idx] || 25000);
+      reelsLikeBtn.classList.toggle('is-liked', liked);
+      reelsLikeBtn.querySelector('.cnt').textContent = fmt(liked ? likeBase + 1 : likeBase);
+    }
+    if (reelsShareBtn) {
+      reelsShareBtn.querySelector('.cnt').textContent = fmt(SHARES[idx] || 1500);
+    }
+
+    /* Pause card video so audio doesn't double up */
+    try { srcVid.pause(); } catch(e) {}
+    reelsState.active = true;
+    reelsState.sourceCard = card;
+
+    /* Capture current scroll position so we can restore it on close */
+    reelsState.savedScrollY = window.scrollY || window.pageYOffset || 0;
+    document.body.style.top = '-' + reelsState.savedScrollY + 'px';
+    document.body.classList.add('ugc-reels-open-' + SID);
+    reelsModal.classList.add('on');
+
+    /* Try to play with sound. iOS may reject if no user gesture, but the tap counts. */
+    var p = reelsVid.play();
+    if (p && p.catch) {
+      p.catch(function() {
+        /* Fall back to muted autoplay if sound is blocked, user can unmute via controls */
+        reelsVid.muted = true;
+        reelsVid.play().catch(function(){});
+      });
+    }
+  }
+
+  function closeReel() {
+    if (!reelsModal) return;
+    reelsModal.classList.remove('on');
+
+    /* Release scroll lock + restore page to the exact position we were at */
+    document.body.classList.remove('ugc-reels-open-' + SID);
+    document.body.style.top = '';
+    var restoreY = reelsState.savedScrollY || 0;
+    /* Disable smooth scroll for this restoration so we don't visually flash */
+    var prevBehavior = document.documentElement.style.scrollBehavior;
+    document.documentElement.style.scrollBehavior = 'auto';
+    window.scrollTo(0, restoreY);
+    document.documentElement.style.scrollBehavior = prevBehavior || '';
+
+    try {
+      reelsVid.pause();
+      reelsVid.removeAttribute('src');
+      reelsVid.innerHTML = '';
+      reelsVid.load();
+    } catch(e) {}
+    /* Resume card video (muted autoplay will kick back in via IntersectionObserver) */
+    if (reelsState.sourceCard) {
+      var cv = reelsState.sourceCard.querySelector('video');
+      if (cv) {
+        cv.muted = true;
+        cv.play().catch(function(){});
+      }
+    }
+    reelsState.active = false;
+    reelsState.sourceCard = null;
+    reelsState.savedScrollY = 0;
+  }
+
+  /* Bind click handlers on each video tile (excluding inner buttons) */
+  cards.forEach(function(card) {
+    var vidWrap = card.querySelector('.ugc-vid-' + SID);
+    if (!vidWrap) return;
+    vidWrap.addEventListener('click', function(e) {
+      /* Bail out if user tapped an interactive control inside the tile */
+      var t = e.target;
+      while (t && t !== vidWrap) {
+        if (t.tagName === 'BUTTON' || t.tagName === 'A' ||
+            (t.classList && (t.classList.contains('js-ugc-vol') || t.classList.contains('js-ugc-like') || t.classList.contains('js-ugc-share')))) {
+          return;
+        }
+        t = t.parentNode;
+      }
+      openReel(card);
+    });
+  });
+
+  /* Close handlers */
+  if (reelsClose) reelsClose.addEventListener('click', closeReel);
+  if (reelsModal) {
+    reelsModal.addEventListener('click', function(e) {
+      /* Close on backdrop click (outside the stage) */
+      if (e.target === reelsModal) closeReel();
+    });
+  }
+  document.addEventListener('keydown', function(e) {
+    if (reelsState.active && (e.key === 'Escape' || e.keyCode === 27)) closeReel();
+  });
+
+  /* Modal like — toggle + sync count back to source card */
+  if (reelsLikeBtn) {
+    reelsLikeBtn.addEventListener('click', function(e) {
+      e.preventDefault(); e.stopPropagation();
+      var idx = reelsState.currentIdx;
+      var card = reelsState.sourceCard;
+      var srcBtn = card ? card.querySelector('.js-ugc-like') : null;
+      var liked = this.classList.toggle('is-liked');
+      var base = parseInt(srcBtn ? srcBtn.dataset.likes : LIKES[idx]) || (LIKES[idx] || 25000);
+      this.querySelector('.cnt').textContent = fmt(liked ? base + 1 : base);
+      /* Mirror onto the source card so it persists when modal closes */
+      if (srcBtn) {
+        srcBtn.classList.toggle('is-liked', liked);
+        srcBtn.querySelector('span').textContent = fmt(liked ? base + 1 : base);
+      }
+    });
+  }
+
+  /* Modal share — copy product URL + show "Copied" feedback */
+  if (reelsShareBtn) {
+    reelsShareBtn.addEventListener('click', function(e) {
+      e.preventDefault(); e.stopPropagation();
+      var self = this;
+      var idx = reelsState.currentIdx;
+      var p = PRODUCTS[idx];
+      var shareUrl = window.location.origin + (p ? p.url : '/') + '?utm_source=ugc_reels_share';
+      var label = self.querySelector('.cnt');
+      var origText = label.textContent;
+      function onCopied() {
+        label.textContent = 'Copied';
+        setTimeout(function() { label.textContent = origText; }, 2000);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareUrl).then(onCopied).catch(function() { fallbackCopy(shareUrl, onCopied); });
+      } else {
+        fallbackCopy(shareUrl, onCopied);
+      }
+    });
+  }
+
+})();
+</script>
+
+<script>
+/* Force shipping protection ALWAYS ON — lock the property so nothing can override it */
+(function(){
+  function lockShippingProtection() {
+    if (!window.simplyInsurance) return;
+    var plan = window.simplyInsurance.insurancePlan;
+    if (!plan) return;
+    /* Lock auto_enable to true permanently */
+    try {
+      Object.defineProperty(plan, 'insurance_auto_enable', {
+        get: function() { return true; },
+        set: function() { /* ignore any attempt to set false */ },
+        configurable: false
+      });
+    } catch(e) {
+      plan.insurance_auto_enable = true;
+    }
+    /* Also prevent toggleUncheck from unchecking */
+    if (window.simplyInsurance.toggleUncheck) {
+      window.simplyInsurance.toggleUncheck = function() {};
+    }
+  }
+  /* Run immediately if available */
+  lockShippingProtection();
+  /* Also run after DOM ready (app may not have loaded yet) */
+  document.addEventListener('DOMContentLoaded', function() {
+    lockShippingProtection();
+    /* Final check after app fully initialises */
+    setTimeout(lockShippingProtection, 1000);
+    setTimeout(lockShippingProtection, 3000);
+  });
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Video carousel",
+  "class": "ugc-video-carousel-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "badge_text",
+      "label": "Badge text",
+      "default": "Real Reveals, Real Families"
+    },
+    {
+      "type": "text",
+      "id": "heading_start",
+      "label": "Heading (first part)",
+      "default": "See It"
+    },
+    {
+      "type": "text",
+      "id": "heading_highlight",
+      "label": "Heading (gradient part)",
+      "default": "In Action"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Watch real Australian families create unforgettable gender reveal moments with our products"
+    },
+    {
+      "type": "richtext",
+      "id": "cta_text",
+      "label": "CTA text",
+      "default": "<p>Tag <strong>@gender.reveal.ideass</strong> in your reveal video for a chance to be featured</p>"
+    },
+    {
+      "type": "text",
+      "id": "cta_button_text",
+      "label": "CTA button text",
+      "default": "Share Your Reveal"
+    },
+    {
+      "type": "url",
+      "id": "cta_url",
+      "label": "CTA button link"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 60,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 40,
+      "unit": "px"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "video",
+      "name": "Video",
+      "settings": [
+        {
+          "type": "video",
+          "id": "html5_video",
+          "label": "Video"
+        },
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product"
+        },
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Video carousel"
+    }
+  ]
+}
+{% endschema %}

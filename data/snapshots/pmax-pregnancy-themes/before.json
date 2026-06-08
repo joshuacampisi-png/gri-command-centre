@@ -1,0 +1,40 @@
+{
+  "takenAt": "2026-05-17T21:17:22.636Z",
+  "assetGroups": [
+    {
+      "id": "6500812492",
+      "name": "All Products",
+      "existing": [
+        "pregnancy reveal",
+        "gender reveal baseball",
+        "gender reveal basketball",
+        "gender reveal cannon",
+        "gender reveal confetti cannon",
+        "gender reveal golf ball",
+        "gender reveal powder cannon",
+        "gender reveal products",
+        "sports gender reveal products",
+        "smoke bombs",
+        "baby reveal ideas",
+        "reveal extinguishers",
+        "baby shower reveal bundles",
+        "baby shower reveal products"
+      ]
+    },
+    {
+      "id": "6598765304",
+      "name": "Bundles",
+      "existing": [
+        "baby shower party",
+        "confetti cannons",
+        "baby shower cannons",
+        "blue confetti cannons",
+        "blue powder cannons",
+        "pink confetti cannons",
+        "pink powder cannons",
+        "powder cannons",
+        "baby shower reveal bundles"
+      ]
+    }
+  ]
+}

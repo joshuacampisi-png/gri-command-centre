@@ -1,0 +1,18 @@
+{
+  "shippedAt": "2026-05-19T20:33:40.316Z",
+  "campaignId": 21094179575,
+  "adGroupId": 165478691488,
+  "criterionId": 307834773241,
+  "keyword": "gender reveal poppers",
+  "matchType": 4,
+  "previousStatus": 2,
+  "newStatus": "PAUSED",
+  "rollbackCommand": "node scripts/pause-poppers-broad.js --rollback",
+  "historical30d": {
+    "spend": 580,
+    "conv": 5,
+    "revenue": 294,
+    "roas": "0.51x",
+    "shareOfBudget": "60%"
+  }
+}

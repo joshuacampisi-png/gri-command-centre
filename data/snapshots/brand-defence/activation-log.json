@@ -1,0 +1,85 @@
+{
+  "snapshotPath": "data/snapshots/brand-defence/before-activate.json",
+  "actions": [
+    {
+      "action": "campaign_enable",
+      "campaignId": "23425232813",
+      "result": "customers/9431746480/campaigns/23425232813",
+      "ok": true
+    },
+    {
+      "action": "keyword_enable",
+      "keyword": "gender reveal ideas reviews",
+      "resource": "customers/9431746480/adGroupCriteria/193897092609~837162955819",
+      "ok": true
+    },
+    {
+      "action": "keyword_enable",
+      "keyword": "genderrevealideas",
+      "resource": "customers/9431746480/adGroupCriteria/193897092609~1037626373007",
+      "ok": true
+    },
+    {
+      "action": "keyword_enable",
+      "keyword": "GRI gender reveal",
+      "resource": "customers/9431746480/adGroupCriteria/193897092609~2461472297918",
+      "ok": true
+    }
+  ],
+  "completedAt": "2026-05-17T02:46:24.591Z",
+  "afterSnapshot": {
+    "campaign": {
+      "campaign": {
+        "resource_name": "customers/9431746480/campaigns/23425232813",
+        "status": 2
+      }
+    },
+    "keywords": [
+      {
+        "ad_group_criterion": {
+          "resource_name": "customers/9431746480/adGroupCriteria/193897092609~46415533971",
+          "status": 2,
+          "keyword": {
+            "text": "gender reveal ideas"
+          }
+        }
+      },
+      {
+        "ad_group_criterion": {
+          "resource_name": "customers/9431746480/adGroupCriteria/193897092609~329472237056",
+          "status": 2,
+          "keyword": {
+            "text": "gender reveal ideas"
+          }
+        }
+      },
+      {
+        "ad_group_criterion": {
+          "resource_name": "customers/9431746480/adGroupCriteria/193897092609~837162955819",
+          "status": 2,
+          "keyword": {
+            "text": "gender reveal ideas reviews"
+          }
+        }
+      },
+      {
+        "ad_group_criterion": {
+          "resource_name": "customers/9431746480/adGroupCriteria/193897092609~1037626373007",
+          "status": 2,
+          "keyword": {
+            "text": "genderrevealideas"
+          }
+        }
+      },
+      {
+        "ad_group_criterion": {
+          "resource_name": "customers/9431746480/adGroupCriteria/193897092609~2461472297918",
+          "status": 2,
+          "keyword": {
+            "text": "GRI gender reveal"
+          }
+        }
+      }
+    ]
+  }
+}

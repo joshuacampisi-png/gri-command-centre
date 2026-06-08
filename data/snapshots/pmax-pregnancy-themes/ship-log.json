@@ -1,0 +1,32 @@
+{
+  "startedAt": "2026-05-17T21:17:22.638Z",
+  "created": [
+    {
+      "ag": "All Products",
+      "ag_id": "6500812492",
+      "theme": "pregnancy announcement",
+      "resource_name": "customers/9431746480/assetGroupSignals/6500812492~2234459758683"
+    },
+    {
+      "ag": "All Products",
+      "ag_id": "6500812492",
+      "theme": "pregnancy announcement ideas",
+      "resource_name": "customers/9431746480/assetGroupSignals/6500812492~2270640384841"
+    },
+    {
+      "ag": "Bundles",
+      "ag_id": "6598765304",
+      "theme": "pregnancy announcement",
+      "resource_name": "customers/9431746480/assetGroupSignals/6598765304~2234459758683"
+    },
+    {
+      "ag": "Bundles",
+      "ag_id": "6598765304",
+      "theme": "pregnancy announcement ideas",
+      "resource_name": "customers/9431746480/assetGroupSignals/6598765304~2270640384841"
+    }
+  ],
+  "skipped": [],
+  "failed": [],
+  "completedAt": "2026-05-17T21:17:32.194Z"
+}

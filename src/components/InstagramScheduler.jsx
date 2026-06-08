@@ -44,6 +44,20 @@ async function publishNowAPI(id) {
   return res.json()
 }
 
+async function retryPostAPI(id) {
+  const res = await fetch(`${API}/entries/${id}/retry`, { method: 'POST' })
+  return res.json()
+}
+
+async function fetchStatus() {
+  try {
+    const res = await fetch(`${API}/status`)
+    return await res.json()
+  } catch {
+    return { configured: false, healthy: false, error: 'Network error' }
+  }
+}
+
 async function uploadMediaAPI(files, onProgress) {
   const form = new FormData()
   for (const file of files) form.append('media', file)
@@ -137,6 +151,7 @@ export default function InstagramScheduler() {
   const [scheduleInput, setScheduleInput] = useState('')
   const [diskUsage, setDiskUsage] = useState(null)
   const [cleaning, setCleaning] = useState(false)
+  const [apiStatus, setApiStatus] = useState(null)
   const fileRef = useRef(null)
 
   const showToast = useCallback((message, type = 'success') => {
@@ -190,9 +205,25 @@ export default function InstagramScheduler() {
   useEffect(() => {
     reload()
     fetchDiskUsage()
+    fetchStatus().then(setApiStatus)
     const interval = setInterval(reload, 30000)
-    return () => clearInterval(interval)
+    const statusInterval = setInterval(() => fetchStatus().then(setApiStatus), 60000)
+    return () => { clearInterval(interval); clearInterval(statusInterval) }
   }, [reload, fetchDiskUsage])
+
+  async function handleRetry() {
+    if (!drawer) return
+    setSaving(true)
+    try {
+      const result = await retryPostAPI(drawer.id)
+      if (result.error) { showToast('Retry failed: ' + result.error, 'error') }
+      else { showToast('Queued for retry — will publish within 60 seconds'); setDrawer(null) }
+      await reload()
+    } catch (err) {
+      showToast('Retry failed: ' + err.message, 'error')
+    }
+    setSaving(false)
+  }
 
   // ── Stats ──────────────────────────────────────────────────────────────────
 
@@ -216,6 +247,7 @@ export default function InstagramScheduler() {
   // bumping forward 2h per existing post — no hard cap, so the user can
   // schedule as many posts on a single day as they want without collision.
   function nextSlotFor(dayKey, existingPosts) {
+    const now = new Date()
     // Existing scheduled hours on THIS day (UTC hour numbers)
     const usedHours = new Set(
       (existingPosts || [])
@@ -223,14 +255,19 @@ export default function InstagramScheduler() {
         .filter(h => h != null)
     )
     // Try every 2-hour slot from 00:00 UTC (10am AEST) to 22:00 UTC (8am AEST next day)
+    // Skip any slot that's already in the past (prevents cron firing 12 posts back-to-back
+    // when staff drops files onto today's date after the prime morning slots have passed).
     for (let h = 0; h < 24; h += 2) {
-      if (!usedHours.has(h)) {
-        return new Date(`${dayKey}T${String(h).padStart(2, '0')}:00:00.000Z`)
-      }
+      if (usedHours.has(h)) continue
+      const slot = new Date(`${dayKey}T${String(h).padStart(2, '0')}:00:00.000Z`)
+      if (slot > now) return slot
     }
-    // Fallback: minute-stagger (unlimited posts/day, never collide)
+    // No free slot today — push to next available 2h slot at least 30 min from now,
+    // staggered by 7-min increments to avoid colliding with anything else queued.
+    const base = new Date(now.getTime() + 30 * 60 * 1000)
     const stagger = (existingPosts.length * 7) % 60
-    return new Date(`${dayKey}T08:${String(stagger).padStart(2, '0')}:00.000Z`)
+    base.setUTCMinutes(stagger, 0, 0)
+    return base
   }
 
   function newPost(date) {
@@ -566,11 +603,37 @@ export default function InstagramScheduler() {
       {/* Account bar */}
       <div className="ig-account-bar">
         <div className="ig-account-info">
-          <span className="ig-account-dot" />
-          <strong>@gender.reveal.ideass</strong>
+          <span className="ig-account-dot" style={{ background: apiStatus?.healthy ? '#10B981' : apiStatus ? '#DC2626' : '#9CA3AF' }} />
+          <strong>@{apiStatus?.username || 'gender.reveal.ideass'}</strong>
           <span className="muted"> via Gender Reveal Ideas</span>
+          {apiStatus && (
+            <span style={{ marginLeft: 12, fontSize: 11, fontWeight: 600, color: apiStatus.healthy ? '#10B981' : '#DC2626' }}>
+              {apiStatus.healthy ? 'Meta API live' : 'Meta API down'}
+            </span>
+          )}
         </div>
       </div>
+
+      {/* Auth/config error banner */}
+      {apiStatus && !apiStatus.healthy && (
+        <div style={{
+          padding: '12px 16px', margin: '0 0 12px', borderRadius: 10,
+          background: '#FEE2E2', border: '1px solid #FECACA', color: '#991B1B',
+          fontSize: 13, fontWeight: 600,
+        }}>
+          ⚠️ Instagram publishing is currently down: {apiStatus.error || 'Meta auth failing'}.
+          Posts will queue up but won't publish until this is fixed.
+        </div>
+      )}
+      {apiStatus?.healthy && apiStatus.appUrlOk === false && (
+        <div style={{
+          padding: '10px 16px', margin: '0 0 12px', borderRadius: 10,
+          background: '#FEF3C7', border: '1px solid #FCD34D', color: '#92400E',
+          fontSize: 12, fontWeight: 600,
+        }}>
+          ⚠️ APP_URL env not set on Railway — image &amp; carousel posts may fail (Reels still work).
+        </div>
+      )}
 
       {/* Stats bar */}
       <div className="ig-stats">
@@ -913,6 +976,11 @@ export default function InstagramScheduler() {
 
             {/* Actions */}
             <div className="ig-drawer-actions">
+              {drawer.status === 'FAILED' && (
+                <button className="btn btn-primary" onClick={handleRetry} disabled={saving || uploading} style={{ background: '#DC2626' }}>
+                  {saving ? 'Queuing...' : '↻ Retry Now'}
+                </button>
+              )}
               {drawer.status !== 'PUBLISHED' && (
                 <>
                   <button className="btn btn-primary" onClick={() => handleSave('SCHEDULED')} disabled={saving || uploading || !(drawer.mediaUrls?.length)}>

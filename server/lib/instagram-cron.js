@@ -24,7 +24,11 @@ function savePosts(posts) {
 }
 
 function getAppUrl() {
-  return process.env.APP_URL || process.env.RAILWAY_PUBLIC_URL || `http://localhost:${process.env.PORT || 8787}`
+  const url = process.env.APP_URL || process.env.RAILWAY_PUBLIC_URL
+  // Fall back to the canonical Railway public domain so image/carousel publishing
+  // doesn't silently break when APP_URL isn't set as an env var.
+  if (!url) return 'https://gri-contract.up.railway.app'
+  return url
 }
 
 // Delete local media files after successful publish to free disk space
@@ -63,18 +67,18 @@ async function checkAndPublish() {
   for (const post of posts) {
     if (post._archived) continue
 
-    // Check scheduled posts that are due
-    const isDue = post.status === 'SCHEDULED' && post.scheduledAt && new Date(post.scheduledAt) <= now
+    // Check scheduled posts that are due — with 5-min backoff between attempts
+    // (post stays SCHEDULED across attempts 1-2 to keep the "queued" UX consistent;
+    // only flips to FAILED after attempt 3 so the user can hit Retry from the UI)
+    const isDue = post.status === 'SCHEDULED'
+      && post.scheduledAt
+      && new Date(post.scheduledAt) <= now
+      && (!post.lastAttemptAt || (now - new Date(post.lastAttemptAt)) > 5 * 60 * 1000)
 
-    // Check failed posts eligible for retry (< 3 attempts, failed > 5 min ago)
-    const isRetry = post.status === 'FAILED'
-      && (post.attempts || 0) < 3
-      && post.lastAttemptAt
-      && (now - new Date(post.lastAttemptAt)) > 5 * 60 * 1000
+    if (!isDue) continue
 
-    if (!isDue && !isRetry) continue
-
-    console.log(`[IG Cron] ${isRetry ? 'Retrying' : 'Publishing'} post ${post.id} (${post.type})`)
+    const attemptNum = (post.attempts || 0) + 1
+    console.log(`[IG Cron] ${attemptNum > 1 ? `Retrying (attempt ${attemptNum})` : 'Publishing'} post ${post.id} (${post.type})`)
     post.status = 'PUBLISHING'
     post.lastAttemptAt = now.toISOString()
     changed = true
@@ -99,8 +103,9 @@ async function checkAndPublish() {
         post.status = 'FAILED'
         console.error(`[IG Cron] Post ${post.id} permanently failed after 3 attempts: ${err.message}`)
       } else {
-        post.status = 'FAILED'
-        console.warn(`[IG Cron] Post ${post.id} failed (attempt ${post.attempts}/3): ${err.message}`)
+        // Stay SCHEDULED so the cron auto-retries on the next tick after 5-min backoff
+        post.status = 'SCHEDULED'
+        console.warn(`[IG Cron] Post ${post.id} failed (attempt ${post.attempts}/3) — will retry: ${err.message}`)
       }
     }
   }

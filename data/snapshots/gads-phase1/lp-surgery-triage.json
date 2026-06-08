@@ -1,0 +1,415 @@
+{
+  "medianCvr": 0.04030825373134328,
+  "accountAOV": 99.96750641311343,
+  "surgeryTargets": [
+    {
+      "url": "https://genderrevealideas.com.au/products/tnt-gender-reveal-australia?variant=42555702902873&country=AU&currency=AUD&utm_medium=product_sync&utm_source=google&utm_content=sag_organic&utm_campaign=sag_organic",
+      "campaigns": [
+        "GRI PMAX | All Products",
+        "GRI PMAX | TNT Hire"
+      ],
+      "clk": 488,
+      "conv": 7.705099,
+      "sp": 306.63,
+      "val": 1771.75398601,
+      "imp": 18606,
+      "cvr": 0.015789137295081968,
+      "roas": 5.778149515735578,
+      "aov": 229.94564846084393,
+      "recoverable": 1196.1440856378838
+    },
+    {
+      "url": "https://genderrevealideas.com.au/products/gender-reveal-burnout-powder?variant=40956404858969&country=AU&currency=AUD&utm_medium=product_sync&utm_source=google&utm_content=sag_organic&utm_campaign=sag_organic",
+      "campaigns": [
+        "GRI PMAX | All Products",
+        "GRI PMAX | Cannon & Powder Reveals"
+      ],
+      "clk": 360,
+      "conv": 5.00465,
+      "sp": 348.31,
+      "val": 503.52136882,
+      "imp": 17710,
+      "cvr": 0.013901805555555554,
+      "roas": 1.4456127266515462,
+      "aov": 100.61070580759895,
+      "recoverable": 950.3232398498184
+    },
+    {
+      "url": "https://genderrevealideas.com.au/products/mini-powder-gender-reveal-blaster?variant=41196797231193&country=AU&currency=AUD&utm_medium=product_sync&utm_source=google&utm_content=sag_organic&utm_campaign=sag_organic",
+      "campaigns": [
+        "GRI PMAX | Cannon & Powder Reveals",
+        "GRI PMAX | All Products"
+      ],
+      "clk": 394,
+      "conv": 9.980961,
+      "sp": 701.342658,
+      "val": 799.6543480700001,
+      "imp": 29590,
+      "cvr": 0.025332388324873098,
+      "roas": 1.1401764015757332,
+      "aov": 80.11797141277277,
+      "recoverable": 589.8573688989133
+    },
+    {
+      "url": "https://genderrevealideas.com.au/products/tnt-gender-reveal-australia?variant=43033108873305&country=AU&currency=AUD&utm_medium=product_sync&utm_source=google&utm_content=sag_organic&utm_campaign=sag_organic",
+      "campaigns": [
+        "GRI PMAX | All Products"
+      ],
+      "clk": 175,
+      "conv": 1.25,
+      "sp": 142.18,
+      "val": 117.4875,
+      "imp": 10091,
+      "cvr": 0.007142857142857143,
+      "roas": 0.8263293008862005,
+      "aov": 93.99,
+      "recoverable": 580.2058493267641
+    },
+    {
+      "url": "https://genderrevealideas.com.au/products/gender-reveal-burnout-powder?variant=40956404891737&country=AU&currency=AUD&utm_medium=product_sync&utm_source=google&utm_content=sag_organic&utm_campaign=sag_organic",
+      "campaigns": [
+        "GRI PMAX | All Products",
+        "GRI PMAX | Cannon & Powder Reveals"
+      ],
+      "clk": 345,
+      "conv": 9.407705,
+      "sp": 243.59,
+      "val": 1347.5315967000001,
+      "imp": 5248,
+      "cvr": 0.027268710144927537,
+      "roas": 5.53196599490948,
+      "aov": 143.2370165412287,
+      "recoverable": 449.7180766991853
+    },
+    {
+      "url": "https://genderrevealideas.com.au/products/gender-reveal-balloon-garland?variant=43069026926681&country=AU&currency=AUD&utm_medium=product_sync&utm_source=google&utm_content=sag_organic&utm_campaign=sag_organic",
+      "campaigns": [
+        "GRI PMAX | All Products"
+      ],
+      "clk": 95,
+      "conv": 1,
+      "sp": 77.86,
+      "val": 49.98,
+      "imp": 8662,
+      "cvr": 0.010526315789473684,
+      "roas": 0.6419213973799126,
+      "aov": 49.98,
+      "recoverable": 282.83647685888553
+    },
+    {
+      "url": "https://genderrevealideas.com.au/products/tnt-gender-reveal-australia?variant=43033108906073&country=AU&currency=AUD&utm_medium=product_sync&utm_source=google&utm_content=sag_organic&utm_campaign=sag_organic",
+      "campaigns": [
+        "GRI PMAX | All Products"
+      ],
+      "clk": 167,
+      "conv": 4.172564,
+      "sp": 99.45,
+      "val": 647.0277236,
+      "imp": 8221,
+      "cvr": 0.024985413173652698,
+      "roas": 6.506060569130216,
+      "aov": 155.06717778325267,
+      "recoverable": 255.80828900691398
+    },
+    {
+      "url": "https://genderrevealideas.com.au/pages/contact",
+      "campaigns": [
+        "GRI PMAX | All Products",
+        "GRI | Search | Cannons",
+        "GRI PMAX | Bundles"
+      ],
+      "clk": 61,
+      "conv": 0,
+      "sp": 105.263319,
+      "val": 0,
+      "imp": 12371,
+      "cvr": 0,
+      "roas": 0,
+      "aov": 0,
+      "recoverable": 245.8004524167572
+    },
+    {
+      "url": "https://genderrevealideas.com.au/products/gender-reveal-baby-shower-balloon-kit?variant=40860532703321&country=AU&currency=AUD&utm_medium=product_sync&utm_source=google&utm_content=sag_organic&utm_campaign=sag_organic",
+      "campaigns": [
+        "GRI PMAX | All Products"
+      ],
+      "clk": 89,
+      "conv": 1.46815,
+      "sp": 87.8,
+      "val": 120.0182685,
+      "imp": 14037,
+      "cvr": 0.01649606741573034,
+      "roas": 1.3669506662870161,
+      "aov": 81.74796069883867,
+      "recoverable": 211.85959505124967
+    },
+    {
+      "url": "https://genderrevealideas.com.au/products/tnt-gender-reveal",
+      "campaigns": [
+        "GRI PMAX | TNT Hire"
+      ],
+      "clk": 126,
+      "conv": 3,
+      "sp": 211.761374,
+      "val": 149.1,
+      "imp": 192770,
+      "cvr": 0.023809523809523808,
+      "roas": 0.7040944114765708,
+      "aov": 49.699999999999996,
+      "recoverable": 207.816448047732
+    },
+    {
+      "url": "https://genderrevealideas.com.au/products/gender-reveal-smoke-bombs?variant=42377271803993&country=AU&currency=AUD&utm_medium=product_sync&utm_source=google&utm_content=sag_organic&utm_campaign=sag_organic",
+      "campaigns": [
+        "GRI PMAX | Bundles",
+        "GRI PMAX | Cannon & Powder Reveals",
+        "GRI PMAX | All Products"
+      ],
+      "clk": 74,
+      "conv": 1.5,
+      "sp": 167.85699100000002,
+      "val": 184.485,
+      "imp": 14448,
+      "cvr": 0.02027027027027027,
+      "roas": 1.0990605687671358,
+      "aov": 122.99000000000001,
+      "recoverable": 148.23289577115008
+    },
+    {
+      "url": "https://genderrevealideas.com.au/products/toy-story-birthday-party-set?variant=42191631188057&country=AU&currency=AUD&utm_medium=product_sync&utm_source=google&utm_content=sag_organic&utm_campaign=sag_organic",
+      "campaigns": [
+        "GRI PMAX | All Products"
+      ],
+      "clk": 30,
+      "conv": 0,
+      "sp": 54.802376,
+      "val": 0,
+      "imp": 6405,
+      "cvr": 0,
+      "roas": 0,
+      "aov": 0,
+      "recoverable": 120.88546840168388
+    },
+    {
+      "url": "https://genderrevealideas.com.au/products/tnt-gender-reveal-australia?variant=43033108840537&country=AU&currency=AUD&utm_medium=product_sync&utm_source=google&utm_content=sag_organic&utm_campaign=sag_organic",
+      "campaigns": [
+        "GRI PMAX | All Products"
+      ],
+      "clk": 78,
+      "conv": 1.944819,
+      "sp": 68.726427,
+      "val": 138.74896281,
+      "imp": 4846,
+      "cvr": 0.024933576923076923,
+      "roas": 2.0188589581413856,
+      "aov": 71.34286677063521,
+      "recoverable": 119.88351198953323
+    },
+    {
+      "url": "https://genderrevealideas.com.au/products/gender-reveal-smoke-box?variant=42298441269337&country=AU&currency=AUD&utm_medium=product_sync&utm_source=google&utm_content=sag_organic&utm_campaign=sag_organic",
+      "campaigns": [
+        "GRI PMAX | All Products"
+      ],
+      "clk": 83,
+      "conv": 2.202983,
+      "sp": 105.76,
+      "val": 164.80906851,
+      "imp": 16543,
+      "cvr": 0.02654196385542169,
+      "roas": 1.5583308293305598,
+      "aov": 74.81177499327049,
+      "recoverable": 114.2230787308455
+    },
+    {
+      "url": "https://genderrevealideas.com.au/products/gender-reveal-powder?variant=41047577133145&country=AU&currency=AUD&utm_medium=product_sync&utm_source=google&utm_content=sag_organic&utm_campaign=sag_organic",
+      "campaigns": [
+        "GRI PMAX | Cannon & Powder Reveals",
+        "GRI PMAX | All Products"
+      ],
+      "clk": 32,
+      "conv": 0.179123,
+      "sp": 47.789584000000005,
+      "val": 5.26662763,
+      "imp": 9713,
+      "cvr": 0.00559759375,
+      "roas": 0.11020450879003257,
+      "aov": 29.40229691329422,
+      "recoverable": 111.0380199772267
+    },
+    {
+      "url": "https://genderrevealideas.com.au/products/2-pack-gender-reveal-confetti-powder-xl-cannon-bundle?variant=43006475993177&country=AU&currency=AUD&utm_medium=product_sync&utm_source=google&utm_content=sag_organic&utm_campaign=sag_organic",
+      "campaigns": [
+        "GRI PMAX | Cannon & Powder Reveals",
+        "GRI PMAX | All Products"
+      ],
+      "clk": 34,
+      "conv": 0.666667,
+      "sp": 111.53195400000001,
+      "val": 43.04002152,
+      "imp": 5148,
+      "cvr": 0.019607852941176472,
+      "roas": 0.38589856966013525,
+      "aov": 64.56,
+      "recoverable": 70.35849325733064
+    },
+    {
+      "url": "https://genderrevealideas.com.au/products/gender-reveal-scratchies?variant=42479708078169&country=AU&currency=AUD&utm_medium=product_sync&utm_source=google&utm_content=sag_organic&utm_campaign=sag_organic",
+      "campaigns": [
+        "GRI PMAX | All Products"
+      ],
+      "clk": 53,
+      "conv": 1.483627,
+      "sp": 39.41,
+      "val": 30.07583873,
+      "imp": 5898,
+      "cvr": 0.027992962264150944,
+      "roas": 0.7631524671403198,
+      "aov": 20.271832967450713,
+      "recoverable": 65.24983587247328
+    },
+    {
+      "url": "https://genderrevealideas.com.au/products/gender-reveal-cannons?variant=40997389893721&country=AU&currency=AUD&utm_medium=product_sync&utm_source=google&utm_content=sag_organic&utm_campaign=sag_organic",
+      "campaigns": [
+        "GRI PMAX | All Products",
+        "GRI PMAX | Cannon & Powder Reveals"
+      ],
+      "clk": 31,
+      "conv": 0.686185,
+      "sp": 67.850867,
+      "val": 26.35447315,
+      "imp": 16080,
+      "cvr": 0.022135000000000002,
+      "roas": 0.3884176328948015,
+      "aov": 38.40724170595393,
+      "recoverable": 56.3187806269911
+    }
+  ],
+  "winners": [
+    {
+      "url": "https://genderrevealideas.com.au/products/gender-reveal-golf-balls?variant=40806079004761&country=AU&currency=AUD&utm_medium=product_sync&utm_source=google&utm_content=sag_organic&utm_campaign=sag_organic",
+      "campaigns": [
+        "GRI PMAX | All Products"
+      ],
+      "clk": 130,
+      "conv": 13.594445,
+      "sp": 85.94,
+      "val": 440.26851555,
+      "imp": 7186,
+      "cvr": 0.10457265384615384,
+      "roas": 5.122975512566907,
+      "aov": 32.385913183657,
+      "recoverable": 0
+    },
+    {
+      "url": "https://genderrevealideas.com.au/products/gender-reveal-ideas-powder-cannon?variant=43006470946905&country=AU&currency=AUD&utm_medium=product_sync&utm_source=google&utm_content=sag_organic&utm_campaign=sag_organic",
+      "campaigns": [
+        "GRI PMAX | Cannon & Powder Reveals",
+        "GRI PMAX | All Products"
+      ],
+      "clk": 61,
+      "conv": 6,
+      "sp": 192.920048,
+      "val": 457.57,
+      "imp": 18060,
+      "cvr": 0.09836065573770492,
+      "roas": 2.37181155998883,
+      "aov": 76.26166666666667,
+      "recoverable": 0
+    },
+    {
+      "url": "https://genderrevealideas.com.au/products/super-mario-party-set?variant=42145914486873&country=AU&currency=AUD&utm_medium=product_sync&utm_source=google&utm_content=sag_organic&utm_campaign=sag_organic",
+      "campaigns": [
+        "GRI PMAX | All Products"
+      ],
+      "clk": 56,
+      "conv": 5,
+      "sp": 72.97,
+      "val": 228.75,
+      "imp": 4512,
+      "cvr": 0.08928571428571429,
+      "roas": 3.134849938330821,
+      "aov": 45.75,
+      "recoverable": 0
+    },
+    {
+      "url": "https://genderrevealideas.com.au/products/gender-reveal-rugby-ball?variant=42086970622041&country=AU&currency=AUD&utm_medium=product_sync&utm_source=google&utm_content=sag_organic&utm_campaign=sag_organic",
+      "campaigns": [
+        "GRI PMAX | All Products"
+      ],
+      "clk": 64,
+      "conv": 5,
+      "sp": 133.65,
+      "val": 431.95,
+      "imp": 5137,
+      "cvr": 0.078125,
+      "roas": 3.2319491208380096,
+      "aov": 86.39,
+      "recoverable": 0
+    },
+    {
+      "url": "https://genderrevealideas.com.au/products/gender-reveal-exploding-soccer-ball?variant=42087003127897&country=AU&currency=AUD&utm_medium=product_sync&utm_source=google&utm_content=sag_organic&utm_campaign=sag_organic",
+      "campaigns": [
+        "GRI PMAX | All Products"
+      ],
+      "clk": 68,
+      "conv": 4.903191,
+      "sp": 117.64,
+      "val": 344.62122293,
+      "imp": 10934,
+      "cvr": 0.07210575,
+      "roas": 2.9294561622747364,
+      "aov": 70.28509045028024,
+      "recoverable": 0
+    },
+    {
+      "url": "https://genderrevealideas.com.au/products/gender-reveal-smoke-bomb-australia?variant=41198387626073&country=AU&currency=AUD&utm_medium=product_sync&utm_source=google&utm_content=sag_organic&utm_campaign=sag_organic",
+      "campaigns": [
+        "GRI PMAX | Cannon & Powder Reveals",
+        "GRI PMAX | All Products"
+      ],
+      "clk": 144,
+      "conv": 9.596281,
+      "sp": 246.80407300000002,
+      "val": 758.30464856,
+      "imp": 25961,
+      "cvr": 0.06664084027777778,
+      "roas": 3.0724964922276627,
+      "aov": 79.0206798404507,
+      "recoverable": 0
+    },
+    {
+      "url": "https://genderrevealideas.com.au/products/gender-reveal-smoke-bombs?variant=41914464632921&country=AU&currency=AUD&utm_medium=product_sync&utm_source=google&utm_content=sag_organic&utm_campaign=sag_organic",
+      "campaigns": [
+        "GRI PMAX | Bundles",
+        "GRI PMAX | Cannon & Powder Reveals",
+        "GRI PMAX | All Products"
+      ],
+      "clk": 376,
+      "conv": 24.860481,
+      "sp": 913.618354,
+      "val": 2813.9626408,
+      "imp": 44706,
+      "cvr": 0.06611830053191489,
+      "roas": 3.0800198228066686,
+      "aov": 113.1901929331134,
+      "recoverable": 0
+    },
+    {
+      "url": "https://genderrevealideas.com.au/products/gender-reveal-powder-cannons?variant=42031946137689&country=AU&currency=AUD&utm_medium=product_sync&utm_source=google&utm_content=sag_organic&utm_campaign=sag_organic",
+      "campaigns": [
+        "GRI PMAX | Bundles",
+        "GRI PMAX | Cannon & Powder Reveals",
+        "GRI PMAX | All Products"
+      ],
+      "clk": 437,
+      "conv": 28.636776,
+      "sp": 942.530297,
+      "val": 3577.1435176,
+      "imp": 51699,
+      "cvr": 0.06553037986270023,
+      "roas": 3.7952557376519005,
+      "aov": 124.91432407055878,
+      "recoverable": 0
+    }
+  ]
+}

@@ -1,0 +1,1019 @@
+{
+  "flagged": [
+    {
+      "handle": "gender-reveal-cannons-bundle-australia",
+      "id": "gid://shopify/Product/7513391530073",
+      "title": "4 Pack - Gender Reveal Confetti & Powder XL Cannon Bundle",
+      "productType": "",
+      "reasons": [
+        {
+          "where": "product.seo.title",
+          "value": "4 Pack Gender Reveal Cannon Bundle | $90 | Pink, Blue, Mix"
+        },
+        {
+          "where": "metafield global.title_tag",
+          "value": "4 Pack Gender Reveal Cannon Bundle | $90 | Pink, Blue, Mix"
+        }
+      ],
+      "variants": [
+        {
+          "id": "gid://shopify/ProductVariant/40948026966105",
+          "title": "2 Pink + 2 Blue",
+          "price": "89.99",
+          "sku": "67448651066105"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/40948026998873",
+          "title": "4 Pink",
+          "price": "89.99",
+          "sku": "67448651198873"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/40948027031641",
+          "title": "4 Blue",
+          "price": "89.99",
+          "sku": "67448651231641"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/40997376720985",
+          "title": "To Be Announced",
+          "price": "89.99",
+          "sku": "67448651320985"
+        }
+      ]
+    },
+    {
+      "handle": "gender-reveal-powder-extinguisher",
+      "id": "gid://shopify/Product/7781664882777",
+      "title": "Gender Reveal Powder Extinguisher Bundle",
+      "productType": "",
+      "reasons": [
+        {
+          "where": "product.seo.title",
+          "value": "Gender Reveal Powder Extinguisher Bundle | $150 Pink Blue"
+        },
+        {
+          "where": "metafield global.title_tag",
+          "value": "Gender Reveal Powder Extinguisher Bundle | $150 Pink Blue"
+        }
+      ],
+      "variants": [
+        {
+          "id": "gid://shopify/ProductVariant/41844667711577",
+          "title": "Blue",
+          "price": "149.99",
+          "sku": "67448656411577"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/41844667744345",
+          "title": "Pink",
+          "price": "149.99",
+          "sku": "67448656544345"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/41844667777113",
+          "title": "To Be Announced",
+          "price": "149.99",
+          "sku": "67448656677113"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/41844670005337",
+          "title": "2 pink + 2 Blue",
+          "price": "149.99",
+          "sku": "67448656705337"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/42486995419225",
+          "title": "Wedding White",
+          "price": "149.99",
+          "sku": "GRI-7781664882777-9225"
+        }
+      ]
+    },
+    {
+      "handle": "gender-reveal-powder-cannons",
+      "id": "gid://shopify/Product/7877241602137",
+      "title": "Gender Reveal Cannon & Extinguisher Double Bundle 🎉",
+      "productType": "",
+      "reasons": [
+        {
+          "where": "product.seo.title",
+          "value": "Gender Reveal Cannon & Extinguisher Bundle | $135 | Australia"
+        },
+        {
+          "where": "metafield global.title_tag",
+          "value": "Gender Reveal Cannon & Extinguisher Bundle | $135 | Australia"
+        }
+      ],
+      "variants": [
+        {
+          "id": "gid://shopify/ProductVariant/42031946137689",
+          "title": "Pink Blaster + Confetti Cannon",
+          "price": "134.99",
+          "sku": "67448652637689"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/42031946170457",
+          "title": "Pink Blaster + Powder Cannon",
+          "price": "134.99",
+          "sku": "67448652770457"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/42031946203225",
+          "title": "Blue Blaster + Confetti Cannon",
+          "price": "134.99",
+          "sku": "67448652803225"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/42031946235993",
+          "title": "Blue Blaster + Powder Cannon",
+          "price": "134.99",
+          "sku": "67448652935993"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/42031975825497",
+          "title": "To Be Announced",
+          "price": "134.99",
+          "sku": "67448653025497"
+        }
+      ]
+    },
+    {
+      "handle": "tnt-gender-reveal-australia",
+      "id": "gid://shopify/Product/7988691927129",
+      "title": "TNT Gender Reveal Self Hire",
+      "productType": "",
+      "reasons": [
+        {
+          "where": "product.seo.title",
+          "value": "TNT Gender Reveal Self Hire Kit Australia | $349 | Gold Coast"
+        },
+        {
+          "where": "metafield global.title_tag",
+          "value": "TNT Gender Reveal Self Hire Kit Australia | $349 | Gold Coast"
+        }
+      ],
+      "variants": [
+        {
+          "id": "gid://shopify/ProductVariant/43033108873305",
+          "title": "Blue",
+          "price": "349.99",
+          "sku": "GRI-7988691927129-3305"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/43033108906073",
+          "title": "Pink",
+          "price": "349.99",
+          "sku": "GRI-7988691927129-6073"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/43033108840537",
+          "title": "Secret",
+          "price": "349.99",
+          "sku": "GRI-7988691927129-0537"
+        }
+      ]
+    },
+    {
+      "handle": "gender-reveal-ideas-near-me",
+      "id": "gid://shopify/Product/8129167622233",
+      "title": "2 Pack - Gender Reveal Confetti & Powder XL Cannon Bundle",
+      "productType": "",
+      "reasons": [
+        {
+          "where": "product.seo.title",
+          "value": "2 Pack Gender Reveal Confetti & Powder Cannon Bundle | $65"
+        },
+        {
+          "where": "metafield global.title_tag",
+          "value": "2 Pack Gender Reveal Confetti & Powder Cannon Bundle | $65"
+        }
+      ],
+      "variants": [
+        {
+          "id": "gid://shopify/ProductVariant/43006465507417",
+          "title": "1 Pink + 1 Blue",
+          "price": "64.95",
+          "sku": "67448651066105"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/43006465540185",
+          "title": "2 Pink",
+          "price": "64.95",
+          "sku": "67448651198873"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/43006465572953",
+          "title": "2 Blue",
+          "price": "64.95",
+          "sku": "67448651231641"
+        },
+        {
+          "id": "gid://shopify/ProductVariant/43006465605721",
+          "title": "To be Announced",
+          "price": "64.95",
+          "sku": "67448651320985"
+        }
+      ]
+    }
+  ],
+  "extBundles": [
+    {
+      "id": "gid://shopify/Product/7781664882777",
+      "handle": "gender-reveal-powder-extinguisher",
+      "title": "Gender Reveal Powder Extinguisher Bundle",
+      "productType": "",
+      "vendor": "Gender Reveal Ideas",
+      "seo": {
+        "title": "Gender Reveal Powder Extinguisher Bundle | $150 Pink Blue",
+        "description": "Pink and blue powder extinguisher bundle for the ultimate gender reveal moment. Eco-friendly cornstarch powder. Australia-wide express delivery."
+      },
+      "metafields": {
+        "edges": [
+          {
+            "node": {
+              "namespace": "custom",
+              "key": "additional_info",
+              "value": "[\"gid://shopify/Metaobject/85485715545\",\"gid://shopify/Metaobject/85485748313\",\"gid://shopify/Metaobject/86425469017\"]"
+            }
+          },
+          {
+            "node": {
+              "namespace": "judgeme",
+              "key": "badge",
+              "value": "<div style='display:none' class='jdgm-prev-badge' data-average-rating='5.00' data-number-of-reviews='13' data-number-of-questions='0'> <span class='jdgm-prev-badge__stars' data-score='5.00' tabindex='0' aria-label='5.00 stars' role='button'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </span> <span class='jdgm-prev-badge__text'> 13 reviews </span> </div>"
+            }
+          },
+          {
+            "node": {
+              "namespace": "judgeme",
+              "key": "widget",
+              "value": "<div class='jdgm-rev-widg' data-updated-at='2026-04-14T00:16:51Z' data-average-rating='5.00' data-number-of-reviews='13' data-number-of-questions='0' data-image-url='https://cdn.shopify.com/s/files/1/0584/7410/2873/files/MiniBlaster-QuadPinkBlue.png?v=1757303037'> <style class='jdgm-temp-hiding-style'>.jdgm-rev-widg{ display: none }</style> <div class='jdgm-rev-widg__header'> <h2 class='jdgm-rev-widg__title'>Customer Reviews</h2>  <div class='jdgm-rev-widg__summary'> <div class='jdgm-rev-widg__summary-stars' aria-label='Average rating is 5.00 stars' role='img'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </div> <div class='jdgm-rev-widg__summary-text'>Based on 13 reviews</div> </div> <a style='display: none' href='#' class='jdgm-write-rev-link' role='button'>Write a review</a> <div class='jdgm-histogram jdgm-temp-hidden'>  <div class='jdgm-histogram__row' data-rating='5' data-frequency='13' data-percentage='100'>  <div class='jdgm-histogram__star' role='button' aria-label=\"100% (13) reviews with 5 star rating\"  tabindex='0' ><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span></div> <div class='jdgm-histogram__bar'> <div class='jdgm-histogram__bar-content' style='width: 100%;'> </div> </div> <div class='jdgm-histogram__percentage'>100%</div> <div class='jdgm-histogram__frequency'>(13)</div> </div>  <div class='jdgm-histogram__row' data-rating='4' data-frequency='0' data-percentage='0'>  <div class='jdgm-histogram__star' role='button' aria-label=\"0% (0) reviews with 4 star rating\"  tabindex='0' ><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--off'></span></div> <div class='jdgm-histogram__bar'> <div class='jdgm-histogram__bar-content' style='width: 0%;'> </div> </div> <div class='jdgm-histogram__percentage'>0%</div> <div class='jdgm-histogram__frequency'>(0)</div> </div>  <div class='jdgm-histogram__row' data-rating='3' data-frequency='0' data-percentage='0'>  <div class='jdgm-histogram__star' role='button' aria-label=\"0% (0) reviews with 3 star rating\"  tabindex='0' ><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--off'></span><span class='jdgm-star jdgm--off'></span></div> <div class='jdgm-histogram__bar'> <div class='jdgm-histogram__bar-content' style='width: 0%;'> </div> </div> <div class='jdgm-histogram__percentage'>0%</div> <div class='jdgm-histogram__frequency'>(0)</div> </div>  <div class='jdgm-histogram__row' data-rating='2' data-frequency='0' data-percentage='0'>  <div class='jdgm-histogram__star' role='button' aria-label=\"0% (0) reviews with 2 star rating\"  tabindex='0' ><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--off'></span><span class='jdgm-star jdgm--off'></span><span class='jdgm-star jdgm--off'></span></div> <div class='jdgm-histogram__bar'> <div class='jdgm-histogram__bar-content' style='width: 0%;'> </div> </div> <div class='jdgm-histogram__percentage'>0%</div> <div class='jdgm-histogram__frequency'>(0)</div> </div>  <div class='jdgm-histogram__row' data-rating='1' data-frequency='0' data-percentage='0'>  <div class='jdgm-histogram__star' role='button' aria-label=\"0% (0) reviews with 1 star rating\"  tabindex='0' ><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--off'></span><span class='jdgm-star jdgm--off'></span><span class='jdgm-star jdgm--off'></span><span class='jdgm-star jdgm--off'></span></div> <div class='jdgm-histogram__bar'> <div class='jdgm-histogram__bar-content' style='width: 0%;'> </div> </div> <div class='jdgm-histogram__percentage'>0%</div> <div class='jdgm-histogram__frequency'>(0)</div> </div>  <div class='jdgm-histogram__row jdgm-histogram__clear-filter' data-rating=null tabindex='0'></div> </div>     <div class='jdgm-rev-widg__sort-wrapper'></div> </div> <div class='jdgm-rev-widg__body'>  <div class='jdgm-rev-widg__reviews'><div class='jdgm-rev jdgm-divider-top' data-verified-buyer='true' data-review-id='fe02466d-13c1-4e51-8c85-1b4172b9e166' data-review-language='' data-product-title='Gender Reveal Powder Extinguisher Bundle' data-product-url='/products/gender-reveal-powder-extinguisher' data-thumb-up-count='0' data-thumb-down-count='0'> <div class='jdgm-rev__header'>  <div class='jdgm-rev__icon' > N </div>  <span class='jdgm-rev__rating' data-score='5' tabindex='0' aria-label='5 star review' role='img'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </span> <span class='jdgm-rev__timestamp jdgm-spinner' data-content='2025-07-28 09:42:36 UTC'></span>  <span class='jdgm-rev__pinned'></span>  <div class='jdgm-rev__br'></div> <span class='jdgm-rev__buyer-badge-wrapper'> <span class='jdgm-rev__buyer-badge'></span> </span> <span class='jdgm-rev__author-wrapper'> <span class='jdgm-rev__author'>Nikeesha Somerville</span> <span class='jdgm-rev__location' >  </span>  </span> </div> <div class='jdgm-rev__content'>  <div class='jdgm-rev__custom-form'>  </div> <b class='jdgm-rev__title'>Hands down the best product!</b> <div class='jdgm-rev__body'><p>Had an absolute ball watching these extinguishers be used by both my pregnant sisters. The pigmentation of the powder is impressive! 🌟🌟🌟🌟🌟🌟 you can have all the stars!</p></div> <div class='jdgm-rev__pics'>  <a class='jdgm-rev__pic-link jdgm--loading' target='_blank' rel='nofollow' href='https://judgeme.imgix.net/gender-reveal-ideas/1753695860__img_7491__original.jpeg?auto=format&amp;w=1024' data-mfp-src='https://judgeme.imgix.net/gender-reveal-ideas/1753695860__img_7491__original.jpeg?auto=format&amp;w=1024' aria-label='Link to user picture 1'> <img class='jdgm-rev__pic-img' alt='User picture' data-src='https://judgeme.imgix.net/gender-reveal-ideas/1753695860__img_7491__original.jpeg?auto=format&amp;w=160'> </a>  <a class='jdgm-rev__pic-link jdgm--loading' target='_blank' rel='nofollow' href='https://judgeme.imgix.net/gender-reveal-ideas/1753695862__img_7495__original.jpeg?auto=format&amp;w=1024' data-mfp-src='https://judgeme.imgix.net/gender-reveal-ideas/1753695862__img_7495__original.jpeg?auto=format&amp;w=1024' aria-label='Link to user picture 2'> <img class='jdgm-rev__pic-img' alt='User picture' data-src='https://judgeme.imgix.net/gender-reveal-ideas/1753695862__img_7495__original.jpeg?auto=format&amp;w=160'> </a>  </div> <div class='jdgm-rev__vids'>   </div> <div class='jdgm-rev__transparency-badge-wrapper'>  <div class='jdgm-rev__transparency-badge' data-badge-type=review_collected_via_store_invitation></div>  </div> </div> <div class='jdgm-rev__actions'> <div class='jdgm-rev__social'></div> <div class='jdgm-rev__votes'></div> </div> <div class='jdgm-rev__reply'>  </div> </div><div class='jdgm-rev jdgm-divider-top' data-verified-buyer='true' data-review-id='2d1e15f7-939b-432f-ba8c-69414516e1a9' data-review-language='' data-product-title='Gender Reveal Powder Extinguisher Bundle' data-product-url='/products/gender-reveal-powder-extinguisher' data-thumb-up-count='0' data-thumb-down-count='0'> <div class='jdgm-rev__header'>  <div class='jdgm-rev__icon' > H </div>  <span class='jdgm-rev__rating' data-score='5' tabindex='0' aria-label='5 star review' role='img'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </span> <span class='jdgm-rev__timestamp jdgm-spinner' data-content='2025-03-19 06:58:14 UTC'></span>  <span class='jdgm-rev__pinned'></span>  <div class='jdgm-rev__br'></div> <span class='jdgm-rev__buyer-badge-wrapper'> <span class='jdgm-rev__buyer-badge'></span> </span> <span class='jdgm-rev__author-wrapper'> <span class='jdgm-rev__author'>Hniang Sing</span> <span class='jdgm-rev__location' >  </span>  </span> </div> <div class='jdgm-rev__content'>  <div class='jdgm-rev__custom-form'>  </div> <b class='jdgm-rev__title'></b> <div class='jdgm-rev__body'><p>💥Quad Mini Powder Blaster/ Extinguisher Bundle</p></div> <div class='jdgm-rev__pics'>  </div> <div class='jdgm-rev__vids'>   </div> <div class='jdgm-rev__transparency-badge-wrapper'>  <div class='jdgm-rev__transparency-badge' data-badge-type=review_collected_via_store_invitation></div>  </div> </div> <div class='jdgm-rev__actions'> <div class='jdgm-rev__social'></div> <div class='jdgm-rev__votes'></div> </div> <div class='jdgm-rev__reply'>  </div> </div><div class='jdgm-rev jdgm-divider-top' data-verified-buyer='true' data-review-id='60344989-f7b6-4381-afd3-ec4c1ebe5bdf' data-review-language='' data-product-title='Gender Reveal Powder Extinguisher Bundle' data-product-url='/products/gender-reveal-powder-extinguisher' data-thumb-up-count='0' data-thumb-down-count='0'> <div class='jdgm-rev__header'>  <div class='jdgm-rev__icon' > A </div>  <span class='jdgm-rev__rating' data-score='5' tabindex='0' aria-label='5 star review' role='img'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </span> <span class='jdgm-rev__timestamp jdgm-spinner' data-content='2024-08-18 06:07:17 UTC'></span>  <span class='jdgm-rev__pinned'></span>  <div class='jdgm-rev__br'></div> <span class='jdgm-rev__buyer-badge-wrapper'> <span class='jdgm-rev__buyer-badge'></span> </span> <span class='jdgm-rev__author-wrapper'> <span class='jdgm-rev__author'>Aliyah Power</span> <span class='jdgm-rev__location' >  </span>  </span> </div> <div class='jdgm-rev__content'>  <div class='jdgm-rev__custom-form'>  </div> <b class='jdgm-rev__title'>Works Well</b> <div class='jdgm-rev__body'><p>Massive powder Display, worked very well &amp; great communication thanks.</p></div> <div class='jdgm-rev__pics'>  </div> <div class='jdgm-rev__vids'>   </div> <div class='jdgm-rev__transparency-badge-wrapper'>  <div class='jdgm-rev__transparency-badge' data-badge-type=review_collected_from_store_visitor></div>  </div> </div> <div class='jdgm-rev__actions'> <div class='jdgm-rev__social'></div> <div class='jdgm-rev__votes'></div> </div> <div class='jdgm-rev__reply'>  <div class='jdgm-rev__replier-wrapper'> <b class='jdgm-rev__replier'></b> </div> <div class='jdgm-rev__reply-content'><p>Thank you for your review Aliyah!</p></div>  </div> </div><div class='jdgm-rev jdgm-divider-top' data-verified-buyer='true' data-review-id='128fc16c-5f7f-47a4-8406-4d6afeba5e27' data-review-language='' data-product-title='Gender Reveal Powder Extinguisher Bundle' data-product-url='/products/gender-reveal-powder-extinguisher' data-thumb-up-count='0' data-thumb-down-count='0'> <div class='jdgm-rev__header'>  <div class='jdgm-rev__icon' > M </div>  <span class='jdgm-rev__rating' data-score='5' tabindex='0' aria-label='5 star review' role='img'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </span> <span class='jdgm-rev__timestamp jdgm-spinner' data-content='2026-04-14 00:11:00 UTC'></span>    <div class='jdgm-rev__br'></div> <span class='jdgm-rev__buyer-badge-wrapper'> <span class='jdgm-rev__buyer-badge'></span> </span> <span class='jdgm-rev__author-wrapper'> <span class='jdgm-rev__author'>Montana Doering</span> <span class='jdgm-rev__location' >  </span>  </span> </div> <div class='jdgm-rev__content'>  <div class='jdgm-rev__custom-form'>  </div> <b class='jdgm-rev__title'></b> <div class='jdgm-rev__body'><p>Gender Reveal Powder Extinguisher Bundle</p></div> <div class='jdgm-rev__pics'>  </div> <div class='jdgm-rev__vids'>   </div> <div class='jdgm-rev__transparency-badge-wrapper'>  <div class='jdgm-rev__transparency-badge' data-badge-type=review_collected_via_store_invitation></div>  </div> </div> <div class='jdgm-rev__actions'> <div class='jdgm-rev__social'></div> <div class='jdgm-rev__votes'></div> </div> <div class='jdgm-rev__reply'>  </div> </div><div class='jdgm-rev jdgm-divider-top' data-verified-buyer='true' data-review-id='3ca31e2e-6c09-429f-be53-d04c93f29284' data-review-language='' data-product-title='Gender Reveal Powder Extinguisher Bundle' data-product-url='/products/gender-reveal-powder-extinguisher' data-thumb-up-count='0' data-thumb-down-count='0'> <div class='jdgm-rev__header'>  <div class='jdgm-rev__icon' > L </div>  <span class='jdgm-rev__rating' data-score='5' tabindex='0' aria-label='5 star review' role='img'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </span> <span class='jdgm-rev__timestamp jdgm-spinner' data-content='2026-01-21 03:01:02 UTC'></span>    <div class='jdgm-rev__br'></div> <span class='jdgm-rev__buyer-badge-wrapper'> <span class='jdgm-rev__buyer-badge'></span> </span> <span class='jdgm-rev__author-wrapper'> <span class='jdgm-rev__author'>Lacey Ward</span> <span class='jdgm-rev__location' >  </span>  </span> </div> <div class='jdgm-rev__content'>  <div class='jdgm-rev__custom-form'>  </div> <b class='jdgm-rev__title'>Powder Extinguishers were amazing!!</b> <div class='jdgm-rev__body'><p>We got 4 powder extinguishers &amp; let just say everyone was blue😂 they were even better than expected &amp; highly recommend.\n<br />Thank you for shipping it so quick too👍</p></div> <div class='jdgm-rev__pics'>  </div> <div class='jdgm-rev__vids'>   </div> <div class='jdgm-rev__transparency-badge-wrapper'>  <div class='jdgm-rev__transparency-badge' data-badge-type=review_collected_via_store_invitation></div>  </div> </div> <div class='jdgm-rev__actions'> <div class='jdgm-rev__social'></div> <div class='jdgm-rev__votes'></div> </div> <div class='jdgm-rev__reply'>  <div class='jdgm-rev__replier-wrapper'> <b class='jdgm-rev__replier'></b> </div> <div class='jdgm-rev__reply-content'><p>Thank you Lacey! Hope you had the best moment! Have a nice day.</p></div>  </div> </div></div> <div class='jdgm-paginate' data-per-page='5' data-url='https://api.judge.me/reviews/reviews_for_widget' ><a class='jdgm-paginate__page jdgm-curt' data-page='1' aria-label='Page 1' tabindex='0'  role='button'>1</a><a class='jdgm-paginate__page ' data-page='2' aria-label='Page 2' tabindex='0'  role='button'>2</a><a class='jdgm-paginate__page ' data-page='3' aria-label='Page 3' tabindex='0'  role='button'>3</a><a class='jdgm-paginate__page jdgm-paginate__next-page' data-page='2' aria-label='Page 2' tabindex='0' rel='next' role='button'></a><a class='jdgm-paginate__page jdgm-paginate__last-page' data-page='3' aria-label='Page 3' tabindex='0'  role='button'></a></div>  </div> <div class='jdgm-rev-widg__paginate-spinner-wrapper'> <div class='jdgm-spinner'></div> </div> </div>"
+            }
+          },
+          {
+            "node": {
+              "namespace": "mc-facebook",
+              "key": "google_product_category",
+              "value": "2781"
+            }
+          },
+          {
+            "node": {
+              "namespace": "mm-google-shopping",
+              "key": "google_product_category",
+              "value": "2781"
+            }
+          },
+          {
+            "node": {
+              "namespace": "custom",
+              "key": "additional_badge",
+              "value": "gid://shopify/MediaImage/25208740347993"
+            }
+          },
+          {
+            "node": {
+              "namespace": "reviews",
+              "key": "rating",
+              "value": "{\"scale_min\":\"1.0\",\"scale_max\":\"5.0\",\"value\":\"5.0\"}"
+            }
+          },
+          {
+            "node": {
+              "namespace": "reviews",
+              "key": "rating_count",
+              "value": "13"
+            }
+          },
+          {
+            "node": {
+              "namespace": "custom",
+              "key": "youtube_video_link",
+              "value": "zMyAEXu5KFs"
+            }
+          },
+          {
+            "node": {
+              "namespace": "judgeme",
+              "key": "review_snippet_widget",
+              "value": "<div class='jdgm-widget jdgm-review-snippet-widget'> <style>\n        .jdgm-review-snippet-widget{position:relative}.jdgm-review-snippet-widget:hover{cursor:pointer}@media only screen and (max-width: 767px){.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__cards-container{left:unset;right:unset}}.jdgm-review-snippet-widget .jdgm-rev-snippet-card{background:#fff}.jdgm-review-snippet-widget .jdgm-star{color:#399}.jdgm-review-snippet-widget .jdgm-rev-snippet-card{border-radius:8px;background:#fff}.jdgm-review-snippet-widget .jdgm-rev-snippet-card__rev-prod-wrapper{border-radius:8px}.jdgm-review-snippet-widget .jdgm-rev-snippet-card__rev-content-wrapper{max-width:360px}.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__prev-btn,.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__next-btn{border-radius:50%;background:#fff}.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__prev-btn>svg,.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__next-btn>svg{fill:#000}.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__prev-btn{left:0;top:40%}.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__next-btn{right:0;top:40%}.jdgm-full-rev-modal.review-snippet-widget .jm-mfp-content{border-radius:8px}.jdgm-full-rev-modal.review-snippet-widget .jdgm-full-rev__icon{border-radius:8px}.jdgm-full-rev-modal.review-snippet-widget .jdgm-full-rev[data-verified-buyer=\"true\"] .jdgm-full-rev__icon::after{border-radius:8px}.jdgm-full-rev-modal.review-snippet-widget .jdgm-rev__buyer-badge{border-radius:calc( 8px / 2 )}.jdgm-full-rev-modal.review-snippet-widget .jdgm-full-rev__pic-img{border-radius:8px}.jdgm-full-rev-modal.review-snippet-widget .jdgm-full-rev__reply{border-radius:8px}.jdgm-full-rev-modal.review-snippet-widget .jdgm-full-rev__replier::before{content:'genderrevealideas.com.au'}.jdgm-full-rev-modal.review-snippet-widget .jdgm-full-rev__product-button{border-radius:calc( 8px * 6 )}\n\n    </style>   <i class=\"jdgm-rev-snippet-widget__prev-btn\" style='display: none;'> <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"12\" viewBox=\"0 0 8 12\" width=\"8\" fill=\"#000\"><path d=\"M3.09961 6.00005L6.99961 9.90005C7.18294 10.0834 7.27461 10.3167 7.27461 10.6C7.27461 10.8834 7.18294 11.1167 6.99961 11.3C6.81628 11.4834 6.58294 11.575 6.29961 11.575C6.01628 11.575 5.78294 11.4834 5.59961 11.3L0.999609 6.70005C0.899609 6.60005 0.828776 6.49172 0.787109 6.37505C0.745443 6.25838 0.724609 6.13338 0.724609 6.00005C0.724609 5.86672 0.745443 5.74172 0.787109 5.62505C0.828776 5.50838 0.899609 5.40005 0.999609 5.30005L5.59961 0.700049C5.78294 0.516715 6.01628 0.425049 6.29961 0.425049C6.58294 0.425049 6.81628 0.516715 6.99961 0.700049C7.18294 0.883382 7.27461 1.11672 7.27461 1.40005C7.27461 1.68338 7.18294 1.91672 6.99961 2.10005L3.09961 6.00005Z\"/></svg> </i> <i class=\"jdgm-rev-snippet-widget__next-btn\" style='display: none;'> <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"12\" viewBox=\"0 0 8 12\" width=\"8\" fill=\"#000\"><path d=\"M4.89961 6.00005L0.999609 2.10005C0.816276 1.91672 0.724609 1.68338 0.724609 1.40005C0.724609 1.11672 0.816276 0.883382 0.999609 0.700049C1.18294 0.516715 1.41628 0.425049 1.69961 0.425049C1.98294 0.425049 2.21628 0.516715 2.39961 0.700049L6.99961 5.30005C7.09961 5.40005 7.17044 5.50838 7.21211 5.62505C7.25378 5.74172 7.27461 5.86672 7.27461 6.00005C7.27461 6.13338 7.25378 6.25838 7.21211 6.37505C7.17044 6.49172 7.09961 6.60005 6.99961 6.70005L2.39961 11.3C2.21628 11.4834 1.98294 11.575 1.69961 11.575C1.41628 11.575 1.18294 11.4834 0.999609 11.3C0.816276 11.1167 0.724609 10.8834 0.724609 10.6C0.724609 10.3167 0.816276 10.0834 0.999609 9.90005L4.89961 6.00005Z\"/></svg> </i> <div style=\"overflow: hidden;\"> <div class='jdgm-rev-snippet-widget__cards-container'> <div class='jdgm-rev-snippet-card' data-review-id='4f70f1eb-21ff-4c58-8861-59b236aa378c' style='display: none;'> <div class=\"jdgm-rev-snippet-card__rev-prod-wrapper\">  <a class='jdgm-rev-snippet-card__rev-content-wrapper jdgm-rev-snippet-card__full-review-link' style='text-decoration: none; color: inherit;padding: 0 34px;' role='button' data-review-id='4f70f1eb-21ff-4c58-8861-59b236aa378c'> <div class='jdgm-rev-snippet-card__rev-header'> <div class='jdgm-rev-snippet-card__rev-rating' aria-label='5 stars' role='img'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </div> <div class='jdgm-rev-snippet-card__reviewer'> Wynetta Brown </div> </div> <div class='jdgm-rev-snippet-card__rev-content'> <span class='jdgm-rev-snippet-card__rev-body'> <p>These were amazing and just perfect for our gender reveal.</p> </span> </div> </a> </div> </div><div class='jdgm-rev-snippet-card' data-review-id='60344989-f7b6-4381-afd3-ec4c1ebe5bdf' style='display: none;'> <div class=\"jdgm-rev-snippet-card__rev-prod-wrapper\">  <a class='jdgm-rev-snippet-card__rev-content-wrapper jdgm-rev-snippet-card__full-review-link' style='text-decoration: none; color: inherit;padding: 0 34px;' role='button' data-review-id='60344989-f7b6-4381-afd3-ec4c1ebe5bdf'> <div class='jdgm-rev-snippet-card__rev-header'> <div class='jdgm-rev-snippet-card__rev-rating' aria-label='5 stars' role='img'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </div> <div class='jdgm-rev-snippet-card__reviewer'> Aliyah Power </div> </div> <div class='jdgm-rev-snippet-card__rev-content'> <span class='jdgm-rev-snippet-card__rev-body'> <p>Massive powder Display, worked very well &amp; great communication thanks.</p> </span> </div> </a> </div> </div> </div> </div> </div>"
+            }
+          },
+          {
+            "node": {
+              "namespace": "custom",
+              "key": "featured_image",
+              "value": "gid://shopify/MediaImage/26051751805017"
+            }
+          },
+          {
+            "node": {
+              "namespace": "sale",
+              "key": "free_gift",
+              "value": "gid://shopify/Product/7896207458393"
+            }
+          },
+          {
+            "node": {
+              "namespace": "sale",
+              "key": "with_free_gift",
+              "value": "true"
+            }
+          },
+          {
+            "node": {
+              "namespace": "custom",
+              "key": "enable_border_glow",
+              "value": "true"
+            }
+          },
+          {
+            "node": {
+              "namespace": "custom",
+              "key": "secondary_featured_image",
+              "value": "gid://shopify/MediaImage/25948139094105"
+            }
+          },
+          {
+            "node": {
+              "namespace": "custom",
+              "key": "second_free_gift",
+              "value": "gid://shopify/Product/7896207458393"
+            }
+          },
+          {
+            "node": {
+              "namespace": "mm-google-shopping",
+              "key": "condition",
+              "value": "new"
+            }
+          },
+          {
+            "node": {
+              "namespace": "mm-google-shopping",
+              "key": "age_group",
+              "value": "adult"
+            }
+          },
+          {
+            "node": {
+              "namespace": "mm-google-shopping",
+              "key": "custom_label_0",
+              "value": "bundle_premium"
+            }
+          },
+          {
+            "node": {
+              "namespace": "global",
+              "key": "title_tag",
+              "value": "Gender Reveal Powder Extinguisher Bundle | $150 Pink Blue"
+            }
+          },
+          {
+            "node": {
+              "namespace": "global",
+              "key": "description_tag",
+              "value": "Pink and blue powder extinguisher bundle for the ultimate gender reveal moment. Eco-friendly cornstarch powder. Australia-wide express delivery."
+            }
+          }
+        ]
+      },
+      "variants": {
+        "edges": [
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/41844667711577",
+              "title": "Blue",
+              "price": "149.99",
+              "sku": "67448656411577"
+            }
+          },
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/41844667744345",
+              "title": "Pink",
+              "price": "149.99",
+              "sku": "67448656544345"
+            }
+          },
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/41844667777113",
+              "title": "To Be Announced",
+              "price": "149.99",
+              "sku": "67448656677113"
+            }
+          },
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/41844670005337",
+              "title": "2 pink + 2 Blue",
+              "price": "149.99",
+              "sku": "67448656705337"
+            }
+          },
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/42486995419225",
+              "title": "Wedding White",
+              "price": "149.99",
+              "sku": "GRI-7781664882777-9225"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "gid://shopify/Product/7809558380633",
+      "handle": "gender-reveal-extinguisher-bundle",
+      "title": "💥Double MEGA Powder Extinguisher & Gender Reveal Cannon Bundle",
+      "productType": "",
+      "vendor": "Gender Reveal Ideas",
+      "seo": {
+        "title": null,
+        "description": null
+      },
+      "metafields": {
+        "edges": [
+          {
+            "node": {
+              "namespace": "custom",
+              "key": "additional_badge",
+              "value": "gid://shopify/MediaImage/25208740347993"
+            }
+          },
+          {
+            "node": {
+              "namespace": "custom",
+              "key": "additional_info",
+              "value": "[\"gid://shopify/Metaobject/85485125721\",\"gid://shopify/Metaobject/85485158489\",\"gid://shopify/Metaobject/89045467225\"]"
+            }
+          },
+          {
+            "node": {
+              "namespace": "custom",
+              "key": "youtube_video_link",
+              "value": "jJFlLKHUfxs"
+            }
+          },
+          {
+            "node": {
+              "namespace": "judgeme",
+              "key": "badge",
+              "value": "<div style='display:none' class='jdgm-prev-badge' data-average-rating='5.00' data-number-of-reviews='4' data-number-of-questions='0'> <span class='jdgm-prev-badge__stars' data-score='5.00' tabindex='0' aria-label='5.00 stars' role='button'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </span> <span class='jdgm-prev-badge__text'> 4 reviews </span> </div>"
+            }
+          },
+          {
+            "node": {
+              "namespace": "judgeme",
+              "key": "review_snippet_widget",
+              "value": "<div class='jdgm-widget jdgm-review-snippet-widget'> <style>\n        .jdgm-review-snippet-widget{position:relative}.jdgm-review-snippet-widget:hover{cursor:pointer}@media only screen and (max-width: 767px){.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__cards-container{left:unset;right:unset}}.jdgm-review-snippet-widget .jdgm-rev-snippet-card{background:#fff}.jdgm-review-snippet-widget .jdgm-star{color:#399}.jdgm-review-snippet-widget .jdgm-rev-snippet-card{border-radius:8px;background:#fff}.jdgm-review-snippet-widget .jdgm-rev-snippet-card__rev-prod-wrapper{border-radius:8px}.jdgm-review-snippet-widget .jdgm-rev-snippet-card__rev-content-wrapper{max-width:360px}.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__prev-btn,.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__next-btn{border-radius:50%;background:#fff}.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__prev-btn>svg,.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__next-btn>svg{fill:#000}.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__prev-btn{left:0;top:40%}.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__next-btn{right:0;top:40%}.jdgm-full-rev-modal.review-snippet-widget .jm-mfp-content{border-radius:8px}.jdgm-full-rev-modal.review-snippet-widget .jdgm-full-rev__icon{border-radius:8px}.jdgm-full-rev-modal.review-snippet-widget .jdgm-full-rev[data-verified-buyer=\"true\"] .jdgm-full-rev__icon::after{border-radius:8px}.jdgm-full-rev-modal.review-snippet-widget .jdgm-rev__buyer-badge{border-radius:calc( 8px / 2 )}.jdgm-full-rev-modal.review-snippet-widget .jdgm-full-rev__pic-img{border-radius:8px}.jdgm-full-rev-modal.review-snippet-widget .jdgm-full-rev__reply{border-radius:8px}.jdgm-full-rev-modal.review-snippet-widget .jdgm-full-rev__replier::before{content:'genderrevealideas.com.au'}.jdgm-full-rev-modal.review-snippet-widget .jdgm-full-rev__product-button{border-radius:calc( 8px * 6 )}\n\n    </style>   <i class=\"jdgm-rev-snippet-widget__prev-btn\" style='display: none;'> <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"12\" viewBox=\"0 0 8 12\" width=\"8\" fill=\"#000\"><path d=\"M3.09961 6.00005L6.99961 9.90005C7.18294 10.0834 7.27461 10.3167 7.27461 10.6C7.27461 10.8834 7.18294 11.1167 6.99961 11.3C6.81628 11.4834 6.58294 11.575 6.29961 11.575C6.01628 11.575 5.78294 11.4834 5.59961 11.3L0.999609 6.70005C0.899609 6.60005 0.828776 6.49172 0.787109 6.37505C0.745443 6.25838 0.724609 6.13338 0.724609 6.00005C0.724609 5.86672 0.745443 5.74172 0.787109 5.62505C0.828776 5.50838 0.899609 5.40005 0.999609 5.30005L5.59961 0.700049C5.78294 0.516715 6.01628 0.425049 6.29961 0.425049C6.58294 0.425049 6.81628 0.516715 6.99961 0.700049C7.18294 0.883382 7.27461 1.11672 7.27461 1.40005C7.27461 1.68338 7.18294 1.91672 6.99961 2.10005L3.09961 6.00005Z\"/></svg> </i> <i class=\"jdgm-rev-snippet-widget__next-btn\" style='display: none;'> <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"12\" viewBox=\"0 0 8 12\" width=\"8\" fill=\"#000\"><path d=\"M4.89961 6.00005L0.999609 2.10005C0.816276 1.91672 0.724609 1.68338 0.724609 1.40005C0.724609 1.11672 0.816276 0.883382 0.999609 0.700049C1.18294 0.516715 1.41628 0.425049 1.69961 0.425049C1.98294 0.425049 2.21628 0.516715 2.39961 0.700049L6.99961 5.30005C7.09961 5.40005 7.17044 5.50838 7.21211 5.62505C7.25378 5.74172 7.27461 5.86672 7.27461 6.00005C7.27461 6.13338 7.25378 6.25838 7.21211 6.37505C7.17044 6.49172 7.09961 6.60005 6.99961 6.70005L2.39961 11.3C2.21628 11.4834 1.98294 11.575 1.69961 11.575C1.41628 11.575 1.18294 11.4834 0.999609 11.3C0.816276 11.1167 0.724609 10.8834 0.724609 10.6C0.724609 10.3167 0.816276 10.0834 0.999609 9.90005L4.89961 6.00005Z\"/></svg> </i> <div style=\"overflow: hidden;\"> <div class='jdgm-rev-snippet-widget__cards-container'> <div class='jdgm-rev-snippet-card' data-review-id='0c00c364-60dc-4556-86d9-229ceb82b0f0' style='display: none;'> <div class=\"jdgm-rev-snippet-card__rev-prod-wrapper\">  <a class='jdgm-rev-snippet-card__rev-content-wrapper jdgm-rev-snippet-card__full-review-link' style='text-decoration: none; color: inherit;padding: 0 34px;' role='button' data-review-id='0c00c364-60dc-4556-86d9-229ceb82b0f0'> <div class='jdgm-rev-snippet-card__rev-header'> <div class='jdgm-rev-snippet-card__rev-rating' aria-label='5 stars' role='img'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </div> <div class='jdgm-rev-snippet-card__reviewer'> Suman Budhathoki </div> </div> <div class='jdgm-rev-snippet-card__rev-content'> <span class='jdgm-rev-snippet-card__rev-body'> <p>It was amazing 🤩</p> </span> </div> </a> </div> </div><div class='jdgm-rev-snippet-card' data-review-id='adef96d1-9410-46a4-a727-9d05c567c6d4' style='display: none;'> <div class=\"jdgm-rev-snippet-card__rev-prod-wrapper\">  <a class='jdgm-rev-snippet-card__rev-content-wrapper jdgm-rev-snippet-card__full-review-link' style='text-decoration: none; color: inherit;padding: 0 34px;' role='button' data-review-id='adef96d1-9410-46a4-a727-9d05c567c6d4'> <div class='jdgm-rev-snippet-card__rev-header'> <div class='jdgm-rev-snippet-card__rev-rating' aria-label='5 stars' role='img'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </div> <div class='jdgm-rev-snippet-card__reviewer'> Aliyah Power </div> </div> <div class='jdgm-rev-snippet-card__rev-content'> <span class='jdgm-rev-snippet-card__rev-body'> <p>Great effect, perfect for Photos &amp; Video</p> </span> </div> </a> </div> </div> </div> </div> </div>"
+            }
+          },
+          {
+            "node": {
+              "namespace": "judgeme",
+              "key": "widget",
+              "value": "<div class='jdgm-rev-widg' data-updated-at='2026-05-25T19:41:04Z' data-average-rating='5.00' data-number-of-reviews='4' data-number-of-questions='0' data-image-url='https://cdn.shopify.com/s/files/1/0584/7410/2873/files/CUSTOMBLASTERTEMPLATE_64b8e795-a9a7-4ce6-b523-b961ba8af54d.gif?v=1749431790'> <style class='jdgm-temp-hiding-style'>.jdgm-rev-widg{ display: none }</style> <div class='jdgm-rev-widg__header'> <h2 class='jdgm-rev-widg__title'>Customer Reviews</h2>  <div class='jdgm-rev-widg__summary'> <div class='jdgm-rev-widg__summary-stars' aria-label='Average rating is 5.00 stars' role='img'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </div> <div class='jdgm-rev-widg__summary-text'>Based on 4 reviews</div> </div> <a style='display: none' href='#' class='jdgm-write-rev-link' role='button'>Write a review</a> <div class='jdgm-histogram jdgm-temp-hidden'>  <div class='jdgm-histogram__row' data-rating='5' data-frequency='4' data-percentage='100'>  <div class='jdgm-histogram__star' role='button' aria-label=\"100% (4) reviews with 5 star rating\"  tabindex='0' ><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span></div> <div class='jdgm-histogram__bar'> <div class='jdgm-histogram__bar-content' style='width: 100%;'> </div> </div> <div class='jdgm-histogram__percentage'>100%</div> <div class='jdgm-histogram__frequency'>(4)</div> </div>  <div class='jdgm-histogram__row' data-rating='4' data-frequency='0' data-percentage='0'>  <div class='jdgm-histogram__star' role='button' aria-label=\"0% (0) reviews with 4 star rating\"  tabindex='0' ><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--off'></span></div> <div class='jdgm-histogram__bar'> <div class='jdgm-histogram__bar-content' style='width: 0%;'> </div> </div> <div class='jdgm-histogram__percentage'>0%</div> <div class='jdgm-histogram__frequency'>(0)</div> </div>  <div class='jdgm-histogram__row' data-rating='3' data-frequency='0' data-percentage='0'>  <div class='jdgm-histogram__star' role='button' aria-label=\"0% (0) reviews with 3 star rating\"  tabindex='0' ><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--off'></span><span class='jdgm-star jdgm--off'></span></div> <div class='jdgm-histogram__bar'> <div class='jdgm-histogram__bar-content' style='width: 0%;'> </div> </div> <div class='jdgm-histogram__percentage'>0%</div> <div class='jdgm-histogram__frequency'>(0)</div> </div>  <div class='jdgm-histogram__row' data-rating='2' data-frequency='0' data-percentage='0'>  <div class='jdgm-histogram__star' role='button' aria-label=\"0% (0) reviews with 2 star rating\"  tabindex='0' ><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--off'></span><span class='jdgm-star jdgm--off'></span><span class='jdgm-star jdgm--off'></span></div> <div class='jdgm-histogram__bar'> <div class='jdgm-histogram__bar-content' style='width: 0%;'> </div> </div> <div class='jdgm-histogram__percentage'>0%</div> <div class='jdgm-histogram__frequency'>(0)</div> </div>  <div class='jdgm-histogram__row' data-rating='1' data-frequency='0' data-percentage='0'>  <div class='jdgm-histogram__star' role='button' aria-label=\"0% (0) reviews with 1 star rating\"  tabindex='0' ><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--off'></span><span class='jdgm-star jdgm--off'></span><span class='jdgm-star jdgm--off'></span><span class='jdgm-star jdgm--off'></span></div> <div class='jdgm-histogram__bar'> <div class='jdgm-histogram__bar-content' style='width: 0%;'> </div> </div> <div class='jdgm-histogram__percentage'>0%</div> <div class='jdgm-histogram__frequency'>(0)</div> </div>  <div class='jdgm-histogram__row jdgm-histogram__clear-filter' data-rating=null tabindex='0'></div> </div>     <div class='jdgm-rev-widg__sort-wrapper'></div> </div> <div class='jdgm-rev-widg__body'>  <div class='jdgm-rev-widg__reviews'><div class='jdgm-rev jdgm-divider-top' data-verified-buyer='true' data-review-id='43c748e4-b4c3-4d28-86fc-65be65bd2d4c' data-review-language='' data-product-title='Double MEGA Powder Extinguisher &amp; Gender Reveal Cannon Bundle' data-product-url='/products/gender-reveal-extinguisher-bundle' data-thumb-up-count='0' data-thumb-down-count='0'> <div class='jdgm-rev__header'>  <div class='jdgm-rev__icon' > S </div>  <span class='jdgm-rev__rating' data-score='5' tabindex='0' aria-label='5 star review' role='img'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </span> <span class='jdgm-rev__timestamp jdgm-spinner' data-content='2025-01-13 04:07:26 UTC'></span>  <span class='jdgm-rev__pinned'></span>  <div class='jdgm-rev__br'></div> <span class='jdgm-rev__buyer-badge-wrapper'> <span class='jdgm-rev__buyer-badge'></span> </span> <span class='jdgm-rev__author-wrapper'> <span class='jdgm-rev__author'>Storm Seppala</span> <span class='jdgm-rev__location' >  </span>  </span> </div> <div class='jdgm-rev__content'>  <div class='jdgm-rev__custom-form'>  </div> <b class='jdgm-rev__title'>Absolutely awesome!</b> <div class='jdgm-rev__body'><p>These are amazing to use and had great impact which gave the setting so much more excitement! Definitely recommend!</p></div> <div class='jdgm-rev__pics'>  <a class='jdgm-rev__pic-link jdgm--loading' target='_blank' rel='nofollow' href='https://judgeme.imgix.net/gender-reveal-ideas/1736741274__img_4861__original.jpeg?auto=format&amp;w=1024' data-mfp-src='https://judgeme.imgix.net/gender-reveal-ideas/1736741274__img_4861__original.jpeg?auto=format&amp;w=1024' aria-label='Link to user picture 1'> <img class='jdgm-rev__pic-img' alt='User picture' data-src='https://judgeme.imgix.net/gender-reveal-ideas/1736741274__img_4861__original.jpeg?auto=format&amp;w=160'> </a>  </div> <div class='jdgm-rev__vids'>   </div> <div class='jdgm-rev__transparency-badge-wrapper'>  <div class='jdgm-rev__transparency-badge' data-badge-type=review_collected_via_store_invitation></div>  </div> </div> <div class='jdgm-rev__actions'> <div class='jdgm-rev__social'></div> <div class='jdgm-rev__votes'></div> </div> <div class='jdgm-rev__reply'>  </div> </div><div class='jdgm-rev jdgm-divider-top' data-verified-buyer='true' data-review-id='ee7a8141-dcd7-47be-a0d7-d31c39c23e34' data-review-language='' data-product-title='Double MEGA Powder Extinguisher &amp; Gender Reveal Cannon Bundle' data-product-url='/products/gender-reveal-extinguisher-bundle' data-thumb-up-count='0' data-thumb-down-count='0'> <div class='jdgm-rev__header'>  <div class='jdgm-rev__icon' > A </div>  <span class='jdgm-rev__rating' data-score='5' tabindex='0' aria-label='5 star review' role='img'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </span> <span class='jdgm-rev__timestamp jdgm-spinner' data-content='2026-05-16 09:46:32 UTC'></span>    <div class='jdgm-rev__br'></div> <span class='jdgm-rev__buyer-badge-wrapper'> <span class='jdgm-rev__buyer-badge'></span> </span> <span class='jdgm-rev__author-wrapper'> <span class='jdgm-rev__author'>Aliyah Power</span> <span class='jdgm-rev__location' >  </span>  </span> </div> <div class='jdgm-rev__content'>  <div class='jdgm-rev__custom-form'>  </div> <b class='jdgm-rev__title'>great bundle</b> <div class='jdgm-rev__body'><p>bargain bundle, great result highly reccomend</p></div> <div class='jdgm-rev__pics'>  </div> <div class='jdgm-rev__vids'>   </div> <div class='jdgm-rev__transparency-badge-wrapper'>  <div class='jdgm-rev__transparency-badge' data-badge-type=review_collected_from_store_visitor></div>  </div> </div> <div class='jdgm-rev__actions'> <div class='jdgm-rev__social'></div> <div class='jdgm-rev__votes'></div> </div> <div class='jdgm-rev__reply'>  </div> </div><div class='jdgm-rev jdgm-divider-top' data-verified-buyer='true' data-review-id='0e32b079-11fd-4460-bc5b-acf03d7d866c' data-review-language='' data-product-title='Double MEGA Powder Extinguisher &amp; Gender Reveal Cannon Bundle' data-product-url='/products/gender-reveal-extinguisher-bundle' data-thumb-up-count='0' data-thumb-down-count='0'> <div class='jdgm-rev__header'>  <div class='jdgm-rev__icon' > R </div>  <span class='jdgm-rev__rating' data-score='5' tabindex='0' aria-label='5 star review' role='img'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </span> <span class='jdgm-rev__timestamp jdgm-spinner' data-content='2025-08-27 09:51:32 UTC'></span>    <div class='jdgm-rev__br'></div> <span class='jdgm-rev__buyer-badge-wrapper'> <span class='jdgm-rev__buyer-badge'></span> </span> <span class='jdgm-rev__author-wrapper'> <span class='jdgm-rev__author'>Real Thapa</span> <span class='jdgm-rev__location' >  </span>  </span> </div> <div class='jdgm-rev__content'>  <div class='jdgm-rev__custom-form'>  </div> <b class='jdgm-rev__title'>Amazing Product. It won&#39;t fail.</b> <div class='jdgm-rev__body'><p>We had fun with the double mega powder extinguisher. The color popped up beautifully and came off easily. Keep up the good work.</p></div> <div class='jdgm-rev__pics'>  </div> <div class='jdgm-rev__vids'>   </div> <div class='jdgm-rev__transparency-badge-wrapper'>  <div class='jdgm-rev__transparency-badge' data-badge-type=review_collected_via_store_invitation></div>  </div> </div> <div class='jdgm-rev__actions'> <div class='jdgm-rev__social'></div> <div class='jdgm-rev__votes'></div> </div> <div class='jdgm-rev__reply'>  <div class='jdgm-rev__replier-wrapper'> <b class='jdgm-rev__replier'></b> </div> <div class='jdgm-rev__reply-content'><p>Hi Real, </p>\n\n<p>Thank you for your feedback. We are glad you had fun with our mega blaster. Thank you!</p></div>  </div> </div><div class='jdgm-rev jdgm-divider-top' data-verified-buyer='true' data-review-id='01404437-c69b-4419-8470-b9c08e1bb45c' data-review-language='' data-product-title='Double MEGA Powder Extinguisher &amp; Gender Reveal Cannon Bundle' data-product-url='/products/gender-reveal-extinguisher-bundle' data-thumb-up-count='0' data-thumb-down-count='0'> <div class='jdgm-rev__header'>  <div class='jdgm-rev__icon' > E </div>  <span class='jdgm-rev__rating' data-score='5' tabindex='0' aria-label='5 star review' role='img'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </span> <span class='jdgm-rev__timestamp jdgm-spinner' data-content='2025-08-09 01:20:30 UTC'></span>    <div class='jdgm-rev__br'></div> <span class='jdgm-rev__buyer-badge-wrapper'> <span class='jdgm-rev__buyer-badge'></span> </span> <span class='jdgm-rev__author-wrapper'> <span class='jdgm-rev__author'>Emmy Small</span> <span class='jdgm-rev__location' >  </span>  </span> </div> <div class='jdgm-rev__content'>  <div class='jdgm-rev__custom-form'>  </div> <b class='jdgm-rev__title'></b> <div class='jdgm-rev__body'><p>💥Double MEGA Powder Extinguisher &amp; Gender Reveal Cannon Bundle</p></div> <div class='jdgm-rev__pics'>  </div> <div class='jdgm-rev__vids'>   </div> <div class='jdgm-rev__transparency-badge-wrapper'>  <div class='jdgm-rev__transparency-badge' data-badge-type=review_collected_via_store_invitation></div>  </div> </div> <div class='jdgm-rev__actions'> <div class='jdgm-rev__social'></div> <div class='jdgm-rev__votes'></div> </div> <div class='jdgm-rev__reply'>  </div> </div></div> <div class='jdgm-paginate' data-per-page='5' data-url='https://api.judge.me/reviews/reviews_for_widget' style=\"display: none;\"></div>  </div> <div class='jdgm-rev-widg__paginate-spinner-wrapper'> <div class='jdgm-spinner'></div> </div> </div>"
+            }
+          },
+          {
+            "node": {
+              "namespace": "reviews",
+              "key": "rating",
+              "value": "{\"scale_min\":\"1.0\",\"scale_max\":\"5.0\",\"value\":\"5.0\"}"
+            }
+          },
+          {
+            "node": {
+              "namespace": "reviews",
+              "key": "rating_count",
+              "value": "4"
+            }
+          },
+          {
+            "node": {
+              "namespace": "sale",
+              "key": "with_free_gift",
+              "value": "false"
+            }
+          },
+          {
+            "node": {
+              "namespace": "mm-google-shopping",
+              "key": "condition",
+              "value": "new"
+            }
+          },
+          {
+            "node": {
+              "namespace": "mm-google-shopping",
+              "key": "age_group",
+              "value": "adult"
+            }
+          },
+          {
+            "node": {
+              "namespace": "mm-google-shopping",
+              "key": "custom_label_0",
+              "value": "bundle_premium"
+            }
+          },
+          {
+            "node": {
+              "namespace": "mm-google-shopping",
+              "key": "google_product_category",
+              "value": "2781"
+            }
+          }
+        ]
+      },
+      "variants": {
+        "edges": [
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/41918837489753",
+              "title": "Pink Extinguishers + Confetti Cannons",
+              "price": "279.99",
+              "sku": "67448650189753"
+            }
+          },
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/41918837522521",
+              "title": "Blue Extinguishers + Confetti Cannons",
+              "price": "279.99",
+              "sku": "67448650222521"
+            }
+          },
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/41918837555289",
+              "title": "Pink Extinguishers + Powder Cannons",
+              "price": "279.99",
+              "sku": "67448650355289"
+            }
+          },
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/41918837588057",
+              "title": "Blue Extinguishers + Powder Cannons",
+              "price": "279.99",
+              "sku": "67448650488057"
+            }
+          },
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/41918839226457",
+              "title": "To Be Announced",
+              "price": "279.99",
+              "sku": "67448650526457"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "gid://shopify/Product/7877241602137",
+      "handle": "gender-reveal-powder-cannons",
+      "title": "Gender Reveal Cannon & Extinguisher Double Bundle 🎉",
+      "productType": "",
+      "vendor": "Gender Reveal Ideas",
+      "seo": {
+        "title": "Gender Reveal Cannon & Extinguisher Bundle | $135 | Australia",
+        "description": "The ultimate gender reveal combo — cannon plus extinguisher in one bundle. Pink, blue or secret. Australia-wide shipping. 4.85★ from 1,360+ reviews."
+      },
+      "metafields": {
+        "edges": [
+          {
+            "node": {
+              "namespace": "custom",
+              "key": "additional_badge",
+              "value": "gid://shopify/MediaImage/25208740347993"
+            }
+          },
+          {
+            "node": {
+              "namespace": "custom",
+              "key": "additional_info",
+              "value": "[\"gid://shopify/Metaobject/107995398233\"]"
+            }
+          },
+          {
+            "node": {
+              "namespace": "judgeme",
+              "key": "badge",
+              "value": "<div style='display:none' class='jdgm-prev-badge' data-average-rating='4.94' data-number-of-reviews='16' data-number-of-questions='0'> <span class='jdgm-prev-badge__stars' data-score='4.94' tabindex='0' aria-label='4.94 stars' role='button'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </span> <span class='jdgm-prev-badge__text'> 16 reviews </span> </div>"
+            }
+          },
+          {
+            "node": {
+              "namespace": "judgeme",
+              "key": "review_snippet_widget",
+              "value": "<div class='jdgm-widget jdgm-review-snippet-widget'> <style>\n        .jdgm-review-snippet-widget{position:relative}.jdgm-review-snippet-widget:hover{cursor:pointer}@media only screen and (max-width: 767px){.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__cards-container{left:unset;right:unset}}.jdgm-review-snippet-widget .jdgm-rev-snippet-card{background:#fff}.jdgm-review-snippet-widget .jdgm-star{color:#399}.jdgm-review-snippet-widget .jdgm-rev-snippet-card{border-radius:8px;background:#fff}.jdgm-review-snippet-widget .jdgm-rev-snippet-card__rev-prod-wrapper{border-radius:8px}.jdgm-review-snippet-widget .jdgm-rev-snippet-card__rev-content-wrapper{max-width:360px}.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__prev-btn,.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__next-btn{border-radius:50%;background:#fff}.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__prev-btn>svg,.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__next-btn>svg{fill:#000}.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__prev-btn{left:0;top:40%}.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__next-btn{right:0;top:40%}.jdgm-full-rev-modal.review-snippet-widget .jm-mfp-content{border-radius:8px}.jdgm-full-rev-modal.review-snippet-widget .jdgm-full-rev__icon{border-radius:8px}.jdgm-full-rev-modal.review-snippet-widget .jdgm-full-rev[data-verified-buyer=\"true\"] .jdgm-full-rev__icon::after{border-radius:8px}.jdgm-full-rev-modal.review-snippet-widget .jdgm-rev__buyer-badge{border-radius:calc( 8px / 2 )}.jdgm-full-rev-modal.review-snippet-widget .jdgm-full-rev__pic-img{border-radius:8px}.jdgm-full-rev-modal.review-snippet-widget .jdgm-full-rev__reply{border-radius:8px}.jdgm-full-rev-modal.review-snippet-widget .jdgm-full-rev__replier::before{content:'genderrevealideas.com.au'}.jdgm-full-rev-modal.review-snippet-widget .jdgm-full-rev__product-button{border-radius:calc( 8px * 6 )}\n\n    </style>   <i class=\"jdgm-rev-snippet-widget__prev-btn\" style='display: none;'> <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"12\" viewBox=\"0 0 8 12\" width=\"8\" fill=\"#000\"><path d=\"M3.09961 6.00005L6.99961 9.90005C7.18294 10.0834 7.27461 10.3167 7.27461 10.6C7.27461 10.8834 7.18294 11.1167 6.99961 11.3C6.81628 11.4834 6.58294 11.575 6.29961 11.575C6.01628 11.575 5.78294 11.4834 5.59961 11.3L0.999609 6.70005C0.899609 6.60005 0.828776 6.49172 0.787109 6.37505C0.745443 6.25838 0.724609 6.13338 0.724609 6.00005C0.724609 5.86672 0.745443 5.74172 0.787109 5.62505C0.828776 5.50838 0.899609 5.40005 0.999609 5.30005L5.59961 0.700049C5.78294 0.516715 6.01628 0.425049 6.29961 0.425049C6.58294 0.425049 6.81628 0.516715 6.99961 0.700049C7.18294 0.883382 7.27461 1.11672 7.27461 1.40005C7.27461 1.68338 7.18294 1.91672 6.99961 2.10005L3.09961 6.00005Z\"/></svg> </i> <i class=\"jdgm-rev-snippet-widget__next-btn\" style='display: none;'> <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"12\" viewBox=\"0 0 8 12\" width=\"8\" fill=\"#000\"><path d=\"M4.89961 6.00005L0.999609 2.10005C0.816276 1.91672 0.724609 1.68338 0.724609 1.40005C0.724609 1.11672 0.816276 0.883382 0.999609 0.700049C1.18294 0.516715 1.41628 0.425049 1.69961 0.425049C1.98294 0.425049 2.21628 0.516715 2.39961 0.700049L6.99961 5.30005C7.09961 5.40005 7.17044 5.50838 7.21211 5.62505C7.25378 5.74172 7.27461 5.86672 7.27461 6.00005C7.27461 6.13338 7.25378 6.25838 7.21211 6.37505C7.17044 6.49172 7.09961 6.60005 6.99961 6.70005L2.39961 11.3C2.21628 11.4834 1.98294 11.575 1.69961 11.575C1.41628 11.575 1.18294 11.4834 0.999609 11.3C0.816276 11.1167 0.724609 10.8834 0.724609 10.6C0.724609 10.3167 0.816276 10.0834 0.999609 9.90005L4.89961 6.00005Z\"/></svg> </i> <div style=\"overflow: hidden;\"> <div class='jdgm-rev-snippet-widget__cards-container'> <div class='jdgm-rev-snippet-card' data-review-id='39f36adb-6dbc-54e0-aa38-d26f5432fb16' style='display: none;'> <div class=\"jdgm-rev-snippet-card__rev-prod-wrapper\">  <a class='jdgm-rev-snippet-card__rev-content-wrapper jdgm-rev-snippet-card__full-review-link' style='text-decoration: none; color: inherit;padding: 0 34px;' role='button' data-review-id='39f36adb-6dbc-54e0-aa38-d26f5432fb16'> <div class='jdgm-rev-snippet-card__rev-header'> <div class='jdgm-rev-snippet-card__rev-rating' aria-label='5 stars' role='img'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </div> <div class='jdgm-rev-snippet-card__reviewer'> Customer </div> </div> <div class='jdgm-rev-snippet-card__rev-content'> <span class='jdgm-rev-snippet-card__rev-body'> <p>Great worked really well the little smoke bombs got a little hot but was great</p> </span> </div> </a> </div> </div><div class='jdgm-rev-snippet-card' data-review-id='1c64244b-d853-4851-b571-add3d3a39bb4' style='display: none;'> <div class=\"jdgm-rev-snippet-card__rev-prod-wrapper\">  <a class='jdgm-rev-snippet-card__rev-content-wrapper jdgm-rev-snippet-card__full-review-link' style='text-decoration: none; color: inherit;padding: 0 34px;' role='button' data-review-id='1c64244b-d853-4851-b571-add3d3a39bb4'> <div class='jdgm-rev-snippet-card__rev-header'> <div class='jdgm-rev-snippet-card__rev-rating' aria-label='5 stars' role='img'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </div> <div class='jdgm-rev-snippet-card__reviewer'> B.O. </div> </div> <div class='jdgm-rev-snippet-card__rev-content'> <span class='jdgm-rev-snippet-card__rev-body'> <p>I’ve been using this company for 1 year now for myself and friends, and after using a few other companies I cannot recommend gender reveal ideas enough! Constantly amazing service, new products &amp; amazingly fast delivery. Truly Australia’s number 1 shop! Thanks Team!</p> </span> </div> </a> </div> </div> </div> </div> </div>"
+            }
+          },
+          {
+            "node": {
+              "namespace": "judgeme",
+              "key": "widget",
+              "value": "<div class='jdgm-rev-widg' data-updated-at='2026-03-03T05:16:29Z' data-average-rating='4.94' data-number-of-reviews='16' data-number-of-questions='0' data-image-url='https://cdn.shopify.com/s/files/1/0584/7410/2873/files/6_2fadc586-b033-4e08-a57a-854399b6f14c.png?v=1757372045'> <style class='jdgm-temp-hiding-style'>.jdgm-rev-widg{ display: none }</style> <div class='jdgm-rev-widg__header'> <h2 class='jdgm-rev-widg__title'>Customer Reviews</h2>  <div class='jdgm-rev-widg__summary'> <div class='jdgm-rev-widg__summary-stars' aria-label='Average rating is 4.94 stars' role='img'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </div> <div class='jdgm-rev-widg__summary-text'>Based on 16 reviews</div> </div> <a style='display: none' href='#' class='jdgm-write-rev-link' role='button'>Write a review</a> <div class='jdgm-histogram jdgm-temp-hidden'>  <div class='jdgm-histogram__row' data-rating='5' data-frequency='15' data-percentage='94'>  <div class='jdgm-histogram__star' role='button' aria-label=\"94% (15) reviews with 5 star rating\"  tabindex='0' ><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span></div> <div class='jdgm-histogram__bar'> <div class='jdgm-histogram__bar-content' style='width: 94%;'> </div> </div> <div class='jdgm-histogram__percentage'>94%</div> <div class='jdgm-histogram__frequency'>(15)</div> </div>  <div class='jdgm-histogram__row' data-rating='4' data-frequency='1' data-percentage='6'>  <div class='jdgm-histogram__star' role='button' aria-label=\"6% (1) reviews with 4 star rating\"  tabindex='0' ><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--off'></span></div> <div class='jdgm-histogram__bar'> <div class='jdgm-histogram__bar-content' style='width: 6%;'> </div> </div> <div class='jdgm-histogram__percentage'>6%</div> <div class='jdgm-histogram__frequency'>(1)</div> </div>  <div class='jdgm-histogram__row' data-rating='3' data-frequency='0' data-percentage='0'>  <div class='jdgm-histogram__star' role='button' aria-label=\"0% (0) reviews with 3 star rating\"  tabindex='0' ><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--off'></span><span class='jdgm-star jdgm--off'></span></div> <div class='jdgm-histogram__bar'> <div class='jdgm-histogram__bar-content' style='width: 0%;'> </div> </div> <div class='jdgm-histogram__percentage'>0%</div> <div class='jdgm-histogram__frequency'>(0)</div> </div>  <div class='jdgm-histogram__row' data-rating='2' data-frequency='0' data-percentage='0'>  <div class='jdgm-histogram__star' role='button' aria-label=\"0% (0) reviews with 2 star rating\"  tabindex='0' ><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--off'></span><span class='jdgm-star jdgm--off'></span><span class='jdgm-star jdgm--off'></span></div> <div class='jdgm-histogram__bar'> <div class='jdgm-histogram__bar-content' style='width: 0%;'> </div> </div> <div class='jdgm-histogram__percentage'>0%</div> <div class='jdgm-histogram__frequency'>(0)</div> </div>  <div class='jdgm-histogram__row' data-rating='1' data-frequency='0' data-percentage='0'>  <div class='jdgm-histogram__star' role='button' aria-label=\"0% (0) reviews with 1 star rating\"  tabindex='0' ><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--off'></span><span class='jdgm-star jdgm--off'></span><span class='jdgm-star jdgm--off'></span><span class='jdgm-star jdgm--off'></span></div> <div class='jdgm-histogram__bar'> <div class='jdgm-histogram__bar-content' style='width: 0%;'> </div> </div> <div class='jdgm-histogram__percentage'>0%</div> <div class='jdgm-histogram__frequency'>(0)</div> </div>  <div class='jdgm-histogram__row jdgm-histogram__clear-filter' data-rating=null tabindex='0'></div> </div>     <div class='jdgm-rev-widg__sort-wrapper'></div> </div> <div class='jdgm-rev-widg__body'>  <div class='jdgm-rev-widg__reviews'><div class='jdgm-rev jdgm-divider-top' data-verified-buyer='true' data-review-id='514fd0a1-574a-4fa2-b8e9-d40cc39489b4' data-review-language='' data-product-title='Gender Reveal Cannon &amp; Extinguisher Double Bundle ' data-product-url='/products/gender-reveal-powder-cannons' data-thumb-up-count='0' data-thumb-down-count='0'> <div class='jdgm-rev__header'>  <div class='jdgm-rev__icon' > K </div>  <span class='jdgm-rev__rating' data-score='5' tabindex='0' aria-label='5 star review' role='img'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </span> <span class='jdgm-rev__timestamp jdgm-spinner' data-content='2026-03-03 05:09:30 UTC'></span>    <div class='jdgm-rev__br'></div> <span class='jdgm-rev__buyer-badge-wrapper'> <span class='jdgm-rev__buyer-badge'></span> </span> <span class='jdgm-rev__author-wrapper'> <span class='jdgm-rev__author'>Kristina MOLONEY-BRIGGS</span> <span class='jdgm-rev__location' >  </span>  </span> </div> <div class='jdgm-rev__content'>  <div class='jdgm-rev__custom-form'>  </div> <b class='jdgm-rev__title'></b> <div class='jdgm-rev__body'><p>Gender Reveal Cannon &amp; Extinguisher Double Bundle 🎉</p></div> <div class='jdgm-rev__pics'>  </div> <div class='jdgm-rev__vids'>   </div> <div class='jdgm-rev__transparency-badge-wrapper'>  <div class='jdgm-rev__transparency-badge' data-badge-type=review_collected_via_store_invitation></div>  </div> </div> <div class='jdgm-rev__actions'> <div class='jdgm-rev__social'></div> <div class='jdgm-rev__votes'></div> </div> <div class='jdgm-rev__reply'>  </div> </div><div class='jdgm-rev jdgm-divider-top' data-verified-buyer='true' data-review-id='d963f2fd-521d-4c11-8455-555eba932724' data-review-language='' data-product-title='Gender Reveal Cannon &amp; Extinguisher Double Bundle ' data-product-url='/products/gender-reveal-powder-cannons' data-thumb-up-count='0' data-thumb-down-count='0'> <div class='jdgm-rev__header'>  <div class='jdgm-rev__icon' > S </div>  <span class='jdgm-rev__rating' data-score='5' tabindex='0' aria-label='5 star review' role='img'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </span> <span class='jdgm-rev__timestamp jdgm-spinner' data-content='2026-02-15 06:10:39 UTC'></span>    <div class='jdgm-rev__br'></div> <span class='jdgm-rev__buyer-badge-wrapper'> <span class='jdgm-rev__buyer-badge'></span> </span> <span class='jdgm-rev__author-wrapper'> <span class='jdgm-rev__author'>Shiane Viglione</span> <span class='jdgm-rev__location' >  </span>  </span> </div> <div class='jdgm-rev__content'>  <div class='jdgm-rev__custom-form'>  </div> <b class='jdgm-rev__title'>Was great had the best reveal</b> <div class='jdgm-rev__body'><p>The smoke from extinguishers were great and the smoke went for a good amount of time</p></div> <div class='jdgm-rev__pics'>  </div> <div class='jdgm-rev__vids'>   </div> <div class='jdgm-rev__transparency-badge-wrapper'>  <div class='jdgm-rev__transparency-badge' data-badge-type=review_collected_via_store_invitation></div>  </div> </div> <div class='jdgm-rev__actions'> <div class='jdgm-rev__social'></div> <div class='jdgm-rev__votes'></div> </div> <div class='jdgm-rev__reply'>  <div class='jdgm-rev__replier-wrapper'> <b class='jdgm-rev__replier'></b> </div> <div class='jdgm-rev__reply-content'><p>Thank you for your review! Have a lovely day!</p></div>  </div> </div><div class='jdgm-rev jdgm-divider-top' data-verified-buyer='true' data-review-id='0d4987ed-32a5-59fe-b4c3-5cb26a973828' data-review-language='en' data-product-title='Gender Reveal Cannon &amp; Extinguisher Double Bundle ' data-product-url='/products/gender-reveal-powder-cannons' data-thumb-up-count='0' data-thumb-down-count='0'> <div class='jdgm-rev__header'>  <div class='jdgm-rev__icon' > R </div>  <span class='jdgm-rev__rating' data-score='5' tabindex='0' aria-label='5 star review' role='img'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </span> <span class='jdgm-rev__timestamp jdgm-spinner' data-content='2025-12-05 03:17:04 UTC'></span>    <div class='jdgm-rev__br'></div> <span class='jdgm-rev__buyer-badge-wrapper'> <span class='jdgm-rev__buyer-badge'></span> </span> <span class='jdgm-rev__author-wrapper'> <span class='jdgm-rev__author'>Ramona</span> <span class='jdgm-rev__location' >  </span> <span class='jdgm-rev__source' data-source=\"shop-app\"></span> </span> </div> <div class='jdgm-rev__content'>  <div class='jdgm-rev__custom-form'>  </div> <b class='jdgm-rev__title'></b> <div class='jdgm-rev__body'><p>The blasters were amazing everyone loved seeing them in action!!</p></div> <div class='jdgm-rev__pics'>  </div> <div class='jdgm-rev__vids'>   </div> <div class='jdgm-rev__transparency-badge-wrapper'>  <div class='jdgm-rev__transparency-badge' data-badge-type=review_written_in_shop_app></div>  </div> </div> <div class='jdgm-rev__actions'> <div class='jdgm-rev__social'></div> <div class='jdgm-rev__votes'></div> </div> <div class='jdgm-rev__reply'>  </div> </div><div class='jdgm-rev jdgm-divider-top' data-verified-buyer='true' data-review-id='4ae93124-8d3b-578c-88c9-d3d248a382f1' data-review-language='en' data-product-title='Gender Reveal Cannon &amp; Extinguisher Double Bundle ' data-product-url='/products/gender-reveal-powder-cannons' data-thumb-up-count='0' data-thumb-down-count='0'> <div class='jdgm-rev__header'>  <div class='jdgm-rev__icon' > C </div>  <span class='jdgm-rev__rating' data-score='5' tabindex='0' aria-label='5 star review' role='img'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </span> <span class='jdgm-rev__timestamp jdgm-spinner' data-content='2025-11-27 14:30:40 UTC'></span>    <div class='jdgm-rev__br'></div> <span class='jdgm-rev__buyer-badge-wrapper'> <span class='jdgm-rev__buyer-badge'></span> </span> <span class='jdgm-rev__author-wrapper'> <span class='jdgm-rev__author'>Chloe</span> <span class='jdgm-rev__location' >  </span> <span class='jdgm-rev__source' data-source=\"shop-app\"></span> </span> </div> <div class='jdgm-rev__content'>  <div class='jdgm-rev__custom-form'>  </div> <b class='jdgm-rev__title'></b> <div class='jdgm-rev__body'><p>Really nice colour and was bright !</p></div> <div class='jdgm-rev__pics'>  </div> <div class='jdgm-rev__vids'>   </div> <div class='jdgm-rev__transparency-badge-wrapper'>  <div class='jdgm-rev__transparency-badge' data-badge-type=review_written_in_shop_app></div>  </div> </div> <div class='jdgm-rev__actions'> <div class='jdgm-rev__social'></div> <div class='jdgm-rev__votes'></div> </div> <div class='jdgm-rev__reply'>  </div> </div><div class='jdgm-rev jdgm-divider-top' data-verified-buyer='false' data-review-id='90cad061-5526-410d-a145-fc665d858054' data-review-language='' data-product-title='Gender Reveal Cannon &amp; Extinguisher Double Bundle ' data-product-url='/products/gender-reveal-powder-cannons' data-thumb-up-count='0' data-thumb-down-count='0'> <div class='jdgm-rev__header'>  <div class='jdgm-rev__icon' > G </div>  <span class='jdgm-rev__rating' data-score='5' tabindex='0' aria-label='5 star review' role='img'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </span> <span class='jdgm-rev__timestamp jdgm-spinner' data-content='2025-10-06 00:03:43 UTC'></span>    <div class='jdgm-rev__br'></div> <span class='jdgm-rev__buyer-badge-wrapper'>  </span> <span class='jdgm-rev__author-wrapper'> <span class='jdgm-rev__author'>G</span> <span class='jdgm-rev__location' >  </span>  </span> </div> <div class='jdgm-rev__content'>  <div class='jdgm-rev__custom-form'>  </div> <b class='jdgm-rev__title'>Cannon and extinguisher bundle</b> <div class='jdgm-rev__body'><p>This pack was definitely worth the purchase, it made our day even more special, I was surprised at how long the extinguishers went off for, though I knew no doubt it wouldn’t disappoint. The delivery so efficient and quick, overall a smooth process</p></div> <div class='jdgm-rev__pics'>  <a class='jdgm-rev__pic-link jdgm--loading' target='_blank' rel='nofollow' href='https://judgeme.imgix.net/gender-reveal-ideas/1759709023__e976dbf5-67af-41e7-9130-ffcde92caa9d__original.jpeg?auto=format&amp;w=1024' data-mfp-src='https://judgeme.imgix.net/gender-reveal-ideas/1759709023__e976dbf5-67af-41e7-9130-ffcde92caa9d__original.jpeg?auto=format&amp;w=1024' aria-label='Link to user picture 1'> <img class='jdgm-rev__pic-img' alt='User picture' data-src='https://judgeme.imgix.net/gender-reveal-ideas/1759709023__e976dbf5-67af-41e7-9130-ffcde92caa9d__original.jpeg?auto=format&amp;w=160'> </a>  </div> <div class='jdgm-rev__vids'>   </div> <div class='jdgm-rev__transparency-badge-wrapper'>  <div class='jdgm-rev__transparency-badge' data-badge-type=review_collected_from_store_visitor></div>  </div> </div> <div class='jdgm-rev__actions'> <div class='jdgm-rev__social'></div> <div class='jdgm-rev__votes'></div> </div> <div class='jdgm-rev__reply'>  </div> </div></div> <div class='jdgm-paginate' data-per-page='5' data-url='https://api.judge.me/reviews/reviews_for_widget' ><a class='jdgm-paginate__page jdgm-curt' data-page='1' aria-label='Page 1' tabindex='0'  role='button'>1</a><a class='jdgm-paginate__page ' data-page='2' aria-label='Page 2' tabindex='0'  role='button'>2</a><a class='jdgm-paginate__page ' data-page='3' aria-label='Page 3' tabindex='0'  role='button'>3</a><a class='jdgm-paginate__page jdgm-paginate__next-page' data-page='2' aria-label='Page 2' tabindex='0' rel='next' role='button'></a><a class='jdgm-paginate__page jdgm-paginate__last-page' data-page='4' aria-label='Page 4' tabindex='0'  role='button'></a></div>  </div> <div class='jdgm-rev-widg__paginate-spinner-wrapper'> <div class='jdgm-spinner'></div> </div> </div>"
+            }
+          },
+          {
+            "node": {
+              "namespace": "reviews",
+              "key": "rating",
+              "value": "{\"scale_min\":\"1.0\",\"scale_max\":\"5.0\",\"value\":\"4.94\"}"
+            }
+          },
+          {
+            "node": {
+              "namespace": "reviews",
+              "key": "rating_count",
+              "value": "16"
+            }
+          },
+          {
+            "node": {
+              "namespace": "sale",
+              "key": "with_free_gift",
+              "value": "false"
+            }
+          },
+          {
+            "node": {
+              "namespace": "mm-google-shopping",
+              "key": "condition",
+              "value": "new"
+            }
+          },
+          {
+            "node": {
+              "namespace": "mm-google-shopping",
+              "key": "age_group",
+              "value": "adult"
+            }
+          },
+          {
+            "node": {
+              "namespace": "mm-google-shopping",
+              "key": "custom_label_0",
+              "value": "bundle_premium"
+            }
+          },
+          {
+            "node": {
+              "namespace": "mm-google-shopping",
+              "key": "google_product_category",
+              "value": "5709"
+            }
+          },
+          {
+            "node": {
+              "namespace": "global",
+              "key": "title_tag",
+              "value": "Gender Reveal Cannon & Extinguisher Bundle | $135 | Australia"
+            }
+          },
+          {
+            "node": {
+              "namespace": "global",
+              "key": "description_tag",
+              "value": "The ultimate gender reveal combo — cannon plus extinguisher in one bundle. Pink, blue or secret. Australia-wide shipping. 4.85★ from 1,360+ reviews."
+            }
+          }
+        ]
+      },
+      "variants": {
+        "edges": [
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/42031946137689",
+              "title": "Pink Blaster + Confetti Cannon",
+              "price": "134.99",
+              "sku": "67448652637689"
+            }
+          },
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/42031946170457",
+              "title": "Pink Blaster + Powder Cannon",
+              "price": "134.99",
+              "sku": "67448652770457"
+            }
+          },
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/42031946203225",
+              "title": "Blue Blaster + Confetti Cannon",
+              "price": "134.99",
+              "sku": "67448652803225"
+            }
+          },
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/42031946235993",
+              "title": "Blue Blaster + Powder Cannon",
+              "price": "134.99",
+              "sku": "67448652935993"
+            }
+          },
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/42031975825497",
+              "title": "To Be Announced",
+              "price": "134.99",
+              "sku": "67448653025497"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "gid://shopify/Product/7919388655705",
+      "handle": "gender-reveal-extinguishers",
+      "title": "Quad Family Gender Reveal Extinguisher Bundle",
+      "productType": "",
+      "vendor": "Gender Reveal Ideas",
+      "seo": {
+        "title": null,
+        "description": null
+      },
+      "metafields": {
+        "edges": [
+          {
+            "node": {
+              "namespace": "custom",
+              "key": "additional_badge",
+              "value": "gid://shopify/MediaImage/25208740347993"
+            }
+          },
+          {
+            "node": {
+              "namespace": "custom",
+              "key": "additional_info",
+              "value": "[\"gid://shopify/Metaobject/85485748313\",\"gid://shopify/Metaobject/125571924057\",\"gid://shopify/Metaobject/125572218969\"]"
+            }
+          },
+          {
+            "node": {
+              "namespace": "custom",
+              "key": "enable_border_glow",
+              "value": "false"
+            }
+          },
+          {
+            "node": {
+              "namespace": "custom",
+              "key": "youtube_video_link",
+              "value": "LoKv4gLiumY"
+            }
+          },
+          {
+            "node": {
+              "namespace": "judgeme",
+              "key": "badge",
+              "value": "<div style='display:none' class='jdgm-prev-badge' data-average-rating='5.00' data-number-of-reviews='1' data-number-of-questions='0'> <span class='jdgm-prev-badge__stars' data-score='5.00' tabindex='0' aria-label='5.00 stars' role='button'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </span> <span class='jdgm-prev-badge__text'> 1 review </span> </div>"
+            }
+          },
+          {
+            "node": {
+              "namespace": "judgeme",
+              "key": "review_snippet_widget",
+              "value": "<div class='jdgm-widget jdgm-review-snippet-widget'> <style>\n        .jdgm-review-snippet-widget{position:relative}.jdgm-review-snippet-widget:hover{cursor:pointer}@media only screen and (max-width: 767px){.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__cards-container{left:unset;right:unset}}.jdgm-review-snippet-widget .jdgm-rev-snippet-card{background:#fff}.jdgm-review-snippet-widget .jdgm-star{color:#399}.jdgm-review-snippet-widget .jdgm-rev-snippet-card{border-radius:8px;background:#fff}.jdgm-review-snippet-widget .jdgm-rev-snippet-card__rev-prod-wrapper{border-radius:8px}.jdgm-review-snippet-widget .jdgm-rev-snippet-card__rev-content-wrapper{max-width:360px}.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__prev-btn,.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__next-btn{border-radius:50%;background:#fff}.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__prev-btn>svg,.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__next-btn>svg{fill:#000}.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__prev-btn{left:0;top:40%}.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__next-btn{right:0;top:40%}.jdgm-full-rev-modal.review-snippet-widget .jm-mfp-content{border-radius:8px}.jdgm-full-rev-modal.review-snippet-widget .jdgm-full-rev__icon{border-radius:8px}.jdgm-full-rev-modal.review-snippet-widget .jdgm-full-rev[data-verified-buyer=\"true\"] .jdgm-full-rev__icon::after{border-radius:8px}.jdgm-full-rev-modal.review-snippet-widget .jdgm-rev__buyer-badge{border-radius:calc( 8px / 2 )}.jdgm-full-rev-modal.review-snippet-widget .jdgm-full-rev__pic-img{border-radius:8px}.jdgm-full-rev-modal.review-snippet-widget .jdgm-full-rev__reply{border-radius:8px}.jdgm-full-rev-modal.review-snippet-widget .jdgm-full-rev__replier::before{content:'genderrevealideas.com.au'}.jdgm-full-rev-modal.review-snippet-widget .jdgm-full-rev__product-button{border-radius:calc( 8px * 6 )}\n\n    </style>   <i class=\"jdgm-rev-snippet-widget__prev-btn\" style='display: none;'> <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"12\" viewBox=\"0 0 8 12\" width=\"8\" fill=\"#000\"><path d=\"M3.09961 6.00005L6.99961 9.90005C7.18294 10.0834 7.27461 10.3167 7.27461 10.6C7.27461 10.8834 7.18294 11.1167 6.99961 11.3C6.81628 11.4834 6.58294 11.575 6.29961 11.575C6.01628 11.575 5.78294 11.4834 5.59961 11.3L0.999609 6.70005C0.899609 6.60005 0.828776 6.49172 0.787109 6.37505C0.745443 6.25838 0.724609 6.13338 0.724609 6.00005C0.724609 5.86672 0.745443 5.74172 0.787109 5.62505C0.828776 5.50838 0.899609 5.40005 0.999609 5.30005L5.59961 0.700049C5.78294 0.516715 6.01628 0.425049 6.29961 0.425049C6.58294 0.425049 6.81628 0.516715 6.99961 0.700049C7.18294 0.883382 7.27461 1.11672 7.27461 1.40005C7.27461 1.68338 7.18294 1.91672 6.99961 2.10005L3.09961 6.00005Z\"/></svg> </i> <i class=\"jdgm-rev-snippet-widget__next-btn\" style='display: none;'> <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"12\" viewBox=\"0 0 8 12\" width=\"8\" fill=\"#000\"><path d=\"M4.89961 6.00005L0.999609 2.10005C0.816276 1.91672 0.724609 1.68338 0.724609 1.40005C0.724609 1.11672 0.816276 0.883382 0.999609 0.700049C1.18294 0.516715 1.41628 0.425049 1.69961 0.425049C1.98294 0.425049 2.21628 0.516715 2.39961 0.700049L6.99961 5.30005C7.09961 5.40005 7.17044 5.50838 7.21211 5.62505C7.25378 5.74172 7.27461 5.86672 7.27461 6.00005C7.27461 6.13338 7.25378 6.25838 7.21211 6.37505C7.17044 6.49172 7.09961 6.60005 6.99961 6.70005L2.39961 11.3C2.21628 11.4834 1.98294 11.575 1.69961 11.575C1.41628 11.575 1.18294 11.4834 0.999609 11.3C0.816276 11.1167 0.724609 10.8834 0.724609 10.6C0.724609 10.3167 0.816276 10.0834 0.999609 9.90005L4.89961 6.00005Z\"/></svg> </i> <div style=\"overflow: hidden;\"> <div class='jdgm-rev-snippet-widget__cards-container'> <div class='jdgm-rev-snippet-card' data-review-id='4f70f1eb-21ff-4c58-8861-59b236aa378c' style='display: none;'> <div class=\"jdgm-rev-snippet-card__rev-prod-wrapper\">  <a class='jdgm-rev-snippet-card__rev-content-wrapper jdgm-rev-snippet-card__full-review-link' style='text-decoration: none; color: inherit;padding: 0 34px;' role='button' data-review-id='4f70f1eb-21ff-4c58-8861-59b236aa378c'> <div class='jdgm-rev-snippet-card__rev-header'> <div class='jdgm-rev-snippet-card__rev-rating' aria-label='5 stars' role='img'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </div> <div class='jdgm-rev-snippet-card__reviewer'> Wynetta Brown </div> </div> <div class='jdgm-rev-snippet-card__rev-content'> <span class='jdgm-rev-snippet-card__rev-body'> <p>These were amazing and just perfect for our gender reveal.</p> </span> </div> </a> </div> </div><div class='jdgm-rev-snippet-card' data-review-id='60344989-f7b6-4381-afd3-ec4c1ebe5bdf' style='display: none;'> <div class=\"jdgm-rev-snippet-card__rev-prod-wrapper\">  <a class='jdgm-rev-snippet-card__rev-content-wrapper jdgm-rev-snippet-card__full-review-link' style='text-decoration: none; color: inherit;padding: 0 34px;' role='button' data-review-id='60344989-f7b6-4381-afd3-ec4c1ebe5bdf'> <div class='jdgm-rev-snippet-card__rev-header'> <div class='jdgm-rev-snippet-card__rev-rating' aria-label='5 stars' role='img'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </div> <div class='jdgm-rev-snippet-card__reviewer'> Aliyah Power </div> </div> <div class='jdgm-rev-snippet-card__rev-content'> <span class='jdgm-rev-snippet-card__rev-body'> <p>Massive powder Display, worked very well &amp; great communication thanks.</p> </span> </div> </a> </div> </div> </div> </div> </div>"
+            }
+          },
+          {
+            "node": {
+              "namespace": "judgeme",
+              "key": "widget",
+              "value": "<div class='jdgm-rev-widg' data-updated-at='2025-09-09T05:44:20Z' data-average-rating='5.00' data-number-of-reviews='1' data-number-of-questions='0' data-image-url='https://cdn.shopify.com/s/files/1/0584/7410/2873/files/PinkandBlue_ed127232-74fa-4174-ae85-ef9f223ae094.png?v=1744163243'> <style class='jdgm-temp-hiding-style'>.jdgm-rev-widg{ display: none }</style> <div class='jdgm-rev-widg__header'> <h2 class='jdgm-rev-widg__title'>Customer Reviews</h2>  <div class='jdgm-rev-widg__summary'> <div class='jdgm-rev-widg__summary-stars' aria-label='Average rating is 5.00 stars' role='img'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </div> <div class='jdgm-rev-widg__summary-text'>Based on 1 review</div> </div> <a style='display: none' href='#' class='jdgm-write-rev-link' role='button'>Write a review</a> <div class='jdgm-histogram jdgm-temp-hidden'>  <div class='jdgm-histogram__row' data-rating='5' data-frequency='1' data-percentage='100'>  <div class='jdgm-histogram__star' role='button' aria-label=\"100% (1) reviews with 5 star rating\"  tabindex='0' ><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span></div> <div class='jdgm-histogram__bar'> <div class='jdgm-histogram__bar-content' style='width: 100%;'> </div> </div> <div class='jdgm-histogram__percentage'>100%</div> <div class='jdgm-histogram__frequency'>(1)</div> </div>  <div class='jdgm-histogram__row' data-rating='4' data-frequency='0' data-percentage='0'>  <div class='jdgm-histogram__star' role='button' aria-label=\"0% (0) reviews with 4 star rating\"  tabindex='0' ><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--off'></span></div> <div class='jdgm-histogram__bar'> <div class='jdgm-histogram__bar-content' style='width: 0%;'> </div> </div> <div class='jdgm-histogram__percentage'>0%</div> <div class='jdgm-histogram__frequency'>(0)</div> </div>  <div class='jdgm-histogram__row' data-rating='3' data-frequency='0' data-percentage='0'>  <div class='jdgm-histogram__star' role='button' aria-label=\"0% (0) reviews with 3 star rating\"  tabindex='0' ><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--off'></span><span class='jdgm-star jdgm--off'></span></div> <div class='jdgm-histogram__bar'> <div class='jdgm-histogram__bar-content' style='width: 0%;'> </div> </div> <div class='jdgm-histogram__percentage'>0%</div> <div class='jdgm-histogram__frequency'>(0)</div> </div>  <div class='jdgm-histogram__row' data-rating='2' data-frequency='0' data-percentage='0'>  <div class='jdgm-histogram__star' role='button' aria-label=\"0% (0) reviews with 2 star rating\"  tabindex='0' ><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--off'></span><span class='jdgm-star jdgm--off'></span><span class='jdgm-star jdgm--off'></span></div> <div class='jdgm-histogram__bar'> <div class='jdgm-histogram__bar-content' style='width: 0%;'> </div> </div> <div class='jdgm-histogram__percentage'>0%</div> <div class='jdgm-histogram__frequency'>(0)</div> </div>  <div class='jdgm-histogram__row' data-rating='1' data-frequency='0' data-percentage='0'>  <div class='jdgm-histogram__star' role='button' aria-label=\"0% (0) reviews with 1 star rating\"  tabindex='0' ><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--off'></span><span class='jdgm-star jdgm--off'></span><span class='jdgm-star jdgm--off'></span><span class='jdgm-star jdgm--off'></span></div> <div class='jdgm-histogram__bar'> <div class='jdgm-histogram__bar-content' style='width: 0%;'> </div> </div> <div class='jdgm-histogram__percentage'>0%</div> <div class='jdgm-histogram__frequency'>(0)</div> </div>  <div class='jdgm-histogram__row jdgm-histogram__clear-filter' data-rating=null tabindex='0'></div> </div>     <div class='jdgm-rev-widg__sort-wrapper'></div> </div> <div class='jdgm-rev-widg__body'>  <div class='jdgm-rev-widg__reviews'><div class='jdgm-rev jdgm-divider-top' data-verified-buyer='true' data-review-id='689392b8-1907-41b6-968c-6c4d9cc62a25' data-review-language='' data-product-title='Quad Family Gender Reveal Extinguisher Bundle' data-product-url='/products/gender-reveal-extinguishers' data-thumb-up-count='0' data-thumb-down-count='0'> <div class='jdgm-rev__header'>  <div class='jdgm-rev__icon' > A </div>  <span class='jdgm-rev__rating' data-score='5' tabindex='0' aria-label='5 star review' role='img'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </span> <span class='jdgm-rev__timestamp jdgm-spinner' data-content='2025-05-18 03:59:00 UTC'></span>    <div class='jdgm-rev__br'></div> <span class='jdgm-rev__buyer-badge-wrapper'> <span class='jdgm-rev__buyer-badge'></span> </span> <span class='jdgm-rev__author-wrapper'> <span class='jdgm-rev__author'>Angelo Tzaidas</span> <span class='jdgm-rev__location' >  </span>  </span> </div> <div class='jdgm-rev__content'>  <div class='jdgm-rev__custom-form'>  </div> <b class='jdgm-rev__title'>Aus Post lost our package</b> <div class='jdgm-rev__body'><p>Aus Post lost our package and we didn't get it in time. So we didn't end up using your product. Are we able to return it and get a refund.</p></div> <div class='jdgm-rev__pics'>  </div> <div class='jdgm-rev__vids'>   </div> <div class='jdgm-rev__transparency-badge-wrapper'>  </div> </div> <div class='jdgm-rev__actions'> <div class='jdgm-rev__social'></div> <div class='jdgm-rev__votes'></div> </div> <div class='jdgm-rev__reply'>  <div class='jdgm-rev__replier-wrapper'> <b class='jdgm-rev__replier'></b> </div> <div class='jdgm-rev__reply-content'><p>Hello Angelo! Our support team has reached out to you this morning via email. Thank you.</p></div>  </div> </div></div> <div class='jdgm-paginate' data-per-page='5' data-url='https://api.judge.me/reviews/reviews_for_widget' style=\"display: none;\"></div>  </div> <div class='jdgm-rev-widg__paginate-spinner-wrapper'> <div class='jdgm-spinner'></div> </div> </div>"
+            }
+          },
+          {
+            "node": {
+              "namespace": "mc-facebook",
+              "key": "google_product_category",
+              "value": "2781"
+            }
+          },
+          {
+            "node": {
+              "namespace": "mm-google-shopping",
+              "key": "google_product_category",
+              "value": "2781"
+            }
+          },
+          {
+            "node": {
+              "namespace": "sale",
+              "key": "with_free_gift",
+              "value": "false"
+            }
+          },
+          {
+            "node": {
+              "namespace": "reviews",
+              "key": "rating",
+              "value": "{\"scale_min\":\"1.0\",\"scale_max\":\"5.0\",\"value\":\"5.0\"}"
+            }
+          },
+          {
+            "node": {
+              "namespace": "reviews",
+              "key": "rating_count",
+              "value": "1"
+            }
+          },
+          {
+            "node": {
+              "namespace": "mm-google-shopping",
+              "key": "condition",
+              "value": "new"
+            }
+          },
+          {
+            "node": {
+              "namespace": "mm-google-shopping",
+              "key": "age_group",
+              "value": "adult"
+            }
+          },
+          {
+            "node": {
+              "namespace": "mm-google-shopping",
+              "key": "custom_label_0",
+              "value": "bundle_premium"
+            }
+          }
+        ]
+      },
+      "variants": {
+        "edges": [
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/42193563975769",
+              "title": "Blue",
+              "price": "329.99",
+              "sku": "67448658675769"
+            }
+          },
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/42193564008537",
+              "title": "Pink",
+              "price": "329.99",
+              "sku": "67448658708537"
+            }
+          },
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/42193564041305",
+              "title": "To Be Announced",
+              "price": "329.99",
+              "sku": "67448658841305"
+            }
+          },
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/42193564074073",
+              "title": "2 pink + 2 Blue",
+              "price": "329.99",
+              "sku": "67448658974073"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "gid://shopify/Product/8122484981849",
+      "handle": "gender-reveal-smoke-bombs-extinguisher-bundle",
+      "title": "The Blaster & Smoke Reveal Kit",
+      "productType": "",
+      "vendor": "Gender Reveal Ideas",
+      "seo": {
+        "title": null,
+        "description": null
+      },
+      "metafields": {
+        "edges": [
+          {
+            "node": {
+              "namespace": "custom",
+              "key": "additional_badge",
+              "value": "gid://shopify/MediaImage/25208740347993"
+            }
+          },
+          {
+            "node": {
+              "namespace": "custom",
+              "key": "additional_info",
+              "value": "[\"gid://shopify/Metaobject/179128008793\"]"
+            }
+          },
+          {
+            "node": {
+              "namespace": "judgeme",
+              "key": "badge",
+              "value": "<div style='display:none' class='jdgm-prev-badge' data-average-rating='5.00' data-number-of-reviews='1' data-number-of-questions='0'> <span class='jdgm-prev-badge__stars' data-score='5.00' tabindex='0' aria-label='5.00 stars' role='button'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </span> <span class='jdgm-prev-badge__text'> 1 review </span> </div>"
+            }
+          },
+          {
+            "node": {
+              "namespace": "judgeme",
+              "key": "review_snippet_widget",
+              "value": "<div class='jdgm-widget jdgm-review-snippet-widget'> <style>\n        .jdgm-review-snippet-widget{position:relative}.jdgm-review-snippet-widget:hover{cursor:pointer}@media only screen and (max-width: 767px){.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__cards-container{left:unset;right:unset}}.jdgm-review-snippet-widget .jdgm-rev-snippet-card{background:#fff}.jdgm-review-snippet-widget .jdgm-star{color:#399}.jdgm-review-snippet-widget .jdgm-rev-snippet-card{border-radius:8px;background:#fff}.jdgm-review-snippet-widget .jdgm-rev-snippet-card__rev-prod-wrapper{border-radius:8px}.jdgm-review-snippet-widget .jdgm-rev-snippet-card__rev-content-wrapper{max-width:360px}.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__prev-btn,.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__next-btn{border-radius:50%;background:#fff}.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__prev-btn>svg,.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__next-btn>svg{fill:#000}.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__prev-btn{left:0;top:40%}.jdgm-review-snippet-widget .jdgm-rev-snippet-widget__next-btn{right:0;top:40%}.jdgm-full-rev-modal.review-snippet-widget .jm-mfp-content{border-radius:8px}.jdgm-full-rev-modal.review-snippet-widget .jdgm-full-rev__icon{border-radius:8px}.jdgm-full-rev-modal.review-snippet-widget .jdgm-full-rev[data-verified-buyer=\"true\"] .jdgm-full-rev__icon::after{border-radius:8px}.jdgm-full-rev-modal.review-snippet-widget .jdgm-rev__buyer-badge{border-radius:calc( 8px / 2 )}.jdgm-full-rev-modal.review-snippet-widget .jdgm-full-rev__pic-img{border-radius:8px}.jdgm-full-rev-modal.review-snippet-widget .jdgm-full-rev__reply{border-radius:8px}.jdgm-full-rev-modal.review-snippet-widget .jdgm-full-rev__replier::before{content:'genderrevealideas.com.au'}.jdgm-full-rev-modal.review-snippet-widget .jdgm-full-rev__product-button{border-radius:calc( 8px * 6 )}\n\n    </style>   <i class=\"jdgm-rev-snippet-widget__prev-btn\" style='display: none;'> <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"12\" viewBox=\"0 0 8 12\" width=\"8\" fill=\"#000\"><path d=\"M3.09961 6.00005L6.99961 9.90005C7.18294 10.0834 7.27461 10.3167 7.27461 10.6C7.27461 10.8834 7.18294 11.1167 6.99961 11.3C6.81628 11.4834 6.58294 11.575 6.29961 11.575C6.01628 11.575 5.78294 11.4834 5.59961 11.3L0.999609 6.70005C0.899609 6.60005 0.828776 6.49172 0.787109 6.37505C0.745443 6.25838 0.724609 6.13338 0.724609 6.00005C0.724609 5.86672 0.745443 5.74172 0.787109 5.62505C0.828776 5.50838 0.899609 5.40005 0.999609 5.30005L5.59961 0.700049C5.78294 0.516715 6.01628 0.425049 6.29961 0.425049C6.58294 0.425049 6.81628 0.516715 6.99961 0.700049C7.18294 0.883382 7.27461 1.11672 7.27461 1.40005C7.27461 1.68338 7.18294 1.91672 6.99961 2.10005L3.09961 6.00005Z\"/></svg> </i> <i class=\"jdgm-rev-snippet-widget__next-btn\" style='display: none;'> <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"12\" viewBox=\"0 0 8 12\" width=\"8\" fill=\"#000\"><path d=\"M4.89961 6.00005L0.999609 2.10005C0.816276 1.91672 0.724609 1.68338 0.724609 1.40005C0.724609 1.11672 0.816276 0.883382 0.999609 0.700049C1.18294 0.516715 1.41628 0.425049 1.69961 0.425049C1.98294 0.425049 2.21628 0.516715 2.39961 0.700049L6.99961 5.30005C7.09961 5.40005 7.17044 5.50838 7.21211 5.62505C7.25378 5.74172 7.27461 5.86672 7.27461 6.00005C7.27461 6.13338 7.25378 6.25838 7.21211 6.37505C7.17044 6.49172 7.09961 6.60005 6.99961 6.70005L2.39961 11.3C2.21628 11.4834 1.98294 11.575 1.69961 11.575C1.41628 11.575 1.18294 11.4834 0.999609 11.3C0.816276 11.1167 0.724609 10.8834 0.724609 10.6C0.724609 10.3167 0.816276 10.0834 0.999609 9.90005L4.89961 6.00005Z\"/></svg> </i> <div style=\"overflow: hidden;\"> <div class='jdgm-rev-snippet-widget__cards-container'> <div class='jdgm-rev-snippet-card' data-review-id='145e170d-9010-453d-b6d8-e85e5782cb1f' style='display: none;'> <div class=\"jdgm-rev-snippet-card__rev-prod-wrapper\">  <a class='jdgm-rev-snippet-card__rev-content-wrapper jdgm-rev-snippet-card__full-review-link' style='text-decoration: none; color: inherit;padding: 0 34px;' role='button' data-review-id='145e170d-9010-453d-b6d8-e85e5782cb1f'> <div class='jdgm-rev-snippet-card__rev-header'> <div class='jdgm-rev-snippet-card__rev-rating' aria-label='5 stars' role='img'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </div> <div class='jdgm-rev-snippet-card__reviewer'> Emelia J </div> </div> <div class='jdgm-rev-snippet-card__rev-content'> <span class='jdgm-rev-snippet-card__rev-body'> <p>Great smoke display, highly recommend.</p> </span> </div> </a> </div> </div> </div> </div> </div>"
+            }
+          },
+          {
+            "node": {
+              "namespace": "judgeme",
+              "key": "widget",
+              "value": "<div class='jdgm-rev-widg' data-updated-at='2026-03-27T02:52:16Z' data-average-rating='5.00' data-number-of-reviews='1' data-number-of-questions='0' data-image-url='https://cdn.shopify.com/s/files/1/0584/7410/2873/files/Bundle_9__The_Smoke_Blaster_Essentials__Both_2.png?v=1768527979'> <style class='jdgm-temp-hiding-style'>.jdgm-rev-widg{ display: none }</style> <div class='jdgm-rev-widg__header'> <h2 class='jdgm-rev-widg__title'>Customer Reviews</h2>  <div class='jdgm-rev-widg__summary'> <div class='jdgm-rev-widg__summary-stars' aria-label='Average rating is 5.00 stars' role='img'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </div> <div class='jdgm-rev-widg__summary-text'>Based on 1 review</div> </div> <a style='display: none' href='#' class='jdgm-write-rev-link' role='button'>Write a review</a> <div class='jdgm-histogram jdgm-temp-hidden'>  <div class='jdgm-histogram__row' data-rating='5' data-frequency='1' data-percentage='100'>  <div class='jdgm-histogram__star' role='button' aria-label=\"100% (1) reviews with 5 star rating\"  tabindex='0' ><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span></div> <div class='jdgm-histogram__bar'> <div class='jdgm-histogram__bar-content' style='width: 100%;'> </div> </div> <div class='jdgm-histogram__percentage'>100%</div> <div class='jdgm-histogram__frequency'>(1)</div> </div>  <div class='jdgm-histogram__row' data-rating='4' data-frequency='0' data-percentage='0'>  <div class='jdgm-histogram__star' role='button' aria-label=\"0% (0) reviews with 4 star rating\"  tabindex='0' ><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--off'></span></div> <div class='jdgm-histogram__bar'> <div class='jdgm-histogram__bar-content' style='width: 0%;'> </div> </div> <div class='jdgm-histogram__percentage'>0%</div> <div class='jdgm-histogram__frequency'>(0)</div> </div>  <div class='jdgm-histogram__row' data-rating='3' data-frequency='0' data-percentage='0'>  <div class='jdgm-histogram__star' role='button' aria-label=\"0% (0) reviews with 3 star rating\"  tabindex='0' ><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--off'></span><span class='jdgm-star jdgm--off'></span></div> <div class='jdgm-histogram__bar'> <div class='jdgm-histogram__bar-content' style='width: 0%;'> </div> </div> <div class='jdgm-histogram__percentage'>0%</div> <div class='jdgm-histogram__frequency'>(0)</div> </div>  <div class='jdgm-histogram__row' data-rating='2' data-frequency='0' data-percentage='0'>  <div class='jdgm-histogram__star' role='button' aria-label=\"0% (0) reviews with 2 star rating\"  tabindex='0' ><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--off'></span><span class='jdgm-star jdgm--off'></span><span class='jdgm-star jdgm--off'></span></div> <div class='jdgm-histogram__bar'> <div class='jdgm-histogram__bar-content' style='width: 0%;'> </div> </div> <div class='jdgm-histogram__percentage'>0%</div> <div class='jdgm-histogram__frequency'>(0)</div> </div>  <div class='jdgm-histogram__row' data-rating='1' data-frequency='0' data-percentage='0'>  <div class='jdgm-histogram__star' role='button' aria-label=\"0% (0) reviews with 1 star rating\"  tabindex='0' ><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--off'></span><span class='jdgm-star jdgm--off'></span><span class='jdgm-star jdgm--off'></span><span class='jdgm-star jdgm--off'></span></div> <div class='jdgm-histogram__bar'> <div class='jdgm-histogram__bar-content' style='width: 0%;'> </div> </div> <div class='jdgm-histogram__percentage'>0%</div> <div class='jdgm-histogram__frequency'>(0)</div> </div>  <div class='jdgm-histogram__row jdgm-histogram__clear-filter' data-rating=null tabindex='0'></div> </div>     <div class='jdgm-rev-widg__sort-wrapper'></div> </div> <div class='jdgm-rev-widg__body'>  <div class='jdgm-rev-widg__reviews'><div class='jdgm-rev jdgm-divider-top' data-verified-buyer='true' data-review-id='3fe806ff-8e7d-4ac8-9c89-c7b49e3f7802' data-review-language='' data-product-title='The Blaster &amp; Smoke Reveal Kit' data-product-url='/products/gender-reveal-smoke-bombs-extinguisher-bundle' data-thumb-up-count='0' data-thumb-down-count='0'> <div class='jdgm-rev__header'>  <div class='jdgm-rev__icon' > S </div>  <span class='jdgm-rev__rating' data-score='5' tabindex='0' aria-label='5 star review' role='img'> <span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span><span class='jdgm-star jdgm--on'></span> </span> <span class='jdgm-rev__timestamp jdgm-spinner' data-content='2026-03-27 02:43:51 UTC'></span>    <div class='jdgm-rev__br'></div> <span class='jdgm-rev__buyer-badge-wrapper'> <span class='jdgm-rev__buyer-badge'></span> </span> <span class='jdgm-rev__author-wrapper'> <span class='jdgm-rev__author'>Sunil Lama</span> <span class='jdgm-rev__location' >  </span>  </span> </div> <div class='jdgm-rev__content'>  <div class='jdgm-rev__custom-form'>  </div> <b class='jdgm-rev__title'>Gender reveal kit</b> <div class='jdgm-rev__body'><p>Best and fast shipping</p></div> <div class='jdgm-rev__pics'>  </div> <div class='jdgm-rev__vids'>   </div> <div class='jdgm-rev__transparency-badge-wrapper'>  <div class='jdgm-rev__transparency-badge' data-badge-type=review_collected_via_store_invitation></div>  </div> </div> <div class='jdgm-rev__actions'> <div class='jdgm-rev__social'></div> <div class='jdgm-rev__votes'></div> </div> <div class='jdgm-rev__reply'>  </div> </div></div> <div class='jdgm-paginate' data-per-page='5' data-url='https://api.judge.me/reviews/reviews_for_widget' style=\"display: none;\"></div>  </div> <div class='jdgm-rev-widg__paginate-spinner-wrapper'> <div class='jdgm-spinner'></div> </div> </div>"
+            }
+          },
+          {
+            "node": {
+              "namespace": "reviews",
+              "key": "rating",
+              "value": "{\"scale_min\":\"1.0\",\"scale_max\":\"5.0\",\"value\":\"5.0\"}"
+            }
+          },
+          {
+            "node": {
+              "namespace": "reviews",
+              "key": "rating_count",
+              "value": "1"
+            }
+          },
+          {
+            "node": {
+              "namespace": "mm-google-shopping",
+              "key": "condition",
+              "value": "new"
+            }
+          },
+          {
+            "node": {
+              "namespace": "mm-google-shopping",
+              "key": "age_group",
+              "value": "adult"
+            }
+          },
+          {
+            "node": {
+              "namespace": "mm-google-shopping",
+              "key": "custom_label_0",
+              "value": "bundle_premium"
+            }
+          },
+          {
+            "node": {
+              "namespace": "mm-google-shopping",
+              "key": "google_product_category",
+              "value": "5709"
+            }
+          }
+        ]
+      },
+      "variants": {
+        "edges": [
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/42984780169305",
+              "title": "Blue - Boy",
+              "price": "99.99",
+              "sku": "GRI-8122484981849-9305"
+            }
+          },
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/42984780202073",
+              "title": "Pink - Girl",
+              "price": "99.99",
+              "sku": "GRI-8122484981849-2073"
+            }
+          },
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/42984780234841",
+              "title": "Both Colours - Pink & Blue",
+              "price": "99.99",
+              "sku": "GRI-8122484981849-4841"
+            }
+          },
+          {
+            "node": {
+              "id": "gid://shopify/ProductVariant/42984780267609",
+              "title": "To Be Announced",
+              "price": "99.99",
+              "sku": "GRI-8122484981849-7609"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

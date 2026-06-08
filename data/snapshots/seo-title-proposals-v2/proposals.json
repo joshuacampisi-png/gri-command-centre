@@ -1,0 +1,716 @@
+{
+  "generatedAt": "2026-05-29T00:26:13.595Z",
+  "totalProposals": 92,
+  "byCategory": {
+    "gr_sport": 6,
+    "gr_balloon": 18,
+    "gr_cannon": 20,
+    "no_match": 20,
+    "gr_burnout": 2,
+    "gr_bundle": 14,
+    "gr_smoke": 1,
+    "gr_ext": 4,
+    "gr_decor": 4,
+    "gr_themed": 1,
+    "themed_toystory": 1,
+    "gr_blaster": 1
+  },
+  "proposals": [
+    {
+      "handle": "gender-reveal-golf-balls",
+      "productTitle": "Super Gender Reveal Golf Balls",
+      "keyword": "Gender Reveal Golf Ball",
+      "volume": 210,
+      "category": "gr_sport",
+      "title": "Gender Reveal Golf Ball | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-baby-shower-balloon-kit",
+      "productTitle": "148 Piece Gender Reveal/ Baby Shower Luxury Balloon Kit",
+      "keyword": "Gender Reveal Balloons",
+      "volume": 1600,
+      "category": "gr_balloon",
+      "title": "Gender Reveal Balloons 148 Piece | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-powder-cannon-australia",
+      "productTitle": "Gender Reveal Powder Cannon XL 50cm",
+      "keyword": "Gender Reveal Cannon",
+      "volume": 480,
+      "category": "gr_cannon",
+      "title": "Gender Reveal Cannon XL | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-exploding-soccer-ball",
+      "productTitle": "Sports Gender Reveal Soccer Ball",
+      "keyword": "Gender Reveal Soccer Ball",
+      "volume": 70,
+      "category": "gr_sport",
+      "title": "Gender Reveal Soccer Ball | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-nfl-ball",
+      "productTitle": "Sports Gender Reveal NFL Ball",
+      "keyword": "(no match)",
+      "title": "Sports Gender Reveal NFL Ball | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-powder-basketball",
+      "productTitle": "Gender Reveal Basketball",
+      "keyword": "Gender Reveal Basketball",
+      "volume": 10,
+      "category": "gr_sport",
+      "title": "Gender Reveal Basketball | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-powder-baseball",
+      "productTitle": "Sports Gender Reveal Baseball",
+      "keyword": "(no match)",
+      "title": "Sports Gender Reveal Baseball | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-cannons",
+      "productTitle": "Gender Reveal Confetti & Powder Cannon XL 50cm",
+      "keyword": "Gender Reveal Cannon",
+      "volume": 480,
+      "category": "gr_cannon",
+      "title": "Gender Reveal Cannon XL | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-powder-cannon-bundle",
+      "productTitle": "4 Pack - Gender Reveal Powder Cannon BIO XL Bundle",
+      "keyword": "Gender Reveal Cannon",
+      "volume": 480,
+      "category": "gr_cannon",
+      "title": "Gender Reveal Cannon 4 Pack XL | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gold-oh-baby-foil-balloons",
+      "productTitle": "Large \"OH BABY\" Foil Balloon Set (Gold)",
+      "keyword": "Gender Reveal Balloons",
+      "volume": 1600,
+      "category": "gr_balloon",
+      "title": "Gender Reveal Balloons Large Gold | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "boy-girl-gender-reveal-balloons",
+      "productTitle": "BOY/ GIRL  Foil Air Fill Gender Reveal Balloons",
+      "keyword": "Gender Reveal Balloons",
+      "volume": 1600,
+      "category": "gr_balloon",
+      "title": "Gender Reveal Balloons | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-foil-curtain",
+      "productTitle": "Gender Reveal Foil Party Curtain",
+      "keyword": "Gender Reveal Balloons",
+      "volume": 1600,
+      "category": "gr_balloon",
+      "title": "Gender Reveal Balloons | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-burnout-powder",
+      "productTitle": "Mega BURNOUT💨 Smoke EXTREME Gender Reveal Burnout Powder 2KG",
+      "keyword": "Gender Reveal Burnout Powder",
+      "volume": 70,
+      "category": "gr_burnout",
+      "title": "Gender Reveal Burnout Powder Mega | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-party-bundle",
+      "productTitle": "Mega Reveal Gender Party Bundle",
+      "keyword": "Gender Reveal Bundle",
+      "volume": 10,
+      "category": "gr_bundle",
+      "title": "Gender Reveal Bundle Mega | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-confetti-balloon",
+      "productTitle": "Custom Mega POP Latex Confetti Gender Reveal Balloon",
+      "keyword": "Gender Reveal Balloons",
+      "volume": 1600,
+      "category": "gr_balloon",
+      "title": "Gender Reveal Balloons Mega | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "87-piece-nature-gender-reveal-baby-shower-luxury-balloon-kit",
+      "productTitle": "87 Piece Nature Gender Reveal/ Baby Shower Luxury Balloon Kit",
+      "keyword": "Gender Reveal Balloons",
+      "volume": 1600,
+      "category": "gr_balloon",
+      "title": "Gender Reveal Balloons 87 Piece | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-powder",
+      "productTitle": "Gender Reveal Powder (200g Net)",
+      "keyword": "(no match)",
+      "title": "Gender Reveal Powder (200g Net) | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-smoke-bomb-australia",
+      "productTitle": "Gender Reveal Smoke Bombs",
+      "keyword": "Gender Reveal Smoke Bombs",
+      "volume": 880,
+      "category": "gr_smoke",
+      "title": "Gender Reveal Smoke Bombs | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-confetti-cannons",
+      "productTitle": "Gender Reveal Confetti Cannon XL 50cm",
+      "keyword": "Gender Reveal Cannon",
+      "volume": 480,
+      "category": "gr_cannon",
+      "title": "Gender Reveal Cannon XL | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-confetti-cannon-australia",
+      "productTitle": "4 Pack - Gender Reveal Confetti Cannon XL BIO Bundle",
+      "keyword": "Gender Reveal Cannon",
+      "volume": 480,
+      "category": "gr_cannon",
+      "title": "Gender Reveal Cannon 4 Pack XL | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-smoke-bundle",
+      "productTitle": "Double Gender Reveal Smoke & Cannon Bundle 🎉",
+      "keyword": "Gender Reveal Cannon",
+      "volume": 480,
+      "category": "gr_cannon",
+      "title": "Gender Reveal Cannon | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-electric-card-spray-gun",
+      "productTitle": "Gender Reveal Electric Card Spray Gun",
+      "keyword": "(no match)",
+      "title": "Gender Reveal Electric Card Spray Gun | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-extinguisher-australia",
+      "productTitle": "Gender Reveal Extinguisher | MEGA Powder Blaster 💥",
+      "keyword": "Gender Reveal Extinguisher",
+      "volume": 170,
+      "category": "gr_ext",
+      "title": "Gender Reveal Extinguisher MEGA | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "mega-gender-reveal-powder-blaster",
+      "productTitle": "Gender Reveal | Double MEGA Powder Blaster/ Extinguisher",
+      "keyword": "Gender Reveal Extinguisher",
+      "volume": 170,
+      "category": "gr_ext",
+      "title": "Gender Reveal Extinguisher MEGA | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-afl-ball",
+      "productTitle": "Sports Gender Reveal AFL Ball",
+      "keyword": "(no match)",
+      "title": "Sports Gender Reveal AFL Ball | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-smoke-cannon-bundle",
+      "productTitle": "Gender Reveal Mega Smoke & Cannon Effect Bundle 🎉",
+      "keyword": "Gender Reveal Cannon",
+      "volume": 480,
+      "category": "gr_cannon",
+      "title": "Gender Reveal Cannon Mega | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-rugby-ball",
+      "productTitle": "Sports Gender Reveal NRL Rugby Ball",
+      "keyword": "Gender Reveal Rugby Ball",
+      "volume": 10,
+      "category": "gr_sport",
+      "title": "Gender Reveal Rugby Ball | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-powder-extinguisher-australia",
+      "productTitle": "Quad Gender Reveal 💥 MEGA Powder Blaster/ Extinguisher",
+      "keyword": "Gender Reveal Extinguisher",
+      "volume": 170,
+      "category": "gr_ext",
+      "title": "Gender Reveal Extinguisher MEGA | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-scratchie",
+      "productTitle": "Gender Reveal Scratchie 10 Pack",
+      "keyword": "Gender Reveal Bundle",
+      "volume": 10,
+      "category": "gr_bundle",
+      "title": "Gender Reveal Bundle 10 Pack | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "balloon-glue-dots",
+      "productTitle": "100 Double Sided Balloon Glue Dots",
+      "keyword": "Gender Reveal Balloons",
+      "volume": 1600,
+      "category": "gr_balloon",
+      "title": "Gender Reveal Balloons | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-burn-away-topper",
+      "productTitle": "6\" Viral Burn Away Cake Topper Kit",
+      "keyword": "Gender Reveal Bundle",
+      "volume": 10,
+      "category": "gr_bundle",
+      "title": "Gender Reveal Bundle | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-confetti",
+      "productTitle": "Gender Reveal Confetti Decoration (120g Net)",
+      "keyword": "Gender Reveal Decorations",
+      "volume": 880,
+      "category": "gr_decor",
+      "title": "Gender Reveal Decorations 120g | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-extinguisher-bundle",
+      "productTitle": "💥Double MEGA Powder Extinguisher & Gender Reveal Cannon Bundle",
+      "keyword": "Gender Reveal Cannon",
+      "volume": 480,
+      "category": "gr_cannon",
+      "title": "Gender Reveal Cannon MEGA | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "afl-gender-reveal-ball",
+      "productTitle": "AFL Gender Reveal Ball & Cannon Family Bundle",
+      "keyword": "Gender Reveal Cannon",
+      "volume": 480,
+      "category": "gr_cannon",
+      "title": "Gender Reveal Cannon | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-golf-ball",
+      "productTitle": "Golf Gender Reveal Cannon & Ball Family Bundle",
+      "keyword": "Gender Reveal Cannon",
+      "volume": 480,
+      "category": "gr_cannon",
+      "title": "Gender Reveal Cannon | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-soccer-ball",
+      "productTitle": "Gender Reveal Soccer & Cannon Family Bundle",
+      "keyword": "Gender Reveal Cannon",
+      "volume": 480,
+      "category": "gr_cannon",
+      "title": "Gender Reveal Cannon | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "baby-shower-box-australia",
+      "productTitle": "Gender Reveal/ Baby Shower Party Box Set",
+      "keyword": "(no match)",
+      "title": "Gender Reveal/ Baby Shower Party Box Set | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "pokemon-gender-reveal",
+      "productTitle": "Gender Reveal Poké Ball 2 pack",
+      "keyword": "Gender Reveal Pokémon",
+      "volume": 20,
+      "category": "gr_themed",
+      "title": "Gender Reveal Pokémon 2 pack | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "prank-confetti-powder-gender-reveal",
+      "productTitle": "PRANK 2 Pack Gender Reveal Cannon",
+      "keyword": "Gender Reveal Cannon",
+      "volume": 480,
+      "category": "gr_cannon",
+      "title": "Gender Reveal Cannon 2 Pack | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-prank-cannon",
+      "productTitle": "PRANK 4 Pack Gender Reveal Cannon",
+      "keyword": "Gender Reveal Cannon",
+      "volume": 480,
+      "category": "gr_cannon",
+      "title": "Gender Reveal Cannon 4 Pack | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "paw-patrol-chase-balloon-set",
+      "productTitle": "Paw Patrol Birthday Foil Balloon Set (Chase)",
+      "keyword": "Gender Reveal Balloons",
+      "volume": 1600,
+      "category": "gr_balloon",
+      "title": "Gender Reveal Balloons | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "paw-patrol-rubble-balloon-set",
+      "productTitle": "Paw Patrol Birthday Foil Balloon Set (Rubble)",
+      "keyword": "Gender Reveal Balloons",
+      "volume": 1600,
+      "category": "gr_balloon",
+      "title": "Gender Reveal Balloons | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "paw-patrol-marshall-balloon-set",
+      "productTitle": "Paw Patrol Birthday Foil Balloon Set (Marshall)",
+      "keyword": "Gender Reveal Balloons",
+      "volume": 1600,
+      "category": "gr_balloon",
+      "title": "Gender Reveal Balloons | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "paw-patrol-birthday-balloon-set",
+      "productTitle": "Paw Patrol Birthday Foil Balloon Set (Skye)",
+      "keyword": "Gender Reveal Balloons",
+      "volume": 1600,
+      "category": "gr_balloon",
+      "title": "Gender Reveal Balloons | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "oh-baby-cake-topper",
+      "productTitle": "\"Oh Baby\" Acrylic Cake Topper (Gold)",
+      "keyword": "(no match)",
+      "title": "\"Oh Baby\" Acrylic Cake Topper (Gold) | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "baby-balloon-box",
+      "productTitle": "Large BABY Box & Balloon Set",
+      "keyword": "Gender Reveal Balloons",
+      "volume": 1600,
+      "category": "gr_balloon",
+      "title": "Gender Reveal Balloons Large | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "mario-balloon-set",
+      "productTitle": "Super Mario Foil Balloon Set",
+      "keyword": "Gender Reveal Balloons",
+      "volume": 1600,
+      "category": "gr_balloon",
+      "title": "Gender Reveal Balloons | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "toy-story-birthday-party-set",
+      "productTitle": "Toy Story Birthday Party Set (15 Person)",
+      "keyword": "Toy Story Birthday",
+      "volume": 90,
+      "category": "themed_toystory",
+      "title": "Toy Story Birthday | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-extinguishers",
+      "productTitle": "Quad Family Gender Reveal Extinguisher Bundle",
+      "keyword": "Gender Reveal Extinguisher",
+      "volume": 170,
+      "category": "gr_ext",
+      "title": "Gender Reveal Extinguisher | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-cannon-bundle-gender-geddon",
+      "productTitle": "Gender-Geddon | Australia's Largest Gender Reveal Bundle",
+      "keyword": "Gender Reveal Cannon",
+      "volume": 480,
+      "category": "gr_cannon",
+      "title": "Gender Reveal Cannon | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-decorations",
+      "productTitle": "Value Gender Reveal Decoration Set",
+      "keyword": "Gender Reveal Decorations",
+      "volume": 880,
+      "category": "gr_decor",
+      "title": "Gender Reveal Decorations | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-decorations-set",
+      "productTitle": "Basic Gender Reveal Decoration Set",
+      "keyword": "Gender Reveal Decorations",
+      "volume": 880,
+      "category": "gr_decor",
+      "title": "Gender Reveal Decorations | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-party-products",
+      "productTitle": "Family Gender Reveal Decoration Set",
+      "keyword": "Gender Reveal Decorations",
+      "volume": 880,
+      "category": "gr_decor",
+      "title": "Gender Reveal Decorations | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-sash",
+      "productTitle": "Satin \"Mom To Be\" Gender Reveal Sash",
+      "keyword": "(no match)",
+      "title": "Satin \"Mom To Be\" Gender Reveal Sash | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-cups",
+      "productTitle": "Oh Baby Gender Reveal/ Baby Shower Cups",
+      "keyword": "(no match)",
+      "title": "Oh Baby Gender Reveal/ Baby Shower Cups | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-prediction-cards",
+      "productTitle": "Gender Reveal/ Baby Shower Prediction Cards",
+      "keyword": "(no match)",
+      "title": "Gender Reveal/ Baby Shower Prediction Cards | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-cricket-ball",
+      "productTitle": "Gender Reveal Cricket Ball",
+      "keyword": "Gender Reveal Cricket Ball",
+      "volume": 20,
+      "category": "gr_sport",
+      "title": "Gender Reveal Cricket Ball | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-smoke-box",
+      "productTitle": "DIY -Gender Reveal Smoke Box Trend",
+      "keyword": "(no match)",
+      "title": "DIY -Gender Reveal Smoke Box Trend | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "oh-baby-gender-reveal-napkins-gender-reveal-napkins",
+      "productTitle": "Oh Baby Gender Reveal/ Baby Shower Napkins",
+      "keyword": "(no match)",
+      "title": "Oh Baby Gender Reveal/ Baby Shower Napkins | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "baby-shower-plates-gender-reveal-plates",
+      "productTitle": "Oh Baby Gender Reveal/ Baby Shower Plates",
+      "keyword": "(no match)",
+      "title": "Oh Baby Gender Reveal/ Baby Shower Plates | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "baby-shower-gold-forks",
+      "productTitle": "Gold Re-Usable Party Forks",
+      "keyword": "(no match)",
+      "title": "Gold Re-Usable Party Forks | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-wrist-bands",
+      "productTitle": "Custom Gender Reveal Party Wrist Bands - 20 Pack",
+      "keyword": "Gender Reveal Bundle",
+      "volume": 10,
+      "category": "gr_bundle",
+      "title": "Gender Reveal Bundle 20 Pack | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-party-prediction-badges-20-pack-copy",
+      "productTitle": "Boutique Custom Gender Reveal Party Badges 20 Pack",
+      "keyword": "Gender Reveal Bundle",
+      "volume": 10,
+      "category": "gr_bundle",
+      "title": "Gender Reveal Bundle 20 Pack | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "deluxe-gold-mega-confetti-gender-reveal-balloon",
+      "productTitle": "Deluxe Gold Mega Confetti Gender Reveal Balloon",
+      "keyword": "Gender Reveal Balloons",
+      "volume": 1600,
+      "category": "gr_balloon",
+      "title": "Gender Reveal Balloons Mega Gold | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "afl-sports-bundle",
+      "productTitle": "Gender Reveal AFL Sports Bundle",
+      "keyword": "Gender Reveal Bundle",
+      "volume": 10,
+      "category": "gr_bundle",
+      "title": "Gender Reveal Bundle | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-pin-the-dummy-game",
+      "productTitle": "Gender Reveal Pin The Dummy Game",
+      "keyword": "(no match)",
+      "title": "Gender Reveal Pin The Dummy Game | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-scratchies",
+      "productTitle": "Gender Reveal Ideas 24 Pack Scratchies",
+      "keyword": "Gender Reveal Bundle",
+      "volume": 10,
+      "category": "gr_bundle",
+      "title": "Gender Reveal Bundle 24 Pack | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-powder-cannon",
+      "productTitle": "Green Party Celebration Powder Cannon XL 50cm",
+      "keyword": "Gender Reveal Cannon",
+      "volume": 480,
+      "category": "gr_cannon",
+      "title": "Gender Reveal Cannon XL Green | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "party-celebration-powder-cannon-xl-50cm",
+      "productTitle": "Orange Party Celebration Powder Cannon XL 50cm",
+      "keyword": "Gender Reveal Cannon",
+      "volume": 480,
+      "category": "gr_cannon",
+      "title": "Gender Reveal Cannon XL | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-poppers",
+      "productTitle": "Purple Party Celebration Powder Cannon XL 50cm",
+      "keyword": "Gender Reveal Cannon",
+      "volume": 480,
+      "category": "gr_cannon",
+      "title": "Gender Reveal Cannon XL | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "purple-gender-reveal-powder-cannon-bio-xl-bundle",
+      "productTitle": "4 Pack - Purple Party Powder Cannon BIO XL Bundle",
+      "keyword": "Gender Reveal Cannon",
+      "volume": 480,
+      "category": "gr_cannon",
+      "title": "Gender Reveal Cannon 4 Pack XL | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "green-party-powder-cannon-bio-xl-bundle",
+      "productTitle": "4 Pack - Green Party Powder Cannon BIO XL Bundle",
+      "keyword": "Gender Reveal Cannon",
+      "volume": 480,
+      "category": "gr_cannon",
+      "title": "Gender Reveal Cannon 4 Pack XL Green | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "orange-party-powder-cannon-bio-xl-bundle",
+      "productTitle": "4 Pack - Orange Party Powder Cannon BIO XL Bundle",
+      "keyword": "Gender Reveal Cannon",
+      "volume": 480,
+      "category": "gr_cannon",
+      "title": "Gender Reveal Cannon 4 Pack XL | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-party-kit",
+      "productTitle": "Full Gender Reveal Back Drop Kit",
+      "keyword": "Gender Reveal Bundle",
+      "volume": 10,
+      "category": "gr_bundle",
+      "title": "Gender Reveal Bundle | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal0ideas-party",
+      "productTitle": "Gender Reveal Party Voting Sheet",
+      "keyword": "(no match)",
+      "title": "Gender Reveal Party Voting Sheet | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-balloons",
+      "productTitle": "Baby Large Foil Balloon",
+      "keyword": "Gender Reveal Balloons",
+      "volume": 1600,
+      "category": "gr_balloon",
+      "title": "Gender Reveal Balloons Large | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-party-pack",
+      "productTitle": "Gender Reveal Mum & Dad Feature Pack",
+      "keyword": "Gender Reveal Bundle",
+      "volume": 10,
+      "category": "gr_bundle",
+      "title": "Gender Reveal Bundle | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "buy-gender-reveal-bundles",
+      "productTitle": "Backyard Celebration Bundle",
+      "keyword": "Gender Reveal Bundle",
+      "volume": 10,
+      "category": "gr_bundle",
+      "title": "Gender Reveal Bundle | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "the-grandparent-moment-bundle",
+      "productTitle": "The Grandparent Moment Bundle",
+      "keyword": "Gender Reveal Bundle",
+      "volume": 10,
+      "category": "gr_bundle",
+      "title": "Gender Reveal Bundle | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-soccer-smoke-bomb-bundle",
+      "productTitle": "Game Day Gender Reveal Bundle",
+      "keyword": "Gender Reveal Soccer Ball",
+      "volume": 70,
+      "category": "gr_sport",
+      "title": "Gender Reveal Soccer Ball | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "double-trouble-twins-reveal-bundle",
+      "productTitle": "Double Trouble Twins Reveal Bundle",
+      "keyword": "Gender Reveal Bundle",
+      "volume": 10,
+      "category": "gr_bundle",
+      "title": "Gender Reveal Bundle Twins | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-burnout-smoke",
+      "productTitle": "The Race Day Reveal Bundle",
+      "keyword": "Gender Reveal Burnout Powder",
+      "volume": 70,
+      "category": "gr_burnout",
+      "title": "Gender Reveal Burnout Powder | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "the-low-mess-indoor-reveal-bundle",
+      "productTitle": "The Low Mess Indoor Reveal Bundle",
+      "keyword": "Gender Reveal Bundle",
+      "volume": 10,
+      "category": "gr_bundle",
+      "title": "Gender Reveal Bundle | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "the-mini-blaster-party-starter",
+      "productTitle": "The Mini Blaster Party Starter",
+      "keyword": "Gender Reveal Powder Blaster",
+      "volume": 20,
+      "category": "gr_blaster",
+      "title": "Gender Reveal Powder Blaster Mini | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "exclusive-reveal-bundle",
+      "productTitle": "Exclusive Reveal Bundle",
+      "keyword": "Gender Reveal Bundle",
+      "volume": 10,
+      "category": "gr_bundle",
+      "title": "Gender Reveal Bundle | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "official-gender-reveal-pet-bandana",
+      "productTitle": "Gender Reveal Dog Bandana",
+      "keyword": "(no match)",
+      "title": "Gender Reveal Dog Bandana | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-boy-girl-party-glasses",
+      "productTitle": "Gender Reveal Boy & Girl Party Glasses 20pcs",
+      "keyword": "(no match)",
+      "title": "Gender Reveal Boy & Girl Party Glasses 20pcs | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-balloon-garland",
+      "productTitle": "DIY Hire Gender Reveal Balloon Garland",
+      "keyword": "Gender Reveal Balloons",
+      "volume": 1600,
+      "category": "gr_balloon",
+      "title": "Gender Reveal Balloons | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "double-powder-double-the-effect",
+      "productTitle": "Double Powder, Double the Effect",
+      "keyword": "(no match)",
+      "title": "Double Powder, Double the Effect | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "gender-reveal-balloon-box",
+      "productTitle": "Gender Reveal Helium Balloon Box Hire",
+      "keyword": "Gender Reveal Balloons",
+      "volume": 1600,
+      "category": "gr_balloon",
+      "title": "Gender Reveal Balloons | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "single-arch-balloon-garland",
+      "productTitle": "Classic Single or Double Arch Garland Hire",
+      "keyword": "Gender Reveal Balloons",
+      "volume": 1600,
+      "category": "gr_balloon",
+      "title": "Gender Reveal Balloons | Australia 4.85★ Reviews"
+    },
+    {
+      "handle": "double-powder-upgrade",
+      "productTitle": "Double Powder Upgrade",
+      "keyword": "(no match)",
+      "title": "Double Powder Upgrade | Australia 4.85★ Reviews"
+    }
+  ]
+}
