@@ -180,33 +180,98 @@ function AddHireModal({ onClose, onAdd, loading }) {
 }
 
 function ReturnModal({ hire, onClose, onDecide, loading }) {
-  const [decision, setDecision] = useState(null);
+  const fullBond = 200 * (hire.kitQty || 1);
+  const [mode, setMode] = useState(null); // 'full' | 'partial' | 'withhold'
+  const [partialAmount, setPartialAmount] = useState("");
+
+  const submit = () => {
+    if (mode === 'full') return onDecide('refund', {});
+    if (mode === 'withhold') return onDecide('withhold', {});
+    if (mode === 'partial') {
+      const amt = parseFloat(partialAmount);
+      if (Number.isNaN(amt) || amt <= 0) { alert('Enter a valid partial amount'); return; }
+      if (amt > fullBond) { alert(`Amount can't exceed full bond $${fullBond}`); return; }
+      return onDecide('refund', { customAmount: amt });
+    }
+  };
+
+  const refundAmt = mode === 'full' ? fullBond : mode === 'partial' ? (parseFloat(partialAmount) || 0) : 0;
+  const withholdAmt = fullBond - refundAmt;
+
   return (
     <Modal title={`Process Return — ${hire.orderNumber}`} onClose={onClose}>
-      <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: "0 0 16px" }}>
-        <strong>{hire.customerName}</strong> — Bond: ${(hire.kitQty || 1) >= 2 ? "$400" : "$200"}{(hire.kitQty || 1) >= 2 ? " (2 kits)" : ""}. What happens to the bond?
+      <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: "0 0 14px" }}>
+        <strong>{hire.customerName}</strong> · Bond held: <strong style={{ color: "#181A1D" }}>${fullBond}</strong>
+        {(hire.kitQty || 1) > 1 && <> ({hire.kitQty} kits × $200)</>}
       </p>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
-        {[
-          { val: "refund", label: "Refund bond", desc: "Good condition — returned clean", color: "#3B6D11", bg: "#EAF3DE" },
-          { val: "withhold", label: "Withhold bond", desc: "Damage, dirty, or breach", color: "#A32D2D", bg: "#FCEBEB" },
-        ].map(opt => (
-          <div key={opt.val} onClick={() => setDecision(opt.val)} style={{
-            border: decision === opt.val ? `2px solid ${opt.color}` : "1px solid var(--color-border-tertiary)",
-            borderRadius: 8, padding: "14px 16px", cursor: "pointer",
-            background: decision === opt.val ? opt.bg : "transparent", transition: "all 0.12s",
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 12 }}>
+        <button onClick={() => { setMode('full'); setPartialAmount(""); }}
+          style={{
+            padding: '12px 8px', borderRadius: 8, cursor: 'pointer',
+            border: mode === 'full' ? '2px solid #047857' : '1px solid var(--color-border-tertiary)',
+            background: mode === 'full' ? '#DCFCE7' : 'transparent',
+            color: '#047857', fontWeight: 700, fontSize: 13,
           }}>
-            <div style={{ fontWeight: 600, fontSize: 14, color: opt.color }}>{opt.label}</div>
-            <div style={{ fontSize: 12, color: "var(--color-text-secondary)", marginTop: 4 }}>{opt.desc}</div>
-          </div>
-        ))}
+          Full Refund<div style={{ fontSize: 11, fontWeight: 400, marginTop: 2 }}>${fullBond} → customer</div>
+        </button>
+        <button onClick={() => setMode('partial')}
+          style={{
+            padding: '12px 8px', borderRadius: 8, cursor: 'pointer',
+            border: mode === 'partial' ? '2px solid #B45309' : '1px solid var(--color-border-tertiary)',
+            background: mode === 'partial' ? '#FEF3C7' : 'transparent',
+            color: '#92400E', fontWeight: 700, fontSize: 13,
+          }}>
+          Partial<div style={{ fontSize: 11, fontWeight: 400, marginTop: 2 }}>Keep some for damage</div>
+        </button>
+        <button onClick={() => { setMode('withhold'); setPartialAmount(""); }}
+          style={{
+            padding: '12px 8px', borderRadius: 8, cursor: 'pointer',
+            border: mode === 'withhold' ? '2px solid #A32D2D' : '1px solid var(--color-border-tertiary)',
+            background: mode === 'withhold' ? '#FCEBEB' : 'transparent',
+            color: '#A32D2D', fontWeight: 700, fontSize: 13,
+          }}>
+          Withhold All<div style={{ fontSize: 11, fontWeight: 400, marginTop: 2 }}>$0 → customer</div>
+        </button>
       </div>
+
+      {mode === 'partial' && (
+        <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 8, padding: '12px 14px', marginBottom: 12 }}>
+          <label style={{ fontSize: 11, fontWeight: 700, color: '#92400E', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 6 }}>
+            Refund amount to customer ($)
+          </label>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            <span style={{ fontSize: 16, fontWeight: 700, color: '#92400E' }}>$</span>
+            <input type="number" step="0.01" min="0" max={fullBond}
+              autoFocus value={partialAmount}
+              onChange={e => setPartialAmount(e.target.value)}
+              placeholder={`up to ${fullBond}`}
+              style={{ flex: 1, padding: '8px 10px', fontSize: 16, borderRadius: 6, border: '1px solid #FDE68A', fontWeight: 700, outline: 'none' }} />
+          </div>
+          {parseFloat(partialAmount) > 0 && (
+            <div style={{ marginTop: 8, fontSize: 12, color: '#78350F', lineHeight: 1.5 }}>
+              Customer gets back: <strong>${refundAmt.toFixed(2)}</strong> · GRI keeps for damage: <strong>${withholdAmt.toFixed(2)}</strong>
+            </div>
+          )}
+        </div>
+      )}
+
+      {(mode === 'full' || (mode === 'partial' && parseFloat(partialAmount) > 0) || mode === 'withhold') && (
+        <div style={{ padding: '10px 12px', background: '#F0FDFA', border: '1px solid #A7F3D0', borderRadius: 8, marginBottom: 12, fontSize: 13, color: '#047857' }}>
+          {mode === 'full' && <>✓ Refunding <strong>${fullBond.toFixed(2)}</strong> to customer's card. Funds appear in 2–10 business days.</>}
+          {mode === 'partial' && parseFloat(partialAmount) > 0 && <>✓ Refunding <strong>${refundAmt.toFixed(2)}</strong> to customer · keeping <strong>${withholdAmt.toFixed(2)}</strong> for damage</>}
+          {mode === 'withhold' && <>⚠ No refund — full <strong>${fullBond.toFixed(2)}</strong> bond withheld. Customer notified by email.</>}
+        </div>
+      )}
+
       <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
         <button onClick={onClose} style={btnBase}>Cancel</button>
-        <button disabled={!decision || loading} onClick={() => decision && onDecide(decision)} style={{
-          ...(decision === "withhold" ? btnDanger : btnPrimary),
-          opacity: (!decision || loading) ? 0.5 : 1, cursor: decision && !loading ? "pointer" : "not-allowed",
-        }}>{loading ? "Processing..." : "Confirm"}</button>
+        <button disabled={!mode || (mode === 'partial' && !partialAmount) || loading} onClick={submit}
+          style={{
+            ...(mode === "withhold" ? btnDanger : btnPrimary),
+            opacity: (!mode || (mode === 'partial' && !partialAmount) || loading) ? 0.5 : 1,
+            cursor: mode && !loading ? "pointer" : "not-allowed",
+          }}>{loading ? "Processing..." : "Confirm"}</button>
       </div>
     </Modal>
   );
@@ -424,17 +489,21 @@ export default function TNTDashboard() {
   const handleReturn = async (decision, opts = {}) => {
     setActionLoading(true);
     try {
+      const body = { decision, forceManual: !!opts.forceManual };
+      if (opts.customAmount != null) body.customAmount = opts.customAmount;
       const r = await api(`/${returnHire.id}/process-return`, {
         method: "POST",
-        body: JSON.stringify({ decision, forceManual: !!opts.forceManual }),
+        body: JSON.stringify(body),
       });
       if (decision === "refund") {
         if (r.manual) {
-          showToast("Marked refunded_manual — refund the customer in Square dashboard yourself", "warn");
+          showToast("Marked refunded_manual — process in Square dashboard yourself", "warn");
         } else if (r.refundStatus === "PENDING") {
-          showToast("Square accepted refund (PENDING) — money lands in 2-10 business days");
+          const amt = opts.customAmount ? `$${opts.customAmount.toFixed(2)}` : "bond";
+          showToast(`Square accepted refund ${amt} (PENDING) — lands in 2-10 days`);
         } else {
-          showToast("Bond refunded, email sent");
+          const amt = opts.customAmount ? `$${opts.customAmount.toFixed(2)}` : "Full bond";
+          showToast(`${amt} refunded, email sent`);
         }
       } else {
         showToast("Bond withheld, customer notified");
@@ -442,11 +511,10 @@ export default function TNTDashboard() {
       setReturnHire(null);
       await loadHires();
     } catch (err) {
-      // Refund-specific errors give the operator an escape hatch
       if (err.code === "NO_SQUARE_PAYMENT" || err.code === "SQUARE_REFUND_FAILED") {
         const msg = `${err.message}\n\n${err.hint || ""}\n\nClick OK to mark this hire as "refunded_manual" (you handle the refund in Square dashboard). Click Cancel to abort.`;
         if (window.confirm(msg)) {
-          return handleReturn("refund", { forceManual: true });
+          return handleReturn("refund", { forceManual: true, customAmount: opts.customAmount });
         }
       } else {
         showToast(err.message, "error");

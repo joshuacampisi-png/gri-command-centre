@@ -514,7 +514,7 @@ router.post('/:id/process-return', async (req, res) => {
     const hire = getById(req.params.id);
     if (!hire) return res.status(404).json({ error: 'Hire not found' });
 
-    const { decision, forceManual } = req.body || {};
+    const { decision, forceManual, customAmount } = req.body || {};
     if (!decision || !['refund', 'withhold'].includes(decision)) {
       return res.status(400).json({ error: 'decision must be "refund" or "withhold"' });
     }
@@ -539,7 +539,28 @@ router.post('/:id/process-return', async (req, res) => {
 
     // ── REFUND branch ──────────────────────────────────────────────
     const tntBase = parseInt(process.env.TNT_BOND_AMOUNT || '200', 10);
-    const bondCents = tntBase * 100 * (hire.kitQty || 1);
+    const fullBondCents = tntBase * 100 * (hire.kitQty || 1);
+
+    // Custom partial refund amount supported — operator passes customAmount
+    // in dollars (e.g. 150 = $150 refunded, the rest withheld for damage).
+    // If not provided, refund the full bond.
+    let bondCents = fullBondCents;
+    let isPartial = false;
+    if (customAmount !== undefined && customAmount !== null && customAmount !== '') {
+      const parsed = parseFloat(customAmount);
+      if (Number.isNaN(parsed) || parsed < 0) {
+        return res.status(400).json({ ok: false, error: `Invalid customAmount: ${customAmount}` });
+      }
+      const customCents = Math.round(parsed * 100);
+      if (customCents > fullBondCents) {
+        return res.status(400).json({
+          ok: false,
+          error: `customAmount $${parsed.toFixed(2)} exceeds full bond $${(fullBondCents / 100).toFixed(2)}. To charge more than the bond, use the "Charge for damages" button instead which uses the saved card on file.`,
+        });
+      }
+      bondCents = customCents;
+      isPartial = customCents < fullBondCents;
+    }
 
     // 1. Manual override path: operator confirms they will refund in Square dashboard
     if (forceManual) {
@@ -591,14 +612,19 @@ router.post('/:id/process-return', async (req, res) => {
 
     // 4. Persist outcome based on actual Square status
     const isCompleted = refund.status === 'COMPLETED';
+    const outcomeLabel = isPartial
+      ? (isCompleted ? 'refunded_partial' : 'refund_pending_partial')
+      : (isCompleted ? 'refunded' : 'refund_pending');
     const updated = update(hire.id, {
       status: 'returned',
-      bondOutcome: isCompleted ? 'refunded' : 'refund_pending',
+      bondOutcome: outcomeLabel,
       returnedAt: now,
       bondOutcomeAt: now,
       refundId: refund.refundId,
       refundStatus: refund.status,
       refundCheckedAt: now,
+      refundAmountCents: bondCents,
+      withheldAmountCents: fullBondCents - bondCents,
     });
 
     // 5. Email customer ONLY if Square actually accepted the refund. The

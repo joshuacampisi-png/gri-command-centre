@@ -403,7 +403,7 @@ router.post('/:id/process-return', async (req, res) => {
   try {
     const hire = getById(req.params.id)
     if (!hire) return res.status(404).json({ error: 'Hire not found' })
-    const { decision, forceManual } = req.body || {}
+    const { decision, forceManual, customAmount } = req.body || {}
     if (!['refund', 'withhold'].includes(decision)) return res.status(400).json({ error: 'decision must be refund or withhold' })
     const now = new Date().toISOString()
 
@@ -431,9 +431,26 @@ router.post('/:id/process-return', async (req, res) => {
       })
     }
 
+    // Partial refund supported via customAmount (dollars)
+    const fullBondCents = balloonBondCents(hire)
+    let refundCents = fullBondCents
+    let isPartial = false
+    if (customAmount !== undefined && customAmount !== null && customAmount !== '') {
+      const parsed = parseFloat(customAmount)
+      if (Number.isNaN(parsed) || parsed < 0) {
+        return res.status(400).json({ ok: false, error: `Invalid customAmount: ${customAmount}` })
+      }
+      const customCents = Math.round(parsed * 100)
+      if (customCents > fullBondCents) {
+        return res.status(400).json({ ok: false, error: `customAmount $${parsed.toFixed(2)} exceeds full bond $${(fullBondCents/100).toFixed(2)}. To charge more than the bond, use 'Charge for damages' on the saved card.` })
+      }
+      refundCents = customCents
+      isPartial = customCents < fullBondCents
+    }
+
     let refund
     try {
-      refund = await refundBondPayment(hire.bondPaymentId, balloonBondCents(hire))
+      refund = await refundBondPayment(hire.bondPaymentId, refundCents)
     } catch (refundErr) {
       return res.status(502).json({
         ok: false, code: 'SQUARE_REFUND_FAILED',
@@ -443,11 +460,16 @@ router.post('/:id/process-return', async (req, res) => {
     }
 
     const isCompleted = refund.status === 'COMPLETED'
+    const outcomeLabel = isPartial
+      ? (isCompleted ? 'refunded_partial' : 'refund_pending_partial')
+      : (isCompleted ? 'refunded' : 'refund_pending')
     const updated = update(hire.id, {
       status: 'returned',
-      bondOutcome: isCompleted ? 'refunded' : 'refund_pending',
+      bondOutcome: outcomeLabel,
       returnedAt: now, bondOutcomeAt: now,
       refundId: refund.refundId, refundStatus: refund.status, refundCheckedAt: now,
+      refundAmountCents: refundCents,
+      withheldAmountCents: fullBondCents - refundCents,
     })
     try { await sendBalloonEmail('refund', updated) } catch (e) { console.error('[balloons] refund email fail:', e.message) }
     return res.json({ ok: true, hire: updated, refundStatus: refund.status,
