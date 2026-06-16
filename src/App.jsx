@@ -444,24 +444,24 @@ function OverviewPage({ data, company }) {
           {!sales ? <p className="muted">Loading sales...</p>
            : !sales.ok ? <p className="muted">Sales data unavailable</p>
            : <>
-              <div style={{ fontSize: '2.4rem', fontWeight: 800, color: '#E43F7B', marginBottom: 8 }}>
+              <div style={{ fontSize: '2.4rem', fontWeight: 800, color: 'var(--text)', marginBottom: 8 }}>
                 ${sales.revenue.toFixed(2)}
               </div>
               <div className="kv-row"><span>Orders</span><strong>{sales.orders}</strong></div>
             </>}
           {monthStats && <>
-            <div style={{ borderTop: '1px solid #E8ECF4', marginTop: 12, paddingTop: 12 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: '#7C3AED', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>Month to Date</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#7C3AED', marginBottom: 6 }}>
+            <div style={{ borderTop: '1px solid var(--border)', marginTop: 12, paddingTop: 12 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-soft)', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>Month to Date</div>
+              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-soft)', marginBottom: 6 }}>
                 ${monthStats.revenue.toFixed(2)}
               </div>
               <div className="kv-row"><span>Orders</span><strong>{monthStats.orders}</strong></div>
             </div>
           </>}
           {yearStats && <>
-            <div style={{ borderTop: '1px solid #E8ECF4', marginTop: 12, paddingTop: 12 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: '#0EA5E9', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>Year to Date</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0EA5E9', marginBottom: 6 }}>
+            <div style={{ borderTop: '1px solid var(--border)', marginTop: 12, paddingTop: 12 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-soft)', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 6 }}>Year to Date</div>
+              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-soft)', marginBottom: 6 }}>
                 ${yearStats.revenue.toFixed(2)}
               </div>
               <div className="kv-row"><span>Orders</span><strong>{yearStats.orders}</strong></div>
@@ -478,7 +478,7 @@ function OverviewPage({ data, company }) {
           {shippingFetchStatus.state === 'error' && (
             <div style={{ background: '#FEE2E2', border: '1px solid #FECACA', color: '#991B1B', padding: '8px 10px', borderRadius: 6, fontSize: 11, marginBottom: 8 }}>
               ⚠️ Couldn't load saved shipping data: <strong>{shippingFetchStatus.message}</strong>
-              <button onClick={() => window.location.reload()} style={{ marginLeft: 6, padding: '2px 8px', fontSize: 11, borderRadius: 4, border: '1px solid #991B1B', background: '#fff', color: '#991B1B', cursor: 'pointer', fontWeight: 600 }}>retry</button>
+              <button onClick={() => window.location.reload()} style={{ marginLeft: 6, padding: '2px 8px', fontSize: 11, borderRadius: 4, border: '1px solid #991B1B', background: 'var(--bg-surface)', color: '#991B1B', cursor: 'pointer', fontWeight: 600 }}>retry</button>
             </div>
           )}
           {shippingFetchStatus.state === 'ok' && shippingFetchStatus.count > 0 && (
@@ -498,7 +498,7 @@ function OverviewPage({ data, company }) {
                 <button key={w.offset} onClick={() => setShippingWeekOffset(w.offset)}
                   style={{
                     padding: '5px 10px', fontSize: 11, borderRadius: 8, cursor: 'pointer',
-                    border: shippingWeekOffset === w.offset ? '2px solid #3AB4C0' : '1px solid #e5e7eb',
+                    border: shippingWeekOffset === w.offset ? '1.5px solid var(--text)' : '1px solid var(--border)',
                     background: shippingWeekOffset === w.offset ? '#F0FDFA' : '#fff',
                     color: shippingWeekOffset === w.offset ? '#0F766E' : '#555',
                     fontWeight: shippingWeekOffset === w.offset ? 600 : 400,
@@ -523,7 +523,7 @@ function OverviewPage({ data, company }) {
               }}
               style={{
                 flex: 1, padding: '6px 8px', fontSize: 12, borderRadius: 8,
-                border: !isQuickPick ? '2px solid #3AB4C0' : '1px solid #e5e7eb',
+                border: !isQuickPick ? '1.5px solid var(--text)' : '1px solid var(--border)',
                 background: !isQuickPick ? '#F0FDFA' : '#fff',
                 color: !isQuickPick ? '#0F766E' : '#555',
                 fontWeight: !isQuickPick ? 600 : 400,
@@ -543,7 +543,7 @@ function OverviewPage({ data, company }) {
             </select>
           </div>
           {shippingData ? <>
-            <div style={{ fontSize: '2.4rem', fontWeight: 800, color: '#3AB4C0', marginBottom: 8 }}>
+            <div style={{ fontSize: '2.4rem', fontWeight: 800, color: 'var(--text)', marginBottom: 8 }}>
               ${shippingData.shipping.toFixed(2)}
             </div>
             <div className="kv-row"><span>Orders</span><strong>{shippingData.orders}</strong></div>
@@ -590,7 +590,7 @@ function OverviewPage({ data, company }) {
                     })}
                     {entries.length > 8 && (
                       <button onClick={() => setShowShippingGraph(true)}
-                        style={{ padding: '4px 9px', fontSize: 11, borderRadius: 14, border: '1px solid #A7F3D0', background: '#fff', color: '#047857', cursor: 'pointer', fontWeight: 600 }}>
+                        style={{ padding: '4px 9px', fontSize: 11, borderRadius: 14, border: '1px solid #A7F3D0', background: 'var(--bg-surface)', color: '#047857', cursor: 'pointer', fontWeight: 600 }}>
                         +{entries.length - 8} more →
                       </button>
                     )}
@@ -602,8 +602,8 @@ function OverviewPage({ data, company }) {
             {/* Actual shipping cost paid — TWO COURIERS (AusPost + StarTrack)
                 Both bills typed in, hit Save → totals deducted from this
                 week's Shopify-collected shipping revenue → real profit/loss. */}
-            <div style={{ borderTop: '1px solid #E8ECF4', marginTop: 12, paddingTop: 12 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: '#E43F7B', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 8 }}>
+            <div style={{ borderTop: '1px solid var(--border)', marginTop: 12, paddingTop: 12 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 8 }}>
                 Couriers paid this week
               </div>
 
@@ -615,7 +615,7 @@ function OverviewPage({ data, company }) {
                   value={auspostInput}
                   onChange={e => setAuspostInput(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') saveShippingCost() }}
-                  style={{ flex: 1, padding: '6px 10px', fontSize: 14, borderRadius: 8, border: '1px solid #e5e7eb', outline: 'none', fontWeight: 600 }} />
+                  style={{ flex: 1, padding: '6px 10px', fontSize: 14, borderRadius: 8, border: '1px solid var(--border)', outline: 'none', fontWeight: 600 }} />
               </div>
 
               {/* StarTrack */}
@@ -626,18 +626,18 @@ function OverviewPage({ data, company }) {
                   value={startrackInput}
                   onChange={e => setStartrackInput(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') saveShippingCost() }}
-                  style={{ flex: 1, padding: '6px 10px', fontSize: 14, borderRadius: 8, border: '1px solid #e5e7eb', outline: 'none', fontWeight: 600 }} />
+                  style={{ flex: 1, padding: '6px 10px', fontSize: 14, borderRadius: 8, border: '1px solid var(--border)', outline: 'none', fontWeight: 600 }} />
               </div>
 
               <div style={{ display: 'flex', gap: 6 }}>
                 <button onClick={saveShippingCost} disabled={shippingCostSaving}
-                  style={{ flex: 1, padding: '8px 14px', fontSize: 12, fontWeight: 600, borderRadius: 8, border: 'none', background: '#3AB4C0', color: '#fff', cursor: 'pointer', opacity: shippingCostSaving ? 0.6 : 1 }}>
+                  style={{ flex: 1, padding: '8px 14px', fontSize: 12, fontWeight: 600, borderRadius: 8, border: 'none', background: 'var(--text)', color: 'var(--bg-surface)', cursor: 'pointer', opacity: shippingCostSaving ? 0.6 : 1 }}>
                   {shippingCostSaving ? 'Saving…' : 'Save couriers'}
                 </button>
                 {shippingCosts[getWedTueWeek(shippingWeekOffset).from] && (
                   <button onClick={clearShippingCost} disabled={shippingCostSaving}
                     title="Clear this week's couriers"
-                    style={{ padding: '8px 12px', fontSize: 14, fontWeight: 700, borderRadius: 8, border: '1px solid #e5e7eb', background: '#fff', color: '#E43F7B', cursor: 'pointer', lineHeight: 1 }}>
+                    style={{ padding: '8px 12px', fontSize: 14, fontWeight: 700, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-surface)', color: 'var(--text)', cursor: 'pointer', lineHeight: 1 }}>
                     ✕
                   </button>
                 )}
@@ -670,7 +670,7 @@ function OverviewPage({ data, company }) {
                     <div style={{
                       borderRadius: 10,
                       background: shippingSavedFlash ? '#DCFCE7' : '#FAFAFA',
-                      border: `2px solid ${shippingSavedFlash ? '#10B981' : madeMoney ? '#10B981' : lostMoney ? '#E43F7B' : '#E5E7EB'}`,
+                      border: `2px solid ${shippingSavedFlash ? '#10B981' : madeMoney ? '#10B981' : lostMoney ? 'var(--red)' : 'var(--border)'}`,
                       overflow: 'hidden',
                     }}>
                       <div style={{ padding: '8px 12px', background: '#F0FDFA', borderBottom: '1px solid #E5E7EB', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -716,7 +716,7 @@ function OverviewPage({ data, company }) {
                           </span>
                           <strong style={{
                             fontSize: 22, fontWeight: 900,
-                            color: noData ? '#9CA3AF' : madeMoney ? '#10B981' : lostMoney ? '#E43F7B' : '#475569',
+                            color: noData ? '#9CA3AF' : madeMoney ? '#10B981' : lostMoney ? 'var(--red)' : 'var(--text-soft)',
                           }}>
                             {noData ? '—' : (madeMoney ? '+' : lostMoney ? '−' : '')}${Math.abs(net).toFixed(2)}
                           </strong>
@@ -753,7 +753,7 @@ function OverviewPage({ data, company }) {
             <button onClick={() => setShowShippingGraph(true)}
               style={{
                 marginTop: 12, width: '100%', padding: '9px 0', fontSize: 12, fontWeight: 600,
-                borderRadius: 8, border: '1px solid #3AB4C0', background: '#F0FDFA',
+                borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-subtle)',
                 color: '#0F766E', cursor: 'pointer',
               }}>
               View All Weeks Graph
@@ -767,9 +767,9 @@ function OverviewPage({ data, company }) {
           <div style={{ fontSize: '2.4rem', fontWeight: 800, color: '#2D3A4A', marginBottom: 8 }}>
             {activeHires.length}
           </div>
-          <div className="kv-row"><span>Monthly revenue</span><strong style={{ color: '#E43F7B' }}>${monthlyRevenue.toFixed(2)}</strong></div>
+          <div className="kv-row"><span>Monthly revenue</span><strong style={{ color: 'var(--text)' }}>${monthlyRevenue.toFixed(2)}</strong></div>
           <div className="kv-row"><span>Active hires</span><strong>{activeHires.length}</strong></div>
-          <div className="kv-row"><span>Awaiting bond</span><strong style={{ color: awaitingBond.length ? '#E43F7B' : '#10B981' }}>{awaitingBond.length}</strong></div>
+          <div className="kv-row"><span>Awaiting bond</span><strong style={{ color: awaitingBond.length ? 'var(--red)' : 'var(--green)' }}>{awaitingBond.length}</strong></div>
           <div className="kv-row"><span>This month</span><strong>{monthlyHires.length} bookings</strong></div>
         </div>
 
@@ -784,8 +784,8 @@ function OverviewPage({ data, company }) {
             </div>
             <div style={{ fontSize: 10, color: '#888', marginBottom: 10, fontWeight: 500 }}>LIFETIME TOTAL</div>
             <div className="kv-row"><span>Today</span><strong style={{ color: '#10B981' }}>${protection.today.revenue.toFixed(2)} <span style={{ color: '#888', fontWeight: 400 }}>({protection.today.count})</span></strong></div>
-            <div className="kv-row"><span>This week</span><strong style={{ color: '#3AB4C0' }}>${protection.week.revenue.toFixed(2)} <span style={{ color: '#888', fontWeight: 400 }}>({protection.week.count})</span></strong></div>
-            <div className="kv-row"><span>This month</span><strong style={{ color: '#E43F7B' }}>${protection.month.revenue.toFixed(2)} <span style={{ color: '#888', fontWeight: 400 }}>({protection.month.count})</span></strong></div>
+            <div className="kv-row"><span>This week</span><strong style={{ color: 'var(--text)' }}>${protection.week.revenue.toFixed(2)} <span style={{ color: '#888', fontWeight: 400 }}>({protection.week.count})</span></strong></div>
+            <div className="kv-row"><span>This month</span><strong style={{ color: 'var(--text)' }}>${protection.month.revenue.toFixed(2)} <span style={{ color: '#888', fontWeight: 400 }}>({protection.month.count})</span></strong></div>
             <div className="kv-row"><span>Lifetime orders</span><strong>{protection.lifetime.count}</strong></div>
             <div style={{ marginTop: 8, padding: '6px 10px', background: '#F0FDF4', borderRadius: 8, fontSize: 11, color: '#059669', fontWeight: 600, textAlign: 'center' }}>
               ${protection.pricePerOrder.toFixed(2)} per order
@@ -803,7 +803,7 @@ function OverviewPage({ data, company }) {
               {top5.map((t, i) => (
                 <div key={t.kw} className="kv-row">
                   <span style={{ fontWeight: i === 0 ? 700 : 400 }}>{i + 1}. {t.kw}</span>
-                  <strong style={{ color: t.isRising ? '#10B981' : '#3AB4C0' }}>{t.value}</strong>
+                  <strong style={{ color: t.isRising ? 'var(--green)' : 'var(--text-soft)' }}>{t.value}</strong>
                 </div>
               ))}
             </div>
@@ -864,7 +864,7 @@ function OverviewPage({ data, company }) {
                   ...carouselCardStyle,
                   width: 220, minWidth: 220, borderRadius: 16, overflow: 'hidden',
                   border: isTop ? '2px solid #E43F7B' : '1px solid #e0e0e8',
-                  background: '#fff',
+                  background: 'var(--bg-surface)',
                   boxShadow: isTop ? '0 4px 20px rgba(228,63,123,0.15)' : '0 1px 6px rgba(0,0,0,0.06)',
                   position: 'relative',
                 }}>
@@ -906,7 +906,7 @@ function OverviewPage({ data, company }) {
                         alignItems: 'center', justifyContent: 'center',
                         boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
                       }}>
-                        <span style={{ fontSize: 20, marginLeft: 3, color: '#E43F7B' }}>&#9654;</span>
+                        <span style={{ fontSize: 20, marginLeft: 3, color: 'var(--text)' }}>&#9654;</span>
                       </div>
                     </div>
                     <span style={{
@@ -936,7 +936,7 @@ function OverviewPage({ data, company }) {
                       }}>{v.hashtags.join(' ')}</div>
                     )}
 
-                    <div style={{ fontSize: 11, color: '#E43F7B', fontWeight: 600, marginBottom: 6 }}>{v.creator}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text)', fontWeight: 600, marginBottom: 6 }}>{v.creator}</div>
 
                     <div style={{ display: 'flex', gap: 8, fontSize: 11, color: '#555', marginBottom: 10, flexWrap: 'wrap' }}>
                       {v.views > 0 && <span>&#128065; {fmtNum(v.views)}</span>}
@@ -1007,7 +1007,7 @@ function OverviewPage({ data, company }) {
                     <td>{h.orderNumber}</td>
                     <td>{h.eventDate}</td>
                     <td><span className={`pill ${h.status === 'confirmed' ? 'on' : ''}`}>{h.status?.replace(/_/g, ' ') || '—'}</span></td>
-                    <td><span style={{ color: h.bondStatus === 'paid' ? '#10B981' : '#E43F7B', fontWeight: 600 }}>{h.bondStatus === 'paid' ? 'Paid' : 'Pending'}</span></td>
+                    <td><span style={{ color: h.bondStatus === 'paid' ? 'var(--green)' : 'var(--red)', fontWeight: 600 }}>{h.bondStatus === 'paid' ? 'Paid' : 'Pending'}</span></td>
                     <td>{h.contractStatus === 'signed' ? 'Signed' : h.contractStatus === 'sent' ? 'Sent' : 'Not Sent'}</td>
                   </tr>
                 ))}
@@ -1058,7 +1058,7 @@ function OverviewPage({ data, company }) {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }} onClick={() => setShowShippingGraph(false)}>
             <div style={{
-              background: '#fff', borderRadius: 16, padding: 28, maxWidth: 800,
+              background: 'var(--bg-surface)', borderRadius: 16, padding: 28, maxWidth: 800,
               width: '95%', maxHeight: '90vh', overflowY: 'auto',
               boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
             }} onClick={e => e.stopPropagation()}>
