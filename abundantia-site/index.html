@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-AU">
 <head>
+<script>document.documentElement.className='js';</script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Abundantia — Organic Botanical Beard & Skin Elixir</title>
@@ -217,8 +218,10 @@
   .section-head h2{font-size:clamp(2.2rem,5vw,3.6rem);margin-bottom:1.2rem}
   .section-head p{color:var(--cream-dim);font-size:1rem;line-height:1.85}
 
-  .reveal{opacity:0;transform:translateY(36px);transition:opacity 1s var(--ease),transform 1s var(--ease)}
-  .reveal.in{opacity:1;transform:none}
+  /* Reveal animation is progressive enhancement only: without JS (or in a
+     non-scrolling file viewer) all content stays fully visible. */
+  html.js .reveal{opacity:0;transform:translateY(36px);transition:opacity 1s var(--ease),transform 1s var(--ease)}
+  html.js .reveal.in{opacity:1;transform:none}
   .reveal.d1{transition-delay:.1s}.reveal.d2{transition-delay:.2s}.reveal.d3{transition-delay:.3s}.reveal.d4{transition-delay:.4s}
 
   /* ---------- Story ---------- */
@@ -317,8 +320,27 @@
   .quote p{font-family:var(--font-serif);font-style:italic;font-size:1.15rem;line-height:1.6;color:var(--cream);margin-bottom:1.4rem}
   .quote .who{font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold)}
 
+  /* ---------- FAQ ---------- */
+  .faq{background:var(--forest-800)}
+  .faq-list{max-width:820px;margin:0 auto}
+  .faq-item{border-bottom:1px solid rgba(201,162,75,.18)}
+  .faq-item summary{
+    list-style:none;cursor:pointer;padding:1.5rem .2rem;
+    font-family:var(--font-serif);font-size:clamp(1.2rem,2.6vw,1.6rem);color:var(--cream);
+    display:flex;align-items:center;justify-content:space-between;gap:1.5rem;transition:color .3s;
+  }
+  .faq-item summary::-webkit-details-marker{display:none}
+  .faq-item summary:hover{color:var(--gold)}
+  .faq-item .chev{position:relative;width:16px;height:16px;flex:none}
+  .faq-item .chev::before,.faq-item .chev::after{content:'';position:absolute;background:var(--gold);transition:transform .35s var(--ease)}
+  .faq-item .chev::before{top:7px;left:0;width:16px;height:1.5px}
+  .faq-item .chev::after{left:7px;top:0;width:1.5px;height:16px}
+  .faq-item[open] .chev::after{transform:scaleY(0)}
+  .faq-body{overflow:hidden;padding:0 .2rem 1.6rem;max-width:64ch}
+  .faq-body p{color:var(--cream-dim);line-height:1.85;font-size:.95rem}
+
   /* ---------- CTA banner ---------- */
-  .cta{text-align:center;background:var(--forest-800);border-top:1px solid rgba(201,162,75,.16)}
+  .cta{text-align:center;background:linear-gradient(180deg,var(--forest-800),var(--forest-900));border-top:1px solid rgba(201,162,75,.16)}
   .cta .script{font-size:clamp(3rem,8vw,6rem);display:block;margin-bottom:.5rem}
   .cta p{color:var(--cream-dim);max-width:44ch;margin:0 auto 2.2rem;line-height:1.8}
 
@@ -608,6 +630,38 @@
   </div>
 </section>
 
+<!-- ====== FAQ ====== -->
+<section class="pad faq" id="faq">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Good to Know</span>
+      <h2>Questions, answered</h2>
+    </div>
+    <div class="faq-list reveal d1">
+      <details class="faq-item">
+        <summary>Is it really suitable for sensitive skin?<span class="chev" aria-hidden="true"></span></summary>
+        <div class="faq-body"><p>Yes. We built the elixir around camomile precisely because it calms redness and reactivity. There is no synthetic fragrance, no alcohol and no harsh actives — just four organic botanicals. As always, we suggest a small patch test first.</p></div>
+      </details>
+      <details class="faq-item">
+        <summary>How do I use it for my beard versus my scalp?<span class="chev" aria-hidden="true"></span></summary>
+        <div class="faq-body"><p>For the beard, warm three to four drops and comb through to soften and condition. For the scalp, part the hair and massage a few drops directly into the skin in slow circles to support healthy growth. The same bottle does both.</p></div>
+      </details>
+      <details class="faq-item">
+        <summary>Will it leave my hair or face greasy?<span class="chev" aria-hidden="true"></span></summary>
+        <div class="faq-body"><p>No. Golden jojoba mirrors your skin's own sebum, so the oil absorbs in seconds for a weightless, matte-soft finish — never slick or shiny.</p></div>
+      </details>
+      <details class="faq-item">
+        <summary>How long does one bottle last?<span class="chev" aria-hidden="true"></span></summary>
+        <div class="faq-body"><p>The 60ml bottle holds roughly two months of daily use at three to four drops a day. The precision dropper makes it easy to stay consistent without waste.</p></div>
+      </details>
+      <details class="faq-item">
+        <summary>What is your shipping &amp; returns policy?<span class="chev" aria-hidden="true"></span></summary>
+        <div class="faq-body"><p>Free express shipping on all orders over $50, dispatched within one business day from Australia. If it isn't right for you, return it within 30 days for a full refund — even if the bottle is opened.</p></div>
+      </details>
+    </div>
+  </div>
+</section>
+
 <!-- ====== CTA banner ====== -->
 <section class="pad cta">
   <div class="container reveal">
@@ -694,11 +748,18 @@
   },{threshold:.2});
   buyObs.observe(buy);
 
-  // Reveal on scroll
-  const revObs=new IntersectionObserver((entries)=>{
-    entries.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('in'); revObs.unobserve(en.target);} });
-  },{threshold:.15});
-  document.querySelectorAll('.reveal').forEach(el=>revObs.observe(el));
+  // Reveal on scroll (progressive enhancement). If IntersectionObserver is
+  // missing, or content can't be scrolled to (constrained viewers), reveal all.
+  const reveals=document.querySelectorAll('.reveal');
+  const revealAll=()=>reveals.forEach(el=>el.classList.add('in'));
+  if('IntersectionObserver' in window){
+    const revObs=new IntersectionObserver((entries)=>{
+      entries.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('in'); revObs.unobserve(en.target);} });
+    },{threshold:.12});
+    reveals.forEach(el=>revObs.observe(el));
+    // Safety net: nothing should ever stay invisible for long.
+    setTimeout(revealAll,2500);
+  } else { revealAll(); }
 
   // Mobile nav
   const burger=document.getElementById('burger');
