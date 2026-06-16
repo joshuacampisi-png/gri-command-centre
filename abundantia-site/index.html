@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Abundantia — Organic Botanical Beard & Skin Elixir</title>
+<meta name="description" content="Abundantia is a multipurpose botanical elixir of castor oil, wild rosemary and camomile. Nourish beard, scalp and skin. Organic. Cruelty-free. Made in small batches." />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' fill='%23c9a24b'>A</text></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Pinyon+Script&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --forest-900:#0e1b13;
+    --forest-800:#13241a;
+    --forest-700:#1a2e21;
+    --forest-600:#274234;
+    --moss:#3d5a45;
+    --gold:#c9a24b;
+    --gold-soft:#d9bd80;
+    --gold-deep:#9c7c39;
+    --cream:#f3ecdc;
+    --cream-dim:#cdc6b4;
+    --ink:#0a130d;
+    --font-serif:'Cormorant Garamond',Georgia,serif;
+    --font-script:'Pinyon Script',cursive;
+    --font-sans:'Jost',-apple-system,BlinkMacSystemFont,sans-serif;
+    --ease:cubic-bezier(.22,.61,.36,1);
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  body{
+    font-family:var(--font-sans);
+    background:var(--forest-900);
+    color:var(--cream);
+    line-height:1.6;
+    overflow-x:hidden;
+    font-weight:300;
+    letter-spacing:.01em;
+  }
+  ::selection{background:var(--gold);color:var(--forest-900)}
+  img{display:block;max-width:100%}
+  a{color:inherit;text-decoration:none}
+
+  .eyebrow{
+    font-family:var(--font-sans);
+    font-size:.7rem;
+    letter-spacing:.42em;
+    text-transform:uppercase;
+    color:var(--gold);
+    font-weight:400;
+    display:inline-block;
+  }
+  h1,h2,h3{font-family:var(--font-serif);font-weight:400;line-height:1.05;letter-spacing:.01em}
+  .script{font-family:var(--font-script);font-weight:400;color:var(--gold);line-height:.9}
+
+  .container{width:min(1240px,90vw);margin-inline:auto}
+
+  /* ---------- Announcement bar ---------- */
+  .topbar{
+    background:var(--forest-700);
+    color:var(--cream-dim);
+    text-align:center;
+    font-size:.66rem;
+    letter-spacing:.32em;
+    text-transform:uppercase;
+    padding:.7rem 1rem;
+    border-bottom:1px solid rgba(201,162,75,.18);
+    position:relative;z-index:60;
+  }
+  .topbar span{color:var(--gold)}
+
+  /* ---------- Nav ---------- */
+  nav{
+    position:sticky;top:0;z-index:50;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:1.1rem clamp(1.2rem,5vw,3.4rem);
+    background:rgba(14,27,19,.55);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    border-bottom:1px solid rgba(201,162,75,.14);
+    transition:padding .4s var(--ease),background .4s var(--ease);
+  }
+  nav.shrink{padding-top:.7rem;padding-bottom:.7rem;background:rgba(14,27,19,.9)}
+  .brand{display:flex;align-items:center;gap:.6rem}
+  .brand .mark{width:30px;height:30px;flex:none}
+  .brand .name{
+    font-family:var(--font-serif);
+    font-size:1.3rem;letter-spacing:.34em;
+    text-transform:uppercase;color:var(--cream);
+    padding-left:.1em;
+  }
+  .nav-links{display:flex;gap:2.4rem;list-style:none}
+  .nav-links a{
+    font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--cream-dim);position:relative;padding:.2rem 0;transition:color .3s;
+  }
+  .nav-links a::after{
+    content:'';position:absolute;left:0;bottom:-3px;height:1px;width:0;background:var(--gold);transition:width .35s var(--ease);
+  }
+  .nav-links a:hover{color:var(--cream)}
+  .nav-links a:hover::after{width:100%}
+
+  .btn{
+    font-family:var(--font-sans);
+    font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;font-weight:400;
+    cursor:pointer;border:none;display:inline-flex;align-items:center;gap:.6rem;
+    transition:all .35s var(--ease);white-space:nowrap;
+  }
+  .btn-gold{
+    background:linear-gradient(135deg,var(--gold-soft),var(--gold) 55%,var(--gold-deep));
+    color:var(--forest-900);
+    padding:.85rem 1.7rem;border-radius:2px;
+    box-shadow:0 6px 26px -10px rgba(201,162,75,.7);
+  }
+  .btn-gold:hover{transform:translateY(-2px);box-shadow:0 12px 34px -10px rgba(201,162,75,.85)}
+  .btn-gold:active{transform:translateY(0)}
+  .btn-ghost{
+    background:transparent;color:var(--cream);
+    border:1px solid rgba(243,236,220,.35);
+    padding:.85rem 1.7rem;border-radius:2px;
+  }
+  .btn-ghost:hover{border-color:var(--gold);color:var(--gold)}
+  .nav-cta .price{opacity:.65;font-variant-numeric:tabular-nums}
+
+  .burger{display:none;background:none;border:none;cursor:pointer;flex-direction:column;gap:5px;padding:6px}
+  .burger span{width:24px;height:1.5px;background:var(--cream);display:block;transition:.3s}
+
+  /* ---------- Hero ---------- */
+  .hero{
+    position:relative;min-height:100vh;min-height:100svh;
+    display:flex;align-items:center;
+    background:radial-gradient(120% 120% at 70% 20%,rgba(39,66,52,.25),var(--forest-900) 70%);
+    overflow:hidden;
+  }
+  .hero-bg{
+    position:absolute;inset:0;z-index:0;
+    background:url('assets/product.png') center/cover no-repeat;
+    opacity:.32;
+    filter:saturate(.9);
+    transform:scale(1.05);
+  }
+  .hero::after{
+    content:'';position:absolute;inset:0;z-index:1;
+    background:linear-gradient(90deg,var(--forest-900) 8%,rgba(14,27,19,.55) 55%,rgba(14,27,19,.15));
+  }
+  .hero-grid{
+    position:relative;z-index:2;
+    display:grid;grid-template-columns:1.1fr .9fr;align-items:center;gap:3rem;
+    width:min(1240px,90vw);margin-inline:auto;padding:6rem 0 4rem;
+  }
+  .hero-copy{max-width:560px}
+  .hero-copy .eyebrow{margin-bottom:1.6rem;opacity:0;animation:rise .9s var(--ease) .1s forwards}
+  .hero-title{margin-bottom:.4rem}
+  .hero-title .script{
+    font-size:clamp(4rem,11vw,9.5rem);
+    display:block;
+    text-shadow:0 2px 40px rgba(201,162,75,.25);
+    opacity:0;animation:rise 1s var(--ease) .25s forwards;
+  }
+  .hero-sub{
+    font-family:var(--font-serif);font-style:italic;
+    font-size:clamp(1.15rem,2.4vw,1.7rem);
+    color:var(--cream-dim);letter-spacing:.02em;
+    margin-bottom:1.8rem;max-width:30ch;
+    opacity:0;animation:rise 1s var(--ease) .4s forwards;
+  }
+  .hero-desc{
+    font-size:.95rem;color:var(--cream-dim);max-width:42ch;margin-bottom:2.4rem;line-height:1.8;
+    opacity:0;animation:rise 1s var(--ease) .55s forwards;
+  }
+  .hero-actions{display:flex;align-items:center;gap:1.6rem;flex-wrap:wrap;
+    opacity:0;animation:rise 1s var(--ease) .7s forwards;}
+  .hero-price{display:flex;flex-direction:column;line-height:1}
+  .hero-price .amt{font-family:var(--font-serif);font-size:1.9rem;color:var(--cream)}
+  .hero-price .lbl{font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-top:.35rem}
+
+  .hero-product{position:relative;display:flex;justify-content:center;
+    opacity:0;animation:rise 1.2s var(--ease) .5s forwards;}
+  .hero-product img{
+    width:min(420px,38vw);
+    border-radius:6px;
+    box-shadow:0 50px 90px -30px rgba(0,0,0,.8);
+    border:1px solid rgba(201,162,75,.2);
+  }
+  .hero-product .ring{
+    position:absolute;inset:-30px;border:1px solid rgba(201,162,75,.18);border-radius:8px;pointer-events:none;
+  }
+  .scroll-cue{
+    position:absolute;left:50%;bottom:2rem;transform:translateX(-50%);z-index:3;
+    font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:var(--cream-dim);
+    display:flex;flex-direction:column;align-items:center;gap:.6rem;opacity:.7;
+  }
+  .scroll-cue .line{width:1px;height:38px;background:linear-gradient(var(--gold),transparent);animation:cue 2s var(--ease) infinite}
+
+  @keyframes rise{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes cue{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}50.1%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+  /* ---------- Marquee trust strip ---------- */
+  .strip{
+    border-top:1px solid rgba(201,162,75,.16);
+    border-bottom:1px solid rgba(201,162,75,.16);
+    background:var(--forest-800);
+    overflow:hidden;
+  }
+  .marquee{display:flex;gap:4rem;white-space:nowrap;padding:1.1rem 0;animation:scroll 32s linear infinite;width:max-content}
+  .marquee span{font-size:.7rem;letter-spacing:.34em;text-transform:uppercase;color:var(--cream-dim);display:inline-flex;align-items:center;gap:4rem}
+  .marquee span::before{content:'✦';color:var(--gold);font-size:.7rem}
+  @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+  /* ---------- Section scaffolding ---------- */
+  section{position:relative}
+  .pad{padding:clamp(5rem,11vw,9rem) 0}
+  .section-head{text-align:center;max-width:680px;margin:0 auto 4rem}
+  .section-head .eyebrow{margin-bottom:1.2rem}
+  .section-head h2{font-size:clamp(2.2rem,5vw,3.6rem);margin-bottom:1.2rem}
+  .section-head p{color:var(--cream-dim);font-size:1rem;line-height:1.85}
+
+  .reveal{opacity:0;transform:translateY(36px);transition:opacity 1s var(--ease),transform 1s var(--ease)}
+  .reveal.in{opacity:1;transform:none}
+  .reveal.d1{transition-delay:.1s}.reveal.d2{transition-delay:.2s}.reveal.d3{transition-delay:.3s}.reveal.d4{transition-delay:.4s}
+
+  /* ---------- Story ---------- */
+  .story{background:linear-gradient(180deg,var(--forest-900),var(--forest-800))}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:clamp(2.5rem,6vw,6rem);align-items:center}
+  .story-media{position:relative}
+  .story-media img{width:100%;border-radius:6px;box-shadow:0 40px 80px -30px rgba(0,0,0,.7);border:1px solid rgba(201,162,75,.18)}
+  .story-media .tag{
+    position:absolute;bottom:-26px;right:-12px;
+    background:var(--forest-700);border:1px solid rgba(201,162,75,.3);
+    padding:1.1rem 1.4rem;border-radius:4px;text-align:center;
+    box-shadow:0 20px 40px -20px rgba(0,0,0,.8);
+  }
+  .story-media .tag .script{font-size:2rem;display:block}
+  .story-media .tag small{font-size:.55rem;letter-spacing:.3em;text-transform:uppercase;color:var(--cream-dim)}
+  .story-copy h2{font-size:clamp(2rem,4.4vw,3.2rem);margin-bottom:1.5rem;line-height:1.08}
+  .story-copy h2 em{font-family:var(--font-script);font-style:normal;color:var(--gold);font-size:1.25em}
+  .story-copy p{color:var(--cream-dim);margin-bottom:1.3rem;line-height:1.9}
+  .story-copy .sig{font-family:var(--font-script);font-size:2.2rem;color:var(--gold);margin-top:1rem}
+
+  /* ---------- Ingredients ---------- */
+  .ingredients{background:var(--forest-900)}
+  .ing-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.4rem}
+  .ing-card{
+    background:linear-gradient(160deg,var(--forest-800),var(--forest-700));
+    border:1px solid rgba(201,162,75,.16);
+    border-radius:6px;padding:2.4rem 2.2rem;
+    transition:transform .5s var(--ease),border-color .5s var(--ease),box-shadow .5s var(--ease);
+    position:relative;overflow:hidden;
+  }
+  .ing-card::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:1px;
+    background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;transition:opacity .5s;
+  }
+  .ing-card:hover{transform:translateY(-6px);border-color:rgba(201,162,75,.4);box-shadow:0 30px 60px -30px rgba(0,0,0,.7)}
+  .ing-card:hover::before{opacity:1}
+  .ing-card .num{font-family:var(--font-serif);font-style:italic;font-size:1rem;color:var(--gold);opacity:.6}
+  .ing-card h3{font-size:1.7rem;margin:.6rem 0 .3rem}
+  .ing-card .latin{font-family:var(--font-serif);font-style:italic;font-size:.95rem;color:var(--gold-soft);margin-bottom:1rem}
+  .ing-card p{color:var(--cream-dim);font-size:.92rem;line-height:1.8}
+  .ing-card .pill{
+    display:inline-block;margin-top:1.2rem;font-size:.6rem;letter-spacing:.24em;text-transform:uppercase;
+    color:var(--gold);border:1px solid rgba(201,162,75,.4);padding:.4rem .8rem;border-radius:30px;
+  }
+
+  /* ---------- Ritual ---------- */
+  .ritual{background:linear-gradient(180deg,var(--forest-800),var(--forest-900))}
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:2.4rem}
+  .step{text-align:center;padding:1rem}
+  .step .ico{
+    width:64px;height:64px;margin:0 auto 1.4rem;border:1px solid rgba(201,162,75,.4);border-radius:50%;
+    display:flex;align-items:center;justify-content:center;color:var(--gold);
+    font-family:var(--font-serif);font-size:1.5rem;font-style:italic;
+  }
+  .step h3{font-size:1.45rem;margin-bottom:.6rem}
+  .step p{color:var(--cream-dim);font-size:.9rem;line-height:1.8}
+
+  /* ---------- Benefits ---------- */
+  .benefits{background:var(--forest-900)}
+  .ben-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem}
+  .ben{border:1px solid rgba(201,162,75,.14);border-radius:6px;padding:2rem 1.6rem;text-align:center;background:var(--forest-800)}
+  .ben .big{font-family:var(--font-serif);font-size:2.6rem;color:var(--gold);line-height:1}
+  .ben h3{font-size:1.05rem;letter-spacing:.04em;margin:.9rem 0 .4rem;font-family:var(--font-sans);font-weight:400;text-transform:uppercase;font-size:.78rem;letter-spacing:.2em;color:var(--cream)}
+  .ben p{color:var(--cream-dim);font-size:.85rem;line-height:1.7}
+
+  /* ---------- Buy ---------- */
+  .buy{background:radial-gradient(120% 100% at 30% 0%,var(--forest-700),var(--forest-900) 70%)}
+  .buy-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(2.5rem,6vw,5rem);align-items:center}
+  .buy-media{position:relative;display:flex;justify-content:center}
+  .buy-media img{width:min(380px,80%);border-radius:6px;box-shadow:0 50px 90px -30px rgba(0,0,0,.8);border:1px solid rgba(201,162,75,.2)}
+  .buy-info h2{font-size:clamp(2rem,4.6vw,3.2rem);margin-bottom:.4rem}
+  .buy-info .latin{font-family:var(--font-serif);font-style:italic;color:var(--gold-soft);font-size:1.1rem;margin-bottom:1.4rem}
+  .buy-info .stars{color:var(--gold);letter-spacing:.2em;font-size:.9rem;margin-bottom:1.4rem}
+  .buy-info .stars small{color:var(--cream-dim);letter-spacing:.1em;margin-left:.6rem}
+  .buy-info p.lead{color:var(--cream-dim);line-height:1.9;margin-bottom:1.8rem;max-width:46ch}
+  .price-row{display:flex;align-items:baseline;gap:1rem;margin-bottom:2rem}
+  .price-row .now{font-family:var(--font-serif);font-size:2.8rem;color:var(--cream)}
+  .price-row .was{font-family:var(--font-serif);font-size:1.4rem;color:var(--cream-dim);text-decoration:line-through;opacity:.6}
+  .price-row .save{font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--forest-900);background:var(--gold);padding:.35rem .7rem;border-radius:30px}
+  .qty-row{display:flex;align-items:center;gap:1.2rem;margin-bottom:1.6rem}
+  .qty{display:flex;align-items:center;border:1px solid rgba(201,162,75,.4);border-radius:3px}
+  .qty button{background:none;border:none;color:var(--cream);width:42px;height:46px;font-size:1.2rem;cursor:pointer;transition:color .3s}
+  .qty button:hover{color:var(--gold)}
+  .qty input{width:46px;text-align:center;background:none;border:none;color:var(--cream);font-family:var(--font-serif);font-size:1.2rem}
+  .qty input::-webkit-outer-spin-button,.qty input::-webkit-inner-spin-button{-webkit-appearance:none}
+  .btn-buy{flex:1;justify-content:center;padding:1.1rem 2rem;font-size:.8rem}
+  .assurances{list-style:none;display:grid;gap:.7rem;margin-top:1.8rem}
+  .assurances li{display:flex;align-items:center;gap:.7rem;font-size:.82rem;color:var(--cream-dim)}
+  .assurances li::before{content:'✓';color:var(--gold);font-size:.9rem}
+
+  /* ---------- Testimonials ---------- */
+  .testi{background:linear-gradient(180deg,var(--forest-900),var(--forest-800))}
+  .testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.6rem}
+  .quote{background:var(--forest-700);border:1px solid rgba(201,162,75,.14);border-radius:6px;padding:2.2rem}
+  .quote .stars{color:var(--gold);font-size:.8rem;letter-spacing:.2em;margin-bottom:1rem}
+  .quote p{font-family:var(--font-serif);font-style:italic;font-size:1.15rem;line-height:1.6;color:var(--cream);margin-bottom:1.4rem}
+  .quote .who{font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold)}
+
+  /* ---------- CTA banner ---------- */
+  .cta{text-align:center;background:var(--forest-800);border-top:1px solid rgba(201,162,75,.16)}
+  .cta .script{font-size:clamp(3rem,8vw,6rem);display:block;margin-bottom:.5rem}
+  .cta p{color:var(--cream-dim);max-width:44ch;margin:0 auto 2.2rem;line-height:1.8}
+
+  /* ---------- Footer ---------- */
+  footer{background:var(--forest-900);border-top:1px solid rgba(201,162,75,.14);padding:4rem 0 2rem}
+  .foot-grid{display:flex;justify-content:space-between;flex-wrap:wrap;gap:2rem;margin-bottom:3rem}
+  .foot-brand .name{font-family:var(--font-serif);font-size:1.4rem;letter-spacing:.34em;text-transform:uppercase}
+  .foot-brand p{color:var(--cream-dim);font-size:.85rem;margin-top:.8rem;max-width:34ch;line-height:1.8}
+  .foot-col h4{font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);margin-bottom:1.2rem;font-weight:400}
+  .foot-col ul{list-style:none;display:grid;gap:.7rem}
+  .foot-col a{font-size:.85rem;color:var(--cream-dim);transition:color .3s}
+  .foot-col a:hover{color:var(--cream)}
+  .foot-bottom{border-top:1px solid rgba(201,162,75,.12);padding-top:1.6rem;display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem;font-size:.7rem;letter-spacing:.1em;color:var(--cream-dim);text-transform:uppercase}
+
+  /* ---------- Sticky buy bar ---------- */
+  .stickybar{
+    position:fixed;left:0;right:0;bottom:0;z-index:70;
+    background:rgba(14,27,19,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    border-top:1px solid rgba(201,162,75,.25);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:.85rem clamp(1.2rem,5vw,3rem);
+    transform:translateY(120%);transition:transform .5s var(--ease);
+  }
+  .stickybar.show{transform:none}
+  .stickybar .sb-info{display:flex;align-items:center;gap:1rem}
+  .stickybar .sb-info img{width:42px;height:42px;object-fit:cover;border-radius:3px;border:1px solid rgba(201,162,75,.3)}
+  .stickybar .sb-info .t{font-family:var(--font-serif);font-size:1.05rem;line-height:1.1}
+  .stickybar .sb-info .p{font-size:.72rem;letter-spacing:.1em;color:var(--gold)}
+  .stickybar .btn{padding:.8rem 1.8rem}
+
+  /* ---------- Toast ---------- */
+  .toast{
+    position:fixed;top:6rem;right:1.4rem;z-index:90;
+    background:var(--forest-700);border:1px solid var(--gold);
+    color:var(--cream);padding:1rem 1.4rem;border-radius:4px;
+    font-size:.8rem;letter-spacing:.06em;
+    display:flex;align-items:center;gap:.7rem;
+    box-shadow:0 20px 50px -20px rgba(0,0,0,.8);
+    transform:translateX(140%);transition:transform .5s var(--ease);
+  }
+  .toast.show{transform:none}
+  .toast::before{content:'✓';color:var(--gold)}
+
+  /* ---------- Responsive ---------- */
+  @media(max-width:980px){
+    .nav-links,.nav-cta .word{display:none}
+    .burger{display:flex}
+    .nav-links.open{
+      display:flex;flex-direction:column;position:absolute;top:100%;left:0;right:0;
+      background:rgba(14,27,19,.98);padding:2rem;gap:1.6rem;border-bottom:1px solid rgba(201,162,75,.2);
+    }
+    .hero-grid{grid-template-columns:1fr;text-align:left;padding-top:4rem}
+    .hero-product{display:none}
+    .hero::after{background:linear-gradient(180deg,rgba(14,27,19,.65),rgba(14,27,19,.9))}
+    .hero-bg{opacity:.45}
+    .split{grid-template-columns:1fr}
+    .story-media{order:-1}
+    .ing-grid{grid-template-columns:1fr}
+    .steps{grid-template-columns:1fr;gap:2.6rem}
+    .ben-grid{grid-template-columns:repeat(2,1fr)}
+    .buy-grid{grid-template-columns:1fr}
+    .buy-media{order:-1}
+    .testi-grid{grid-template-columns:1fr}
+    .stickybar .sb-info .t{font-size:.95rem}
+  }
+  @media(max-width:560px){
+    .ben-grid{grid-template-columns:1fr 1fr}
+    .hero-actions{gap:1.1rem}
+    .stickybar .sb-info img{display:none}
+  }
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+    .reveal{opacity:1;transform:none}
+  }
+</style>
+</head>
+<body>
+
+<!-- ====== Announcement ====== -->
+<div class="topbar">Complimentary express shipping over <span>$50</span> &nbsp;·&nbsp; Certified Organic &nbsp;·&nbsp; Cruelty-Free &nbsp;·&nbsp; Small-Batch in Australia</div>
+
+<!-- ====== Nav ====== -->
+<nav id="nav">
+  <a href="#top" class="brand" aria-label="Abundantia home">
+    <svg class="mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+      <circle cx="50" cy="50" r="47" stroke="#c9a24b" stroke-width="2"/>
+      <path d="M50 24c-4 9-4 17 0 26 4-9 4-17 0-26Z" fill="#c9a24b"/>
+      <path d="M50 38c-7 4-11 10-13 18 8-1 14-5 18-12M50 38c7 4 11 10 13 18-8-1-14-5-18-12" stroke="#c9a24b" stroke-width="1.6" fill="none"/>
+      <path d="M50 50v26" stroke="#c9a24b" stroke-width="1.6"/>
+    </svg>
+    <span class="name">Abundantia</span>
+  </a>
+  <ul class="nav-links" id="navlinks">
+    <li><a href="#elixir">The Elixir</a></li>
+    <li><a href="#ingredients">Ingredients</a></li>
+    <li><a href="#ritual">The Ritual</a></li>
+    <li><a href="#story">Our Story</a></li>
+  </ul>
+  <a href="#buy" class="btn btn-gold nav-cta"><span class="word">Buy Now</span> <span class="price">$69.99</span></a>
+  <button class="burger" id="burger" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+
+<!-- ====== Hero ====== -->
+<header class="hero" id="top">
+  <div class="hero-bg" aria-hidden="true"></div>
+  <div class="hero-grid">
+    <div class="hero-copy">
+      <span class="eyebrow">Organic Botanical Elixir</span>
+      <h1 class="hero-title"><span class="script">Abundantia</span></h1>
+      <p class="hero-sub">Nourish beard, scalp &amp; skin with a single drop of the forest.</p>
+      <p class="hero-desc">A multipurpose elixir of cold-pressed castor oil, wild rosemary and soothing camomile — distilled in small batches for the modern ritual. Lightweight, never greasy, endlessly restorative.</p>
+      <div class="hero-actions">
+        <a href="#buy" class="btn btn-gold">Shop the Elixir</a>
+        <div class="hero-price">
+          <span class="amt">$69.99</span>
+          <span class="lbl">60ml · 2 fl oz</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-product">
+      <span class="ring" aria-hidden="true"></span>
+      <img src="assets/product.png" alt="Abundantia organic botanical elixir amber dropper bottle in a forest" />
+    </div>
+  </div>
+  <div class="scroll-cue"><span class="line"></span>Scroll</div>
+</header>
+
+<!-- ====== Marquee ====== -->
+<div class="strip" aria-hidden="true">
+  <div class="marquee">
+    <span>Castor Oil</span><span>Wild Rosemary</span><span>Camomile</span><span>Vegan</span><span>No Synthetic Fragrance</span><span>Beard · Scalp · Skin</span>
+    <span>Castor Oil</span><span>Wild Rosemary</span><span>Camomile</span><span>Vegan</span><span>No Synthetic Fragrance</span><span>Beard · Scalp · Skin</span>
+  </div>
+</div>
+
+<!-- ====== Elixir intro ====== -->
+<section class="pad" id="elixir">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">One Elixir, Every Ritual</span>
+      <h2>Crafted for the man who tends to the details</h2>
+      <p>Abundantia is a true multipurpose botanical oil. Work it through your beard to soften and condition, press it into the scalp to support fuller growth, or smooth a drop across face and hands. One bottle, the entire grooming ritual.</p>
+    </div>
+    <div class="ben-grid">
+      <div class="ben reveal d1"><div class="big">01</div><h3>Beard</h3><p>Softens coarse hair, tames flyaways and conditions the skin beneath.</p></div>
+      <div class="ben reveal d2"><div class="big">02</div><h3>Scalp</h3><p>Castor oil and rosemary support a healthy follicle environment.</p></div>
+      <div class="ben reveal d3"><div class="big">03</div><h3>Skin</h3><p>Camomile calms redness and soothes even the most sensitive skin.</p></div>
+      <div class="ben reveal d4"><div class="big">04</div><h3>Hands</h3><p>A single drop restores cuticles and dry, weathered hands.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== Story ====== -->
+<section class="pad story" id="story">
+  <div class="container split">
+    <div class="story-media reveal">
+      <img src="assets/moodboard.jpeg" alt="Abundantia botanical mood board with rosemary, honey and packaging" />
+      <div class="tag"><span class="script">est.</span><small>Wild &amp; Organic</small></div>
+    </div>
+    <div class="story-copy reveal d1">
+      <span class="eyebrow">Our Story</span>
+      <h2>Born of the <em>forest</em>, made for the ritual</h2>
+      <p>Abundantia began with a simple belief — that what we put on our skin should be as honest as what grows in the wild. We forage for the purest botanicals and cold-press them into a single, uncompromising elixir.</p>
+      <p>No fillers. No synthetic fragrance. No shortcuts. Every 60ml bottle is blended, decanted and sealed by hand in small batches, then nestled in our signature amber glass to protect the oils from light.</p>
+      <p>The result is a grooming ritual that feels less like routine and more like reverence — a daily moment to slow down and tend to yourself.</p>
+      <div class="sig">Abundantia</div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== Ingredients ====== -->
+<section class="pad ingredients" id="ingredients">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">The Botanicals</span>
+      <h2>Four wild ingredients, nothing else</h2>
+      <p>Every drop is built on a foundation of organic, ethically sourced botanicals — chosen for what they do, not for how they sound on a label.</p>
+    </div>
+    <div class="ing-grid">
+      <article class="ing-card reveal d1">
+        <span class="num">01</span>
+        <h3>Camomile</h3>
+        <p class="latin">Matricaria chamomilla</p>
+        <p>A gentle, golden flower extract prized for calming inflammation. Camomile soothes redness and quiets reactive, sensitive skin — making the elixir safe for daily use, even beneath a fresh shave.</p>
+        <span class="pill">For Sensitive Skin</span>
+      </article>
+      <article class="ing-card reveal d2">
+        <span class="num">02</span>
+        <h3>Castor Oil</h3>
+        <p class="latin">Ricinus communis</p>
+        <p>Cold-pressed and unrefined, our castor oil is rich in ricinoleic acid to lock in moisture and create the ideal environment for fuller, healthier beard and scalp growth over time.</p>
+        <span class="pill">Strengthens &amp; Hydrates</span>
+      </article>
+      <article class="ing-card reveal d3">
+        <span class="num">03</span>
+        <h3>Wild Rosemary</h3>
+        <p class="latin">Salvia rosmarinus</p>
+        <p>Hand-harvested from coastal hills, wild rosemary invigorates the scalp and awakens the senses with a clean, herbaceous note. A traditional botanical long associated with vitality and shine.</p>
+        <span class="pill">Stimulates Follicles</span>
+      </article>
+      <article class="ing-card reveal d4">
+        <span class="num">04</span>
+        <h3>Golden Jojoba</h3>
+        <p class="latin">Simmondsia chinensis</p>
+        <p>The closest botanical match to skin's own sebum, jojoba balances oil production so the elixir absorbs in seconds — deeply conditioning, yet weightless and never greasy.</p>
+        <span class="pill">Lightweight Finish</span>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ====== Ritual ====== -->
+<section class="pad ritual" id="ritual">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">The Ritual</span>
+      <h2>Three drops, three steps</h2>
+      <p>A morning or evening ceremony that takes less than a minute — and gives back all day.</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal d1"><div class="ico">i</div><h3>Dispense</h3><p>Warm three to four drops between clean palms. A little goes a remarkably long way.</p></div>
+      <div class="step reveal d2"><div class="ico">ii</div><h3>Massage</h3><p>Work down through the beard to the skin, or in slow circles across the scalp.</p></div>
+      <div class="step reveal d3"><div class="ico">iii</div><h3>Restore</h3><p>Comb through to style. Reapply to dry patches on face or hands as desired.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== Buy ====== -->
+<section class="pad buy" id="buy">
+  <div class="container buy-grid">
+    <div class="buy-media reveal">
+      <img src="assets/product.png" alt="Abundantia organic botanical elixir 60ml amber dropper bottle" />
+    </div>
+    <div class="buy-info reveal d1">
+      <span class="eyebrow">Multipurpose Botanical Elixir</span>
+      <h2>The Abundantia Elixir</h2>
+      <p class="latin">Castor Oil · Wild Rosemary · Camomile — 60ml / 2 fl oz</p>
+      <div class="stars">★★★★★ <small>1,284 verified reviews</small></div>
+      <p class="lead">A single, honest bottle for beard, scalp and skin. Cold-pressed organic botanicals in protective amber glass, finished with a precision dropper for an effortless ritual.</p>
+      <div class="price-row">
+        <span class="now">$69.99</span>
+        <span class="was">$89.99</span>
+        <span class="save">Save 22%</span>
+      </div>
+      <div class="qty-row">
+        <div class="qty">
+          <button type="button" id="minus" aria-label="Decrease quantity">−</button>
+          <input type="number" id="qty" value="1" min="1" max="20" aria-label="Quantity" />
+          <button type="button" id="plus" aria-label="Increase quantity">+</button>
+        </div>
+        <button class="btn btn-gold btn-buy" id="addBtn">Add to Cart — <span id="total">$69.99</span></button>
+      </div>
+      <ul class="assurances">
+        <li>Free express shipping on orders over $50</li>
+        <li>30-day love-it-or-return guarantee</li>
+        <li>Certified organic · vegan · cruelty-free</li>
+        <li>Blended &amp; bottled by hand in Australia</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ====== Testimonials ====== -->
+<section class="pad testi">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Word of Mouth</span>
+      <h2>Loved by the ritual-keepers</h2>
+    </div>
+    <div class="testi-grid">
+      <figure class="quote reveal d1">
+        <div class="stars">★★★★★</div>
+        <p>"My beard has never been softer and the rosemary scent is unreal. One bottle replaced three products on my shelf."</p>
+        <figcaption class="who">— Marcus T., Verified Buyer</figcaption>
+      </figure>
+      <figure class="quote reveal d2">
+        <div class="stars">★★★★★</div>
+        <p>"I have reactive skin and most oils break me out. The camomile in this is genuinely calming. Zero irritation."</p>
+        <figcaption class="who">— Daniel R., Verified Buyer</figcaption>
+      </figure>
+      <figure class="quote reveal d3">
+        <div class="stars">★★★★★</div>
+        <p>"Feels like a luxury ritual every morning. Absorbs in seconds, no grease, and the bottle looks beautiful on the counter."</p>
+        <figcaption class="who">— Elias V., Verified Buyer</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ====== CTA banner ====== -->
+<section class="pad cta">
+  <div class="container reveal">
+    <span class="eyebrow">Begin the Ritual</span>
+    <span class="script">Abundantia</span>
+    <p>Give your beard, scalp and skin the wild botanicals they were made for. Small-batch, organic, and waiting.</p>
+    <a href="#buy" class="btn btn-gold">Shop Now — $69.99</a>
+  </div>
+</section>
+
+<!-- ====== Footer ====== -->
+<footer>
+  <div class="container">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <div class="name">Abundantia</div>
+        <p>Organic, multipurpose botanical elixirs for beard, scalp and skin. Foraged wild, blended by hand.</p>
+      </div>
+      <div class="foot-col">
+        <h4>Shop</h4>
+        <ul>
+          <li><a href="#buy">The Elixir</a></li>
+          <li><a href="#ingredients">Ingredients</a></li>
+          <li><a href="#ritual">The Ritual</a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#story">Our Story</a></li>
+          <li><a href="#">Sustainability</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="#">Shipping &amp; Returns</a></li>
+          <li><a href="#">Ingredient Glossary</a></li>
+          <li><a href="#">FAQ</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Abundantia Organic. All rights reserved.</span>
+      <span>Made in Australia</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ====== Sticky buy bar ====== -->
+<div class="stickybar" id="stickybar">
+  <div class="sb-info">
+    <img src="assets/product.png" alt="" />
+    <div>
+      <div class="t">Abundantia Elixir</div>
+      <div class="p">$69.99 · 60ml</div>
+    </div>
+  </div>
+  <a href="#buy" class="btn btn-gold">Buy Now</a>
+</div>
+
+<!-- ====== Toast ====== -->
+<div class="toast" id="toast">Added to your ritual</div>
+
+<script>
+  // Nav shrink + sticky bar reveal
+  const nav=document.getElementById('nav');
+  const stickybar=document.getElementById('stickybar');
+  const hero=document.getElementById('top');
+  const buy=document.getElementById('buy');
+  window.addEventListener('scroll',()=>{
+    nav.classList.toggle('shrink',window.scrollY>40);
+  },{passive:true});
+
+  // Sticky buy bar: show after hero, hide when over buy section
+  const heroObs=new IntersectionObserver(([e])=>{
+    if(!e.isIntersecting) stickybar.classList.add('show');
+    else stickybar.classList.remove('show');
+  },{threshold:0});
+  heroObs.observe(hero);
+  const buyObs=new IntersectionObserver(([e])=>{
+    if(e.isIntersecting) stickybar.classList.remove('show');
+  },{threshold:.2});
+  buyObs.observe(buy);
+
+  // Reveal on scroll
+  const revObs=new IntersectionObserver((entries)=>{
+    entries.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('in'); revObs.unobserve(en.target);} });
+  },{threshold:.15});
+  document.querySelectorAll('.reveal').forEach(el=>revObs.observe(el));
+
+  // Mobile nav
+  const burger=document.getElementById('burger');
+  const navlinks=document.getElementById('navlinks');
+  burger.addEventListener('click',()=>navlinks.classList.toggle('open'));
+  navlinks.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>navlinks.classList.remove('open')));
+
+  // Quantity + price
+  const PRICE=69.99;
+  const qty=document.getElementById('qty');
+  const total=document.getElementById('total');
+  const fmt=n=>'$'+n.toFixed(2);
+  const sync=()=>{let v=Math.max(1,Math.min(20,parseInt(qty.value)||1));qty.value=v;total.textContent=fmt(v*PRICE);};
+  document.getElementById('plus').addEventListener('click',()=>{qty.value=Math.min(20,(parseInt(qty.value)||1)+1);sync();});
+  document.getElementById('minus').addEventListener('click',()=>{qty.value=Math.max(1,(parseInt(qty.value)||1)-1);sync();});
+  qty.addEventListener('input',sync);
+
+  // Add to cart toast
+  const toast=document.getElementById('toast');
+  let toastT;
+  document.getElementById('addBtn').addEventListener('click',()=>{
+    toast.classList.add('show');
+    clearTimeout(toastT);
+    toastT=setTimeout(()=>toast.classList.remove('show'),2600);
+  });
+</script>
+</body>
+</html>
