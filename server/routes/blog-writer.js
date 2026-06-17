@@ -73,6 +73,26 @@ function clearSession() {
 
 // ── Routes ────────────────────────────────────────────────────
 
+// GET /api/blog-writer/health — auth-free uptime probe.
+// Reads env vars + history file only; no Anthropic / Fal / Shopify API calls.
+// Placed FIRST so it can never be captured by a downstream /:param route.
+router.get('/health', (_req, res) => {
+  let historyCount = 0
+  try {
+    if (existsSync(HISTORY_FILE)) {
+      const arr = JSON.parse(readFileSync(HISTORY_FILE, 'utf8'))
+      historyCount = Array.isArray(arr) ? arr.length : 0
+    }
+  } catch {}
+  res.json({
+    ok: true,
+    hasAnthropicKey: Boolean(process.env.ANTHROPIC_API_KEY),
+    hasFalKey: Boolean(process.env.FAL_KEY),
+    hasShopifyToken: Boolean(process.env.SHOPIFY_ADMIN_ACCESS_TOKEN),
+    historyCount,
+  })
+})
+
 // GET /api/blog-writer/article-types
 router.get('/article-types', (_req, res) => {
   res.json({ ok: true, types: ARTICLE_TYPES })

@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { readFileSync, writeFileSync, existsSync } from 'fs'
+import { readFileSync, writeFileSync, existsSync, renameSync } from 'fs'
 import { dataFile } from '../lib/data-dir.js'
 import { getNotionSnapshot } from '../connectors/notion.js'
 import { getSlackSnapshot, postChannelVerificationSuite, postInitialCommandCentreMessage, postRoleMessage, postSlackMessage } from '../connectors/slack.js'
@@ -365,7 +365,11 @@ function saveShippingCosts(data) {
   // Previously errors were swallowed and the response still said ok:true —
   // so a failed write looked identical to a successful one client-side and
   // the amount appeared to vanish on refresh.
-  writeFileSync(SHIPPING_COSTS_FILE, JSON.stringify(data, null, 2))
+  // Atomic tmp+rename so concurrent saves can't corrupt or partially overwrite
+  // the file — losing a previously-saved week's data in the process.
+  const tmp = SHIPPING_COSTS_FILE + '.tmp'
+  writeFileSync(tmp, JSON.stringify(data, null, 2))
+  renameSync(tmp, SHIPPING_COSTS_FILE)
   // Round-trip read to verify the write actually landed on disk.
   const verify = JSON.parse(readFileSync(SHIPPING_COSTS_FILE, 'utf8'))
   return verify

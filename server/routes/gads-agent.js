@@ -40,6 +40,23 @@ import { buildHeatmap } from '../lib/engine-heatmap.js'
 
 const router = Router()
 
+// ── Health probe (auth-free, fast — no Google Ads API calls) ──
+// Used by external uptime monitors. Reads env-derived flags + in-memory store
+// only — never hits Google Ads or any external network. Placed FIRST so it
+// can never be swallowed by a later /:campaignId / /:id wildcard route.
+router.get('/health', (_req, res) => {
+  let recommendationCount = 0
+  try {
+    recommendationCount = (getRecommendations('pending') || []).length
+  } catch {}
+  res.json({
+    ok: true,
+    configured: isGadsConfigured(),
+    dryRun: isDryRun(),
+    recommendationCount,
+  })
+})
+
 // ── Engine — single-glance dashboard data ──────────────────────────────────
 
 router.get('/engine', async (req, res) => {

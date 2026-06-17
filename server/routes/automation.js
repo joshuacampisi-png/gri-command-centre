@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { readFileSync, writeFileSync, renameSync, existsSync, statSync } from 'fs'
 import { AUTOMATION_PHASES } from '../lib/automation-phases.js'
 import { shopifyPolicy } from '../lib/shopify-policy.js'
 import { runSEOCrawl } from '../lib/seo-crawler.js'
@@ -7,6 +8,7 @@ import { getThemeAsset, listThemeAssets, updateThemeAsset, writeThemeAssetDirect
 import { updateTaskState } from '../connectors/notion.js'
 import { postSlackMessage } from '../connectors/slack.js'
 import { env } from '../lib/env.js'
+import { dataFile } from '../lib/data-dir.js'
 import { logActivity, getActivity } from '../lib/activity-log.js'
 import { callClaude } from '../lib/claude-guard.js'
 
@@ -29,7 +31,63 @@ async function sendTelegram(text) {
 const router = Router()
 
 // ── Pending text proposals: keyed by taskId, holds OLD + proposed NEW before approval ──
-export const pendingTextProposals = new Map()
+// Map is the in-process source of truth; PROPOSALS_FILE is the durable mirror
+// so proposals survive Railway redeploys (volume-backed via data-dir.js).
+const PROPOSALS_FILE = dataFile('pending-proposals.json')
+const PROPOSAL_TTL_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
+
+export const pendingTextProposals = (() => {
+  const m = new Map()
+  try {
+    if (existsSync(PROPOSALS_FILE)) {
+      const raw = readFileSync(PROPOSALS_FILE, 'utf8')
+      const arr = JSON.parse(raw)
+      const now = Date.now()
+      let kept = 0, dropped = 0
+      for (const [taskId, p] of arr) {
+        // Drop stale (>7d) entries so the file doesn't clog forever
+        if (p?.createdAt && (now - p.createdAt) > PROPOSAL_TTL_MS) { dropped++; continue }
+        m.set(taskId, p)
+        kept++
+      }
+      console.log(`[PendingProposals] Hydrated ${kept} proposal(s) from disk (${dropped} stale dropped)`)
+    }
+  } catch (e) {
+    console.error('[PendingProposals] Failed to hydrate from disk, starting empty:', e.message)
+  }
+  return m
+})()
+
+function savePendingProposals() {
+  try {
+    const arr = Array.from(pendingTextProposals.entries())
+    const tmp = `${PROPOSALS_FILE}.tmp`
+    writeFileSync(tmp, JSON.stringify(arr, null, 2), 'utf8')
+    renameSync(tmp, PROPOSALS_FILE) // atomic on POSIX
+  } catch (e) {
+    console.error('[PendingProposals] Failed to persist to disk:', e.message)
+  }
+}
+
+// ── Health probe (auth-free, fast — no external API calls) ──
+// Used by external uptime monitors. Reads in-memory Map size + file mtime only.
+// Placed BEFORE any /:param routes so it can't be swallowed by a wildcard.
+router.get('/health', (_req, res) => {
+  let lastFlywheelRunAt
+  try {
+    // seo-task-fingerprints.json is rewritten on every successful SEO flywheel
+    // run, so its mtime is a cheap proxy for "last flywheel run".
+    const fingerprintsPath = dataFile('seo-task-fingerprints.json')
+    if (existsSync(fingerprintsPath)) {
+      lastFlywheelRunAt = statSync(fingerprintsPath).mtime.toISOString()
+    }
+  } catch {}
+  res.json({
+    ok: true,
+    pendingProposalCount: pendingTextProposals.size,
+    ...(lastFlywheelRunAt ? { lastFlywheelRunAt } : {}),
+  })
+})
 
 router.get('/status', (_req, res) => {
   res.json({ ok: true, phases: AUTOMATION_PHASES, shopifyPolicy: shopifyPolicy() })
@@ -134,6 +192,7 @@ router.post('/approve-to-live', async (req, res) => {
       // Execute the actual fix using the stored proposal
       const result = await runAutoFix({ taskId, title: proposal.taskTitle, issueType: 'SEO', _approvedProposal: proposal })
       pendingTextProposals.delete(taskId)
+      savePendingProposals()
       return res.json({ ok: true, action: 'text-proposal-approved', result })
     }
 
@@ -239,9 +298,11 @@ export async function proposeTextFix({ taskId, title = '', issueType = '' }) {
       seoAgent: agent,
       targetKeywords: targetKeywords || [],
       reasoning: reasoning || '',
-      estimatedCTRImpact: estimatedCTRImpact || 'unknown'
+      estimatedCTRImpact: estimatedCTRImpact || 'unknown',
+      createdAt: Date.now()
     }
     pendingTextProposals.set(taskId, proposal)
+    savePendingProposals()
 
     // Update Notion to Approval status
     if (taskId) await updateTaskState(taskId, { status: 'Approval', executionStage: 'Approval' }).catch(() => {})
@@ -309,9 +370,11 @@ http://127.0.0.1:4173/
 
     const proposal = {
       taskId, taskTitle: title, type: 'h1', path: pagePath, handle,
-      oldValue: oldH1 || '(none)', newValue: newH1, timestamp, issueType
+      oldValue: oldH1 || '(none)', newValue: newH1, timestamp, issueType,
+      createdAt: Date.now()
     }
     pendingTextProposals.set(taskId, proposal)
+    savePendingProposals()
 
     if (taskId) await updateTaskState(taskId, { status: 'Approval', executionStage: 'Approval' }).catch(() => {})
 

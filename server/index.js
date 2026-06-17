@@ -122,6 +122,14 @@ process.on('unhandledRejection', async (reason) => {
 const app = express()
 app.use(cors())
 
+// ── Defensive no-cache on all /api/* responses ─────────────
+// Belt-and-braces against Railway / Cloudflare / any intermediary
+// that might insert a CDN cache on API responses (including webhooks).
+app.use('/api', (req, res, next) => {
+  res.set('Cache-Control', 'no-store, must-revalidate')
+  next()
+})
+
 // ── Dashboard password gate ────────────────────────────────
 // Only active when DASHBOARD_PASSWORD is set in .env
 const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD
@@ -161,8 +169,11 @@ if (DASHBOARD_PASSWORD && DASHBOARD_PASSWORD !== 'changeme') {
     '/api/shopify/shipping-costs-diag',
   ]
   const PUBLIC_EXACT = [
-    '/api/instagram/disk-usage', '/api/instagram/cleanup-media',
-    '/api/ads/debug', '/api/ads/performance',
+    '/api/ads/debug',
+    // ── External uptime monitor probes (auth-free, no external API calls) ──
+    '/api/automation/health',
+    '/api/blog-writer/health',
+    '/api/gads-agent/health',
   ]
   function isPublicPath(p) {
     if (PUBLIC_EXACT.includes(p)) return true

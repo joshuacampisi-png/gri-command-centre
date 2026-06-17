@@ -1434,6 +1434,20 @@ function TasksPage({ data }) {
     return () => clearInterval(t)
   }, [])
 
+  // Poll the dashboard every 30s so edits made by other staff appear without a hard reload
+  useEffect(() => {
+    const refreshTasks = async () => {
+      try {
+        const r = await fetch('/api/dashboard?company=GRI')
+        if (!r.ok) return
+        const d = await r.json()
+        if (Array.isArray(d?.tasks)) setLocalTasks(d.tasks)
+      } catch {}
+    }
+    const t = setInterval(refreshTasks, 30000)
+    return () => clearInterval(t)
+  }, [])
+
   const STATUS_FILTERS = ['All','Backlog','In Progress','Approval','Live','Done','Blocked','Rejected']
   const needsApproval = localTasks.filter(t => t.status === 'Approval' || t.executionStage === 'Approval')
   const seoTasks      = localTasks.filter(t => t.taskType === 'SEO')

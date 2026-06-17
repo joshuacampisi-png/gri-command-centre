@@ -338,7 +338,7 @@ function DetailPanel({ hire, onClose, onAction }) {
               <button onClick={() => onAction("mark_picked_up", hire)} style={{ ...btnPrimary, width: "100%" }}>Mark Picked Up</button>
             )}
             {hire.contractStatus === "signed" && (
-              <a href={`/api/contract/${hire.id}/pdf`} target="_blank" rel="noopener noreferrer" style={{
+              <a href={`/api/balloon-contract/${hire.id}/pdf`} target="_blank" rel="noopener noreferrer" style={{
                 ...btnBase, display: "block", textDecoration: "none", width: "100%", boxSizing: "border-box",
               }}>Download signed contract PDF</a>
             )}
@@ -668,7 +668,7 @@ export default function BalloonDashboard() {
                       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                         {pill(cCfg)}
                         {hire.contractStatus === "signed" && (
-                          <a href={`/api/contract/${hire.id}/pdf`} target="_blank" rel="noopener noreferrer" title="Download signed contract" style={{ fontSize: 14, textDecoration: "none", color: "var(--green)" }}>📄</a>
+                          <a href={`/api/balloon-contract/${hire.id}/pdf`} target="_blank" rel="noopener noreferrer" title="Download signed contract" style={{ fontSize: 14, textDecoration: "none", color: "var(--green)" }}>📄</a>
                         )}
                       </div>
                     </td>
