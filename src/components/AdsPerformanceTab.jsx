@@ -36,33 +36,35 @@ const DATE_RANGES = [
   { key: '30d', label: '30 Days' },
 ]
 
+// Design-system tokens. Values map to CSS variables defined in src/styles.css
+// so the component shares the Apple/Stripe palette with the rest of the app.
 const COLOURS = {
-  bg: '#0D1117',
-  card: '#161B22',
-  border: '#30363D',
-  text: '#E6EDF3',
-  muted: '#7D8590',
-  pink: '#E43F7B',
-  green: '#3FB950',
-  yellow: '#D29922',
-  red: '#F85149',
-  blue: '#58A6FF',
+  bg: 'var(--bg-canvas)',
+  card: 'var(--bg-surface)',
+  border: 'var(--border)',
+  text: 'var(--text)',
+  muted: 'var(--text-muted)',
+  pink: 'var(--gri-pink)',
+  green: 'var(--green)',
+  yellow: 'var(--amber)',
+  red: 'var(--red)',
+  blue: 'var(--blue)',
 }
 
 const HEALTH_MAP = {
-  SCALE: { label: 'Scale', bg: '#3FB95020', color: '#3FB950', border: '#3FB95044' },
-  HEALTHY: { label: 'Healthy', bg: '#58A6FF20', color: '#58A6FF', border: '#58A6FF44' },
-  MONITOR: { label: 'Monitor', bg: '#D2992220', color: '#D29922', border: '#D2992244' },
-  CULL: { label: 'Cull', bg: '#E3651D20', color: '#E3651D', border: '#E3651D44' },
-  EMERGENCY: { label: 'Emergency', bg: '#F8514920', color: '#F85149', border: '#F8514944' },
+  SCALE: { label: 'Scale', bg: 'var(--green-bg)', color: 'var(--green)', border: 'var(--green-bg)' },
+  HEALTHY: { label: 'Healthy', bg: 'var(--blue-bg)', color: 'var(--blue)', border: 'var(--blue-bg)' },
+  MONITOR: { label: 'Monitor', bg: 'var(--amber-bg)', color: 'var(--amber)', border: 'var(--amber-bg)' },
+  CULL: { label: 'Cull', bg: 'var(--amber-bg)', color: 'var(--amber)', border: 'var(--amber-bg)' },
+  EMERGENCY: { label: 'Emergency', bg: 'var(--red-bg)', color: 'var(--red)', border: 'var(--red-bg)' },
 }
 
 const FATIGUE_MAP = {
-  FRESH: { color: '#3FB950', label: 'Fresh' },
-  HEALTHY: { color: '#3FB950', label: 'Healthy' },
-  WATCH: { color: '#D29922', label: 'Watch' },
-  FATIGUING: { color: '#E3651D', label: 'Fatiguing' },
-  DEAD: { color: '#F85149', label: 'Dead' },
+  FRESH: { color: 'var(--green)', label: 'Fresh' },
+  HEALTHY: { color: 'var(--green)', label: 'Healthy' },
+  WATCH: { color: 'var(--amber)', label: 'Watch' },
+  FATIGUING: { color: 'var(--amber)', label: 'Fatiguing' },
+  DEAD: { color: 'var(--red)', label: 'Dead' },
 }
 
 const OBJECTIVE_LABELS = {
@@ -360,9 +362,9 @@ function AlertBar({ alerts, onDismiss, onAction }) {
   if (!alerts || alerts.length === 0) return null
 
   const severityStyles = {
-    CRITICAL: { bg: '#F8514918', border: '#F8514944', color: '#F85149', icon: '!!' },
-    HIGH: { bg: '#D2992218', border: '#D2992244', color: '#D29922', icon: '!' },
-    OPPORTUNITY: { bg: '#3FB95018', border: '#3FB95044', color: '#3FB950', icon: '+' },
+    CRITICAL: { bg: 'var(--red-bg)', border: 'var(--red-bg)', color: 'var(--red)', icon: '!!' },
+    HIGH: { bg: 'var(--amber-bg)', border: 'var(--amber-bg)', color: 'var(--amber)', icon: '!' },
+    OPPORTUNITY: { bg: 'var(--green-bg)', border: 'var(--green-bg)', color: 'var(--green)', icon: '+' },
   }
 
   return (
@@ -636,7 +638,7 @@ function SpendChart({ breakdown, loading }) {
             yAxisId="revenue"
             type="monotone"
             dataKey="revenue"
-            fill={COLOURS.green + '15'}
+            fill="var(--green-bg)"
             stroke={COLOURS.green}
             strokeWidth={2}
             name="Revenue"
@@ -680,10 +682,10 @@ const ACTION_ICONS = {
 }
 
 const PRIORITY_STYLES = {
-  URGENT: { bg: '#F8514930', border: '#F85149', color: '#F85149', label: 'URGENT' },
-  HIGH: { bg: '#E3651D30', border: '#E3651D', color: '#E3651D', label: 'HIGH' },
-  MEDIUM: { bg: '#D2992230', border: '#D29922', color: '#D29922', label: 'MEDIUM' },
-  LOW: { bg: '#3FB95020', border: '#3FB950', color: '#3FB950', label: 'INFO' },
+  URGENT: { bg: 'var(--red-bg)', border: 'var(--red)', color: 'var(--red)', label: 'URGENT' },
+  HIGH: { bg: 'var(--amber-bg)', border: 'var(--amber)', color: 'var(--amber)', label: 'HIGH' },
+  MEDIUM: { bg: 'var(--amber-bg)', border: 'var(--amber)', color: 'var(--amber)', label: 'MEDIUM' },
+  LOW: { bg: 'var(--green-bg)', border: 'var(--green)', color: 'var(--green)', label: 'INFO' },
 }
 
 function SurgicalActions({ actions, onPauseEntity, refreshData }) {
@@ -793,7 +795,7 @@ function CreativeCard({ ad, onPause, pausing }) {
           <span>Freq: {ins.frequency != null ? ins.frequency.toFixed(1) : '--'}</span>
         </div>
         <div className="ads-dark-creative-footer">
-          <span className="ads-dark-fatigue-badge" style={{ color: fatigue.color, borderColor: fatigue.color + '66' }}>
+          <span className="ads-dark-fatigue-badge" style={{ color: fatigue.color, borderColor: 'var(--border)' }}>
             {fatigue.label} {ad.fatigue?.score != null ? `(${ad.fatigue.score})` : ''}
           </span>
           {ad.daysRunning != null && (
@@ -959,7 +961,7 @@ function CampaignRow({ campaign, expanded, onExpand, onStatusChange, onBudgetSav
         <td>{ins.purchases || 0}</td>
 
         {/* CPP */}
-        <td style={{ color: cppColour(cpp), fontWeight: 700 }}>
+        <td style={{ color: cppColour(cpp), fontWeight: 600 }}>
           {cpp != null ? fmtCurrency(cpp) : '--'}
         </td>
 
@@ -1346,7 +1348,7 @@ function SetupScreen() {
           To use the Ads Command Centre, you need to configure your Meta (Facebook) Ads API credentials
           in the server environment variables.
         </p>
-        <div style={{ textAlign: 'left', background: COLOURS.bg, padding: 20, borderRadius: 8, border: `1px solid ${COLOURS.border}` }}>
+        <div style={{ textAlign: 'left', background: COLOURS.bg, padding: 20, borderRadius: 'var(--radius)', border: `1px solid ${COLOURS.border}` }}>
           <p style={{ color: COLOURS.muted, fontSize: 13, marginBottom: 12 }}>Required environment variables:</p>
           <code style={{ color: COLOURS.pink, fontSize: 13, display: 'block', lineHeight: 1.8 }}>
             META_ACCESS_TOKEN=your_token<br />
@@ -1449,7 +1451,7 @@ function AccountHealthModal({ data, loading, onClose }) {
                 <h4 style={{ color: COLOURS.blue, marginBottom: 12 }}>Next Moves</h4>
                 {data.nextMoves.sort((a, b) => a.priority - b.priority).map((m, i) => (
                   <div key={i} className="ads-dark-health-item">
-                    <span style={{ color: COLOURS.pink, fontWeight: 700, marginRight: 8 }}>#{m.priority}</span>
+                    <span style={{ color: COLOURS.pink, fontWeight: 600, marginRight: 8 }}>#{m.priority}</span>
                     <strong>{m.action}</strong>
                     <p style={{ color: COLOURS.muted, marginTop: 4 }}>{m.why}</p>
                   </div>
@@ -1483,17 +1485,17 @@ function FatigueAlertsBanner({ alerts, onAck }) {
 
   return (
     <div style={{ marginBottom: 16 }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: COLOURS.muted, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
+      <div style={{ fontSize: 11, fontWeight: 600, color: COLOURS.muted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
         FATIGUE ALERTS ({alerts.length})
       </div>
       {alerts.map(alert => {
         const isDead = alert.currentStatus === 'DEAD'
-        const bg = isDead ? '#F8514915' : '#D2992215'
-        const borderColor = isDead ? '#F8514944' : '#D2992244'
+        const bg = isDead ? 'var(--red-bg)' : 'var(--amber-bg)'
+        const borderColor = 'var(--border)'
         const iconColor = isDead ? COLOURS.red : COLOURS.yellow
         return (
           <div key={alert.id} style={{
-            background: bg, border: `1px solid ${borderColor}`, borderRadius: 10,
+            background: bg, border: `1px solid ${borderColor}`, borderRadius: 'var(--radius-lg)',
             padding: '12px 16px', marginBottom: 8, display: 'flex', alignItems: 'flex-start', gap: 12
           }}>
             <span style={{ color: iconColor, fontSize: 16, flexShrink: 0, marginTop: 2 }}>
@@ -1504,7 +1506,7 @@ function FatigueAlertsBanner({ alerts, onAck }) {
                 {alert.adName}
                 <span style={{ color: COLOURS.muted, fontWeight: 400, marginLeft: 8 }}>{alert.campaignName}</span>
               </div>
-              <div style={{ color: iconColor, fontSize: 12, fontWeight: 700, marginTop: 2 }}>
+              <div style={{ color: iconColor, fontSize: 12, fontWeight: 600, marginTop: 2 }}>
                 {alert.previousStatus} → {alert.currentStatus} (Score: {alert.score}/100)
                 {alert.daysRemaining != null && <span style={{ color: COLOURS.muted }}> — ~{alert.daysRemaining}d left</span>}
               </div>
@@ -1520,7 +1522,7 @@ function FatigueAlertsBanner({ alerts, onAck }) {
             <button
               onClick={() => onAck(alert.id)}
               style={{
-                background: 'transparent', border: `1px solid ${COLOURS.border}`, borderRadius: 6,
+                background: 'transparent', border: `1px solid ${COLOURS.border}`, borderRadius: 'var(--radius-sm)',
                 color: COLOURS.muted, fontSize: 11, padding: '4px 10px', cursor: 'pointer', flexShrink: 0
               }}
             >
@@ -1567,7 +1569,7 @@ function MultiWindowOverview({ data, loading, onRefresh }) {
   return (
     <div style={{ marginBottom: 20 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: COLOURS.muted, textTransform: 'uppercase', letterSpacing: 1 }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: COLOURS.muted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
           PERFORMANCE WINDOWS
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -1588,7 +1590,7 @@ function MultiWindowOverview({ data, loading, onRefresh }) {
           const t = windowTotals?.[w] || {}
           return (
             <div key={w} className="ads-dark-card" style={{ padding: 16 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: COLOURS.text, marginBottom: 12 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: COLOURS.text, marginBottom: 12 }}>
                 {windowLabels[w]}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
@@ -1623,7 +1625,7 @@ function MultiWindowOverview({ data, loading, onRefresh }) {
       {/* Campaign → Adset → Ad breakdown */}
       {campaigns && campaigns.length > 0 && (
         <div style={{ marginTop: 16 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: COLOURS.muted, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: COLOURS.muted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
             BREAKDOWN BY CAMPAIGN → ADSET → AD
           </div>
           {campaigns.map(c => (
@@ -1639,7 +1641,7 @@ function MiniStat({ label, value, color }) {
   return (
     <div>
       <div style={{ fontSize: 10, color: COLOURS.muted, textTransform: 'uppercase' }}>{label}</div>
-      <div style={{ fontSize: 14, fontWeight: 700, color: color || COLOURS.text }}>{value}</div>
+      <div style={{ fontSize: 14, fontWeight: 600, color: color || COLOURS.text }}>{value}</div>
     </div>
   )
 }
@@ -1652,7 +1654,7 @@ function TrendPill({ label, value, invert = false }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
       <span style={{ fontSize: 11, color: COLOURS.muted }}>{label}</span>
-      <span style={{ fontSize: 12, fontWeight: 700, color }}>
+      <span style={{ fontSize: 12, fontWeight: 600, color }}>
         {arrow} {Math.abs(value).toFixed(1)}%
       </span>
       <span style={{ fontSize: 10, color: COLOURS.muted }}>3d vs 7d/day</span>
@@ -1676,7 +1678,7 @@ function CampaignWindowRow({ campaign }) {
       >
         <span style={{ color: COLOURS.muted, fontSize: 12 }}>{expanded ? '\u25BC' : '\u25B6'}</span>
         <span style={{ color: campaign.status === 'ACTIVE' ? COLOURS.green : COLOURS.red, fontSize: 8 }}>{'\u25CF'}</span>
-        <span style={{ color: COLOURS.text, fontSize: 13, fontWeight: 700, flex: 1 }}>{campaign.name}</span>
+        <span style={{ color: COLOURS.text, fontSize: 13, fontWeight: 600, flex: 1 }}>{campaign.name}</span>
         {/* Quick 7d stats */}
         {campaign.windows?.['7d'] && (
           <div style={{ display: 'flex', gap: 16, fontSize: 12 }}>
@@ -1707,7 +1709,7 @@ function AdsetWindowRow({ adset, ads }) {
       <div
         onClick={() => setExpanded(!expanded)}
         style={{
-          padding: '8px 12px', background: COLOURS.bg, borderRadius: 8,
+          padding: '8px 12px', background: COLOURS.bg, borderRadius: 'var(--radius)',
           display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer'
         }}
       >
@@ -1784,10 +1786,10 @@ function AdWindowRow({ ad }) {
         onClick={toggleStatus}
         disabled={toggling}
         style={{
-          background: ad.status === 'ACTIVE' ? COLOURS.green + '20' : COLOURS.red + '20',
+          background: ad.status === 'ACTIVE' ? 'var(--green-bg)' : 'var(--red-bg)',
           color: ad.status === 'ACTIVE' ? COLOURS.green : COLOURS.red,
-          border: 'none', borderRadius: 4, padding: '2px 8px', fontSize: 10,
-          fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase'
+          border: 'none', borderRadius: 'var(--radius-sm)', padding: '2px 8px', fontSize: 10,
+          fontWeight: 600, cursor: 'pointer', textTransform: 'uppercase'
         }}
       >
         {toggling ? '...' : ad.status}
@@ -1845,7 +1847,7 @@ function CreativeGenerator({ show, onClose, angle, setAngle, product, setProduct
               placeholder="e.g. 'Works every time guarantee', 'Made for the gram', 'Safe for mum & bub'"
               style={{
                 width: '100%', padding: '10px 12px', background: COLOURS.bg, border: `1px solid ${COLOURS.border}`,
-                borderRadius: 8, color: COLOURS.text, fontSize: 13
+                borderRadius: 'var(--radius-sm)', color: COLOURS.text, fontSize: 13
               }}
             />
           </div>
@@ -1860,7 +1862,7 @@ function CreativeGenerator({ show, onClose, angle, setAngle, product, setProduct
                 onChange={e => setProduct(e.target.value)}
                 style={{
                   width: '100%', padding: '10px 12px', background: COLOURS.bg, border: `1px solid ${COLOURS.border}`,
-                  borderRadius: 8, color: COLOURS.text, fontSize: 13
+                  borderRadius: 'var(--radius-sm)', color: COLOURS.text, fontSize: 13
                 }}
               >
                 <option value="">Any / All</option>
@@ -1884,7 +1886,7 @@ function CreativeGenerator({ show, onClose, angle, setAngle, product, setProduct
                 onChange={e => setAdsetId(e.target.value)}
                 style={{
                   width: '100%', padding: '10px 12px', background: COLOURS.bg, border: `1px solid ${COLOURS.border}`,
-                  borderRadius: 8, color: COLOURS.text, fontSize: 13
+                  borderRadius: 'var(--radius-sm)', color: COLOURS.text, fontSize: 13
                 }}
               >
                 <option value="">Select ad set...</option>
@@ -1907,7 +1909,7 @@ function CreativeGenerator({ show, onClose, angle, setAngle, product, setProduct
           {/* Variants */}
           {variants && variants.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 8 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: COLOURS.muted, textTransform: 'uppercase' }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: COLOURS.muted, textTransform: 'uppercase' }}>
                 GENERATED VARIANTS
               </div>
               {variants.map((v, i) => (

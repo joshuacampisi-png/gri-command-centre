@@ -319,15 +319,12 @@ router.post('/orders-create', async (req, res) => {
     }
   }
 
-  // Log raw payload for debugging IzyRent property names
+  // Log raw payload for debugging IzyRent property names — volume-aware
   try {
     const { writeFileSync } = await import('fs');
-    const { join, dirname } = await import('path');
-    const { fileURLToPath } = await import('url');
-    const __dir = dirname(fileURLToPath(import.meta.url));
-    const logPath = join(__dir, '..', '..', 'data', 'last-webhook-payload.json');
-    writeFileSync(logPath, JSON.stringify(req.body, null, 2));
-    console.log(`[shopify-webhook] Raw payload saved to data/last-webhook-payload.json`);
+    const { dataFile } = await import('../lib/data-dir.js');
+    writeFileSync(dataFile('last-webhook-payload.json'), JSON.stringify(req.body, null, 2));
+    console.log('[shopify-webhook] Raw payload saved to volume:last-webhook-payload.json');
   } catch (_) {}
 
   // Respond immediately — Shopify requires 200 within 5 seconds

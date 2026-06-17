@@ -115,8 +115,8 @@ export default function IGReplyBotTab() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 24 }}>
         <div className="ov-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <div style={{ fontSize: 13, color: '#888', marginBottom: 4 }}>Bot Status</div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: status?.enabled ? '#22c55e' : '#ef4444' }}>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>Bot Status</div>
+            <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: status?.enabled ? 'var(--green)' : 'var(--red)' }}>
               {status?.enabled ? 'ACTIVE' : 'DISABLED'}
             </div>
           </div>
@@ -124,14 +124,14 @@ export default function IGReplyBotTab() {
             onClick={toggle}
             disabled={toggling}
             style={{
-              padding: '8px 20px',
-              borderRadius: 8,
-              border: 'none',
+              padding: '8px 16px',
+              borderRadius: 'var(--radius-sm)',
+              border: status?.enabled ? '1px solid var(--border)' : 'none',
               fontWeight: 600,
               fontSize: 13,
               cursor: 'pointer',
-              background: status?.enabled ? '#ef4444' : '#22c55e',
-              color: '#fff'
+              background: status?.enabled ? 'var(--bg-surface)' : 'var(--text)',
+              color: status?.enabled ? 'var(--text)' : 'var(--bg-surface)'
             }}
           >
             {toggling ? '...' : status?.enabled ? 'Disable' : 'Enable'}
@@ -139,23 +139,23 @@ export default function IGReplyBotTab() {
         </div>
 
         <div className="ov-card">
-          <div style={{ fontSize: 13, color: '#888', marginBottom: 4 }}>Replies Today</div>
-          <div style={{ fontSize: 28, fontWeight: 700 }}>{s.repliesToday || 0}</div>
-          <div style={{ fontSize: 12, color: '#888' }}>Total: {s.totalReplied || 0}</div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>Replies Today</div>
+          <div style={{ fontSize: 28, fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--text)', fontVariantNumeric: 'tabular-nums' }}>{s.repliesToday || 0}</div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Total: {s.totalReplied || 0}</div>
         </div>
 
         <div className="ov-card">
-          <div style={{ fontSize: 13, color: '#888', marginBottom: 4 }}>Skipped Today</div>
-          <div style={{ fontSize: 28, fontWeight: 700, color: '#888' }}>{s.skippedToday || 0}</div>
-          <div style={{ fontSize: 12, color: '#888' }}>Total: {s.totalSkipped || 0}</div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>Skipped Today</div>
+          <div style={{ fontSize: 28, fontWeight: 600, letterSpacing: '-0.02em', color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>{s.skippedToday || 0}</div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Total: {s.totalSkipped || 0}</div>
         </div>
 
         <div className="ov-card">
-          <div style={{ fontSize: 13, color: '#888', marginBottom: 4 }}>Rate Limit</div>
-          <div style={{ fontSize: 28, fontWeight: 700, color: (rl.globalUsed || 0) > 15 ? '#f59e0b' : '#22c55e' }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>Rate Limit</div>
+          <div style={{ fontSize: 28, fontWeight: 600, letterSpacing: '-0.02em', color: (rl.globalUsed || 0) > 15 ? 'var(--amber)' : 'var(--text)', fontVariantNumeric: 'tabular-nums' }}>
             {rl.globalUsed || 0}/{rl.globalMax || 20}
           </div>
-          <div style={{ fontSize: 12, color: '#888' }}>per hour</div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>per hour</div>
         </div>
       </div>
 
@@ -163,62 +163,62 @@ export default function IGReplyBotTab() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
         <div className="ov-card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <h3 style={{ margin: 0, fontSize: 15 }}>Tone Profile</h3>
+            <h3 style={{ margin: 0, fontSize: 15, color: 'var(--text)', fontWeight: 600 }}>Tone Profile</h3>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={loadTone} style={{ fontSize: 12, padding: '4px 12px', borderRadius: 6, border: '1px solid #333', background: 'transparent', color: '#ccc', cursor: 'pointer' }}>
+              <button onClick={loadTone} style={{ fontSize: 12, padding: '6px 12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-surface)', color: 'var(--text)', cursor: 'pointer', fontWeight: 600 }}>
                 {showTone ? 'Hide' : 'View'}
               </button>
-              <button onClick={refreshTone} disabled={refreshing} style={{ fontSize: 12, padding: '4px 12px', borderRadius: 6, border: 'none', background: '#6366f1', color: '#fff', cursor: 'pointer' }}>
+              <button onClick={refreshTone} disabled={refreshing} style={{ fontSize: 12, padding: '6px 12px', borderRadius: 'var(--radius-sm)', border: 'none', background: 'var(--text)', color: 'var(--bg-surface)', cursor: 'pointer', fontWeight: 600 }}>
                 {refreshing ? 'Extracting...' : 'Refresh'}
               </button>
             </div>
           </div>
           {status?.toneProfile?.hasProfile ? (
-            <div style={{ fontSize: 13, color: '#aaa' }}>
+            <div style={{ fontSize: 13, color: 'var(--text-soft)' }}>
               Last extracted: {fmtTime(status.toneProfile.extractedAt)} ({fmtAgo(status.toneProfile.extractedAt)})
               <br />Posts analysed: {status.toneProfile.postCount}
             </div>
           ) : (
-            <div style={{ fontSize: 13, color: '#f59e0b' }}>No tone profile yet. Click "Refresh" to extract from your Instagram posts.</div>
+            <div style={{ fontSize: 13, color: 'var(--amber)' }}>No tone profile yet. Click "Refresh" to extract from your Instagram posts.</div>
           )}
           {showTone && toneProfile && (
-            <div style={{ marginTop: 12, padding: 12, background: '#1a1a2e', borderRadius: 8, fontSize: 12, maxHeight: 400, overflow: 'auto' }}>
+            <div style={{ marginTop: 12, padding: 12, background: 'var(--bg-canvas)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: 12, maxHeight: 400, overflow: 'auto', color: 'var(--text-soft)' }}>
               {toneProfile.personality_traits && (
                 <div style={{ marginBottom: 8 }}>
-                  <strong style={{ color: '#6366f1' }}>Personality:</strong>{' '}
+                  <strong style={{ color: 'var(--text)' }}>Personality:</strong>{' '}
                   {toneProfile.personality_traits.join(', ')}
                 </div>
               )}
               {toneProfile.vocabulary_patterns && (
                 <div style={{ marginBottom: 8 }}>
-                  <strong style={{ color: '#6366f1' }}>Vocabulary:</strong>{' '}
+                  <strong style={{ color: 'var(--text)' }}>Vocabulary:</strong>{' '}
                   {toneProfile.vocabulary_patterns.join(', ')}
                 </div>
               )}
               {toneProfile.sentence_structure && (
                 <div style={{ marginBottom: 8 }}>
-                  <strong style={{ color: '#6366f1' }}>Sentence style:</strong>{' '}
+                  <strong style={{ color: 'var(--text)' }}>Sentence style:</strong>{' '}
                   {toneProfile.sentence_structure}
                 </div>
               )}
               {toneProfile.emoji_usage && (
                 <div style={{ marginBottom: 8 }}>
-                  <strong style={{ color: '#6366f1' }}>Emoji usage:</strong>{' '}
+                  <strong style={{ color: 'var(--text)' }}>Emoji usage:</strong>{' '}
                   {toneProfile.emoji_usage}
                 </div>
               )}
               {toneProfile.sales_approach && (
                 <div style={{ marginBottom: 8 }}>
-                  <strong style={{ color: '#6366f1' }}>Sales approach:</strong>{' '}
+                  <strong style={{ color: 'var(--text)' }}>Sales approach:</strong>{' '}
                   {toneProfile.sales_approach}
                 </div>
               )}
               {toneProfile.example_reply_templates && (
                 <div style={{ marginBottom: 8 }}>
-                  <strong style={{ color: '#6366f1' }}>Example replies:</strong>
+                  <strong style={{ color: 'var(--text)' }}>Example replies:</strong>
                   <ul style={{ margin: '4px 0 0 16px', padding: 0 }}>
                     {toneProfile.example_reply_templates.map((t, i) => (
-                      <li key={i} style={{ marginBottom: 4, color: '#ccc' }}>{t}</li>
+                      <li key={i} style={{ marginBottom: 4, color: 'var(--text-soft)' }}>{t}</li>
                     ))}
                   </ul>
                 </div>
@@ -228,14 +228,14 @@ export default function IGReplyBotTab() {
         </div>
 
         <div className="ov-card">
-          <h3 style={{ margin: '0 0 12px', fontSize: 15 }}>Setup Info</h3>
-          <div style={{ fontSize: 13, color: '#aaa', lineHeight: 1.8 }}>
-            <div><strong>Webhook:</strong> <code style={{ background: '#1a1a2e', padding: '2px 8px', borderRadius: 4, fontSize: 11 }}>command-centre.up.railway.app/api/ig-reply-bot/webhook</code></div>
-            <div><strong>Subscriptions:</strong> Comments + DMs</div>
-            <div><strong>Last reply:</strong> {fmtTime(s.lastReplyAt)}</div>
-            <div><strong>Tone refresh:</strong> Sundays 3am AEST (auto)</div>
+          <h3 style={{ margin: '0 0 12px', fontSize: 15, color: 'var(--text)', fontWeight: 600 }}>Setup Info</h3>
+          <div style={{ fontSize: 13, color: 'var(--text-soft)', lineHeight: 1.8 }}>
+            <div><strong style={{ color: 'var(--text)' }}>Webhook:</strong> <code style={{ background: 'var(--bg-canvas)', border: '1px solid var(--border)', padding: '2px 8px', borderRadius: 'var(--radius-sm)', fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text)' }}>command-centre.up.railway.app/api/ig-reply-bot/webhook</code></div>
+            <div><strong style={{ color: 'var(--text)' }}>Subscriptions:</strong> Comments + DMs</div>
+            <div><strong style={{ color: 'var(--text)' }}>Last reply:</strong> {fmtTime(s.lastReplyAt)}</div>
+            <div><strong style={{ color: 'var(--text)' }}>Tone refresh:</strong> Sundays 3am AEST (auto)</div>
           </div>
-          <div style={{ marginTop: 16, padding: 12, background: '#0a2e0a', borderRadius: 8, fontSize: 12, color: '#22c55e' }}>
+          <div style={{ marginTop: 16, padding: 12, background: 'var(--green-bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: 12, color: 'var(--green)' }}>
             Connected to Meta App (GRI Social Publisher). Webhook active for Instagram comments and DMs.
           </div>
         </div>
@@ -243,49 +243,49 @@ export default function IGReplyBotTab() {
 
       {/* Activity Log */}
       <div className="ov-card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid #222', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h3 style={{ margin: 0, fontSize: 15 }}>Activity Log</h3>
-          <span style={{ fontSize: 12, color: '#888' }}>{logTotal} total entries</span>
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3 style={{ margin: 0, fontSize: 15, color: 'var(--text)', fontWeight: 600 }}>Activity Log</h3>
+          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{logTotal} total entries</span>
         </div>
 
         {log.length === 0 ? (
-          <div style={{ padding: 40, textAlign: 'center', color: '#666' }}>
+          <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>
             No comments processed yet. Enable the bot and connect the Meta webhook to get started.
           </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13.5 }}>
               <thead>
-                <tr style={{ background: '#111', textAlign: 'left' }}>
-                  <th style={{ padding: '10px 12px', color: '#888', fontWeight: 600 }}>Time</th>
-                  <th style={{ padding: '10px 12px', color: '#888', fontWeight: 600 }}>User</th>
-                  <th style={{ padding: '10px 12px', color: '#888', fontWeight: 600 }}>Comment</th>
-                  <th style={{ padding: '10px 12px', color: '#888', fontWeight: 600 }}>Intent</th>
-                  <th style={{ padding: '10px 12px', color: '#888', fontWeight: 600 }}>Reply</th>
+                <tr style={{ background: 'var(--bg-canvas)', textAlign: 'left' }}>
+                  <th style={{ padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Time</th>
+                  <th style={{ padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em' }}>User</th>
+                  <th style={{ padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Comment</th>
+                  <th style={{ padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Intent</th>
+                  <th style={{ padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Reply</th>
                 </tr>
               </thead>
               <tbody>
                 {log.map((entry, i) => (
-                  <tr key={entry.commentId || i} style={{ borderBottom: '1px solid #1a1a1a' }}>
-                    <td style={{ padding: '10px 12px', color: '#888', whiteSpace: 'nowrap' }}>{fmtTime(entry.processedAt)}</td>
-                    <td style={{ padding: '10px 12px', color: '#ccc' }}>@{entry.username}</td>
-                    <td style={{ padding: '10px 12px', maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#ccc' }}>
+                  <tr key={entry.commentId || i} style={{ borderTop: '1px solid var(--border)' }}>
+                    <td style={{ padding: '10px 12px', color: 'var(--text-muted)', whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>{fmtTime(entry.processedAt)}</td>
+                    <td style={{ padding: '10px 12px', color: 'var(--text-soft)' }}>@{entry.username}</td>
+                    <td style={{ padding: '10px 12px', maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text-soft)' }}>
                       {entry.commentText}
                     </td>
                     <td style={{ padding: '10px 12px' }}>
                       <span style={{
                         display: 'inline-block',
                         padding: '2px 10px',
-                        borderRadius: 12,
+                        borderRadius: 999,
                         fontSize: 11,
                         fontWeight: 600,
-                        background: entry.intent === 'buying' ? '#22c55e22' : entry.intent === 'error' ? '#ef444422' : '#88888822',
-                        color: entry.intent === 'buying' ? '#22c55e' : entry.intent === 'error' ? '#ef4444' : '#888'
+                        background: entry.intent === 'buying' ? 'var(--green-bg)' : entry.intent === 'error' ? 'var(--red-bg)' : 'var(--bg-subtle)',
+                        color: entry.intent === 'buying' ? 'var(--green)' : entry.intent === 'error' ? 'var(--red)' : 'var(--text-muted)'
                       }}>
                         {entry.intent || 'skip'}
                       </span>
                     </td>
-                    <td style={{ padding: '10px 12px', maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: entry.replied ? '#22c55e' : '#666' }}>
+                    <td style={{ padding: '10px 12px', maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: entry.replied ? 'var(--green)' : 'var(--text-muted)' }}>
                       {entry.replied ? entry.replyText : (entry.reason || 'Skipped')}
                     </td>
                   </tr>

@@ -4,14 +4,26 @@ import {
   ReferenceLine, Line, ComposedChart
 } from 'recharts'
 
-// ── Dark Theme Colours (high contrast) ──────────────────────────────────────
+// ── Design System Palette (Apple/Stripe minimalist) ────────────────────────
+// Chrome colours mirror src/styles.css :root tokens (--bg-canvas, --bg-surface,
+// --border, --text, --text-muted). Semantic accents map to design-system
+// hex equivalents so the btnStyle/badge/recBadge helpers can still concatenate
+// opacity suffixes (e.g. `${color}30`) — CSS var() cannot be used inside
+// those string concatenations, so we use hex that matches the design tokens.
 
 const C = {
-  bg: '#0D1117', card: '#161B22', border: '#30363D',
-  text: '#E6EDF3', muted: '#8B949E',
-  green: '#3FB950', red: '#F85149', yellow: '#D29922',
-  blue: '#58A6FF', pink: '#E43F7B', purple: '#A371F7',
-  orange: '#E3651D',
+  bg: '#FAFAFA',          // --bg-canvas
+  card: '#FFFFFF',        // --bg-surface
+  border: '#E4E4E7',      // --border equivalent (hairline)
+  text: '#0A0A0A',        // --text
+  muted: '#71717A',       // --text-muted
+  green: '#16A34A',       // --green
+  red: '#DC2626',         // --red
+  yellow: '#D97706',      // --amber
+  blue: '#2563EB',        // --blue
+  pink: '#E43F7B',        // --gri-pink (reserved for brand/live moments)
+  purple: '#7C3AED',      // accent purple kept for audience/angle pills
+  orange: '#EA580C',      // amber-orange for geo tier
 }
 
 const API = '/api/flywheel'
@@ -577,8 +589,8 @@ export function AdsFlywheelTab() {
   // Load fatigue alerts + decision history on mount
   useEffect(() => { loadFatigueAlerts(); loadDecisionHistory() }, [])
 
-  if (loading) return <div style={{ background: C.bg, color: C.muted, padding: 60, textAlign: 'center', minHeight: '100vh' }}>Loading flywheel...</div>
-  if (error && !d) return <div style={{ background: C.bg, color: C.red, padding: 40, minHeight: '100vh' }}>Error: {error}</div>
+  if (loading) return <div style={{ background: C.bg, color: C.muted, padding: 60, textAlign: 'center', minHeight: '100vh', fontSize: 13 }}>Loading flywheel...</div>
+  if (error && !d) return <div style={{ background: C.bg, color: C.red, padding: 40, minHeight: '100vh', fontSize: 13 }}>Error: {error}</div>
 
   const h = d?.hero || {}
   const today = new Date()
@@ -594,15 +606,15 @@ export function AdsFlywheelTab() {
   if (apiHealth.shopify && !apiHealth.shopify.ok) apiIssues.push({ src: 'Shopify', err: apiHealth.shopify.error || 'orders fetch failed' })
 
   return (
-    <div style={{ background: C.bg, color: C.text, padding: isMobile ? '12px 10px 40px' : '20px 20px 40px', minHeight: '100vh', colorScheme: 'dark' }}>
+    <div style={{ background: C.bg, color: C.text, padding: isMobile ? '12px 10px 40px' : '20px 20px 40px', minHeight: '100vh' }}>
 
       {/* ── Data-source health banner (only shown when something's broken) ── */}
       {apiIssues.length > 0 && (
         <div style={{
-          background: '#3A1F2A', border: `1px solid ${C.red}`, borderRadius: 10,
-          padding: '10px 14px', marginBottom: 12, fontSize: 12, color: '#FECDD3',
+          background: `${C.red}0D`, border: `1px solid ${C.red}33`, borderRadius: 12,
+          padding: '10px 14px', marginBottom: 12, fontSize: 12, color: C.text,
         }}>
-          <div style={{ fontWeight: 700, color: C.red, marginBottom: 4, fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+          <div style={{ fontWeight: 600, color: C.red, marginBottom: 4, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
             ⚠ Data source issue — numbers below may be incomplete
           </div>
           {apiIssues.map((iss, i) => (
@@ -632,10 +644,10 @@ export function AdsFlywheelTab() {
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           {RANGES.map(r => (
             <button key={r.key} onClick={() => setRange(r.key)} style={{
-              background: range === r.key ? C.blue : C.card,
-              color: range === r.key ? '#fff' : C.muted,
-              border: `1px solid ${range === r.key ? C.blue : C.border}`,
-              borderRadius: 6, padding: isMobile ? '8px 14px' : '6px 14px', fontSize: 12, fontWeight: range === r.key ? 700 : 500, cursor: 'pointer',
+              background: range === r.key ? C.text : C.card,
+              color: range === r.key ? C.card : C.muted,
+              border: `1px solid ${range === r.key ? C.text : C.border}`,
+              borderRadius: 6, padding: isMobile ? '8px 14px' : '6px 14px', fontSize: 12, fontWeight: range === r.key ? 600 : 500, cursor: 'pointer',
               minHeight: isMobile ? 44 : 'auto',
             }}>{r.label}</button>
           ))}
@@ -822,7 +834,7 @@ export function AdsFlywheelTab() {
                     </span>
                   </div>
                 </div>
-                <div style={{ borderTop: `1px solid ${C.border || '#2A2D38'}`, paddingTop: 6, marginTop: 2 }}>
+                <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 6, marginTop: 2 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: C.muted, marginBottom: 4 }}>
                     <span style={{ fontWeight: 600 }}>Blended iCAC</span>
                     <span style={{ fontWeight: 700, color: (h.blendedICac || 0) > 0 && (h.blendedICac || 0) < 80 ? C.green : (h.blendedICac || 0) < 150 ? C.yellow : C.red }}>
@@ -875,12 +887,12 @@ export function AdsFlywheelTab() {
           background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.35)',
           fontSize: 12, lineHeight: 1.5,
         }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: '#D97706', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>
+          <div style={{ fontSize: 10, fontWeight: 600, color: C.yellow, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>
             Why Meta shows two ROAS numbers
           </div>
           <div style={{ color: C.muted }}>
             <strong style={{ color: C.text }}>Ads Manager</strong> reports {(h.metaPixelRoas || 0).toFixed(2)}x — it counts view-throughs + iOS-recovered conversions even when no click ID survives.
-            <strong style={{ color: C.text }}> Shopify verified</strong> reports {(h.metaRoas || 0).toFixed(2)}x — only orders whose landing URL still carries an <code style={{ background: 'rgba(0,0,0,0.2)', padding: '0 4px', borderRadius: 3 }}>fbclid</code>.
+            <strong style={{ color: C.text }}> Shopify verified</strong> reports {(h.metaRoas || 0).toFixed(2)}x — only orders whose landing URL still carries an <code style={{ background: 'rgba(10,10,10,0.06)', padding: '0 4px', borderRadius: 3 }}>fbclid</code>.
             The {h.metaAttributionGapPct.toFixed(0)}% gap = iOS Safari, Instagram in-app browser, and ad-blockers stripping the click ID. Real ROAS sits between the two. The Shopify number is the conservative incremental floor your scaling decisions should reference.
           </div>
         </div>
@@ -906,7 +918,7 @@ export function AdsFlywheelTab() {
               <div style={{ fontSize: 22, fontWeight: 800, color: C.text, marginBottom: 8 }}>{fmt$(h.metaSpend || 0)}</div>
 
               {/* BEST ESTIMATE — the triangulated number you should act on */}
-              <div style={{ padding: '8px 10px', background: 'linear-gradient(135deg, rgba(225, 95, 142, 0.22), rgba(225, 95, 142, 0.10))', borderRadius: 6, textAlign: 'center', marginBottom: 8, border: `1.5px solid ${C.pink}` }}>
+              <div style={{ padding: '8px 10px', background: `${C.pink}14`, borderRadius: 8, textAlign: 'center', marginBottom: 8, border: `1px solid ${C.pink}55` }}>
                 <div style={{ fontSize: 8, color: C.text, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 }}>Best Estimate (triangulated)</div>
                 <div style={{ fontSize: 20, fontWeight: 800, color: (h.metaBestRoas || 0) >= 2 ? C.green : (h.metaBestRoas || 0) >= 1 ? C.yellow : C.red, marginTop: 2 }}>{(h.metaBestRoas || 0).toFixed(2)}x</div>
                 <div style={{ fontSize: 10, color: C.text }}>{h.metaBestPurchases || 0} purchases · {fmt$(h.metaBestRevenue || 0)}</div>
@@ -939,7 +951,7 @@ export function AdsFlywheelTab() {
                 </div>
               )}
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.muted, marginTop: 6, paddingTop: 6, borderTop: `1px solid ${C.border || '#2A2D38'}` }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.muted, marginTop: 6, paddingTop: 6, borderTop: `1px solid ${C.border}` }}>
                 <span>iCAC (Shopify floor)</span>
                 <span style={{ color: (h.metaICac || 0) > 0 && (h.metaICac || 0) < 80 ? C.green : (h.metaICac || 0) < 150 ? C.yellow : C.red, fontWeight: 700 }}>${(h.metaICac || 0).toFixed(2)}</span>
               </div>
@@ -969,7 +981,7 @@ export function AdsFlywheelTab() {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.muted, marginTop: 6, paddingTop: 6, borderTop: `1px solid ${C.border || '#2A2D38'}` }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.muted, marginTop: 6, paddingTop: 6, borderTop: `1px solid ${C.border}` }}>
                 <span>iCAC (Shopify floor)</span>
                 <span style={{ color: (h.googleICac || 0) > 0 && (h.googleICac || 0) < 80 ? C.green : (h.googleICac || 0) < 150 ? C.yellow : C.red, fontWeight: 700 }}>${(h.googleICac || 0).toFixed(2)}</span>
               </div>
@@ -991,7 +1003,7 @@ export function AdsFlywheelTab() {
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.muted, marginBottom: 2 }}>
                 <span>ROAS</span><span style={{ color: C.green, fontWeight: 700 }}>∞</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.muted, marginTop: 6, paddingTop: 6, borderTop: `1px solid ${C.border || '#2A2D38'}` }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.muted, marginTop: 6, paddingTop: 6, borderTop: `1px solid ${C.border}` }}>
                 <span>iCAC</span>
                 <span style={{ color: C.green, fontWeight: 700 }}>$0</span>
               </div>
@@ -1072,7 +1084,7 @@ export function AdsFlywheelTab() {
           {/* Detailed CM$ row — accounts for shipping cost too (full nCAC Layer 1 CM) */}
           {h.cm != null && (
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, padding: '8px 10px', background: 'rgba(124, 58, 237, 0.08)', borderRadius: 6, fontSize: 12, border: '1px solid rgba(124, 58, 237, 0.25)' }}>
-              <span style={{ color: '#7C3AED' }}>CM$ (nCAC Layer 1 — after shipping + ads)</span>
+              <span style={{ color: C.purple }}>CM$ (nCAC Layer 1 — after shipping + ads)</span>
               <span style={{ color: (h.cm || 0) > 0 ? C.green : C.red, fontWeight: 700 }}>{fmt$(h.cm || 0)}</span>
             </div>
           )}
@@ -1216,10 +1228,10 @@ export function AdsFlywheelTab() {
           <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
             {[{ key: 'today', label: 'Today' }, { key: '7d', label: '7d' }, { key: '14d', label: '14d' }, { key: '30d', label: '30d' }].map(r => (
               <button key={r.key} onClick={() => setCampRange(r.key)} style={{
-                background: campRange === r.key ? C.blue : C.card,
-                color: campRange === r.key ? '#fff' : C.muted,
-                border: `1px solid ${campRange === r.key ? C.blue : C.border}`,
-                borderRadius: 6, padding: '6px 14px', fontSize: 12, fontWeight: campRange === r.key ? 700 : 500, cursor: 'pointer',
+                background: campRange === r.key ? C.text : C.card,
+                color: campRange === r.key ? C.card : C.muted,
+                border: `1px solid ${campRange === r.key ? C.text : C.border}`,
+                borderRadius: 6, padding: '6px 14px', fontSize: 12, fontWeight: campRange === r.key ? 600 : 500, cursor: 'pointer',
                 minHeight: isMobile ? 44 : 'auto',
               }}>{r.label}</button>
             ))}
@@ -1245,7 +1257,7 @@ export function AdsFlywheelTab() {
                 const freq = m.frequency || 0
                 return (
                   <>
-                    <tr key={`camp-${i}`} onClick={() => setExpandedCamp(isExpanded ? null : i)} style={{ cursor: 'pointer', background: isExpanded ? '#1C2333' : 'transparent' }}>
+                    <tr key={`camp-${i}`} onClick={() => setExpandedCamp(isExpanded ? null : i)} style={{ cursor: 'pointer', background: isExpanded ? C.bg : 'transparent' }}>
                       <td style={td}><span style={{ color: C.muted }}>{isExpanded ? '\u25BC' : '\u25B6'}</span></td>
                       <td style={{ ...td, fontWeight: 600 }}>{c.name}</td>
                       <td style={td}>{fmt$(campMatch?.dailyBudget || c.dailyBudget || c.budget)}</td>
@@ -1259,7 +1271,7 @@ export function AdsFlywheelTab() {
                     </tr>
                     {isExpanded && (c.surgicalActions || []).length > 0 && (
                       <tr key={`camp-${i}-actions`} onClick={e => e.stopPropagation()}>
-                        <td colSpan={10} style={{ padding: 0, background: '#1C2333' }}>
+                        <td colSpan={10} style={{ padding: 0, background: C.bg }}>
                           <div style={{ padding: '8px 16px 12px' }}>
                             <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 }}>Surgical Actions</div>
                             {(c.surgicalActions || []).map((sa, j) => {
@@ -1434,7 +1446,7 @@ export function AdsFlywheelTab() {
                   const isExpanded = expandedDecision === dec.id
                   return (
                     <>
-                      <tr key={dec.id} onClick={() => setExpandedDecision(isExpanded ? null : dec.id)} style={{ cursor: 'pointer', background: isExpanded ? '#1C2333' : 'transparent' }}>
+                      <tr key={dec.id} onClick={() => setExpandedDecision(isExpanded ? null : dec.id)} style={{ cursor: 'pointer', background: isExpanded ? C.bg : 'transparent' }}>
                         <td style={td}><span style={{ color: C.muted }}>{isExpanded ? '\u25BC' : '\u25B6'}</span></td>
                         <td style={{ ...td, fontWeight: 600, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {dec.verdict === 'winner' && <span style={{ marginRight: 4 }}>{'\uD83C\uDFC6'}</span>}
@@ -1463,7 +1475,7 @@ export function AdsFlywheelTab() {
                       </tr>
                       {isExpanded && (
                         <tr key={`${dec.id}-detail`}>
-                          <td colSpan={9} style={{ padding: 0, background: '#1C2333' }}>
+                          <td colSpan={9} style={{ padding: 0, background: C.bg }}>
                             <div style={{ padding: '10px 16px' }}>
                               {/* Impact windows */}
                               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 10 }}>
@@ -1599,7 +1611,7 @@ export function AdsFlywheelTab() {
               )}
               {(d?.creatives || []).map((cr, i) => {
                 const recColor = REC_COLORS[cr.recommendation] || C.muted
-                const rowBg = cr.recommendation === 'SCALE' ? '#3FB95008' : cr.recommendation === 'KILL' ? '#F8514908' : 'transparent'
+                const rowBg = cr.recommendation === 'SCALE' ? `${C.green}0A` : cr.recommendation === 'KILL' ? `${C.red}0A` : 'transparent'
                 // Use metaAdId falling back to adId for the ad identifier
                 const creativeAdId = cr.metaAdId || cr.adId
                 // For scaling, we need an ad SET id. Use adsetId or metaAdSetId; fall back to ad id only as last resort
@@ -1812,7 +1824,7 @@ export function AdsFlywheelTab() {
                           </tr>
                           {isConfigExpanded && (
                             <tr key={`aud-config-${tier}-${i}`}>
-                              <td colSpan={7} style={{ padding: 0, background: '#1C2333' }}>
+                              <td colSpan={7} style={{ padding: 0, background: C.bg }}>
                                 <div style={{ padding: '10px 16px' }}>
                                   <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 }}>Targeting Configuration</div>
                                   <div style={{ background: C.bg, borderRadius: 6, padding: '8px 12px', fontSize: 12, color: C.text }}>
@@ -1947,14 +1959,14 @@ export function AdsFlywheelTab() {
       {successPopup && (
         <div onClick={() => setSuccessPopup(null)} style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999,
+          background: 'rgba(10,10,10,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999,
         }}>
-          <div onClick={e => e.stopPropagation()} style={{ ...card, maxWidth: 480, width: '95%', padding: 28, border: `2px solid ${C.green}`, textAlign: 'center' }}>
+          <div onClick={e => e.stopPropagation()} style={{ ...card, maxWidth: 480, width: '95%', padding: 28, border: `1px solid ${C.border}`, textAlign: 'center' }}>
             {/* Animated tick */}
             <div style={{
               width: 64, height: 64, borderRadius: '50%', background: C.green,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              margin: '0 auto 16px', boxShadow: `0 0 30px ${C.green}44`,
+              margin: '0 auto 16px',
             }}>
               <span style={{ fontSize: 32, color: '#fff' }}>✓</span>
             </div>
@@ -1991,7 +2003,7 @@ export function AdsFlywheelTab() {
                   }, 100)
                 }}
                 style={{
-                  background: `${C.green}20`, color: C.green, border: `2px solid ${C.green}`,
+                  background: `${C.green}14`, color: C.green, border: `1px solid ${C.green}55`,
                   borderRadius: 8, padding: '14px 20px', fontSize: 14, fontWeight: 700, cursor: 'pointer',
                 }}
               >
@@ -2019,10 +2031,10 @@ export function AdsFlywheelTab() {
       {resolveTarget && (
         <div onClick={() => setResolveTarget(null)} style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999,
+          background: 'rgba(10,10,10,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999,
           overflowY: 'auto', padding: 20
         }}>
-          <div onClick={e => e.stopPropagation()} style={{ ...card, maxWidth: 620, width: '100%', padding: 24, border: `2px solid ${C.pink}`, maxHeight: '90vh', overflowY: 'auto' }}>
+          <div onClick={e => e.stopPropagation()} style={{ ...card, maxWidth: 620, width: '100%', padding: 24, border: `1px solid ${C.border}`, maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ fontSize: 18, fontWeight: 700, color: C.text, marginBottom: 4 }}>
               Pause & Replace Fatigued Creative
             </div>
@@ -2180,11 +2192,11 @@ export function AdsFlywheelTab() {
 
               {uploadedFile ? (
                 /* Upload complete — animated tick confirmation */
-                <div style={{ background: `${C.green}18`, border: `2px solid ${C.green}`, borderRadius: 10, padding: 24, textAlign: 'center' }}>
+                <div style={{ background: `${C.green}14`, border: `1px solid ${C.green}55`, borderRadius: 12, padding: 24, textAlign: 'center' }}>
                   <div className="fw-tick-circle" style={{
                     width: 56, height: 56, borderRadius: '50%', background: C.green,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    margin: '0 auto 12px', boxShadow: `0 0 20px ${C.green}44`,
+                    margin: '0 auto 12px',
                   }}>
                     <span style={{ fontSize: 28, lineHeight: 1 }}>✓</span>
                   </div>
@@ -2201,7 +2213,7 @@ export function AdsFlywheelTab() {
                 </div>
               ) : uploadingCreative ? (
                 /* Uploading — animated progress */
-                <div style={{ background: C.bg, border: `2px solid ${C.blue}`, borderRadius: 10, padding: 24, textAlign: 'center' }}>
+                <div style={{ background: C.bg, border: `1px solid ${C.blue}55`, borderRadius: 12, padding: 24, textAlign: 'center' }}>
                   {/* Spinning loader */}
                   <div style={{
                     width: 44, height: 44, border: `3px solid ${C.border}`, borderTop: `3px solid ${C.blue}`,
@@ -2441,9 +2453,9 @@ export function AdsFlywheelTab() {
       {activateTarget && (
         <div onClick={() => setActivateTarget(null)} style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
+          background: 'rgba(10,10,10,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
         }}>
-          <div onClick={e => e.stopPropagation()} style={{ ...card, maxWidth: 520, width: '95%', padding: 24, border: `2px solid ${C.green}` }}>
+          <div onClick={e => e.stopPropagation()} style={{ ...card, maxWidth: 520, width: '95%', padding: 24, border: `1px solid ${C.border}` }}>
             <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 16 }}>
               Confirm: Set Ad Live
             </div>
@@ -2582,24 +2594,26 @@ function ScaleInline({ target, onScale, onCancel, scaling, isMobile }) {
   )
 }
 
-// ── Styles ───────────────────────────────────────────────────────────────────
+// ── Styles (Apple/Stripe minimalist) ────────────────────────────────────────
+// Cards: hairline borders, no shadow. Tables: hairline rows, canvas-tinted
+// headers. Buttons: subtle tinted background + matching hairline border.
 
-const card = { background: C.card, border: `1px solid ${C.border}`, borderRadius: 8, padding: '12px 14px', color: C.text }
-const secTitle = { fontSize: 15, fontWeight: 600, margin: '0 0 8px', color: C.text }
-const tbl = { width: '100%', borderCollapse: 'collapse', fontSize: 12 }
-const th = { textAlign: 'left', padding: '6px 8px', borderBottom: `1px solid ${C.border}`, color: C.muted, fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', background: C.card }
-const td = { padding: '6px 8px', borderBottom: `1px solid ${C.border}`, verticalAlign: 'top', color: C.text }
-const sel = { background: C.card, color: C.text, border: `1px solid ${C.border}`, borderRadius: 4, padding: '2px 4px', fontSize: 11 }
+const card = { background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: '12px 14px', color: C.text }
+const secTitle = { fontSize: 15, fontWeight: 600, margin: '0 0 8px', color: C.text, letterSpacing: '-0.01em' }
+const tbl = { width: '100%', borderCollapse: 'collapse', fontSize: 13 }
+const th = { textAlign: 'left', padding: '8px 10px', borderBottom: `1px solid ${C.border}`, color: C.muted, fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', background: C.bg }
+const td = { padding: '8px 10px', borderTop: `1px solid ${C.border}`, verticalAlign: 'top', color: C.text }
+const sel = { background: C.card, color: C.text, border: `1px solid ${C.border}`, borderRadius: 6, padding: '4px 6px', fontSize: 11, fontVariantNumeric: 'tabular-nums' }
 
 function btnStyle(color) {
-  return { background: `${color}30`, color, border: `1px solid ${color}66`, borderRadius: 5, padding: '4px 10px', fontSize: 11, fontWeight: 600, cursor: 'pointer' }
+  return { background: `${color}14`, color, border: `1px solid ${color}33`, borderRadius: 6, padding: '5px 10px', fontSize: 11, fontWeight: 600, cursor: 'pointer', letterSpacing: '-0.005em' }
 }
-const btnSm = { background: `${C.blue}30`, color: C.blue, border: `1px solid ${C.blue}66`, borderRadius: 4, padding: '3px 8px', fontSize: 10, cursor: 'pointer' }
+const btnSm = { background: `${C.blue}14`, color: C.blue, border: `1px solid ${C.blue}33`, borderRadius: 6, padding: '3px 8px', fontSize: 10, cursor: 'pointer', fontWeight: 600 }
 
 function badge(color) {
-  return { display: 'inline-block', background: `${color}38`, color, border: `1px solid ${color}66`, borderRadius: 4, padding: '1px 6px', fontSize: 10, fontWeight: 600 }
+  return { display: 'inline-block', background: `${color}1A`, color, border: `1px solid ${color}33`, borderRadius: 999, padding: '1px 8px', fontSize: 11, fontWeight: 600 }
 }
 
 function recBadge(color) {
-  return { display: 'inline-block', background: `${color}40`, color, border: `2px solid ${color}88`, borderRadius: 5, padding: '2px 8px', fontSize: 11, fontWeight: 700, letterSpacing: '0.3px' }
+  return { display: 'inline-block', background: `${color}1A`, color, border: `1px solid ${color}55`, borderRadius: 999, padding: '2px 10px', fontSize: 11, fontWeight: 600, letterSpacing: '0.02em' }
 }

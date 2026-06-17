@@ -34,29 +34,29 @@ function getHireDates(eventDate) {
 }
 
 const STATUS_CONFIG = {
-  confirmed: { label: "Confirmed", color: "#185FA5", bg: "#E6F1FB" },
-  bond_paid: { label: "Bond Paid", color: "#3B6D11", bg: "#EAF3DE" },
-  contract_sent: { label: "Contract Sent", color: "#7C3AED", bg: "#F3EEFF" },
-  contract_signed: { label: "Ready", color: "#0D7C3D", bg: "#DAFBE8" },
-  active: { label: "Out on Hire", color: "#BA7517", bg: "#FAEEDA" },
-  returned: { label: "Returned", color: "#5F5E5A", bg: "#F1EFE8" },
-  withheld: { label: "Withheld", color: "#A32D2D", bg: "#FCEBEB" },
+  confirmed: { label: "Confirmed", color: "var(--blue)", bg: "var(--blue-bg)" },
+  bond_paid: { label: "Bond Paid", color: "var(--green)", bg: "var(--green-bg)" },
+  contract_sent: { label: "Contract Sent", color: "var(--text-soft)", bg: "var(--bg-subtle)" },
+  contract_signed: { label: "Ready", color: "var(--green)", bg: "var(--green-bg)" },
+  active: { label: "Out on Hire", color: "var(--amber)", bg: "var(--amber-bg)" },
+  returned: { label: "Returned", color: "var(--text-muted)", bg: "var(--bg-subtle)" },
+  withheld: { label: "Withheld", color: "var(--red)", bg: "var(--red-bg)" },
 };
 const BOND_CONFIG = {
-  pending: { label: "Pending", color: "#BA7517", bg: "#FAEEDA" },
-  paid: { label: "Paid", color: "#3B6D11", bg: "#EAF3DE" },
-  refunded: { label: "Refunded", color: "#185FA5", bg: "#E6F1FB" },
-  withheld: { label: "Withheld", color: "#A32D2D", bg: "#FCEBEB" },
+  pending: { label: "Pending", color: "var(--amber)", bg: "var(--amber-bg)" },
+  paid: { label: "Paid", color: "var(--green)", bg: "var(--green-bg)" },
+  refunded: { label: "Refunded", color: "var(--blue)", bg: "var(--blue-bg)" },
+  withheld: { label: "Withheld", color: "var(--red)", bg: "var(--red-bg)" },
 };
 const CONTRACT_CONFIG = {
-  not_sent: { label: "Not Sent", color: "#5F5E5A", bg: "#F1EFE8" },
-  sent: { label: "Sent", color: "#7C3AED", bg: "#F3EEFF" },
-  signed: { label: "Signed", color: "#3B6D11", bg: "#EAF3DE" },
+  not_sent: { label: "Not Sent", color: "var(--text-muted)", bg: "var(--bg-subtle)" },
+  sent: { label: "Sent", color: "var(--text-soft)", bg: "var(--bg-subtle)" },
+  signed: { label: "Signed", color: "var(--green)", bg: "var(--green-bg)" },
 };
 
 const pill = (cfg) => (
   <span style={{
-    display: "inline-block", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600,
+    display: "inline-block", padding: "2px 8px", borderRadius: 999, fontSize: 11, fontWeight: 600,
     background: cfg.bg, color: cfg.color, letterSpacing: "0.02em",
   }}>{cfg.label}</span>
 );
@@ -74,29 +74,29 @@ function SignedContracts() {
   if (contracts.length === 0) return null;
 
   return (
-    <div style={{ background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: 8, marginTop: 24, overflow: "hidden" }}>
-      <div style={{ padding: "14px 18px", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+    <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", marginTop: 24, overflow: "hidden" }}>
+      <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--border)" }}>
         <span style={{ fontWeight: 600, fontSize: 14 }}>Signed Contracts</span>
       </div>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
         <thead>
-          <tr style={{ borderBottom: '0.5px solid var(--color-border-tertiary)', textAlign: 'left' }}>
-            <th style={{ padding: '8px 12px', color: 'var(--color-text-secondary)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Customer</th>
-            <th style={{ padding: '8px 12px', color: 'var(--color-text-secondary)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Order</th>
-            <th style={{ padding: '8px 12px', color: 'var(--color-text-secondary)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Signed</th>
-            <th style={{ padding: '8px 12px', color: 'var(--color-text-secondary)', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Contract</th>
+          <tr style={{ borderBottom: '1px solid var(--border)', textAlign: 'left', background: 'var(--bg-canvas)' }}>
+            <th style={{ padding: '8px 12px', color: 'var(--text-muted)', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Customer</th>
+            <th style={{ padding: '8px 12px', color: 'var(--text-muted)', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Order</th>
+            <th style={{ padding: '8px 12px', color: 'var(--text-muted)', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Signed</th>
+            <th style={{ padding: '8px 12px', color: 'var(--text-muted)', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Contract</th>
           </tr>
         </thead>
         <tbody>
           {contracts.map(c => (
-            <tr key={c.id} style={{ borderBottom: '0.5px solid var(--color-border-tertiary)' }}>
+            <tr key={c.id} style={{ borderTop: '1px solid var(--border)' }}>
               <td style={{ padding: '8px 12px' }}>{c.customerName}</td>
               <td style={{ padding: '8px 12px', fontFamily: 'var(--font-mono)', fontSize: 12 }}>{c.orderNumber}</td>
-              <td style={{ padding: '8px 12px', color: 'var(--color-text-secondary)', fontSize: 12 }}>
+              <td style={{ padding: '8px 12px', color: 'var(--text-muted)', fontSize: 12 }}>
                 {new Date(c.contractSignedAt).toLocaleString('en-AU', { timeZone: 'Australia/Brisbane', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
               </td>
               <td style={{ padding: '8px 12px' }}>
-                <a href={c.pdfUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#6366f1', textDecoration: 'none', fontSize: 12, fontWeight: 500 }}>Download PDF</a>
+                <a href={c.pdfUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text)', textDecoration: 'underline', fontSize: 12, fontWeight: 500 }}>Download PDF</a>
               </td>
             </tr>
           ))}
@@ -108,19 +108,19 @@ function SignedContracts() {
 
 /* ── Shared button styles ── */
 const btnBase = {
-  fontSize: 12, fontWeight: 500, borderRadius: 6, cursor: "pointer",
-  border: "1px solid var(--color-border-tertiary)", padding: "6px 14px",
-  background: "var(--color-background-primary)", color: "var(--color-text-primary)",
+  fontSize: 12, fontWeight: 500, borderRadius: "var(--radius-sm)", cursor: "pointer",
+  border: "1px solid var(--border)", padding: "6px 14px",
+  background: "var(--bg-surface)", color: "var(--text)",
   transition: "all 0.12s", whiteSpace: "nowrap", textAlign: "center",
 };
 const btnPrimary = {
   ...btnBase, fontWeight: 600,
-  background: "var(--color-text-primary)", color: "var(--color-background-primary)",
+  background: "var(--text)", color: "var(--bg-surface)",
   border: "1px solid transparent",
 };
 const btnDanger = {
   ...btnBase, fontWeight: 600,
-  background: "#A32D2D", color: "#fff",
+  background: "var(--red)", color: "var(--bg-surface)",
   border: "1px solid transparent",
 };
 
@@ -129,10 +129,10 @@ const btnDanger = {
 function Modal({ title, onClose, children }) {
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: "var(--color-background-primary)", borderRadius: 10, border: "0.5px solid var(--color-border-tertiary)", width: "100%", maxWidth: 520, maxHeight: "85vh", overflowY: "auto", boxShadow: "0 8px 32px rgba(0,0,0,0.2)" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: "var(--bg-surface)", borderRadius: "var(--radius-lg)", border: "1px solid var(--border)", width: "100%", maxWidth: 520, maxHeight: "85vh", overflowY: "auto", boxShadow: "var(--shadow-lg)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: "1px solid var(--border)" }}>
           <span style={{ fontWeight: 600, fontSize: 14 }}>{title}</span>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-text-secondary)", fontSize: 18, lineHeight: 1, padding: "4px 8px" }}>×</button>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", fontSize: 18, lineHeight: 1, padding: "4px 8px" }}>×</button>
         </div>
         <div style={{ padding: "16px 20px" }}>{children}</div>
       </div>
@@ -146,8 +146,8 @@ function AddHireModal({ onClose, onAdd, loading }) {
   const valid = form.orderNumber && form.customerName && form.customerEmail && form.eventDate;
   const inp = (label, key, type = "text", ph = "") => (
     <div style={{ marginBottom: 12 }}>
-      <label style={{ display: "block", fontSize: 11, color: "var(--color-text-secondary)", marginBottom: 3, fontWeight: 500 }}>{label}</label>
-      <input type={type} value={form[key]} onChange={e => set(key, e.target.value)} placeholder={ph} style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid var(--color-border-tertiary)", borderRadius: 6, background: "var(--color-background-secondary)", color: "var(--color-text-primary)", fontSize: 13 }} />
+      <label style={{ display: "block", fontSize: 11, color: "var(--text-muted)", marginBottom: 3, fontWeight: 500 }}>{label}</label>
+      <input type={type} value={form[key]} onChange={e => set(key, e.target.value)} placeholder={ph} style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", background: "var(--bg-surface)", color: "var(--text)", fontSize: 13 }} />
     </div>
   );
 
@@ -163,7 +163,7 @@ function AddHireModal({ onClose, onAdd, loading }) {
       </div>
       {inp("Event date", "eventDate", "date")}
       {preview && (
-        <div style={{ background: "var(--color-background-secondary)", borderRadius: 6, padding: "8px 12px", marginBottom: 12, fontSize: 12, color: "var(--color-text-secondary)" }}>
+        <div style={{ background: "var(--bg-subtle)", borderRadius: "var(--radius-sm)", padding: "8px 12px", marginBottom: 12, fontSize: 12, color: "var(--text-muted)" }}>
           <div>Pickup: {preview.pickupFormatted}</div>
           <div>Event: {preview.eventFormatted}</div>
           <div>Return: {preview.returnFormatted}</div>
@@ -200,56 +200,56 @@ function ReturnModal({ hire, onClose, onDecide, loading }) {
 
   return (
     <Modal title={`Process Return — ${hire.orderNumber}`} onClose={onClose}>
-      <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: "0 0 14px" }}>
-        <strong>{hire.customerName}</strong> · Bond held: <strong style={{ color: "#181A1D" }}>${fullBond}</strong>
+      <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "0 0 14px" }}>
+        <strong>{hire.customerName}</strong> · Bond held: <strong style={{ color: "var(--text)" }}>${fullBond}</strong>
         {(hire.kitQty || 1) > 1 && <> ({hire.kitQty} kits × $200)</>}
       </p>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 12 }}>
         <button onClick={() => { setMode('full'); setPartialAmount(""); }}
           style={{
-            padding: '12px 8px', borderRadius: 8, cursor: 'pointer',
-            border: mode === 'full' ? '2px solid #047857' : '1px solid var(--color-border-tertiary)',
-            background: mode === 'full' ? '#DCFCE7' : 'transparent',
-            color: '#047857', fontWeight: 700, fontSize: 13,
+            padding: '12px 8px', borderRadius: "var(--radius)", cursor: 'pointer',
+            border: mode === 'full' ? '2px solid var(--green)' : '1px solid var(--border)',
+            background: mode === 'full' ? 'var(--green-bg)' : 'transparent',
+            color: 'var(--green)', fontWeight: 600, fontSize: 13,
           }}>
           Full Refund<div style={{ fontSize: 11, fontWeight: 400, marginTop: 2 }}>${fullBond} → customer</div>
         </button>
         <button onClick={() => setMode('partial')}
           style={{
-            padding: '12px 8px', borderRadius: 8, cursor: 'pointer',
-            border: mode === 'partial' ? '2px solid #B45309' : '1px solid var(--color-border-tertiary)',
-            background: mode === 'partial' ? '#FEF3C7' : 'transparent',
-            color: '#92400E', fontWeight: 700, fontSize: 13,
+            padding: '12px 8px', borderRadius: "var(--radius)", cursor: 'pointer',
+            border: mode === 'partial' ? '2px solid var(--amber)' : '1px solid var(--border)',
+            background: mode === 'partial' ? 'var(--amber-bg)' : 'transparent',
+            color: 'var(--amber)', fontWeight: 600, fontSize: 13,
           }}>
           Partial<div style={{ fontSize: 11, fontWeight: 400, marginTop: 2 }}>Keep some for damage</div>
         </button>
         <button onClick={() => { setMode('withhold'); setPartialAmount(""); }}
           style={{
-            padding: '12px 8px', borderRadius: 8, cursor: 'pointer',
-            border: mode === 'withhold' ? '2px solid #A32D2D' : '1px solid var(--color-border-tertiary)',
-            background: mode === 'withhold' ? '#FCEBEB' : 'transparent',
-            color: '#A32D2D', fontWeight: 700, fontSize: 13,
+            padding: '12px 8px', borderRadius: "var(--radius)", cursor: 'pointer',
+            border: mode === 'withhold' ? '2px solid var(--red)' : '1px solid var(--border)',
+            background: mode === 'withhold' ? 'var(--red-bg)' : 'transparent',
+            color: 'var(--red)', fontWeight: 600, fontSize: 13,
           }}>
           Withhold All<div style={{ fontSize: 11, fontWeight: 400, marginTop: 2 }}>$0 → customer</div>
         </button>
       </div>
 
       {mode === 'partial' && (
-        <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 8, padding: '12px 14px', marginBottom: 12 }}>
-          <label style={{ fontSize: 11, fontWeight: 700, color: '#92400E', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 6 }}>
+        <div style={{ background: 'var(--amber-bg)', border: '1px solid var(--border)', borderRadius: "var(--radius)", padding: '12px 14px', marginBottom: 12 }}>
+          <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--amber)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>
             Refund amount to customer ($)
           </label>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-            <span style={{ fontSize: 16, fontWeight: 700, color: '#92400E' }}>$</span>
+            <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--amber)' }}>$</span>
             <input type="number" step="0.01" min="0" max={fullBond}
               autoFocus value={partialAmount}
               onChange={e => setPartialAmount(e.target.value)}
               placeholder={`up to ${fullBond}`}
-              style={{ flex: 1, padding: '8px 10px', fontSize: 16, borderRadius: 6, border: '1px solid #FDE68A', fontWeight: 700, outline: 'none' }} />
+              style={{ flex: 1, padding: '8px 10px', fontSize: 16, borderRadius: "var(--radius-sm)", border: '1px solid var(--border)', fontWeight: 600, outline: 'none' }} />
           </div>
           {parseFloat(partialAmount) > 0 && (
-            <div style={{ marginTop: 8, fontSize: 12, color: '#78350F', lineHeight: 1.5 }}>
+            <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-soft)', lineHeight: 1.5 }}>
               Customer gets back: <strong>${refundAmt.toFixed(2)}</strong> · GRI keeps for damage: <strong>${withholdAmt.toFixed(2)}</strong>
             </div>
           )}
@@ -257,7 +257,7 @@ function ReturnModal({ hire, onClose, onDecide, loading }) {
       )}
 
       {(mode === 'full' || (mode === 'partial' && parseFloat(partialAmount) > 0) || mode === 'withhold') && (
-        <div style={{ padding: '10px 12px', background: '#F0FDFA', border: '1px solid #A7F3D0', borderRadius: 8, marginBottom: 12, fontSize: 13, color: '#047857' }}>
+        <div style={{ padding: '10px 12px', background: 'var(--green-bg)', border: '1px solid var(--border)', borderRadius: "var(--radius)", marginBottom: 12, fontSize: 13, color: 'var(--green)' }}>
           {mode === 'full' && <>✓ Refunding <strong>${fullBond.toFixed(2)}</strong> to customer's card. Funds appear in 2–10 business days.</>}
           {mode === 'partial' && parseFloat(partialAmount) > 0 && <>✓ Refunding <strong>${refundAmt.toFixed(2)}</strong> to customer · keeping <strong>${withholdAmt.toFixed(2)}</strong> for damage</>}
           {mode === 'withhold' && <>⚠ No refund — full <strong>${fullBond.toFixed(2)}</strong> bond withheld. Customer notified by email.</>}
@@ -288,8 +288,8 @@ function DetailPanel({ hire, onClose, onAction }) {
   /* Legacy steps removed — replaced by FlowProgress component */
 
   const row = (label, val) => (
-    <div style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", fontSize: 13, borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
-      <span style={{ color: "var(--color-text-secondary)", flexShrink: 0 }}>{label}</span>
+    <div style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", fontSize: 13, borderBottom: "1px solid var(--border)" }}>
+      <span style={{ color: "var(--text-muted)", flexShrink: 0 }}>{label}</span>
       <span style={{ fontWeight: 500, textAlign: "right", maxWidth: "58%", wordBreak: "break-all" }}>{val}</span>
     </div>
   );
@@ -297,25 +297,25 @@ function DetailPanel({ hire, onClose, onAction }) {
   return (
     <>
       {/* Backdrop */}
-      <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 499, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(2px)" }} />
+      <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 499, background: "rgba(0,0,0,0.4)", backdropFilter: "blur(2px)" }} />
       {/* Panel */}
       <div style={{
         position: "fixed", top: 0, right: 0, bottom: 0, width: 380,
-        background: "var(--color-background-primary)",
-        borderLeft: "1px solid var(--color-border-tertiary)",
+        background: "var(--bg-surface)",
+        borderLeft: "1px solid var(--border)",
         zIndex: 500, overflowY: "auto",
-        boxShadow: "-4px 0 24px rgba(0,0,0,0.15)",
+        boxShadow: "var(--shadow-lg)",
       }}>
         {/* Header */}
         <div style={{
-          padding: "16px 20px", borderBottom: "1px solid var(--color-border-tertiary)",
+          padding: "16px 20px", borderBottom: "1px solid var(--border)",
           display: "flex", justifyContent: "space-between", alignItems: "center",
-          position: "sticky", top: 0, background: "var(--color-background-primary)", zIndex: 1,
+          position: "sticky", top: 0, background: "var(--bg-surface)", zIndex: 1,
         }}>
-          <span style={{ fontWeight: 700, fontSize: 15 }}>{hire.orderNumber}</span>
+          <span style={{ fontWeight: 600, fontSize: 15 }}>{hire.orderNumber}</span>
           <button onClick={onClose} style={{
-            background: "var(--color-background-secondary)", border: "1px solid var(--color-border-tertiary)",
-            borderRadius: 6, cursor: "pointer", fontSize: 14, color: "var(--color-text-secondary)",
+            background: "var(--bg-subtle)", border: "1px solid var(--border)",
+            borderRadius: "var(--radius-sm)", cursor: "pointer", fontSize: 14, color: "var(--text-muted)",
             width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center",
           }}>×</button>
         </div>
@@ -340,10 +340,10 @@ function DetailPanel({ hire, onClose, onAction }) {
           {row("Kit qty", (hire.kitQty || 1) >= 2 ? "2 kits" : "1 kit")}
           {row("Bond", (hire.kitQty || 1) >= 2 ? "$400" : "$200")}
           {hire.bondPaymentId && row("Square ID", hire.bondPaymentId)}
-          {hire.bondPaymentUrl && row("Pay link", <a href={hire.bondPaymentUrl} target="_blank" rel="noopener noreferrer" style={{ color: "#185FA5", textDecoration: "underline" }}>Open</a>)}
+          {hire.bondPaymentUrl && row("Pay link", <a href={hire.bondPaymentUrl} target="_blank" rel="noopener noreferrer" style={{ color: "var(--blue)", textDecoration: "underline" }}>Open</a>)}
 
           {/* Flow Progress */}
-          <div style={{ margin: "20px 0 12px", fontSize: 11, fontWeight: 600, color: "var(--color-text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Flow Progress</div>
+          <div style={{ margin: "20px 0 12px", fontSize: 11, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Flow Progress</div>
           <FlowProgress hire={hire} />
 
           {/* Actions */}
@@ -374,7 +374,7 @@ function DetailPanel({ hire, onClose, onAction }) {
               }}>Download signed contract PDF</a>
             )}
             {hire.bondStatus === "paid" && hire.squareCardId && (
-              <button onClick={() => onAction("charge_damages", hire)} style={{ ...btnBase, width: "100%", borderColor: "#F59E0B", color: "#92400E" }}>
+              <button onClick={() => onAction("charge_damages", hire)} style={{ ...btnBase, width: "100%", borderColor: "var(--amber)", color: "var(--amber)" }}>
                 Charge card for damages
                 <span style={{ display: "block", fontSize: 10, fontWeight: 400, opacity: 0.85, marginTop: 2 }}>
                   {hire.squareCardBrand || "Card"} ending {hire.squareCardLast4 || "••••"}
@@ -385,12 +385,12 @@ function DetailPanel({ hire, onClose, onAction }) {
               <button onClick={() => onAction("mark_returned", hire)} style={{ ...btnDanger, width: "100%" }}>Process return</button>
             )}
             {Array.isArray(hire.damageCharges) && hire.damageCharges.length > 0 && (
-              <div style={{ marginTop: 6, padding: "10px 12px", background: "#FFF7ED", border: "1px solid #FDBA74", borderRadius: 8 }}>
-                <div style={{ fontSize: 10, fontWeight: 700, color: "#92400E", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
+              <div style={{ marginTop: 6, padding: "10px 12px", background: "var(--amber-bg)", border: "1px solid var(--border)", borderRadius: "var(--radius)" }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: "var(--amber)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>
                   Damage charges ({hire.damageCharges.length})
                 </div>
                 {hire.damageCharges.map((c, i) => (
-                  <div key={i} style={{ fontSize: 12, color: "#7C2D12", marginBottom: 4, paddingBottom: 4, borderBottom: i < hire.damageCharges.length - 1 ? "1px dashed #FDBA74" : "none" }}>
+                  <div key={i} style={{ fontSize: 12, color: "var(--text-soft)", marginBottom: 4, paddingBottom: 4, borderBottom: i < hire.damageCharges.length - 1 ? "1px dashed var(--border-strong)" : "none" }}>
                     <strong>${(c.amount || 0).toFixed(2)}</strong> · {c.reason}
                     <div style={{ fontSize: 10, opacity: 0.75 }}>{new Date(c.chargedAt).toLocaleString("en-AU", { timeZone: "Australia/Brisbane", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · {c.status || "COMPLETED"}</div>
                   </div>
@@ -398,10 +398,10 @@ function DetailPanel({ hire, onClose, onAction }) {
               </div>
             )}
             {hire.bondOutcome === "refunded" && (
-              <div style={{ padding: "10px", background: "#EAF3DE", borderRadius: 6, fontSize: 12, color: "#3B6D11", textAlign: "center", fontWeight: 600 }}>Bond refunded</div>
+              <div style={{ padding: "10px", background: "var(--green-bg)", borderRadius: "var(--radius-sm)", fontSize: 12, color: "var(--green)", textAlign: "center", fontWeight: 600 }}>Bond refunded</div>
             )}
             {hire.bondOutcome === "withheld" && (
-              <div style={{ padding: "10px", background: "#FCEBEB", borderRadius: 6, fontSize: 12, color: "#A32D2D", textAlign: "center", fontWeight: 600 }}>Bond withheld</div>
+              <div style={{ padding: "10px", background: "var(--red-bg)", borderRadius: "var(--radius-sm)", fontSize: 12, color: "var(--red)", textAlign: "center", fontWeight: 600 }}>Bond withheld</div>
             )}
           </div>
         </div>
@@ -561,14 +561,14 @@ export default function TNTDashboard() {
     <div className="page" style={{ padding: 0 }}>
       {toast && (
         <div style={{
-          position: "fixed", top: 16, right: 16, zIndex: 2000, borderRadius: 8, padding: "10px 16px", fontSize: 13, fontWeight: 600,
-          background: toast.type === "success" ? "#EAF3DE" : "#FCEBEB", color: toast.type === "success" ? "#3B6D11" : "#A32D2D",
-          border: `1px solid ${toast.type === "success" ? "#C0DD97" : "#F7C1C1"}`, boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+          position: "fixed", top: 16, right: 16, zIndex: 2000, borderRadius: "var(--radius)", padding: "10px 16px", fontSize: 13, fontWeight: 600,
+          background: toast.type === "success" ? "var(--green-bg)" : "var(--red-bg)", color: toast.type === "success" ? "var(--green)" : "var(--red)",
+          border: `1px solid var(--border)`, boxShadow: "var(--shadow)",
         }}>{toast.msg}</div>
       )}
 
       {/* Header */}
-      <div style={{ padding: "14px 24px", borderBottom: "0.5px solid var(--color-border-tertiary)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ padding: "14px 24px", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <span style={{ fontWeight: 600, fontSize: 15 }}>TNT Cannon Hire</span>
         <div style={{ display: "flex", gap: 8 }}>
           <button onClick={async () => {
@@ -595,34 +595,34 @@ export default function TNTDashboard() {
         <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
           {[
             { label: "Total", value: c.all },
-            { label: "Awaiting bond", value: c.confirmed, color: "#BA7517" },
-            { label: "Out on hire", value: c.active, color: "#185FA5" },
-            { label: "Returned", value: c.returned, color: "#5F5E5A" },
+            { label: "Awaiting bond", value: c.confirmed, color: "var(--amber)" },
+            { label: "Out on hire", value: c.active, color: "var(--blue)" },
+            { label: "Returned", value: c.returned, color: "var(--text-muted)" },
           ].map(s => (
-            <div key={s.label} style={{ background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: 8, padding: "10px 14px", minWidth: 100 }}>
-              <div style={{ fontSize: 11, color: "var(--color-text-secondary)", marginBottom: 2 }}>{s.label}</div>
-              <div style={{ fontSize: 20, fontWeight: 600, color: s.color || "var(--color-text-primary)" }}>{s.value}</div>
+            <div key={s.label} style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: "10px 14px", minWidth: 100 }}>
+              <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 2, textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600 }}>{s.label}</div>
+              <div style={{ fontSize: 20, fontWeight: 600, color: s.color || "var(--text)", fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em" }}>{s.value}</div>
             </div>
           ))}
         </div>
 
         {/* Flow Health Panel */}
         {showHealth && health?.checks && (
-          <div style={{ background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: 8, padding: "14px 18px", marginBottom: 16 }}>
+          <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: "14px 18px", marginBottom: 16 }}>
             <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10, display: "flex", alignItems: "center", gap: 8 }}>
               Flow Health Check
-              <span style={{ fontSize: 11, fontWeight: 500, padding: "2px 8px", borderRadius: 4, background: health.ok ? "#EAF3DE" : "#FCEBEB", color: health.ok ? "#3B6D11" : "#A32D2D" }}>
+              <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 999, background: health.ok ? "var(--green-bg)" : "var(--red-bg)", color: health.ok ? "var(--green)" : "var(--red)" }}>
                 {health.ok ? "ALL SYSTEMS GO" : "ISSUES FOUND"}
               </span>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10 }}>
               {Object.entries(health.checks).map(([name, check]) => (
-                <div key={name} style={{ fontSize: 12, padding: "8px 12px", borderRadius: 6, border: `1px solid ${check.ok ? '#C0DD97' : '#F7C1C1'}`, background: check.ok ? 'rgba(234,243,222,0.1)' : 'rgba(252,235,235,0.1)' }}>
-                  <div style={{ fontWeight: 600, marginBottom: 4, textTransform: "uppercase", fontSize: 10, color: check.ok ? "#3B6D11" : "#A32D2D" }}>
+                <div key={name} style={{ fontSize: 12, padding: "8px 12px", borderRadius: "var(--radius-sm)", border: `1px solid var(--border)`, background: check.ok ? 'var(--green-bg)' : 'var(--red-bg)' }}>
+                  <div style={{ fontWeight: 600, marginBottom: 4, textTransform: "uppercase", fontSize: 11, letterSpacing: "0.08em", color: check.ok ? "var(--green)" : "var(--red)" }}>
                     {check.ok ? "\u2713" : "\u2717"} {name}
                   </div>
                   {Object.entries(check).filter(([k]) => k !== "ok").map(([k, v]) => (
-                    <div key={k} style={{ fontSize: 11, color: "var(--color-text-secondary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <div key={k} style={{ fontSize: 11, color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {k}: {typeof v === "boolean" ? (v ? "\u2713" : "\u2717") : String(v)}
                     </div>
                   ))}
@@ -640,16 +640,16 @@ export default function TNTDashboard() {
             { key: "returned", label: "Returned", n: c.returned },
           ].map(f => (
             <button key={f.key} onClick={() => setFilter(f.key)} style={{
-              fontSize: 12, padding: "5px 12px", borderRadius: 6,
-              background: filter === f.key ? "var(--color-background-secondary)" : "transparent",
-              border: filter === f.key ? "1px solid var(--color-border-secondary)" : "1px solid transparent",
-              fontWeight: filter === f.key ? 600 : 400, cursor: "pointer", color: "var(--color-text-primary)",
+              fontSize: 12, padding: "5px 12px", borderRadius: "var(--radius-sm)",
+              background: filter === f.key ? "var(--bg-subtle)" : "transparent",
+              border: filter === f.key ? "1px solid var(--border)" : "1px solid transparent",
+              fontWeight: filter === f.key ? 600 : 400, cursor: "pointer", color: "var(--text)",
             }}>{f.label} <span style={{ opacity: 0.5 }}>{f.n}</span></button>
           ))}
         </div>
 
         {/* Table */}
-        <div style={{ background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: 8, overflow: "hidden" }}>
+        <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", overflow: "hidden" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
             <colgroup>
               <col style={{ width: "17%" }} />
@@ -662,17 +662,17 @@ export default function TNTDashboard() {
               <col style={{ width: "25%" }} />
             </colgroup>
             <thead>
-              <tr>
+              <tr style={{ background: "var(--bg-canvas)" }}>
                 {["Customer", "Order", "Event", "Status", "Bond", "Contract", "Email", "Actions"].map(h => (
-                  <th key={h} style={{ padding: "10px 12px", textAlign: "left", fontSize: 10, fontWeight: 600, color: "var(--color-text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>{h}</th>
+                  <th key={h} style={{ padding: "10px 12px", textAlign: "left", fontSize: 11, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", borderBottom: "1px solid var(--border)" }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={8} style={{ padding: "28px 12px", textAlign: "center", color: "var(--color-text-secondary)", fontSize: 13 }}>Loading...</td></tr>
+                <tr><td colSpan={8} style={{ padding: "28px 12px", textAlign: "center", color: "var(--text-muted)", fontSize: 13 }}>Loading...</td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={8} style={{ padding: "28px 12px", textAlign: "center", color: "var(--color-text-secondary)", fontSize: 13 }}>No hires</td></tr>
+                <tr><td colSpan={8} style={{ padding: "28px 12px", textAlign: "center", color: "var(--text-muted)", fontSize: 13 }}>No hires</td></tr>
               ) : filtered.map(hire => {
                 const sCfg = STATUS_CONFIG[hire.status] || STATUS_CONFIG.confirmed;
                 const bCfg = BOND_CONFIG[hire.bondStatus] || BOND_CONFIG.pending;
@@ -681,13 +681,13 @@ export default function TNTDashboard() {
                 const next = nextAction(hire);
                 return (
                   <React.Fragment key={hire.id}>
-                  <tr style={{ borderBottom: "none", cursor: "pointer" }} onClick={() => setDetailHire(hire)}>
+                  <tr style={{ borderBottom: "none", cursor: "pointer", borderTop: "1px solid var(--border)" }} onClick={() => setDetailHire(hire)}>
                     <td style={{ padding: "10px 12px" }}>
                       <div style={{ fontSize: 13, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{hire.customerName}</div>
-                      <div style={{ fontSize: 11, color: "var(--color-text-secondary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{hire.customerPhone || hire.customerEmail}</div>
+                      <div style={{ fontSize: 11, color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{hire.customerPhone || hire.customerEmail}</div>
                     </td>
-                    <td style={{ padding: "10px 12px", fontSize: 12, color: "var(--color-text-secondary)", fontFamily: "var(--font-mono)" }}>{hire.orderNumber}</td>
-                    <td style={{ padding: "10px 12px", fontSize: 12, color: "var(--color-text-secondary)" }}>
+                    <td style={{ padding: "10px 12px", fontSize: 12, color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>{hire.orderNumber}</td>
+                    <td style={{ padding: "10px 12px", fontSize: 12, color: "var(--text-muted)" }}>
                       {dates ? (
                         <>
                           <div>{dates.eventFormatted}</div>
@@ -699,15 +699,15 @@ export default function TNTDashboard() {
                     <td style={{ padding: "10px 12px" }}>{pill(bCfg)}</td>
                     <td style={{ padding: "10px 12px" }} onClick={e => e.stopPropagation()}>
                       {pill(hire.emailSent
-                        ? { label: "Sent", color: "#3B6D11", bg: "#EAF3DE" }
-                        : { label: "Not Sent", color: "#A32D2D", bg: "#FCEBEB" }
+                        ? { label: "Sent", color: "var(--green)", bg: "var(--green-bg)" }
+                        : { label: "Not Sent", color: "var(--red)", bg: "var(--red-bg)" }
                       )}
                     </td>
                     <td style={{ padding: "10px 12px" }} onClick={e => e.stopPropagation()}>
                       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                         {pill(cCfg)}
                         {hire.contractStatus === "signed" && (
-                          <a href={`/api/contract/${hire.id}/pdf`} target="_blank" rel="noopener noreferrer" title="Download signed contract" style={{ fontSize: 14, textDecoration: "none", color: "#3B6D11" }}>📄</a>
+                          <a href={`/api/contract/${hire.id}/pdf`} target="_blank" rel="noopener noreferrer" title="Download signed contract" style={{ fontSize: 14, textDecoration: "none", color: "var(--green)" }}>📄</a>
                         )}
                       </div>
                     </td>
@@ -720,7 +720,7 @@ export default function TNTDashboard() {
                       </div>
                     </td>
                   </tr>
-                  <tr style={{ borderBottom: "0.5px solid var(--color-border-tertiary)" }} onClick={() => setDetailHire(hire)}>
+                  <tr onClick={() => setDetailHire(hire)}>
                     <td colSpan={8} style={{ padding: "0 12px 8px" }}>
                       <FlowProgress hire={hire} />
                     </td>

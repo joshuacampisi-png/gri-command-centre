@@ -165,19 +165,19 @@ export default function KeywordRankings() {
           <div className="stat-label">Total Keywords</div>
         </div>
         <div className="stat-box">
-          <div className="stat-value" style={{ color: '#10b981' }}>{stats.top3}</div>
+          <div className="stat-value" style={{ color: 'var(--green)' }}>{stats.top3}</div>
           <div className="stat-label">Top 3</div>
         </div>
         <div className="stat-box">
-          <div className="stat-value" style={{ color: '#3b82f6' }}>{stats.top10}</div>
+          <div className="stat-value" style={{ color: 'var(--text)' }}>{stats.top10}</div>
           <div className="stat-label">Top 10</div>
         </div>
         <div className="stat-box">
-          <div className="stat-value" style={{ color: '#10b981' }}>{stats.improving}</div>
+          <div className="stat-value" style={{ color: 'var(--green)' }}>{stats.improving}</div>
           <div className="stat-label">Improving</div>
         </div>
         <div className="stat-box">
-          <div className="stat-value" style={{ color: '#ef4444' }}>{stats.declining}</div>
+          <div className="stat-value" style={{ color: 'var(--red)' }}>{stats.declining}</div>
           <div className="stat-label">Declining</div>
         </div>
       </div>
@@ -186,21 +186,21 @@ export default function KeywordRankings() {
       {(improving.length > 0 || declining.length > 0) && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
           {/* Improving */}
-          <div style={{ padding: '1rem', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px' }}>
-            <h3 style={{ margin: '0 0 0.75rem 0', fontSize: '0.95rem', color: '#166534', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <div style={{ padding: '1rem', background: 'var(--green-bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)' }}>
+            <h3 style={{ margin: '0 0 0.75rem 0', fontSize: '0.95rem', color: 'var(--green)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <span style={{ fontSize: '1.1rem' }}>▲</span> Improving ({improving.length})
             </h3>
             {improving.length === 0 ? (
-              <p style={{ margin: 0, color: '#6b7280', fontSize: '0.85rem' }}>No keywords improving today</p>
+              <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.85rem' }}>No keywords improving today</p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                 {improving.map(kw => (
                   <div key={kw.id || kw.keyword} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
-                    <span style={{ fontWeight: '500', color: '#1f2937' }}>
+                    <span style={{ fontWeight: '500', color: 'var(--text)' }}>
                       {kw.keyword}
-                      {locations.length > 1 && <span style={{ fontSize: '0.7rem', color: '#6b7280', marginLeft: '0.3rem' }}>({locationLabel(kw.location)})</span>}
+                      {locations.length > 1 && <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginLeft: '0.3rem' }}>({locationLabel(kw.location)})</span>}
                     </span>
-                    <span style={{ color: '#16a34a', fontWeight: '600', whiteSpace: 'nowrap', marginLeft: '0.5rem' }}>
+                    <span style={{ color: 'var(--green)', fontWeight: '600', whiteSpace: 'nowrap', marginLeft: '0.5rem' }}>
                       +{kw.change} → #{kw.rank}
                     </span>
                   </div>
@@ -210,21 +210,21 @@ export default function KeywordRankings() {
           </div>
 
           {/* Declining */}
-          <div style={{ padding: '1rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px' }}>
-            <h3 style={{ margin: '0 0 0.75rem 0', fontSize: '0.95rem', color: '#991b1b', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <div style={{ padding: '1rem', background: 'var(--red-bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)' }}>
+            <h3 style={{ margin: '0 0 0.75rem 0', fontSize: '0.95rem', color: 'var(--red)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <span style={{ fontSize: '1.1rem' }}>▼</span> Declining ({declining.length})
             </h3>
             {declining.length === 0 ? (
-              <p style={{ margin: 0, color: '#6b7280', fontSize: '0.85rem' }}>No keywords declining today</p>
+              <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.85rem' }}>No keywords declining today</p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                 {declining.map(kw => (
                   <div key={kw.id || kw.keyword} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
-                    <span style={{ fontWeight: '500', color: '#1f2937' }}>
+                    <span style={{ fontWeight: '500', color: 'var(--text)' }}>
                       {kw.keyword}
-                      {locations.length > 1 && <span style={{ fontSize: '0.7rem', color: '#6b7280', marginLeft: '0.3rem' }}>({locationLabel(kw.location)})</span>}
+                      {locations.length > 1 && <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginLeft: '0.3rem' }}>({locationLabel(kw.location)})</span>}
                     </span>
-                    <span style={{ color: '#dc2626', fontWeight: '600', whiteSpace: 'nowrap', marginLeft: '0.5rem' }}>
+                    <span style={{ color: 'var(--red)', fontWeight: '600', whiteSpace: 'nowrap', marginLeft: '0.5rem' }}>
                       {kw.change} → #{kw.rank}
                     </span>
                   </div>
@@ -237,10 +237,10 @@ export default function KeywordRankings() {
 
       {/* Alerts */}
       {alerts && alerts.length > 0 && (
-        <div style={{ marginBottom: '1.5rem', padding: '1rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px' }}>
-          <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem', color: '#991b1b' }}>Alerts ({alerts.length})</h3>
+        <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'var(--red-bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)' }}>
+          <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem', color: 'var(--red)' }}>Alerts ({alerts.length})</h3>
           {alerts.slice(0, 5).map((alert, i) => (
-            <div key={i} style={{ padding: '0.5rem 0', borderBottom: i < 4 ? '1px solid #fecaca' : 'none' }}>
+            <div key={i} style={{ padding: '0.5rem 0', borderBottom: i < 4 ? '1px solid var(--border)' : 'none' }}>
               <strong>{alert.keyword}</strong>: {alert.message}
             </div>
           ))}
@@ -269,7 +269,7 @@ export default function KeywordRankings() {
       <div style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
-            <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
+            <tr style={{ borderBottom: '1px solid var(--border-strong)' }}>
               <th style={{ textAlign: 'left', padding: '0.75rem' }}>Keyword</th>
               <th style={{ textAlign: 'center', padding: '0.75rem' }}>Market</th>
               <th style={{ textAlign: 'center', padding: '0.75rem' }}>Rank</th>
@@ -280,38 +280,38 @@ export default function KeywordRankings() {
           </thead>
           <tbody>
             {filtered.slice(0, 50).map(kw => (
-              <tr key={kw.id || kw.keyword} style={{ borderBottom: '1px solid #f3f4f6' }}>
+              <tr key={kw.id || kw.keyword} style={{ borderBottom: '1px solid var(--border)' }}>
                 <td style={{ padding: '0.75rem' }}>
                   <div style={{ fontWeight: '500' }}>{kw.keyword}</div>
                   {kw.tags && kw.tags.length > 0 && (
-                    <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
                       {kw.tags.join(', ')}
                     </div>
                   )}
                 </td>
                 <td style={{ textAlign: 'center', padding: '0.75rem' }}>
                   <span style={{
-                    fontSize: '0.75rem',
+                    fontSize: '11px',
                     fontWeight: '600',
                     padding: '0.15rem 0.5rem',
-                    borderRadius: '4px',
-                    background: kw.location === 'google.co.nz' ? '#e0f2fe' : '#f0fdf4',
-                    color: kw.location === 'google.co.nz' ? '#0369a1' : '#166534'
+                    borderRadius: '999px',
+                    background: kw.location === 'google.co.nz' ? 'var(--blue-bg)' : 'var(--green-bg)',
+                    color: kw.location === 'google.co.nz' ? 'var(--blue)' : 'var(--green)'
                   }}>
                     {locationLabel(kw.location)}
                   </span>
                 </td>
-                <td style={{ textAlign: 'center', padding: '0.75rem', fontWeight: '600', fontSize: '1.1rem' }}>
+                <td style={{ textAlign: 'center', padding: '0.75rem', fontWeight: '600', fontSize: '1.1rem', fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}>
                   {kw.rank !== null ? `#${kw.rank}` : '—'}
                 </td>
                 <td style={{ textAlign: 'center', padding: '0.75rem' }}>
                   {kw.change === 0 ? '—' : (
-                    <span style={{ color: kw.change > 0 ? '#10b981' : '#ef4444', fontWeight: '500' }}>
+                    <span style={{ color: kw.change > 0 ? 'var(--green)' : 'var(--red)', fontWeight: '500' }}>
                       {kw.change > 0 ? '▲' : '▼'} {Math.abs(kw.change)}
                     </span>
                   )}
                 </td>
-                <td style={{ textAlign: 'center', padding: '0.75rem', color: '#6b7280' }}>
+                <td style={{ textAlign: 'center', padding: '0.75rem', color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>
                   {kw.volume !== null ? kw.volume.toLocaleString() : '—'}
                 </td>
                 <td style={{ textAlign: 'center', padding: '0.75rem' }}>
@@ -325,7 +325,7 @@ export default function KeywordRankings() {
         </table>
       </div>
 
-      <div style={{ marginTop: '1rem', fontSize: '0.875rem', color: '#6b7280', textAlign: 'right' }}>
+      <div style={{ marginTop: '1rem', fontSize: '0.875rem', color: 'var(--text-muted)', textAlign: 'right' }}>
         Last updated: {new Date(updatedAt).toLocaleString('en-AU', { timeZone: 'Australia/Brisbane' })} AEST
       </div>
     </div>

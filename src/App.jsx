@@ -3197,6 +3197,107 @@ function CompetitorTrackerPage() {
   )
 }
 
+// ── Status Bar ────────────────────────────────────────────────────────────────
+// Thin sticky bar above page content. Live AEST clock + ambient KPI chips +
+// integration status dots. Pulls its own lightweight data so it stays alive
+// regardless of which page is mounted below.
+function StatusBar({ integrations }) {
+  const [now, setNow]       = useState(() => new Date())
+  const [sales, setSales]   = useState(null)
+  const [hires, setHires]   = useState([])
+
+  // Live clock — tick every 30s (enough granularity for HH:mm display)
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 30_000)
+    return () => clearInterval(id)
+  }, [])
+
+  // Ambient KPI fetch — refresh every 60s, lightweight
+  useEffect(() => {
+    const pull = () => {
+      fetch('/api/shopify/today-sales').then(r => r.json()).then(d => setSales(d?.ok ? d : null)).catch(() => {})
+      fetch('/api/hires').then(r => r.json()).then(d => setHires(d?.hires || [])).catch(() => {})
+    }
+    pull()
+    const id = setInterval(pull, 60_000)
+    return () => clearInterval(id)
+  }, [])
+
+  // AEST formatting (Brisbane = AEST, no DST)
+  const tz = 'Australia/Brisbane'
+  const timeStr = now.toLocaleTimeString('en-AU', { timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false })
+  const dateStr = now.toLocaleDateString('en-AU', { timeZone: tz, weekday: 'short', day: '2-digit', month: 'short' }).toUpperCase()
+
+  // KPI derivations — defensive against missing data
+  const todayRev    = sales?.revenue != null ? `$${Math.round(sales.revenue).toLocaleString()}` : '—'
+  const todayOrders = sales?.orders  != null ? String(sales.orders) : '—'
+  const activeHires = hires.filter(h => !['returned','withheld','cancelled'].includes(h.status)).length
+  const pendingBonds = hires.filter(h => h.bondStatus !== 'paid' && !['returned','withheld','cancelled'].includes(h.status)).length
+
+  const integ = integrations || {}
+  const dotState = (on) => ({
+    width: 7, height: 7, borderRadius: '50%',
+    background: on ? '#22c55e' : '#52525b',
+    boxShadow: on ? '0 0 6px rgba(34,197,94,.55)' : 'none',
+    display: 'inline-block'
+  })
+
+  const barStyle = {
+    position: 'sticky', top: 0, zIndex: 50,
+    height: 42, flex: '0 0 42px',
+    display: 'flex', alignItems: 'center', gap: 20,
+    padding: '0 18px',
+    background: 'var(--bg-surface)',
+    borderBottom: '1px solid var(--border)',
+    fontSize: 12, color: 'var(--text)',
+    backdropFilter: 'saturate(180%) blur(6px)'
+  }
+  const clockStyle = {
+    fontFamily: 'var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace)',
+    display: 'flex', alignItems: 'baseline', gap: 8,
+    color: 'var(--text)', fontVariantNumeric: 'tabular-nums'
+  }
+  const dateLabelStyle = { color: 'var(--text-muted)', fontSize: 10, letterSpacing: '.08em' }
+  const divider = { width: 1, height: 18, background: 'var(--border)' }
+  const chipsWrap = { display: 'flex', alignItems: 'center', gap: 18, flex: 1, overflow: 'hidden' }
+  const chip = { display: 'flex', flexDirection: 'column', gap: 1, lineHeight: 1.1 }
+  const chipLabel = { fontSize: 9, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--text-muted)' }
+  const chipValue = {
+    fontSize: 13, fontWeight: 600, color: 'var(--text)',
+    fontVariantNumeric: 'tabular-nums',
+    fontFamily: 'var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace)'
+  }
+  const dotsWrap = { display: 'flex', alignItems: 'center', gap: 10, marginLeft: 'auto' }
+
+  const Chip = ({ label, value }) => (
+    <div style={chip}>
+      <span style={chipLabel}>{label}</span>
+      <span style={chipValue}>{value}</span>
+    </div>
+  )
+
+  return (
+    <div className="status-bar" style={barStyle}>
+      <div style={clockStyle}>
+        <span style={{ fontSize: 14, fontWeight: 600 }}>{timeStr}</span>
+        <span style={dateLabelStyle}>AEST · {dateStr}</span>
+      </div>
+      <div style={divider} />
+      <div style={chipsWrap}>
+        <Chip label="Today Rev"     value={todayRev} />
+        <Chip label="Today Orders"  value={todayOrders} />
+        <Chip label="Active Hires"  value={activeHires} />
+        <Chip label="Pending Bonds" value={pendingBonds} />
+      </div>
+      <div style={dotsWrap}>
+        <span style={dotState(integ.shopify)} title={`Shopify ${integ.shopify ? 'connected' : 'offline'}`} />
+        <span style={dotState(integ.square != null ? integ.square : true)} title={`Square ${integ.square === false ? 'offline' : 'connected'}`} />
+        <span style={dotState(true)} title="Server connected" />
+      </div>
+    </div>
+  )
+}
+
 // ── Root ──────────────────────────────────────────────────────────────────────
 
 export default function App() {
@@ -3256,7 +3357,9 @@ export default function App() {
         </div>
       </aside>
 
-      <main className="main">
+      <main className="main" style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+        <StatusBar integrations={integ} />
+        <div style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
         {loading && <div className="loading"><div className="spinner"/>Loading…</div>}
         {error   && <div className="error-bar">⚠ {error}</div>}
         {!loading && !error && (
@@ -3282,6 +3385,7 @@ export default function App() {
             {active==='Settings'     && <SettingsPage    data={data} company={company} onCompanyChange={setCompany} />}
           </>
         )}
+        </div>
       </main>
     </div>
   )

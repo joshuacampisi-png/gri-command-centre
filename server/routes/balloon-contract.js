@@ -12,17 +12,16 @@
  * password prompts).
  */
 import { Router } from 'express'
-import { writeFileSync, mkdirSync, existsSync } from 'fs'
-import { join, dirname } from 'path'
-import { fileURLToPath } from 'url'
+import { writeFileSync, existsSync } from 'fs'
+import { join } from 'path'
 import { getAll, getById, update } from '../lib/balloon-store.js'
 import { notifyBalloonEvent } from '../lib/balloon-telegram.js'
 import { getGriLogoDataUri } from '../lib/gri-logo-data-uri.js'
 import { generateBalloonContractPdf } from '../lib/balloon-contract-generator.js'
+import { dataDir } from '../lib/data-dir.js'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
-const CONTRACTS_DIR = join(__dirname, '..', '..', 'data', 'balloon-contracts')
-mkdirSync(CONTRACTS_DIR, { recursive: true })
+// Signed PDFs on the Railway volume so they survive redeploys (legal records).
+const CONTRACTS_DIR = dataDir('balloon-contracts')
 
 // Balloon-box hire dates: SAME DAY pickup, NEXT DAY return.
 // Helium balloons deflate within ~24h, so the box is built for same-day use.

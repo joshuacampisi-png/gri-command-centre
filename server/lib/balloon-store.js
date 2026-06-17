@@ -1,14 +1,13 @@
-import { readFileSync, writeFileSync, mkdirSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { readFileSync, writeFileSync, renameSync } from 'fs';
+import { dataFile } from './data-dir.js';
 
 /**
  * balloon-store.js
  * Persistence layer for Gender Reveal Helium Balloon Box hires.
  * Parallel to hire-store.js (TNT) — same shape, separate file.
+ * Routes through dataFile() so hires survive Railway redeploys.
  */
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const DATA_FILE = join(__dirname, '..', '..', 'data', 'balloon-hires.json');
+const DATA_FILE = dataFile('balloon-hires.json');
 
 function readHires() {
   try {
@@ -19,8 +18,10 @@ function readHires() {
 }
 
 function writeHires(hires) {
-  mkdirSync(dirname(DATA_FILE), { recursive: true });
-  writeFileSync(DATA_FILE, JSON.stringify(hires, null, 2));
+  // Atomic write: tmp → rename. Prevents partial-file corruption.
+  const tmp = DATA_FILE + '.tmp';
+  writeFileSync(tmp, JSON.stringify(hires, null, 2));
+  renameSync(tmp, DATA_FILE);
 }
 
 export function getAll() {

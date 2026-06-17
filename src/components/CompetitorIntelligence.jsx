@@ -148,7 +148,7 @@ export default function CompetitorIntelligence() {
       </div>
 
       {scanMsg && (
-        <div style={{ padding: '8px 14px', borderRadius: '8px', fontSize: '13px', background: scanMsg.ok ? '#f0fdf4' : '#fef2f2', color: scanMsg.ok ? '#16a34a' : '#dc2626', marginBottom: '16px' }}>
+        <div style={{ padding: '8px 14px', borderRadius: 'var(--radius)', fontSize: '13px', background: scanMsg.ok ? 'var(--green-bg)' : 'var(--red-bg)', color: scanMsg.ok ? 'var(--green)' : 'var(--red)', marginBottom: '16px' }}>
           {scanMsg.text}
         </div>
       )}
@@ -243,7 +243,7 @@ export default function CompetitorIntelligence() {
       )}
 
       {/* Scan Timestamps */}
-      <div style={{ marginTop: '24px', fontSize: '12px', color: '#9ca3af', display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+      <div style={{ marginTop: '24px', fontSize: '12px', color: 'var(--text-faint)', display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
         {organic?.scannedAt && <span>Organic: {formatDate(organic.scannedAt)}</span>}
         {paid?.scannedAt && <span>Google Ads: {formatDate(paid.scannedAt)}</span>}
         {meta?.scannedAt && <span>Meta Ads: {formatDate(meta.scannedAt)}</span>}
@@ -263,17 +263,17 @@ function CompetitorHeaderCard({ comp, organic, paid, meta, compId }) {
     <div className="card" style={{ borderLeft: `4px solid ${comp.color}` }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
         <div>
-          <h3 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>{comp.name}</h3>
-          <span style={{ fontSize: '13px', color: '#7C8DB0' }}>{comp.domain}</span>
+          <h3 style={{ fontSize: '18px', fontWeight: 600, margin: 0, color: 'var(--text)', letterSpacing: '-0.02em' }}>{comp.name}</h3>
+          <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{comp.domain}</span>
         </div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
-        <MiniStat label="Organic Top 3" value={organicSummary?.top3 ?? 0} color="#10b981" />
-        <MiniStat label="Organic Top 10" value={organicSummary?.top10 ?? 0} color="#3b82f6" />
-        <MiniStat label="Avg Rank" value={organicSummary?.avgRank ? `#${organicSummary.avgRank}` : 'N/A'} color="#6b7280" />
-        <MiniStat label="Paid Keywords" value={paidMetrics?.paidKeywords ?? 0} color="#f59e0b" />
-        <MiniStat label="Est. Ad Spend" value={paidMetrics?.estimatedCost ? `$${paidMetrics.estimatedCost.toFixed(0)}` : 'N/A'} color="#ef4444" />
-        <MiniStat label="Active Meta Ads" value={metaCount} color="#8b5cf6" />
+        <MiniStat label="Organic Top 3" value={organicSummary?.top3 ?? 0} color="var(--text)" />
+        <MiniStat label="Organic Top 10" value={organicSummary?.top10 ?? 0} color="var(--text)" />
+        <MiniStat label="Avg Rank" value={organicSummary?.avgRank ? `#${organicSummary.avgRank}` : 'N/A'} color="var(--text)" />
+        <MiniStat label="Paid Keywords" value={paidMetrics?.paidKeywords ?? 0} color="var(--text)" />
+        <MiniStat label="Est. Ad Spend" value={paidMetrics?.estimatedCost ? `$${paidMetrics.estimatedCost.toFixed(0)}` : 'N/A'} color="var(--text)" />
+        <MiniStat label="Active Meta Ads" value={metaCount} color="var(--text)" />
       </div>
     </div>
   )
@@ -281,9 +281,9 @@ function CompetitorHeaderCard({ comp, organic, paid, meta, compId }) {
 
 function MiniStat({ label, value, color }) {
   return (
-    <div style={{ textAlign: 'center', padding: '8px', background: '#f8f9fc', borderRadius: '8px' }}>
-      <div style={{ fontSize: '20px', fontWeight: 700, color }}>{value}</div>
-      <div style={{ fontSize: '11px', color: '#7C8DB0', marginTop: '2px' }}>{label}</div>
+    <div style={{ textAlign: 'center', padding: '12px 8px', background: 'var(--bg-canvas)', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }}>
+      <div style={{ fontSize: '20px', fontWeight: 600, color: color || 'var(--text)', fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}>{value}</div>
+      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>{label}</div>
     </div>
   )
 }
@@ -300,7 +300,7 @@ function MetaAdsSection({ data, compName, onScan, scanning }) {
             {scanning ? 'Scanning...' : 'Scan Meta Ads'}
           </button>
         </div>
-        <p style={{ color: '#7C8DB0', fontSize: '14px' }}>No Meta ads found for {compName}. Run a scan to check.</p>
+        <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>No Meta ads found for {compName}. Run a scan to check.</p>
       </div>
     )
   }
@@ -309,12 +309,12 @@ function MetaAdsSection({ data, compName, onScan, scanning }) {
     <div>
       <div className="card" style={{ marginBottom: '16px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-          <h3 style={{ margin: 0 }}>Meta Ads ({data.totalActiveAds} active)</h3>
+          <h3 style={{ margin: 0, color: 'var(--text)', letterSpacing: '-0.02em' }}>Meta Ads ({data.totalActiveAds} active)</h3>
           <button className="btn-outline" onClick={onScan} disabled={scanning}>
             {scanning ? 'Scanning...' : 'Scan Meta Ads'}
           </button>
         </div>
-        <p style={{ fontSize: '13px', color: '#7C8DB0' }}>
+        <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
           Last scanned: {data.lastScanned ? formatDate(data.lastScanned) : 'Never'}
         </p>
       </div>
@@ -324,7 +324,7 @@ function MetaAdsSection({ data, compName, onScan, scanning }) {
           <div key={ad.id || i} className="card" style={{ padding: '14px' }}>
             {/* Ad Image */}
             {(ad.localImagePath || ad.imageUrl) && (
-              <div style={{ marginBottom: '12px', borderRadius: '8px', overflow: 'hidden', background: '#f0f0f0', maxHeight: '200px' }}>
+              <div style={{ marginBottom: '12px', borderRadius: 'var(--radius)', overflow: 'hidden', background: 'var(--bg-subtle)', maxHeight: '200px' }}>
                 <img
                   src={ad.localImagePath || ad.imageUrl}
                   alt={ad.headline || 'Ad creative'}
@@ -336,24 +336,24 @@ function MetaAdsSection({ data, compName, onScan, scanning }) {
 
             {/* Ad Content */}
             {ad.headline && (
-              <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '6px' }}>{ad.headline}</div>
+              <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '6px', color: 'var(--text)' }}>{ad.headline}</div>
             )}
             {ad.adText && (
-              <div style={{ fontSize: '13px', color: '#4b5563', marginBottom: '8px', lineHeight: '1.4' }}>
+              <div style={{ fontSize: '13px', color: 'var(--text-soft)', marginBottom: '8px', lineHeight: '1.4' }}>
                 {ad.adText.length > 200 ? ad.adText.substring(0, 200) + '...' : ad.adText}
               </div>
             )}
             {ad.cta && (
-              <div style={{ display: 'inline-block', padding: '4px 10px', background: '#e5e7eb', borderRadius: '4px', fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>
+              <div style={{ display: 'inline-block', padding: '4px 10px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', fontSize: '12px', fontWeight: 600, marginBottom: '8px', color: 'var(--text-soft)' }}>
                 {ad.cta}
               </div>
             )}
 
             {/* Ad Meta */}
-            <div style={{ display: 'flex', gap: '12px', fontSize: '11px', color: '#9ca3af', marginTop: '8px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '12px', fontSize: '11px', color: 'var(--text-faint)', marginTop: '8px', flexWrap: 'wrap' }}>
               {ad.platforms && <span>Platforms: {Array.isArray(ad.platforms) ? ad.platforms.join(', ') : ad.platforms}</span>}
               {ad.startDate && <span>Started: {formatDate(ad.startDate)}</span>}
-              <span style={{ color: ad.status === 'active' ? '#10b981' : '#ef4444', fontWeight: 600 }}>
+              <span style={{ color: ad.status === 'active' ? 'var(--green)' : 'var(--red)', fontWeight: 600 }}>
                 {ad.status === 'active' ? 'Active' : 'Inactive'}
               </span>
             </div>
@@ -376,7 +376,7 @@ function GooglePaidSection({ data, griData, compName, onScan, scanning }) {
             {scanning ? 'Scanning...' : 'Scan Google Ads'}
           </button>
         </div>
-        <p style={{ color: '#7C8DB0', fontSize: '14px' }}>No Google Ads data for {compName}. Run a scan to check.</p>
+        <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>No Google Ads data for {compName}. Run a scan to check.</p>
       </div>
     )
   }
@@ -390,26 +390,26 @@ function GooglePaidSection({ data, griData, compName, onScan, scanning }) {
       {/* Metrics Summary */}
       <div className="card" style={{ marginBottom: '16px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <h3 style={{ margin: 0 }}>Google Ads Intelligence</h3>
+          <h3 style={{ margin: 0, color: 'var(--text)', letterSpacing: '-0.02em' }}>Google Ads Intelligence</h3>
           <button className="btn-outline" onClick={onScan} disabled={scanning}>
             {scanning ? 'Scanning...' : 'Scan Google Ads'}
           </button>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
-          <MiniStat label="Paid Keywords" value={metrics.paidKeywords || 0} color="#f59e0b" />
-          <MiniStat label="Est. Traffic" value={metrics.estimatedTraffic || 0} color="#3b82f6" />
-          <MiniStat label="Est. Cost" value={`$${(metrics.estimatedCost || 0).toFixed(0)}`} color="#ef4444" />
-          <MiniStat label="Top 1 Positions" value={metrics.topPositions || 0} color="#10b981" />
-          <MiniStat label="Visibility" value={`${data.visibilityShare || 0}%`} color="#8b5cf6" />
+          <MiniStat label="Paid Keywords" value={metrics.paidKeywords || 0} color="var(--text)" />
+          <MiniStat label="Est. Traffic" value={metrics.estimatedTraffic || 0} color="var(--text)" />
+          <MiniStat label="Est. Cost" value={`$${(metrics.estimatedCost || 0).toFixed(0)}`} color="var(--text)" />
+          <MiniStat label="Top 1 Positions" value={metrics.topPositions || 0} color="var(--text)" />
+          <MiniStat label="Visibility" value={`${data.visibilityShare || 0}%`} color="var(--text)" />
         </div>
 
         {/* Comparison vs GRI */}
         {griData && (
-          <div style={{ marginTop: '16px', padding: '12px', background: '#fef2f2', borderRadius: '8px', fontSize: '13px' }}>
-            <strong>vs Gender Reveal Ideas:</strong>{' '}
+          <div style={{ marginTop: '16px', padding: '12px', background: 'var(--bg-canvas)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: '13px', color: 'var(--text-soft)' }}>
+            <strong style={{ color: 'var(--text)' }}>vs Gender Reveal Ideas:</strong>{' '}
             {data.visibilityShare > (griData.visibilityShare || 0)
-              ? <span style={{ color: '#ef4444' }}>They have {data.visibilityShare - (griData.visibilityShare || 0)}% more visibility</span>
-              : <span style={{ color: '#10b981' }}>You have {(griData.visibilityShare || 0) - data.visibilityShare}% more visibility</span>
+              ? <span style={{ color: 'var(--red)' }}>They have {data.visibilityShare - (griData.visibilityShare || 0)}% more visibility</span>
+              : <span style={{ color: 'var(--green)' }}>You have {(griData.visibilityShare || 0) - data.visibilityShare}% more visibility</span>
             }
           </div>
         )}
@@ -418,36 +418,36 @@ function GooglePaidSection({ data, griData, compName, onScan, scanning }) {
       {/* Keywords they're bidding on */}
       {keywords.length > 0 && (
         <div className="card" style={{ marginBottom: '16px' }}>
-          <h4 style={{ marginBottom: '12px' }}>Keywords Bidding On ({keywords.length})</h4>
+          <h4 style={{ marginBottom: '12px', color: 'var(--text)', letterSpacing: '-0.02em' }}>Keywords Bidding On ({keywords.length})</h4>
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13.5px' }}>
               <thead>
-                <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
-                  <th style={{ textAlign: 'left', padding: '8px' }}>Keyword</th>
-                  <th style={{ textAlign: 'center', padding: '8px' }}>Position</th>
-                  <th style={{ textAlign: 'center', padding: '8px' }}>CPC</th>
-                  <th style={{ textAlign: 'center', padding: '8px' }}>Search Vol</th>
-                  <th style={{ textAlign: 'center', padding: '8px' }}>Est. Traffic</th>
+                <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg-canvas)' }}>
+                  <th style={{ textAlign: 'left', padding: '10px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, color: 'var(--text-muted)' }}>Keyword</th>
+                  <th style={{ textAlign: 'center', padding: '10px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, color: 'var(--text-muted)' }}>Position</th>
+                  <th style={{ textAlign: 'center', padding: '10px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, color: 'var(--text-muted)' }}>CPC</th>
+                  <th style={{ textAlign: 'center', padding: '10px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, color: 'var(--text-muted)' }}>Search Vol</th>
+                  <th style={{ textAlign: 'center', padding: '10px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, color: 'var(--text-muted)' }}>Est. Traffic</th>
                 </tr>
               </thead>
               <tbody>
                 {keywords.slice(0, 30).map((kw, i) => (
-                  <tr key={i} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                    <td style={{ padding: '8px', fontWeight: 500 }}>{kw.keyword}</td>
-                    <td style={{ textAlign: 'center', padding: '8px' }}>
+                  <tr key={i} style={{ borderTop: '1px solid var(--border)' }}>
+                    <td style={{ padding: '10px 8px', fontWeight: 500, color: 'var(--text)' }}>{kw.keyword}</td>
+                    <td style={{ textAlign: 'center', padding: '10px 8px' }}>
                       {kw.position ? (
                         <span style={{
-                          padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600,
-                          background: kw.position <= 3 ? '#dcfce7' : kw.position <= 10 ? '#fef3c7' : '#fee2e2',
-                          color: kw.position <= 3 ? '#166534' : kw.position <= 10 ? '#854d0e' : '#991b1b',
+                          padding: '2px 8px', borderRadius: '999px', fontSize: '11px', fontWeight: 600,
+                          background: kw.position <= 3 ? 'var(--green-bg)' : kw.position <= 10 ? 'var(--amber-bg)' : 'var(--red-bg)',
+                          color: kw.position <= 3 ? 'var(--green)' : kw.position <= 10 ? 'var(--amber)' : 'var(--red)',
                         }}>
                           #{kw.position}
                         </span>
                       ) : 'N/A'}
                     </td>
-                    <td style={{ textAlign: 'center', padding: '8px', color: '#6b7280' }}>${kw.cpc?.toFixed(2) || '0.00'}</td>
-                    <td style={{ textAlign: 'center', padding: '8px', color: '#6b7280' }}>{kw.searchVolume?.toLocaleString() || 0}</td>
-                    <td style={{ textAlign: 'center', padding: '8px', color: '#6b7280' }}>{kw.estimatedTraffic || 0}</td>
+                    <td style={{ textAlign: 'center', padding: '10px 8px', color: 'var(--text-soft)', fontVariantNumeric: 'tabular-nums' }}>${kw.cpc?.toFixed(2) || '0.00'}</td>
+                    <td style={{ textAlign: 'center', padding: '10px 8px', color: 'var(--text-soft)', fontVariantNumeric: 'tabular-nums' }}>{kw.searchVolume?.toLocaleString() || 0}</td>
+                    <td style={{ textAlign: 'center', padding: '10px 8px', color: 'var(--text-soft)', fontVariantNumeric: 'tabular-nums' }}>{kw.estimatedTraffic || 0}</td>
                   </tr>
                 ))}
               </tbody>
@@ -459,14 +459,14 @@ function GooglePaidSection({ data, griData, compName, onScan, scanning }) {
       {/* Ad Copy */}
       {adCopy.length > 0 && (
         <div className="card">
-          <h4 style={{ marginBottom: '12px' }}>Their Ad Copy ({adCopy.length})</h4>
+          <h4 style={{ marginBottom: '12px', color: 'var(--text)', letterSpacing: '-0.02em' }}>Their Ad Copy ({adCopy.length})</h4>
           <div style={{ display: 'grid', gap: '12px' }}>
             {adCopy.slice(0, 10).map((ad, i) => (
-              <div key={i} style={{ padding: '12px', background: '#f8f9fc', borderRadius: '8px', borderLeft: '3px solid #f59e0b' }}>
-                <div style={{ fontSize: '14px', fontWeight: 600, color: '#1a0dab', marginBottom: '4px' }}>{ad.title}</div>
-                <div style={{ fontSize: '12px', color: '#006621', marginBottom: '6px' }}>{ad.breadcrumb || ad.url}</div>
-                <div style={{ fontSize: '13px', color: '#4b5563', lineHeight: '1.4' }}>{ad.description}</div>
-                <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '6px' }}>Keyword: "{ad.keyword}" | Position: #{ad.position || '?'}</div>
+              <div key={i} style={{ padding: '12px', background: 'var(--bg-canvas)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', borderLeft: '3px solid var(--amber)' }}>
+                <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text)', marginBottom: '4px' }}>{ad.title}</div>
+                <div style={{ fontSize: '12px', color: 'var(--green)', marginBottom: '6px' }}>{ad.breadcrumb || ad.url}</div>
+                <div style={{ fontSize: '13px', color: 'var(--text-soft)', lineHeight: '1.4' }}>{ad.description}</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-faint)', marginTop: '6px' }}>Keyword: "{ad.keyword}" | Position: #{ad.position || '?'}</div>
               </div>
             ))}
           </div>
@@ -491,7 +491,7 @@ function OrganicSection({ data, summary, compId, compName, onScan, scanning }) {
             {scanning ? 'Scanning...' : 'Scan Organic'}
           </button>
         </div>
-        <p style={{ color: '#7C8DB0', fontSize: '14px' }}>No organic data for {compName}. Run a scan to check.</p>
+        <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>No organic data for {compName}. Run a scan to check.</p>
       </div>
     )
   }
@@ -506,33 +506,33 @@ function OrganicSection({ data, summary, compId, compName, onScan, scanning }) {
       {/* Summary */}
       <div className="card" style={{ marginBottom: '16px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <h3 style={{ margin: 0 }}>Organic Rankings vs {compName}</h3>
+          <h3 style={{ margin: 0, color: 'var(--text)', letterSpacing: '-0.02em' }}>Organic Rankings vs {compName}</h3>
           <button className="btn-outline" onClick={onScan} disabled={scanning}>
             {scanning ? 'Scanning...' : 'Scan Organic'}
           </button>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '12px', marginBottom: '16px' }}>
-          <MiniStat label="Their Top 3" value={compSummary?.top3 ?? 0} color="#ef4444" />
-          <MiniStat label="Their Top 10" value={compSummary?.top10 ?? 0} color="#f59e0b" />
-          <MiniStat label="Their Avg Rank" value={compSummary?.avgRank ? `#${compSummary.avgRank}` : 'N/A'} color="#6b7280" />
-          <MiniStat label="You Win" value={griWins} color="#10b981" />
-          <MiniStat label="They Win" value={compWins} color="#ef4444" />
-          <MiniStat label="Win Rate" value={bothRanked > 0 ? `${Math.round((griWins / bothRanked) * 100)}%` : 'N/A'} color={griWins > compWins ? '#10b981' : '#ef4444'} />
+          <MiniStat label="Their Top 3" value={compSummary?.top3 ?? 0} color="var(--text)" />
+          <MiniStat label="Their Top 10" value={compSummary?.top10 ?? 0} color="var(--text)" />
+          <MiniStat label="Their Avg Rank" value={compSummary?.avgRank ? `#${compSummary.avgRank}` : 'N/A'} color="var(--text)" />
+          <MiniStat label="You Win" value={griWins} color="var(--green)" />
+          <MiniStat label="They Win" value={compWins} color="var(--red)" />
+          <MiniStat label="Win Rate" value={bothRanked > 0 ? `${Math.round((griWins / bothRanked) * 100)}%` : 'N/A'} color={griWins > compWins ? 'var(--green)' : 'var(--red)'} />
         </div>
       </div>
 
       {/* Head to Head Table */}
       <div className="card">
-        <h4 style={{ marginBottom: '12px' }}>Keyword Rankings Comparison</h4>
+        <h4 style={{ marginBottom: '12px', color: 'var(--text)', letterSpacing: '-0.02em' }}>Keyword Rankings Comparison</h4>
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13.5px' }}>
             <thead>
-              <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
-                <th style={{ textAlign: 'left', padding: '8px' }}>Keyword</th>
-                <th style={{ textAlign: 'center', padding: '8px', color: '#ef4444' }}>GRI</th>
-                <th style={{ textAlign: 'center', padding: '8px' }}>{compName.split(' ')[0]}</th>
-                <th style={{ textAlign: 'center', padding: '8px' }}>Winner</th>
+              <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg-canvas)' }}>
+                <th style={{ textAlign: 'left', padding: '10px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, color: 'var(--text-muted)' }}>Keyword</th>
+                <th style={{ textAlign: 'center', padding: '10px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, color: 'var(--gri-pink)' }}>GRI</th>
+                <th style={{ textAlign: 'center', padding: '10px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, color: 'var(--text-muted)' }}>{compName.split(' ')[0]}</th>
+                <th style={{ textAlign: 'center', padding: '10px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, color: 'var(--text-muted)' }}>Winner</th>
               </tr>
             </thead>
             <tbody>
@@ -548,18 +548,18 @@ function OrganicSection({ data, summary, compId, compName, onScan, scanning }) {
                 const compWinsKw = kw.griRank && kw.compRank && kw.compRank < kw.griRank
 
                 return (
-                  <tr key={i} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                    <td style={{ padding: '8px', fontWeight: 500 }}>{kw.keyword}</td>
-                    <td style={{ textAlign: 'center', padding: '8px' }}>
+                  <tr key={i} style={{ borderTop: '1px solid var(--border)' }}>
+                    <td style={{ padding: '10px 8px', fontWeight: 500, color: 'var(--text)' }}>{kw.keyword}</td>
+                    <td style={{ textAlign: 'center', padding: '10px 8px' }}>
                       <RankBadge rank={kw.griRank} isWinner={griWins} />
                     </td>
-                    <td style={{ textAlign: 'center', padding: '8px' }}>
+                    <td style={{ textAlign: 'center', padding: '10px 8px' }}>
                       <RankBadge rank={kw.compRank} isWinner={compWinsKw} />
                     </td>
-                    <td style={{ textAlign: 'center', padding: '8px', fontSize: '12px', fontWeight: 600 }}>
-                      {griWins && <span style={{ color: '#10b981' }}>You</span>}
-                      {compWinsKw && <span style={{ color: '#ef4444' }}>Them</span>}
-                      {!griWins && !compWinsKw && <span style={{ color: '#9ca3af' }}>N/A</span>}
+                    <td style={{ textAlign: 'center', padding: '10px 8px', fontSize: '12px', fontWeight: 600 }}>
+                      {griWins && <span style={{ color: 'var(--green)' }}>You</span>}
+                      {compWinsKw && <span style={{ color: 'var(--red)' }}>Them</span>}
+                      {!griWins && !compWinsKw && <span style={{ color: 'var(--text-faint)' }}>N/A</span>}
                     </td>
                   </tr>
                 )
@@ -573,12 +573,12 @@ function OrganicSection({ data, summary, compId, compName, onScan, scanning }) {
 }
 
 function RankBadge({ rank, isWinner }) {
-  if (!rank) return <span style={{ color: '#d1d5db' }}>Not ranked</span>
+  if (!rank) return <span style={{ color: 'var(--text-faint)' }}>Not ranked</span>
   return (
     <span style={{
-      padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600,
-      background: isWinner ? '#dcfce7' : rank <= 3 ? '#dbeafe' : rank <= 10 ? '#fef3c7' : '#fee2e2',
-      color: isWinner ? '#166534' : rank <= 3 ? '#1e40af' : rank <= 10 ? '#854d0e' : '#991b1b',
+      padding: '2px 8px', borderRadius: '999px', fontSize: '11px', fontWeight: 600,
+      background: isWinner ? 'var(--green-bg)' : rank <= 3 ? 'var(--blue-bg)' : rank <= 10 ? 'var(--amber-bg)' : 'var(--red-bg)',
+      color: isWinner ? 'var(--green)' : rank <= 3 ? 'var(--blue)' : rank <= 10 ? 'var(--amber)' : 'var(--red)',
     }}>
       #{rank}
     </span>
@@ -632,8 +632,8 @@ function VisibilitySection({ organic, paid, compId, competitors }) {
     <div>
       {/* Market Share Overview */}
       <div className="card" style={{ marginBottom: '16px' }}>
-        <h3 style={{ marginBottom: '16px' }}>Estimated Market Visibility</h3>
-        <p style={{ fontSize: '13px', color: '#7C8DB0', marginBottom: '16px' }}>
+        <h3 style={{ marginBottom: '8px', color: 'var(--text)', letterSpacing: '-0.02em' }}>Estimated Market Visibility</h3>
+        <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px' }}>
           Combined organic + paid visibility across all tracked keywords
         </p>
 
@@ -641,20 +641,20 @@ function VisibilitySection({ organic, paid, compId, competitors }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {marketData.map(d => (
             <div key={d.id} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ width: '160px', fontSize: '13px', fontWeight: d.isOwn ? 700 : 400, color: d.color }}>
+              <div style={{ width: '160px', fontSize: '13px', fontWeight: d.isOwn ? 600 : 500, color: d.isOwn ? 'var(--text)' : 'var(--text-soft)' }}>
                 {d.name}
               </div>
-              <div style={{ flex: 1, height: '24px', background: '#f3f4f6', borderRadius: '4px', overflow: 'hidden' }}>
+              <div style={{ flex: 1, height: '24px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', overflow: 'hidden' }}>
                 <div style={{
                   width: `${d.marketShare}%`,
                   height: '100%',
                   background: d.color,
-                  borderRadius: '4px',
+                  borderRadius: 'var(--radius-sm)',
                   minWidth: d.marketShare > 0 ? '4px' : '0',
                   transition: 'width 0.3s',
                 }} />
               </div>
-              <div style={{ width: '40px', fontSize: '13px', fontWeight: 600, textAlign: 'right' }}>
+              <div style={{ width: '40px', fontSize: '13px', fontWeight: 600, textAlign: 'right', color: 'var(--text)', fontVariantNumeric: 'tabular-nums' }}>
                 {d.marketShare}%
               </div>
             </div>
@@ -664,39 +664,39 @@ function VisibilitySection({ organic, paid, compId, competitors }) {
 
       {/* Full Comparison Table */}
       <div className="card">
-        <h4 style={{ marginBottom: '12px' }}>Full Comparison</h4>
+        <h4 style={{ marginBottom: '12px', color: 'var(--text)', letterSpacing: '-0.02em' }}>Full Comparison</h4>
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13.5px' }}>
             <thead>
-              <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
-                <th style={{ textAlign: 'left', padding: '8px' }}>Competitor</th>
-                <th style={{ textAlign: 'center', padding: '8px' }}>Market Share</th>
-                <th style={{ textAlign: 'center', padding: '8px' }}>Organic Top 3</th>
-                <th style={{ textAlign: 'center', padding: '8px' }}>Organic Top 10</th>
-                <th style={{ textAlign: 'center', padding: '8px' }}>Avg Rank</th>
-                <th style={{ textAlign: 'center', padding: '8px' }}>Paid Keywords</th>
-                <th style={{ textAlign: 'center', padding: '8px' }}>Est. Ad Spend</th>
+              <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg-canvas)' }}>
+                <th style={{ textAlign: 'left', padding: '10px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, color: 'var(--text-muted)' }}>Competitor</th>
+                <th style={{ textAlign: 'center', padding: '10px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, color: 'var(--text-muted)' }}>Market Share</th>
+                <th style={{ textAlign: 'center', padding: '10px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, color: 'var(--text-muted)' }}>Organic Top 3</th>
+                <th style={{ textAlign: 'center', padding: '10px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, color: 'var(--text-muted)' }}>Organic Top 10</th>
+                <th style={{ textAlign: 'center', padding: '10px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, color: 'var(--text-muted)' }}>Avg Rank</th>
+                <th style={{ textAlign: 'center', padding: '10px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, color: 'var(--text-muted)' }}>Paid Keywords</th>
+                <th style={{ textAlign: 'center', padding: '10px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, color: 'var(--text-muted)' }}>Est. Ad Spend</th>
               </tr>
             </thead>
             <tbody>
               {marketData.map(d => (
                 <tr key={d.id} style={{
-                  borderBottom: '1px solid #f3f4f6',
-                  background: d.isOwn ? '#f0fdf4' : d.id === compId ? '#fef2f2' : 'transparent',
+                  borderTop: '1px solid var(--border)',
+                  background: d.isOwn ? 'var(--green-bg)' : d.id === compId ? 'var(--bg-canvas)' : 'transparent',
                 }}>
-                  <td style={{ padding: '8px' }}>
+                  <td style={{ padding: '10px 8px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: d.color }} />
-                      <span style={{ fontWeight: d.isOwn ? 700 : 500 }}>{d.name}</span>
-                      {d.isOwn && <span style={{ fontSize: '10px', color: '#10b981', fontWeight: 600 }}>(YOU)</span>}
+                      <span style={{ fontWeight: d.isOwn ? 600 : 500, color: 'var(--text)' }}>{d.name}</span>
+                      {d.isOwn && <span style={{ fontSize: '10px', color: 'var(--green)', fontWeight: 600 }}>(YOU)</span>}
                     </div>
                   </td>
-                  <td style={{ textAlign: 'center', padding: '8px', fontWeight: 700, color: d.color }}>{d.marketShare}%</td>
-                  <td style={{ textAlign: 'center', padding: '8px' }}>{d.organicTop3}</td>
-                  <td style={{ textAlign: 'center', padding: '8px' }}>{d.organicTop10}</td>
-                  <td style={{ textAlign: 'center', padding: '8px' }}>{d.avgRank ? `#${d.avgRank}` : 'N/A'}</td>
-                  <td style={{ textAlign: 'center', padding: '8px' }}>{d.paidKeywords}</td>
-                  <td style={{ textAlign: 'center', padding: '8px' }}>${d.estSpend.toFixed(0)}</td>
+                  <td style={{ textAlign: 'center', padding: '10px 8px', fontWeight: 600, color: 'var(--text)', fontVariantNumeric: 'tabular-nums' }}>{d.marketShare}%</td>
+                  <td style={{ textAlign: 'center', padding: '10px 8px', color: 'var(--text-soft)', fontVariantNumeric: 'tabular-nums' }}>{d.organicTop3}</td>
+                  <td style={{ textAlign: 'center', padding: '10px 8px', color: 'var(--text-soft)', fontVariantNumeric: 'tabular-nums' }}>{d.organicTop10}</td>
+                  <td style={{ textAlign: 'center', padding: '10px 8px', color: 'var(--text-soft)', fontVariantNumeric: 'tabular-nums' }}>{d.avgRank ? `#${d.avgRank}` : 'N/A'}</td>
+                  <td style={{ textAlign: 'center', padding: '10px 8px', color: 'var(--text-soft)', fontVariantNumeric: 'tabular-nums' }}>{d.paidKeywords}</td>
+                  <td style={{ textAlign: 'center', padding: '10px 8px', color: 'var(--text-soft)', fontVariantNumeric: 'tabular-nums' }}>${d.estSpend.toFixed(0)}</td>
                 </tr>
               ))}
             </tbody>

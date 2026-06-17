@@ -1,19 +1,18 @@
 import { Router } from 'express';
-import { writeFileSync, mkdirSync, existsSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { writeFileSync, existsSync } from 'fs';
+import { join } from 'path';
 import { getAll, getById, update } from '../lib/hire-store.js';
 import { generateContractPdf } from '../lib/contract-generator.js';
 import { getHireDates } from '../lib/date-helpers.js';
 import { notifyTNTEvent } from '../lib/tnt-telegram.js';
 import { verifyOrderToken } from '../lib/contract-signing-token.js';
 import { getGriLogoDataUri } from '../lib/gri-logo-data-uri.js';
+import { dataDir } from '../lib/data-dir.js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const CONTRACTS_DIR = join(__dirname, '..', '..', 'data', 'contracts');
-
-// Ensure contracts directory exists
-mkdirSync(CONTRACTS_DIR, { recursive: true });
+// Signed contract PDFs live on the Railway volume so they survive redeploys.
+// Previously written to /app/data/contracts inside the Docker image — shadowed
+// by the volume mount and destroyed on every deploy. Legal records cannot leak.
+const CONTRACTS_DIR = dataDir('contracts');
 
 const router = Router();
 

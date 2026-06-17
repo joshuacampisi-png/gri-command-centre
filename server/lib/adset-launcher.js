@@ -17,11 +17,11 @@
 import { metaToken, fetchCampaigns, fetchAdsForCampaign } from './meta-api.js'
 import { logFlywheelEvent, getAds } from './flywheel-store.js'
 import fs from 'fs'
-import path from 'path'
-import { fileURLToPath } from 'url'
+import { dataFile } from './data-dir.js'
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const LAUNCHER_DB_PATH = path.join(__dirname, '../../data/flywheel/launcher.json')
+// testingCampaignId + launch history live on the Railway volume so we don't
+// re-create the testing campaign on every redeploy.
+const LAUNCHER_DB_PATH = dataFile('flywheel/launcher.json')
 
 const BASE = 'https://graph.facebook.com/v20.0'
 const GRI_PIXEL_ID = '810404797873042'
@@ -37,8 +37,6 @@ function loadDb() {
 }
 
 function saveDb(db) {
-  const dir = path.dirname(LAUNCHER_DB_PATH)
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
   const tmp = LAUNCHER_DB_PATH + '.tmp'
   fs.writeFileSync(tmp, JSON.stringify(db, null, 2))
   fs.renameSync(tmp, LAUNCHER_DB_PATH)

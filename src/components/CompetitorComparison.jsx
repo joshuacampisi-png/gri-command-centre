@@ -98,10 +98,10 @@ export default function CompetitorComparison() {
             <div
               key={key}
               style={{
-                padding: '1rem',
-                border: `2px solid ${comp.color}`,
-                borderRadius: '8px',
-                background: key === 'gri' ? '#f0fdf4' : '#fff'
+                padding: '20px',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-lg)',
+                background: key === 'gri' ? 'var(--green-bg)' : 'var(--bg-surface)'
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
@@ -117,34 +117,34 @@ export default function CompetitorComparison() {
                 <strong>{comp.name}</strong>
               </div>
               
-              <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.75rem' }}>
+              <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
                 {comp.domain}
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '0.75rem' }}>
                 <div>
-                  <div style={{ fontSize: '1.5rem', fontWeight: '600', color: '#10b981' }}>{stats.top3}</div>
-                  <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>Top 3</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--green)', fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}>{stats.top3}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Top 3</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '1.5rem', fontWeight: '600', color: '#3b82f6' }}>{stats.top10}</div>
-                  <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>Top 10</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--text)', fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}>{stats.top10}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Top 10</div>
                 </div>
               </div>
 
               {key !== 'gri' && (
-                <div style={{ paddingTop: '0.75rem', borderTop: '1px solid #e5e7eb' }}>
-                  <div style={{ fontSize: '0.875rem', marginBottom: '0.25rem' }}>
+                <div style={{ paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
+                  <div style={{ fontSize: '0.875rem', marginBottom: '0.25rem', color: 'var(--text-soft)' }}>
                     <strong>vs GRI:</strong> {winRate}% win rate
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                     You beat them: {dom.wins} | They beat you: {dom.losses}
                   </div>
                 </div>
               )}
 
               {stats.avgRank && (
-                <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#6b7280' }}>
+                <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                   Avg rank: #{stats.avgRank}
                 </div>
               )}
@@ -159,7 +159,7 @@ export default function CompetitorComparison() {
       <div style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
           <thead>
-            <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
+            <tr style={{ borderBottom: '1px solid var(--border-strong)', background: 'var(--bg-canvas)' }}>
               <th style={{ textAlign: 'left', padding: '0.75rem' }}>Keyword</th>
               {Object.entries(competitors).map(([key, comp]) => (
                 <th key={key} style={{ textAlign: 'center', padding: '0.75rem' }}>
@@ -188,9 +188,9 @@ export default function CompetitorComparison() {
               )
 
               return (
-                <tr key={i} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                <tr key={i} style={{ borderTop: '1px solid var(--border)' }}>
                   <td style={{ padding: '0.75rem', maxWidth: '200px' }}>
-                    <div style={{ fontWeight: '500', fontSize: '0.875rem' }}>{kw.keyword}</div>
+                    <div style={{ fontWeight: 500, fontSize: '0.875rem', color: 'var(--text)' }}>{kw.keyword}</div>
                   </td>
                   {Object.keys(competitors).map(key => {
                     const rank = kw.positions[key]?.rank
@@ -203,9 +203,11 @@ export default function CompetitorComparison() {
                         style={{
                           textAlign: 'center',
                           padding: '0.75rem',
-                          fontWeight: isBest ? '700' : '500',
-                          background: isBest && isGRI ? '#d1fae5' : isBest ? '#fee2e2' : 'transparent',
-                          color: rank === null ? '#9ca3af' : '#1f2937'
+                          fontWeight: isBest ? 600 : 500,
+                          fontVariantNumeric: 'tabular-nums',
+                          letterSpacing: '-0.02em',
+                          background: isBest && isGRI ? 'var(--green-bg)' : isBest ? 'var(--red-bg)' : 'transparent',
+                          color: rank === null ? 'var(--text-faint)' : 'var(--text)'
                         }}
                       >
                         {rank !== null ? `#${rank}` : '—'}
@@ -219,7 +221,7 @@ export default function CompetitorComparison() {
         </table>
       </div>
 
-      <div style={{ marginTop: '1rem', fontSize: '0.875rem', color: '#6b7280', textAlign: 'right' }}>
+      <div style={{ marginTop: '1rem', fontSize: '0.875rem', color: 'var(--text-muted)', textAlign: 'right' }}>
         Last scanned: {new Date(updatedAt).toLocaleString('en-AU', { timeZone: 'Australia/Brisbane' })} AEST
       </div>
     </div>

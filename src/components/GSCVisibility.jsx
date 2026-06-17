@@ -50,30 +50,30 @@ export default function GSCVisibility() {
         <h3>Keyword Distribution</h3>
         <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 600, color: '#10b981' }}>Top 3</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{distribution.top3}</div>
-            <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+            <div style={{ fontWeight: 600, color: 'var(--green)' }}>Top 3</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 600, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', color: 'var(--text)' }}>{distribution.top3}</div>
+            <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
               {(distribution.top3 / summary.totalKeywords * 100).toFixed(1)}%
             </div>
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 600, color: '#3b82f6' }}>Top 10</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{distribution.top10}</div>
-            <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+            <div style={{ fontWeight: 600, color: 'var(--blue)' }}>Top 10</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 600, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', color: 'var(--text)' }}>{distribution.top10}</div>
+            <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
               {(distribution.top10 / summary.totalKeywords * 100).toFixed(1)}%
             </div>
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 600, color: '#f59e0b' }}>Top 20</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{distribution.top20}</div>
-            <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+            <div style={{ fontWeight: 600, color: 'var(--amber)' }}>Top 20</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 600, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', color: 'var(--text)' }}>{distribution.top20}</div>
+            <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
               {(distribution.top20 / summary.totalKeywords * 100).toFixed(1)}%
             </div>
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 600, color: '#ef4444' }}>Below 20</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{distribution.below20}</div>
-            <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+            <div style={{ fontWeight: 600, color: 'var(--red)' }}>Below 20</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 600, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', color: 'var(--text)' }}>{distribution.below20}</div>
+            <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
               {(distribution.below20 / summary.totalKeywords * 100).toFixed(1)}%
             </div>
           </div>
@@ -83,7 +83,7 @@ export default function GSCVisibility() {
       {/* Top Opportunities */}
       <div className="card">
         <h3>Top Opportunities (High Volume Keywords)</h3>
-        <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1rem' }}>
+        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
           Keywords with highest impressions - improve these for maximum impact
         </p>
         <table className="data-table">
@@ -113,7 +113,7 @@ export default function GSCVisibility() {
                   <td>{kw.ctr.toFixed(2)}%</td>
                   <td>
                     {opportunity && (
-                      <span style={{ color: '#f59e0b', fontSize: '0.875rem' }}>
+                      <span style={{ color: 'var(--amber)', fontSize: '0.875rem' }}>
                         ⚠️ Move to top-3 for +{((kw.impressions * 0.05) - kw.clicks).toFixed(0)} clicks/mo
                       </span>
                     )}

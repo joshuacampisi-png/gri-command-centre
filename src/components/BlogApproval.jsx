@@ -95,18 +95,18 @@ export default function BlogApproval() {
           <div className="stat-label">Pending Approval</div>
         </div>
         <div className="stat-box">
-          <div className="stat-value" style={{ color: '#10b981' }}>{published.length}</div>
+          <div className="stat-value" style={{ color: 'var(--green)' }}>{published.length}</div>
           <div className="stat-label">Published</div>
         </div>
         <div className="stat-box">
-          <div className="stat-value" style={{ color: '#ef4444' }}>{failed.length}</div>
+          <div className="stat-value" style={{ color: 'var(--red)' }}>{failed.length}</div>
           <div className="stat-label">Failed</div>
         </div>
       </div>
 
       {/* Pending Articles */}
       {pending.length === 0 ? (
-        <div style={{ padding: '2rem', textAlign: 'center', color: '#6b7280', background: '#f9fafb', borderRadius: '8px' }}>
+        <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', background: 'var(--bg-canvas)', borderRadius: 'var(--radius)' }}>
           <p style={{ margin: 0 }}>No articles awaiting approval</p>
           <p style={{ fontSize: '0.875rem', marginTop: '0.5rem' }}>New articles appear here when keywords drop in rankings</p>
         </div>
@@ -117,9 +117,9 @@ export default function BlogApproval() {
               key={drop.id}
               style={{
                 padding: '1.5rem',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                background: '#fff'
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-lg)',
+                background: 'var(--bg-surface)'
               }}
             >
               {/* Header */}
@@ -128,9 +128,9 @@ export default function BlogApproval() {
                   <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.25rem' }}>
                     {drop.article?.title || drop.keyword}
                   </h3>
-                  <div style={{ display: 'flex', gap: '1rem', fontSize: '0.875rem', color: '#6b7280' }}>
+                  <div style={{ display: 'flex', gap: '1rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
                     <span>Keyword: <strong>{drop.keyword}</strong></span>
-                    <span>Dropped: <strong style={{ color: '#ef4444' }}>#{drop.previousRank} → #{drop.currentRank}</strong> (-{drop.drop})</span>
+                    <span>Dropped: <strong style={{ color: 'var(--red)' }}>#{drop.previousRank} → #{drop.currentRank}</strong> (-{drop.drop})</span>
                     <span>Volume: <strong>{drop.volume?.toLocaleString() || '—'}</strong></span>
                   </div>
                 </div>
@@ -144,14 +144,14 @@ export default function BlogApproval() {
 
               {/* Article Preview */}
               {drop.article && (
-                <div style={{ marginBottom: '1rem', padding: '1rem', background: '#f9fafb', borderRadius: '6px', fontSize: '0.875rem' }}>
+                <div style={{ marginBottom: '1rem', padding: '1rem', background: 'var(--bg-canvas)', borderRadius: 'var(--radius-sm)', fontSize: '0.875rem' }}>
                   <div style={{ marginBottom: '0.75rem' }}>
                     <strong>Meta Description:</strong>
-                    <div style={{ marginTop: '0.25rem', color: '#6b7280' }}>{drop.article.metaDescription}</div>
+                    <div style={{ marginTop: '0.25rem', color: 'var(--text-muted)' }}>{drop.article.metaDescription}</div>
                   </div>
                   <div>
                     <strong>Content Preview:</strong>
-                    <div style={{ marginTop: '0.25rem', color: '#6b7280', maxHeight: '100px', overflow: 'hidden' }}>
+                    <div style={{ marginTop: '0.25rem', color: 'var(--text-muted)', maxHeight: '100px', overflow: 'hidden' }}>
                       {drop.article.content.substring(0, 300)}...
                     </div>
                   </div>
@@ -165,9 +165,9 @@ export default function BlogApproval() {
 
               {/* Shopify Link */}
               {drop.shopify?.adminUrl && (
-                <div style={{ marginBottom: '1rem', padding: '0.75rem', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '6px', fontSize: '0.875rem' }}>
+                <div style={{ marginBottom: '1rem', padding: '0.75rem', background: 'var(--blue-bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontSize: '0.875rem' }}>
                   <strong>Shopify Draft:</strong>{' '}
-                  <a href={drop.shopify.adminUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb' }}>
+                  <a href={drop.shopify.adminUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--blue)' }}>
                     View in Shopify Admin →
                   </a>
                 </div>
@@ -177,28 +177,28 @@ export default function BlogApproval() {
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 <button
                   onClick={() => setSelectedDrop(selectedDrop?.id === drop.id ? null : drop)}
-                  style={{ flex: 1, background: '#f3f4f6', color: '#1f2937' }}
+                  style={{ flex: 1, background: 'var(--bg-surface)', color: 'var(--text)', border: '1px solid var(--border)' }}
                 >
                   {selectedDrop?.id === drop.id ? 'Hide Preview' : 'Show Full Preview'}
                 </button>
                 <button
                   onClick={() => regenerateArticle(drop.id)}
                   disabled={loading}
-                  style={{ flex: 1, background: '#f59e0b', color: '#fff' }}
+                  style={{ flex: 1, background: 'var(--amber-bg)', color: 'var(--amber)', border: '1px solid var(--border)' }}
                 >
                   Regenerate
                 </button>
                 <button
                   onClick={() => publishArticle(drop.id)}
                   disabled={loading}
-                  style={{ flex: 1, background: '#10b981', color: '#fff' }}
+                  style={{ flex: 1, background: 'var(--text)', color: 'var(--bg-surface)' }}
                 >
                   ✓ Publish to Live
                 </button>
                 <button
                   onClick={() => deleteDrop(drop.id)}
                   disabled={loading}
-                  style={{ background: '#ef4444', color: '#fff' }}
+                  style={{ background: 'var(--red-bg)', color: 'var(--red)', border: '1px solid var(--border)' }}
                 >
                   Delete
                 </button>
@@ -206,9 +206,9 @@ export default function BlogApproval() {
 
               {/* Full Preview */}
               {selectedDrop?.id === drop.id && drop.article && (
-                <div style={{ marginTop: '1rem', padding: '1.5rem', background: '#fff', border: '2px solid #e5e7eb', borderRadius: '8px' }}>
+                <div style={{ marginTop: '1rem', padding: '1.5rem', background: 'var(--bg-surface)', border: '1px solid var(--border-strong)', borderRadius: 'var(--radius-lg)' }}>
                   <h4 style={{ marginTop: 0 }}>{drop.article.title}</h4>
-                  <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1rem' }}>
+                  <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
                     {drop.article.metaDescription}
                   </div>
                   <div
@@ -225,16 +225,16 @@ export default function BlogApproval() {
       {/* Published Articles (collapsed) */}
       {published.length > 0 && (
         <details style={{ marginTop: '1.5rem' }}>
-          <summary style={{ cursor: 'pointer', fontWeight: '600', padding: '0.5rem', background: '#f9fafb', borderRadius: '6px' }}>
+          <summary style={{ cursor: 'pointer', fontWeight: '600', padding: '0.5rem', background: 'var(--bg-canvas)', borderRadius: 'var(--radius-sm)' }}>
             Published Articles ({published.length})
           </summary>
           <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {published.map(drop => (
-              <div key={drop.id} style={{ padding: '0.75rem', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '6px' }}>
+              <div key={drop.id} style={{ padding: '0.75rem', background: 'var(--green-bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
                     <strong>{drop.article?.title || drop.keyword}</strong>
-                    <div style={{ fontSize: '0.875rem', color: '#6b7280', marginTop: '0.25rem' }}>
+                    <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
                       Published: {new Date(drop.completedAt).toLocaleDateString('en-AU')}
                     </div>
                   </div>
@@ -243,7 +243,7 @@ export default function BlogApproval() {
                       href={`https://genderrevealideas.com.au/blogs/news/${drop.shopify.handle}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{ fontSize: '0.875rem', color: '#2563eb' }}
+                      style={{ fontSize: '0.875rem', color: 'var(--blue)' }}
                     >
                       View Live →
                     </a>

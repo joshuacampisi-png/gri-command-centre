@@ -33,11 +33,11 @@ const PLACEMENT_LABELS = {
 }
 
 const DOT_COLORS = {
-  pending:    '#555',
-  generating: '#f5a623',
-  reviewing:  '#a78bfa',
-  done:       '#34d399',
-  failed:     '#ef4444',
+  pending:    'var(--text-muted)',
+  generating: 'var(--amber)',
+  reviewing:  'var(--text-soft)',
+  done:       'var(--green)',
+  failed:     'var(--red)',
 }
 
 // ── Sub-components ────────────────────────────────────────────
@@ -1152,14 +1152,14 @@ export default function BlogWriterTab() {
             <strong>Researching products</strong>
             <div className="bw-scrape-status">
               <div className="bw-scrape-row">
-                <span className="bw-scrape-dot" style={{ background: scrapeStatus.brand === 'done' ? '#34d399' : scrapeStatus.brand === 'failed' ? '#ef4444' : '#f5a623' }} />
+                <span className="bw-scrape-dot" style={{ background: scrapeStatus.brand === 'done' ? 'var(--green)' : scrapeStatus.brand === 'failed' ? 'var(--red)' : 'var(--amber)' }} />
                 <span>Scraping genderrevealideas.com.au...</span>
                 {scrapeStatus.brand === 'done' && brandScrape && (
                   <span className="bw-scrape-count">{brandScrape.productImages?.length || 0} product images found</span>
                 )}
               </div>
               <div className="bw-scrape-row">
-                <span className="bw-scrape-dot" style={{ background: scrapeStatus.web === 'done' ? '#34d399' : scrapeStatus.web === 'failed' ? '#ef4444' : '#f5a623' }} />
+                <span className="bw-scrape-dot" style={{ background: scrapeStatus.web === 'done' ? 'var(--green)' : scrapeStatus.web === 'failed' ? 'var(--red)' : 'var(--amber)' }} />
                 <span>Gathering web references...</span>
                 {scrapeStatus.web === 'done' && webRefs && (
                   <span className="bw-scrape-count">{webRefs.referenceImages?.length || 0} reference images found</span>
@@ -1292,7 +1292,7 @@ export default function BlogWriterTab() {
         <div className="bw-autopublish">
           <div className="bw-autopublish-header">
             <h3 className="bw-history-title">Daily Autopublish</h3>
-            <div className="bw-autopublish-badge" style={{ background: autopublish.active ? '#34d399' : '#ef4444', color: '#000', padding: '2px 10px', borderRadius: 12, fontSize: 12, fontWeight: 600 }}>
+            <div className="bw-autopublish-badge" style={{ background: autopublish.active ? 'var(--green-bg)' : 'var(--red-bg)', color: autopublish.active ? 'var(--green)' : 'var(--red)', padding: '2px 10px', borderRadius: 999, fontSize: 11, fontWeight: 600 }}>
               {autopublish.active ? 'ACTIVE' : 'INACTIVE'}
             </div>
           </div>
@@ -1330,10 +1330,10 @@ export default function BlogWriterTab() {
             {triggeringAutopublish ? 'Running...' : 'Publish Now'}
           </button>
           {autopublish.lastRun && (
-            <div style={{ marginTop: 10, fontSize: 12, color: '#888' }}>
+            <div style={{ marginTop: 10, fontSize: 12, color: 'var(--text-muted)' }}>
               Last run: {autopublish.lastRun.status === 'success' ? '✅' : '❌'} {autopublish.lastRun.keyword}
               {autopublish.lastRun.liveUrl && (
-                <> — <a href={autopublish.lastRun.liveUrl} target="_blank" rel="noreferrer" style={{ color: '#60a5fa' }}>view</a></>
+                <> — <a href={autopublish.lastRun.liveUrl} target="_blank" rel="noreferrer" style={{ color: 'var(--blue)' }}>view</a></>
               )}
               {autopublish.lastRun.publishedAt && (
                 <> — {new Date(autopublish.lastRun.publishedAt).toLocaleDateString('en-AU')}</>

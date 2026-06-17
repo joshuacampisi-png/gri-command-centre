@@ -12,11 +12,11 @@ import {
 import { getAdSets, getAdSetSnapshots, logFlywheelEvent } from './flywheel-store.js'
 import { GRI_ADS } from './ads-metrics.js'
 import fs from 'fs'
-import path from 'path'
-import { fileURLToPath } from 'url'
+import { dataFile } from './data-dir.js'
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const AUDIENCE_DB_PATH = path.join(__dirname, '../../data/flywheel/audiences.json')
+// Routed through dataFile() so Railway's volume persists tests/learnings
+// across redeploys (previously written into shadowed image path).
+const AUDIENCE_DB_PATH = dataFile('flywheel/audiences.json')
 
 // ── Audience Database ─────────────────────────────────────────────────────────
 
@@ -28,9 +28,7 @@ function loadDb() {
 }
 
 function saveDb(db) {
-  const dir = path.dirname(AUDIENCE_DB_PATH)
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
-  // Atomic write
+  // Atomic write — parent dir guaranteed by dataFile()
   const tmp = AUDIENCE_DB_PATH + '.tmp'
   fs.writeFileSync(tmp, JSON.stringify(db, null, 2))
   fs.renameSync(tmp, AUDIENCE_DB_PATH)

@@ -5,8 +5,10 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 const BRANDS = ['Gender Reveal Ideas', 'LionZen']
 const PLATFORMS = ['Instagram Reels', 'TikTok', 'Facebook', 'YouTube Shorts']
 const STATUSES = ['Draft', 'Scheduled', 'Live', 'Scaling', 'Paused']
-const STATUS_COLORS = { Draft: '#9CA3AF', Scheduled: '#3B82F6', Live: '#059669', Scaling: '#7C3AED', Paused: '#DC2626' }
-const BRAND_COLORS = { 'Gender Reveal Ideas': '#EC4899', 'LionZen': '#14B8A6' }
+// Status colors map to design system semantic tokens (--text-muted, --blue, --green, --text, --red)
+const STATUS_COLORS = { Draft: '#71717A', Scheduled: '#2563EB', Live: '#16A34A', Scaling: '#0A0A0A', Paused: '#DC2626' }
+// Brand colors — GRI keeps brand pink, LionZen uses graphite accent
+const BRAND_COLORS = { 'Gender Reveal Ideas': '#E43F7B', 'LionZen': '#18181B' }
 const PLATFORM_ICONS = { 'Instagram Reels': '📸', 'TikTok': '🎵', 'Facebook': '📘', 'YouTube Shorts': '▶️' }
 const ACCEPT_MEDIA = '.mp4,.mov,.webm,.jpg,.jpeg,.png,.gif,.webp'
 const VIDEO_EXTS = ['mp4', 'mov', 'webm']
@@ -119,8 +121,8 @@ function MediaModal({ url, type, onClose }) {
       <div className="cc-modal" onClick={e => e.stopPropagation()}>
         <button className="cc-modal-close" onClick={onClose}>&#10005;</button>
         {isImage
-          ? <img src={url} alt="" style={{ width: '100%', maxHeight: '70vh', objectFit: 'contain', borderRadius: 8 }} />
-          : <video src={url} controls autoPlay style={{ width: '100%', maxHeight: '70vh', borderRadius: 8 }} />
+          ? <img src={url} alt="" style={{ width: '100%', maxHeight: '70vh', objectFit: 'contain', borderRadius: 'var(--radius)' }} />
+          : <video src={url} controls autoPlay style={{ width: '100%', maxHeight: '70vh', borderRadius: 'var(--radius)' }} />
         }
       </div>
     </div>
@@ -312,7 +314,7 @@ function EntryCard({ entry, onClick, onDragStart }) {
       {entry.thumbnail && <img src={entry.thumbnail} alt="" className="cc-card-thumb" />}
       <div className="cc-card-info">
         <div className="cc-card-top">
-          <span className="cc-brand-dot" style={{ background: BRAND_COLORS[entry.brand] || '#888' }} />
+          <span className="cc-brand-dot" style={{ background: BRAND_COLORS[entry.brand] || 'var(--text-muted)' }} />
           <span className="cc-platform-icon">{PLATFORM_ICONS[entry.platform] || '📱'}</span>
           <span className="cc-card-time">{entry.time}</span>
         </div>
@@ -525,7 +527,7 @@ function ListView({ entries, onClickEntry, onBulkAction, onUpdateEntry, onReorde
           <option value="">All Statuses</option>
           {STATUSES.map(s => <option key={s}>{s}</option>)}
         </select>
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, color: '#7C8DB0', fontSize: 12 }}>
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-muted)', fontSize: 12 }}>
           <span style={{ fontSize: 14 }}>↕</span> Drag rows to set launch order
         </div>
       </div>
@@ -552,8 +554,8 @@ function ListView({ entries, onClickEntry, onBulkAction, onUpdateEntry, onReorde
                 onDragEnd={handleDragEnd}
                 onClick={() => onClickEntry(e)}
               >
-                <td className="cc-drag-handle" onClick={ev => ev.stopPropagation()} style={{ cursor: 'grab', textAlign: 'center', color: '#B0B8C9', fontSize: 16, userSelect: 'none' }}>⠿</td>
-                <td style={{ textAlign: 'center', fontWeight: 700 }}>
+                <td className="cc-drag-handle" onClick={ev => ev.stopPropagation()} style={{ cursor: 'grab', textAlign: 'center', color: 'var(--text-faint)', fontSize: 16, userSelect: 'none' }}>⠿</td>
+                <td style={{ textAlign: 'center', fontWeight: 600, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}>
                   <span className="cc-launch-order">{idx + 1}</span>
                 </td>
                 <td onClick={ev => ev.stopPropagation()}><input type="checkbox" checked={selected.has(e.id)} onChange={() => toggle(e.id)} /></td>
@@ -562,17 +564,17 @@ function ListView({ entries, onClickEntry, onBulkAction, onUpdateEntry, onReorde
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                       {e.statusHistory.map((h, i) => (
                         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                          <span style={{ fontSize: 10, fontWeight: 600, color: STATUS_COLORS[h.status] || '#888' }}>{h.status}</span>
-                          <span style={{ fontSize: 10, color: '#7C8DB0' }}>{h.date}</span>
+                          <span style={{ fontSize: 10, fontWeight: 600, color: STATUS_COLORS[h.status] || 'var(--text-muted)' }}>{h.status}</span>
+                          <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{h.date}</span>
                           <button onClick={() => {
                             const updated = { ...e, statusHistory: e.statusHistory.filter((_, j) => j !== i) }
                             if (updated.statusHistory.length === 0) updated.liveDate = null
                             onUpdateEntry(updated)
-                          }} style={{ background: 'none', border: 'none', color: '#ccc', fontSize: 10, padding: 0, cursor: 'pointer', lineHeight: 1 }} title="Remove">&#10005;</button>
+                          }} style={{ background: 'none', border: 'none', color: 'var(--text-faint)', fontSize: 10, padding: 0, cursor: 'pointer', lineHeight: 1 }} title="Remove">&#10005;</button>
                         </div>
                       ))}
                     </div>
-                  ) : <span style={{ fontSize: 12, color: '#7C8DB0' }}>{e.date}</span>}
+                  ) : <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{e.date}</span>}
                 </td>
                 <td>{PLATFORM_ICONS[e.platform]} {e.platform}</td>
                 <td className="cc-hook-cell">{e.hook || e.caption || '—'}</td>
@@ -586,7 +588,7 @@ function ListView({ entries, onClickEntry, onBulkAction, onUpdateEntry, onReorde
                     defaultValue={e.adNotes || ''}
                     placeholder="Ad notes..."
                     onBlur={ev => { if (ev.target.value !== (e.adNotes || '')) onUpdateEntry({ ...e, adNotes: ev.target.value }) }}
-                    style={{ width: '100%', minHeight: 32, maxHeight: 80, border: '1px solid #E8ECF4', borderRadius: 6, padding: '6px 8px', fontSize: 12, resize: 'vertical', outline: 'none', fontFamily: 'inherit' }}
+                    style={{ width: '100%', minHeight: 32, maxHeight: 80, border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: '6px 8px', fontSize: 12, resize: 'vertical', outline: 'none', fontFamily: 'inherit', background: 'var(--bg-surface)', color: 'var(--text)' }}
                   />
                 </td>
               </tr>

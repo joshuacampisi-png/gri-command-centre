@@ -1,9 +1,10 @@
-import { readFileSync, writeFileSync, mkdirSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { readFileSync, writeFileSync, renameSync } from 'fs';
+import { dataFile } from './data-dir.js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const DATA_FILE = join(__dirname, '..', '..', 'data', 'tnt-hires.json');
+// Routes through dataFile() so writes hit Railway's persistent volume.
+// Without this, staff-entered hires die on every redeploy (the Docker
+// image's /app/data/ is shadowed by the volume mount at runtime).
+const DATA_FILE = dataFile('tnt-hires.json');
 
 function readHires() {
   try {
@@ -14,8 +15,11 @@ function readHires() {
 }
 
 function writeHires(hires) {
-  mkdirSync(dirname(DATA_FILE), { recursive: true });
-  writeFileSync(DATA_FILE, JSON.stringify(hires, null, 2));
+  // Atomic write: tmp → rename. Prevents partial-file corruption if a
+  // concurrent request lands mid-write.
+  const tmp = DATA_FILE + '.tmp';
+  writeFileSync(tmp, JSON.stringify(hires, null, 2));
+  renameSync(tmp, DATA_FILE);
 }
 
 export function getAll() {

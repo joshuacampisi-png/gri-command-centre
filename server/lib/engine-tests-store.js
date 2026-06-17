@@ -9,26 +9,23 @@
  *   - automated win/lose evaluation against baseline
  */
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
-import { dirname } from 'path'
+import { readFileSync, writeFileSync, renameSync, existsSync } from 'fs'
+import { dataFile } from './data-dir.js'
 
-const STORE_PATH = './data/engine/active-tests.json'
-
-function ensureDir() {
-  const dir = dirname(STORE_PATH)
-  if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
-}
+// Cwd-relative './data/...' was fragile on Railway. Volume-aware now.
+const STORE_PATH = dataFile('engine/active-tests.json')
 
 function read() {
-  ensureDir()
   if (!existsSync(STORE_PATH)) return { tests: [] }
   try { return JSON.parse(readFileSync(STORE_PATH, 'utf8')) }
   catch { return { tests: [] } }
 }
 
 function write(data) {
-  ensureDir()
-  writeFileSync(STORE_PATH, JSON.stringify(data, null, 2))
+  // Atomic write to prevent partial-file corruption under concurrent writes
+  const tmp = STORE_PATH + '.tmp'
+  writeFileSync(tmp, JSON.stringify(data, null, 2))
+  renameSync(tmp, STORE_PATH)
 }
 
 export function listTests() {

@@ -56,13 +56,14 @@ export default function MarketShare() {
   const griMarketShare = (totalVisibility / (totalImpressions * 100) * 100).toFixed(1)
 
   // Estimate competitor share (simplified - assumes 5 competitors split remaining)
+  // "You" slice uses brand pink — competitor slices use neutral graphite ramp per design system.
   const competitors = [
-    { name: 'Gender Reveal Ideas (You)', share: parseFloat(griMarketShare), color: '#ef4444' },
-    { name: 'CelebrationHQ', share: ((100 - griMarketShare) * 0.3).toFixed(1), color: '#6366f1' },
-    { name: 'Baby Hints & Tips', share: ((100 - griMarketShare) * 0.25).toFixed(1), color: '#8b5cf6' },
-    { name: 'Aussie Reveals', share: ((100 - griMarketShare) * 0.2).toFixed(1), color: '#f97316' },
-    { name: 'Gender Reveal Express', share: ((100 - griMarketShare) * 0.15).toFixed(1), color: '#eab308' },
-    { name: 'Others', share: ((100 - griMarketShare) * 0.1).toFixed(1), color: '#6b7280' },
+    { name: 'Gender Reveal Ideas (You)', share: parseFloat(griMarketShare), color: 'var(--gri-pink)' },
+    { name: 'CelebrationHQ', share: ((100 - griMarketShare) * 0.3).toFixed(1), color: '#3F3F46' },
+    { name: 'Baby Hints & Tips', share: ((100 - griMarketShare) * 0.25).toFixed(1), color: '#71717A' },
+    { name: 'Aussie Reveals', share: ((100 - griMarketShare) * 0.2).toFixed(1), color: '#A1A1AA' },
+    { name: 'Gender Reveal Express', share: ((100 - griMarketShare) * 0.15).toFixed(1), color: '#C4C4C9' },
+    { name: 'Others', share: ((100 - griMarketShare) * 0.1).toFixed(1), color: '#E4E4E7' },
   ]
 
   // Top keywords breakdown
@@ -75,7 +76,7 @@ export default function MarketShare() {
       {/* Market Share Header */}
       <div className="card" style={{ marginBottom: '2rem' }}>
         <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Gender Reveal Market Share</h2>
-        <p style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
           Visibility analysis across top 20 high-volume keywords
         </p>
 
@@ -111,8 +112,8 @@ export default function MarketShare() {
               transform: 'translate(-50%, -50%)',
               textAlign: 'center'
             }}>
-              <div style={{ fontSize: '2rem', fontWeight: 700, color: '#ef4444' }}>{griMarketShare}%</div>
-              <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>Your Share</div>
+              <div style={{ fontSize: '2rem', fontWeight: 600, color: 'var(--text)', fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}>{griMarketShare}%</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Your Share</div>
             </div>
           </div>
 
@@ -125,8 +126,8 @@ export default function MarketShare() {
                 gap: '0.75rem',
                 marginBottom: '0.75rem',
                 padding: '0.5rem',
-                borderRadius: '0.375rem',
-                backgroundColor: i === 0 ? '#fef2f2' : 'transparent'
+                borderRadius: 'var(--radius-sm)',
+                backgroundColor: i === 0 ? 'var(--bg-subtle)' : 'transparent'
               }}>
                 <div style={{
                   width: 16,
@@ -135,10 +136,10 @@ export default function MarketShare() {
                   backgroundColor: comp.color,
                   flexShrink: 0
                 }} />
-                <div style={{ flex: 1, fontSize: '0.875rem', fontWeight: i === 0 ? 600 : 400 }}>
+                <div style={{ flex: 1, fontSize: '0.875rem', fontWeight: i === 0 ? 600 : 400, color: 'var(--text)' }}>
                   {comp.name}
                 </div>
-                <div style={{ fontWeight: 700, fontSize: '1rem', color: comp.color }}>
+                <div style={{ fontWeight: 600, fontSize: '1rem', color: 'var(--text)', fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}>
                   {comp.share}%
                 </div>
               </div>
@@ -149,25 +150,25 @@ export default function MarketShare() {
 
       {/* Keyword Dominance Breakdown */}
       <div className="stat-grid" style={{ marginBottom: '2rem' }}>
-        <div className="stat-box" style={{ backgroundColor: '#f0fdf4', borderColor: '#86efac' }}>
+        <div className="stat-box" style={{ backgroundColor: 'var(--green-bg)', borderColor: 'var(--border)' }}>
           <div className="stat-label">Keywords You Own</div>
-          <div className="stat-value" style={{ color: '#16a34a' }}>{owned.length}</div>
+          <div className="stat-value" style={{ color: 'var(--green)', fontWeight: 600, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}>{owned.length}</div>
           <div className="stat-sub">
             Ranking #1-3 · {((owned.reduce((s, k) => s + k.impressions, 0) / totalImpressions) * 100).toFixed(0)}% of impressions
           </div>
         </div>
 
-        <div className="stat-box" style={{ backgroundColor: '#fef3c7', borderColor: '#fcd34d' }}>
+        <div className="stat-box" style={{ backgroundColor: 'var(--amber-bg)', borderColor: 'var(--border)' }}>
           <div className="stat-label">Competitive Keywords</div>
-          <div className="stat-value" style={{ color: '#ca8a04' }}>{competitive.length}</div>
+          <div className="stat-value" style={{ color: 'var(--amber)', fontWeight: 600, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}>{competitive.length}</div>
           <div className="stat-sub">
             Ranking #4-10 · {((competitive.reduce((s, k) => s + k.impressions, 0) / totalImpressions) * 100).toFixed(0)}% of impressions
           </div>
         </div>
 
-        <div className="stat-box" style={{ backgroundColor: '#fef2f2', borderColor: '#fca5a5' }}>
+        <div className="stat-box" style={{ backgroundColor: 'var(--red-bg)', borderColor: 'var(--border)' }}>
           <div className="stat-label">Keywords at Risk</div>
-          <div className="stat-value" style={{ color: '#dc2626' }}>{losing.length}</div>
+          <div className="stat-value" style={{ color: 'var(--red)', fontWeight: 600, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}>{losing.length}</div>
           <div className="stat-sub">
             Ranking #11+ · {((losing.reduce((s, k) => s + k.impressions, 0) / totalImpressions) * 100).toFixed(0)}% of impressions
           </div>
@@ -177,7 +178,7 @@ export default function MarketShare() {
       {/* Top Keywords Comparison */}
       <div className="card">
         <h3>Top 20 Keywords — Current vs 90-Day Average</h3>
-        <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1rem' }}>
+        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
           Current rank from Keyword.com · Average rank from Google Search Console
         </p>
         <table className="data-table">
@@ -196,30 +197,31 @@ export default function MarketShare() {
               const isImproving = kw.avgRank > kw.currentRank
               const isDeclining = kw.avgRank < kw.currentRank
               const position = kw.currentRank <= 3 ? 'Dominant' : kw.currentRank <= 10 ? 'Competitive' : 'At Risk'
-              const posColor = kw.currentRank <= 3 ? '#16a34a' : kw.currentRank <= 10 ? '#ca8a04' : '#dc2626'
+              const posColor = kw.currentRank <= 3 ? 'var(--green)' : kw.currentRank <= 10 ? 'var(--amber)' : 'var(--red)'
               
               return (
                 <tr key={i}>
                   <td style={{ fontWeight: 500 }}>{kw.keyword}</td>
                   <td>
                     <span style={{
-                      padding: '0.25rem 0.5rem',
-                      borderRadius: '0.25rem',
-                      backgroundColor: kw.currentRank <= 3 ? '#dcfce7' : kw.currentRank <= 10 ? '#fef3c7' : '#fee2e2',
-                      color: kw.currentRank <= 3 ? '#166534' : kw.currentRank <= 10 ? '#854d0e' : '#991b1b',
+                      padding: '2px 8px',
+                      borderRadius: '999px',
+                      backgroundColor: kw.currentRank <= 3 ? 'var(--green-bg)' : kw.currentRank <= 10 ? 'var(--amber-bg)' : 'var(--red-bg)',
+                      color: kw.currentRank <= 3 ? 'var(--green)' : kw.currentRank <= 10 ? 'var(--amber)' : 'var(--red)',
                       fontWeight: 600,
-                      fontSize: '0.875rem'
+                      fontSize: '11px',
+                      fontVariantNumeric: 'tabular-nums'
                     }}>
                       #{typeof kw.currentRank === 'number' ? kw.currentRank : 'OTR'}
                     </span>
                   </td>
-                  <td style={{ color: '#6b7280' }}>#{kw.avgRank.toFixed(1)}</td>
+                  <td style={{ color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>#{kw.avgRank.toFixed(1)}</td>
                   <td>
-                    {isImproving && <span style={{ color: '#16a34a' }}>↑ +{(kw.avgRank - kw.currentRank).toFixed(1)}</span>}
-                    {isDeclining && <span style={{ color: '#dc2626' }}>↓ -{(kw.currentRank - kw.avgRank).toFixed(1)}</span>}
-                    {!isImproving && !isDeclining && <span style={{ color: '#6b7280' }}>→ Stable</span>}
+                    {isImproving && <span style={{ color: 'var(--green)', fontVariantNumeric: 'tabular-nums' }}>↑ +{(kw.avgRank - kw.currentRank).toFixed(1)}</span>}
+                    {isDeclining && <span style={{ color: 'var(--red)', fontVariantNumeric: 'tabular-nums' }}>↓ -{(kw.currentRank - kw.avgRank).toFixed(1)}</span>}
+                    {!isImproving && !isDeclining && <span style={{ color: 'var(--text-muted)' }}>→ Stable</span>}
                   </td>
-                  <td>{kw.impressions.toLocaleString()}</td>
+                  <td style={{ fontVariantNumeric: 'tabular-nums' }}>{kw.impressions.toLocaleString()}</td>
                   <td style={{ color: posColor, fontWeight: 600, fontSize: '0.875rem' }}>
                     {position}
                   </td>

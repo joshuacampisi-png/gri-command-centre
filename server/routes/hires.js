@@ -1,7 +1,5 @@
 import { Router } from 'express';
 import { existsSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
 import { getAll, getById, create, update, clearAll } from '../lib/hire-store.js';
 import { createBondPaymentLink, refundBondPayment, isRealSquarePaymentId, getRefund, getPayment } from '../lib/square-client.js';
 import { sendHireEmail } from '../lib/hire-mailer.js';
@@ -9,8 +7,8 @@ import { notifyTNTEvent } from '../lib/tnt-telegram.js';
 import { env } from '../lib/env.js';
 import { buildSigningUrl, buildBondCheckoutUrl } from '../lib/contract-signing-token.js';
 import { chargeCardOnFile } from '../lib/square-cards.js';
+import { dataFile, dataDir, DATA_ROOT } from '../lib/data-dir.js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
 const router = Router();
 
 // GET /api/hires/health — flow health check (MUST be before /:id)
@@ -43,8 +41,12 @@ router.get('/health', (_req, res) => {
       ok: Boolean(process.env.BASE_URL && !process.env.BASE_URL.includes('trycloudflare')),
     },
     data: {
-      hiresFile: existsSync(join(__dirname, '..', '..', 'data', 'tnt-hires.json')),
-      contractsDir: existsSync(join(__dirname, '..', '..', 'data', 'contracts')),
+      // Probe the ACTUAL paths the store writes to (volume-aware), not the
+      // shadowed image path. Previously this diagnostic always lied.
+      hiresFile: existsSync(dataFile('tnt-hires.json')),
+      contractsDir: existsSync(dataDir('contracts')),
+      dataRoot: DATA_ROOT,
+      onVolume: Boolean(process.env.RAILWAY_VOLUME_MOUNT_PATH),
       ok: true,
     },
   };

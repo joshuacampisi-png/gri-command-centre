@@ -5,7 +5,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 const POST_TYPES = ['image', 'carousel', 'reel']
 const POST_TYPE_LABELS = { image: 'Image', carousel: 'Carousel', reel: 'Reel' }
 const POST_TYPE_ICONS = { image: '🖼', carousel: '🎠', reel: '🎬' }
-const STATUS_COLORS = { DRAFT: '#9CA3AF', SCHEDULED: '#3B82F6', PUBLISHING: '#F59E0B', PUBLISHED: '#059669', FAILED: '#DC2626' }
+const STATUS_COLORS = { DRAFT: 'var(--text-muted)', SCHEDULED: 'var(--blue)', PUBLISHING: 'var(--amber)', PUBLISHED: 'var(--green)', FAILED: 'var(--red)' }
 const API = '/api/instagram'
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8) }
@@ -118,11 +118,11 @@ function Toast({ message, type, onClose }) {
   return (
     <div style={{
       position: 'fixed', top: 16, right: 16, zIndex: 9999, maxWidth: 400,
-      padding: '12px 18px', borderRadius: 10, fontSize: 13, fontWeight: 600,
-      background: type === 'error' ? '#FEE2E2' : type === 'warning' ? '#FEF3C7' : '#ECFDF5',
-      color: type === 'error' ? '#991B1B' : type === 'warning' ? '#92400E' : '#065F46',
-      border: `1px solid ${type === 'error' ? '#FECACA' : type === 'warning' ? '#FCD34D' : '#A7F3D0'}`,
-      boxShadow: '0 4px 16px rgba(0,0,0,0.15)', animation: 'igSlideIn .2s ease-out',
+      padding: '12px 18px', borderRadius: 'var(--radius)', fontSize: 13, fontWeight: 600,
+      background: type === 'error' ? 'var(--red-bg)' : type === 'warning' ? 'var(--amber-bg)' : 'var(--green-bg)',
+      color: type === 'error' ? 'var(--red)' : type === 'warning' ? 'var(--amber)' : 'var(--green)',
+      border: `1px solid var(--border)`,
+      boxShadow: 'var(--shadow)', animation: 'igSlideIn .2s ease-out',
     }}>
       {message}
     </div>
@@ -603,11 +603,11 @@ export default function InstagramScheduler() {
       {/* Account bar */}
       <div className="ig-account-bar">
         <div className="ig-account-info">
-          <span className="ig-account-dot" style={{ background: apiStatus?.healthy ? '#10B981' : apiStatus ? '#DC2626' : '#9CA3AF' }} />
+          <span className="ig-account-dot" style={{ background: apiStatus?.healthy ? 'var(--green)' : apiStatus ? 'var(--red)' : 'var(--text-muted)' }} />
           <strong>@{apiStatus?.username || 'gender.reveal.ideass'}</strong>
           <span className="muted"> via Gender Reveal Ideas</span>
           {apiStatus && (
-            <span style={{ marginLeft: 12, fontSize: 11, fontWeight: 600, color: apiStatus.healthy ? '#10B981' : '#DC2626' }}>
+            <span style={{ marginLeft: 12, fontSize: 11, fontWeight: 600, color: apiStatus.healthy ? 'var(--green)' : 'var(--red)' }}>
               {apiStatus.healthy ? 'Meta API live' : 'Meta API down'}
             </span>
           )}
@@ -617,8 +617,8 @@ export default function InstagramScheduler() {
       {/* Auth/config error banner */}
       {apiStatus && !apiStatus.healthy && (
         <div style={{
-          padding: '12px 16px', margin: '0 0 12px', borderRadius: 10,
-          background: '#FEE2E2', border: '1px solid #FECACA', color: '#991B1B',
+          padding: '12px 16px', margin: '0 0 12px', borderRadius: 'var(--radius)',
+          background: 'var(--red-bg)', border: '1px solid var(--border)', color: 'var(--red)',
           fontSize: 13, fontWeight: 600,
         }}>
           ⚠️ Instagram publishing is currently down: {apiStatus.error || 'Meta auth failing'}.
@@ -627,8 +627,8 @@ export default function InstagramScheduler() {
       )}
       {apiStatus?.healthy && apiStatus.appUrlOk === false && (
         <div style={{
-          padding: '10px 16px', margin: '0 0 12px', borderRadius: 10,
-          background: '#FEF3C7', border: '1px solid #FCD34D', color: '#92400E',
+          padding: '10px 16px', margin: '0 0 12px', borderRadius: 'var(--radius)',
+          background: 'var(--amber-bg)', border: '1px solid var(--border)', color: 'var(--amber)',
           fontSize: 12, fontWeight: 600,
         }}>
           ⚠️ APP_URL env not set on Railway — image &amp; carousel posts may fail (Reels still work).
@@ -647,24 +647,24 @@ export default function InstagramScheduler() {
       {diskUsage && (
         <div style={{
           display: 'flex', alignItems: 'center', gap: 10, padding: '8px 16px',
-          background: diskUsage.mb > 800 ? '#FEF2F2' : '#F8FAFC',
-          borderRadius: 10, margin: '0 0 8px', fontSize: 12,
+          background: diskUsage.mb > 800 ? 'var(--red-bg)' : 'var(--bg-canvas)',
+          borderRadius: 'var(--radius)', margin: '0 0 8px', fontSize: 12,
         }}>
-          <span style={{ fontWeight: 600, color: diskUsage.mb > 800 ? '#DC2626' : '#64748B' }}>
+          <span style={{ fontWeight: 600, color: diskUsage.mb > 800 ? 'var(--red)' : 'var(--text-soft)' }}>
             Storage: {diskUsage.mb}MB used ({diskUsage.files} files)
           </span>
-          <div style={{ flex: 1, height: 6, background: '#E2E8F0', borderRadius: 3, overflow: 'hidden' }}>
+          <div style={{ flex: 1, height: 6, background: 'var(--bg-subtle)', borderRadius: 3, overflow: 'hidden' }}>
             <div style={{
               height: '100%', borderRadius: 3, transition: 'width .3s',
               width: `${Math.min((diskUsage.mb / 1000) * 100, 100)}%`,
-              background: diskUsage.mb > 800 ? '#DC2626' : diskUsage.mb > 500 ? '#F59E0B' : '#059669',
+              background: diskUsage.mb > 800 ? 'var(--red)' : diskUsage.mb > 500 ? 'var(--amber)' : 'var(--green)',
             }} />
           </div>
-          <span style={{ color: '#94A3B8', fontSize: 11 }}>1GB</span>
+          <span style={{ color: 'var(--text-faint)', fontSize: 11 }}>1GB</span>
           <button onClick={handleCleanupMedia} disabled={cleaning}
             style={{
-              padding: '4px 10px', fontSize: 11, fontWeight: 600, borderRadius: 6,
-              border: '1px solid #E2E8F0', background: '#fff', cursor: 'pointer', whiteSpace: 'nowrap',
+              padding: '4px 10px', fontSize: 11, fontWeight: 600, borderRadius: 'var(--radius-sm)',
+              border: '1px solid var(--border)', background: 'var(--bg-surface)', cursor: 'pointer', whiteSpace: 'nowrap',
             }}>
             {cleaning ? 'Cleaning...' : 'Free Space'}
           </button>
@@ -715,7 +715,7 @@ export default function InstagramScheduler() {
                       <div
                         key={p.id}
                         className="ig-cal-post-chip"
-                        style={{ borderLeftColor: STATUS_COLORS[p.status] || '#9CA3AF' }}
+                        style={{ borderLeftColor: STATUS_COLORS[p.status] || 'var(--text-muted)' }}
                         onClick={e => { e.stopPropagation(); setDrawer(p); setCaptionVariants(null) }}
                       >
                         <span className="ig-cal-post-icon">{POST_TYPE_ICONS[p.type]}</span>
@@ -740,7 +740,7 @@ export default function InstagramScheduler() {
               <div className="ig-list-preview">
                 {post.mediaUrls?.[0] ? (
                   isVideo(post.mediaUrls[0])
-                    ? <div className="ig-list-thumb" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1E293B', color: '#fff', fontSize: 20 }}>🎬</div>
+                    ? <div className="ig-list-thumb" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--text)', color: 'var(--bg-surface)', fontSize: 20 }}>🎬</div>
                     : <img src={post.mediaUrls[0]} className="ig-list-thumb" alt="" loading="lazy" onError={e => { e.target.style.display = 'none' }} />
                 ) : <div className="ig-list-thumb ig-list-thumb-empty">{POST_TYPE_ICONS[post.type]}</div>}
               </div>
@@ -793,9 +793,9 @@ export default function InstagramScheduler() {
                     <div key={idx} className="ig-media-item">
                       {isVideo(url)
                         ? (
-                          <div className="ig-media-preview" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1E293B', color: '#fff', fontSize: 28 }}>
+                          <div className="ig-media-preview" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--text)', color: 'var(--bg-surface)', fontSize: 28 }}>
                             🎬
-                            <span style={{ position: 'absolute', bottom: 4, left: 4, fontSize: 9, background: 'rgba(0,0,0,0.7)', color: '#fff', padding: '1px 5px', borderRadius: 3 }}>VIDEO</span>
+                            <span style={{ position: 'absolute', bottom: 4, left: 4, fontSize: 9, background: 'rgba(0,0,0,0.7)', color: 'var(--bg-surface)', padding: '1px 5px', borderRadius: 3 }}>VIDEO</span>
                           </div>
                         )
                         : <img src={url} className="ig-media-preview" alt="" loading="lazy" onError={e => { e.target.style.opacity = '0.3' }} />
@@ -811,17 +811,17 @@ export default function InstagramScheduler() {
                     drop zones competing for the event. */}
                 {uploading ? (
                   <div style={{
-                    padding: 18, border: '2px solid #E43F7B', borderRadius: 10,
-                    background: '#FFF0F5', textAlign: 'center',
+                    padding: 18, border: '1px solid var(--border)', borderRadius: 'var(--radius)',
+                    background: 'var(--bg-canvas)', textAlign: 'center',
                   }}>
                     <div className="spinner" style={{ margin: '0 auto 8px' }} />
-                    <div style={{ fontSize: 13, fontWeight: 600, color: '#E43F7B' }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>
                       Uploading... {uploadProgress > 0 ? `${uploadProgress}%` : ''}
                     </div>
                     {uploadProgress > 0 && (
-                      <div style={{ height: 4, background: '#FCE7F3', borderRadius: 2, marginTop: 8, overflow: 'hidden' }}>
+                      <div style={{ height: 4, background: 'var(--bg-subtle)', borderRadius: 2, marginTop: 8, overflow: 'hidden' }}>
                         <div style={{
-                          height: '100%', width: `${uploadProgress}%`, background: '#E43F7B',
+                          height: '100%', width: `${uploadProgress}%`, background: 'var(--text)',
                           borderRadius: 2, transition: 'width 0.3s ease',
                         }} />
                       </div>
@@ -839,9 +839,9 @@ export default function InstagramScheduler() {
                       tabIndex={0}
                       onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') fileRef.current?.click() }}
                       style={{
-                        border: `2px dashed ${drawerDragOver ? '#E43F7B' : '#CBD5E1'}`,
-                        borderRadius: 10,
-                        background: drawerDragOver ? '#FFF0F5' : '#F8FAFC',
+                        border: `1px dashed ${drawerDragOver ? 'var(--text)' : 'var(--border-strong)'}`,
+                        borderRadius: 'var(--radius)',
+                        background: drawerDragOver ? 'var(--bg-subtle)' : 'var(--bg-canvas)',
                         padding: '24px 16px',
                         textAlign: 'center',
                         cursor: 'pointer',
@@ -851,10 +851,10 @@ export default function InstagramScheduler() {
                       <div style={{ fontSize: 24, marginBottom: 6, pointerEvents: 'none' }}>
                         {drawerDragOver ? '⬇' : '📎'}
                       </div>
-                      <div style={{ fontSize: 13, color: drawerDragOver ? '#E43F7B' : '#475569', fontWeight: drawerDragOver ? 700 : 600, pointerEvents: 'none' }}>
+                      <div style={{ fontSize: 13, color: drawerDragOver ? 'var(--text)' : 'var(--text-soft)', fontWeight: drawerDragOver ? 700 : 600, pointerEvents: 'none' }}>
                         {drawerDragOver ? 'Drop to upload' : 'Drop image / video here, or click to browse'}
                       </div>
-                      <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 4, pointerEvents: 'none' }}>
+                      <div style={{ fontSize: 11, color: 'var(--text-faint)', marginTop: 4, pointerEvents: 'none' }}>
                         JPG · PNG · WEBP · MP4 · MOV — up to 500MB
                       </div>
                     </div>
@@ -977,7 +977,7 @@ export default function InstagramScheduler() {
             {/* Actions */}
             <div className="ig-drawer-actions">
               {drawer.status === 'FAILED' && (
-                <button className="btn btn-primary" onClick={handleRetry} disabled={saving || uploading} style={{ background: '#DC2626' }}>
+                <button className="btn btn-primary" onClick={handleRetry} disabled={saving || uploading} style={{ background: 'var(--red)' }}>
                   {saving ? 'Queuing...' : '↻ Retry Now'}
                 </button>
               )}

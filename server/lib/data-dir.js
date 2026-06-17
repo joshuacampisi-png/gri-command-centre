@@ -12,6 +12,19 @@ const ROOT = process.env.RAILWAY_VOLUME_MOUNT_PATH || join(process.cwd(), 'data'
 try { if (!existsSync(ROOT)) mkdirSync(ROOT, { recursive: true }) }
 catch (e) { console.error('[DataDir] Cannot create root:', e.message) }
 
+// LOUD warning if we're on Railway without the volume mount env — without
+// this, every staff-entered byte goes to the Docker image's shadowed /app/data
+// and dies on next redeploy. Silent data loss is the worst kind.
+if (process.env.RAILWAY_ENVIRONMENT && !process.env.RAILWAY_VOLUME_MOUNT_PATH) {
+  console.error('═══════════════════════════════════════════════════════════════')
+  console.error('⚠️  CRITICAL: RAILWAY_VOLUME_MOUNT_PATH is NOT SET')
+  console.error('   All staff-entered data (hires, shipping costs, contracts)')
+  console.error('   will be LOST on the next redeploy.')
+  console.error('   Fix: attach a persistent volume to this Railway service.')
+  console.error('═══════════════════════════════════════════════════════════════')
+}
+console.log(`[DataDir] Root: ${ROOT}  (${process.env.RAILWAY_VOLUME_MOUNT_PATH ? 'volume-backed ✓' : 'local fs'})`)
+
 /**
  * Get the resolved data directory path.
  * @param {...string} subpath - optional subdirectory segments

@@ -15,17 +15,24 @@
  *
  * Pure presentational component — no API calls, no state beyond the
  * controlled `confirmation` prop and an internal close handler. Can be
- * imported anywhere. Styling is self-contained in a <style> block so it
- * never conflicts with the dashboard's existing CSS scope.
+ * imported anywhere. Styling is self-contained in a <style> block scoped
+ * via .gmodal-* classes so it never conflicts with the dashboard CSS.
+ *
+ * Visual language: Apple/Stripe-style minimalist — light surface,
+ * hairline borders, graphite text, semantic green/amber/red/blue pulled
+ * from the global design tokens in src/styles.css. No gradients, no
+ * heavy shadows, no serif display type.
  */
 
-// Google brand palette (local copy to keep this component truly standalone)
+// Semantic palette mapped to the global design system tokens.
+// Kept as a local object so the component remains drop-in portable,
+// but every value points to the Apple/Stripe-style CSS variables.
 const G = {
-  blue:   '#4285F4',
-  red:    '#EA4335',
-  yellow: '#FBBC04',
-  green:  '#34A853',
-  violet: '#A142F4',
+  blue:   'var(--blue)',
+  red:    'var(--red)',
+  yellow: 'var(--amber)',
+  green:  'var(--green)',
+  violet: 'var(--text-soft)',
 }
 
 function fmtAud(n, decimals = 0) {
@@ -63,18 +70,18 @@ function fmtDate(iso) {
 
 function getStatusBadge(c) {
   if (c?.apiCallMade && c?.success) {
-    return { label: 'Executed on Google Ads', colour: G.green, glyph: '✓' }
+    return { label: 'Executed on Google Ads', colour: 'var(--green)', bg: 'var(--green-bg)', border: 'var(--green-bg)', glyph: '✓' }
   }
   if (c?.dryRun) {
-    return { label: 'Recorded in audit log · dry-run', colour: G.yellow, glyph: '◆' }
+    return { label: 'Recorded in audit log · dry-run', colour: 'var(--amber)', bg: 'var(--amber-bg)', border: 'var(--amber-bg)', glyph: '◆' }
   }
   if (c?.blockedByProtection) {
-    return { label: 'Manual review required · protected campaign', colour: G.yellow, glyph: '⚑' }
+    return { label: 'Manual review required · protected campaign', colour: 'var(--amber)', bg: 'var(--amber-bg)', border: 'var(--amber-bg)', glyph: '⚑' }
   }
   if (!c?.success) {
-    return { label: 'Failed — see execution result', colour: G.red, glyph: '✕' }
+    return { label: 'Failed — see execution result', colour: 'var(--red)', bg: 'var(--red-bg)', border: 'var(--red-bg)', glyph: '✕' }
   }
-  return { label: 'Recorded', colour: G.blue, glyph: '◐' }
+  return { label: 'Recorded', colour: 'var(--blue)', bg: 'var(--blue-bg)', border: 'var(--blue-bg)', glyph: '◐' }
 }
 
 // ── Component ───────────────────────────────────────────────────────────────
@@ -110,13 +117,13 @@ export function GoogleAdsApprovalModal({ confirmation, onClose }) {
         {/* Header */}
         <div className="gmodal-head">
           <div className="gmodal-head-left">
-            <div className="gmodal-check" style={{ borderColor: `${badge.colour}55`, background: `${badge.colour}18`, color: badge.colour }}>
+            <div className="gmodal-check" style={{ borderColor: badge.border, background: badge.bg, color: badge.colour }}>
               {badge.glyph}
             </div>
             <div>
               <div className="gmodal-eyebrow">Decision recorded · {fmtDateTime(c.recordedAt)}</div>
               <div className="gmodal-title">{c.mutationSummary || 'Approval recorded'}</div>
-              <div className="gmodal-status" style={{ color: badge.colour, borderColor: `${badge.colour}55` }}>
+              <div className="gmodal-status" style={{ color: badge.colour, borderColor: badge.border, background: badge.bg }}>
                 {badge.label}
               </div>
             </div>
@@ -161,25 +168,25 @@ export function GoogleAdsApprovalModal({ confirmation, onClose }) {
             <div className="gmodal-forecast-grid">
               <div className="gmodal-forecast-cell">
                 <div className="gmodal-forecast-cell-lbl">Net spend/mo</div>
-                <div className="gmodal-forecast-cell-val" style={{ color: (forecast.netSpendChangeAud || 0) < 0 ? G.green : (forecast.netSpendChangeAud || 0) > 0 ? G.red : '#8b8f9c' }}>
+                <div className="gmodal-forecast-cell-val" style={{ color: (forecast.netSpendChangeAud || 0) < 0 ? 'var(--green)' : (forecast.netSpendChangeAud || 0) > 0 ? 'var(--red)' : 'var(--text-muted)' }}>
                   {(forecast.netSpendChangeAud || 0) > 0 ? '+' : ''}{fmtAud(forecast.netSpendChangeAud || 0)}
                 </div>
               </div>
               <div className="gmodal-forecast-cell">
                 <div className="gmodal-forecast-cell-lbl">Revenue Δ/mo</div>
-                <div className="gmodal-forecast-cell-val" style={{ color: (monthly.revenueChangeAud || 0) >= 0 ? G.green : G.red }}>
+                <div className="gmodal-forecast-cell-val" style={{ color: (monthly.revenueChangeAud || 0) >= 0 ? 'var(--green)' : 'var(--red)' }}>
                   {(monthly.revenueChangeAud || 0) > 0 ? '+' : ''}{fmtAud(monthly.revenueChangeAud || 0)}
                 </div>
               </div>
               <div className="gmodal-forecast-cell">
                 <div className="gmodal-forecast-cell-lbl">Net profit Δ/mo</div>
-                <div className="gmodal-forecast-cell-val" style={{ color: (monthly.netProfitChangeAud || 0) >= 0 ? G.green : G.red }}>
+                <div className="gmodal-forecast-cell-val" style={{ color: (monthly.netProfitChangeAud || 0) >= 0 ? 'var(--green)' : 'var(--red)' }}>
                   {(monthly.netProfitChangeAud || 0) > 0 ? '+' : ''}{fmtAud(monthly.netProfitChangeAud || 0)}
                 </div>
               </div>
               <div className="gmodal-forecast-cell">
                 <div className="gmodal-forecast-cell-lbl">Confidence</div>
-                <div className="gmodal-forecast-cell-val" style={{ color: forecast.confidence === 'high' ? G.green : forecast.confidence === 'medium' ? G.yellow : '#8b8f9c', textTransform: 'uppercase', fontSize: 13 }}>
+                <div className="gmodal-forecast-cell-val" style={{ color: forecast.confidence === 'high' ? 'var(--green)' : forecast.confidence === 'medium' ? 'var(--amber)' : 'var(--text-muted)', textTransform: 'uppercase', fontSize: 13 }}>
                   {forecast.confidence || 'unknown'}
                 </div>
               </div>
@@ -229,123 +236,117 @@ export function GoogleAdsApprovalModal({ confirmation, onClose }) {
 // ── Self-contained stylesheet ───────────────────────────────────────────────
 
 const modalStyles = `
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=JetBrains+Mono:wght@500&display=swap');
-
 .gmodal-backdrop {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: rgba(4, 5, 9, 0.72);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(10, 10, 10, 0.32);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 40px 20px;
   animation: gmodal-fade-in 220ms ease-out;
-  font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-sans);
 }
 
 .gmodal-card {
-  background: linear-gradient(180deg, #12141a 0%, #0a0b0f 100%);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 18px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   width: 100%;
   max-width: 720px;
   max-height: calc(100vh - 80px);
   overflow-y: auto;
-  box-shadow:
-    0 40px 80px -20px rgba(0,0,0,0.75),
-    0 0 0 1px rgba(255,255,255,0.02);
-  color: #f5f6f8;
-  animation: gmodal-slide-up 320ms cubic-bezier(0.2, 0.9, 0.3, 1.05);
+  box-shadow: var(--shadow-lg);
+  color: var(--text);
+  animation: gmodal-slide-up 280ms cubic-bezier(0.2, 0.9, 0.3, 1.0);
 }
 
 .gmodal-head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 28px 32px 20px;
+  padding: 24px 28px 20px;
   gap: 20px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid var(--border);
 }
 
 .gmodal-head-left {
   display: flex;
-  gap: 18px;
+  gap: 16px;
   align-items: flex-start;
   flex: 1;
   min-width: 0;
 }
 
 .gmodal-check {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius);
   border: 1px solid;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-weight: 700;
-  font-size: 22px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 18px;
   flex-shrink: 0;
-  box-shadow: 0 12px 28px -14px rgba(52,168,83,0.4);
 }
 
 .gmodal-eyebrow {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #8b8f9c;
-  margin-bottom: 4px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
 }
 
 .gmodal-title {
-  font-family: 'Fraunces', ui-serif, Georgia, serif;
-  font-weight: 500;
-  font-size: 24px;
-  line-height: 1.2;
-  color: #f5f6f8;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 1.25;
+  color: var(--text);
   letter-spacing: -0.015em;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .gmodal-status {
   display: inline-flex;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-sans);
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  padding: 5px 12px;
+  letter-spacing: 0;
+  padding: 4px 10px;
   border-radius: 999px;
   border: 1px solid;
-  background: rgba(255,255,255,0.02);
 }
 
 .gmodal-close {
   background: none;
   border: none;
-  color: #8b8f9c;
-  font-size: 28px;
+  color: var(--text-muted);
+  font-size: 24px;
   line-height: 1;
   cursor: pointer;
   padding: 4px 8px;
-  border-radius: 6px;
-  transition: all 160ms ease;
+  border-radius: var(--radius-sm);
+  transition: all 140ms ease;
   flex-shrink: 0;
 }
 
 .gmodal-close:hover {
-  color: #f5f6f8;
-  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  background: var(--bg-subtle);
 }
 
 .gmodal-section {
-  padding: 20px 32px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 20px 28px;
+  border-bottom: 1px solid var(--border);
 }
 
 .gmodal-section:last-child {
@@ -353,26 +354,24 @@ const modalStyles = `
 }
 
 .gmodal-section-highlight {
-  background:
-    linear-gradient(90deg, rgba(66,133,244,0.08), transparent 70%),
-    transparent;
+  background: var(--bg-canvas);
 }
 
 .gmodal-section-label {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 9px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #8b8f9c;
+  color: var(--text-muted);
   margin-bottom: 10px;
 }
 
 .gmodal-entity-name {
-  font-family: 'Fraunces', ui-serif, Georgia, serif;
-  font-weight: 500;
-  font-size: 18px;
-  color: #f5f6f8;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text);
   letter-spacing: -0.01em;
   margin-bottom: 4px;
 }
@@ -382,31 +381,32 @@ const modalStyles = `
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 11px;
-  color: #8b8f9c;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
 .gmodal-mono {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
 }
 
 .gmodal-sep {
-  color: #3a3e4b;
+  color: var(--text-faint);
 }
 
 .gmodal-action-name {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 14px;
+  font-family: var(--font-mono);
+  font-size: 13px;
   font-weight: 600;
-  color: #f5f6f8;
+  color: var(--text);
   letter-spacing: -0.005em;
   margin-bottom: 4px;
 }
 
 .gmodal-action-detail {
-  font-size: 13px;
-  color: #c9d1d9;
+  font-size: 13.5px;
+  color: var(--text-soft);
   line-height: 1.55;
   margin-bottom: 10px;
 }
@@ -414,24 +414,25 @@ const modalStyles = `
 .gmodal-api-box {
   margin-top: 12px;
   padding: 12px 14px;
-  background: rgba(0,0,0,0.35);
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 8px;
+  background: var(--bg-canvas);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
 }
 
 .gmodal-api-label {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 9px;
-  letter-spacing: 0.12em;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #5a5e6b;
+  color: var(--text-muted);
   margin-bottom: 6px;
 }
 
 .gmodal-api-code {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 10.5px;
-  color: #8b8f9c;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-soft);
   line-height: 1.55;
   margin: 0;
   white-space: pre-wrap;
@@ -441,14 +442,14 @@ const modalStyles = `
 }
 
 .gmodal-forecast-formula {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 11.5px;
+  font-family: var(--font-mono);
+  font-size: 12px;
   line-height: 1.6;
-  color: #c9d1d9;
+  color: var(--text-soft);
   padding: 12px 14px;
-  background: rgba(66,133,244,0.06);
-  border: 1px solid rgba(66,133,244,0.2);
-  border-radius: 8px;
+  background: var(--bg-canvas);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   margin-bottom: 12px;
 }
 
@@ -465,56 +466,61 @@ const modalStyles = `
 }
 
 .gmodal-forecast-cell-lbl {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 9px;
-  letter-spacing: 0.1em;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #5a5e6b;
+  color: var(--text-muted);
   margin-bottom: 4px;
 }
 
 .gmodal-forecast-cell-val {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 15px;
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  font-size: 16px;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
+  color: var(--text);
 }
 
 .gmodal-accuracy-date-num {
-  font-family: 'Fraunces', ui-serif, Georgia, serif;
-  font-weight: 500;
-  font-size: 19px;
-  color: #4285F4;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text);
   letter-spacing: -0.01em;
 }
 
 .gmodal-accuracy-desc {
   margin-top: 8px;
-  font-size: 13px;
+  font-size: 13.5px;
   line-height: 1.6;
-  color: #c9d1d9;
+  color: var(--text-soft);
 }
 
 .gmodal-accuracy-desc strong {
-  color: #f5f6f8;
+  color: var(--text);
   font-weight: 600;
 }
 
 .gmodal-accuracy-measuring {
   margin-top: 10px;
-  font-size: 12px;
-  color: #8b8f9c;
+  font-size: 12.5px;
+  color: var(--text-soft);
   padding: 8px 12px;
-  background: rgba(255,255,255,0.02);
-  border-radius: 6px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
 }
 
 .gmodal-accuracy-measuring-label {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 10px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #5a5e6b;
+  color: var(--text-muted);
   margin-right: 4px;
 }
 
@@ -523,42 +529,44 @@ const modalStyles = `
   align-items: flex-end;
   justify-content: space-between;
   gap: 20px;
-  padding-bottom: 26px;
+  padding-bottom: 24px;
   padding-top: 24px;
   flex-wrap: wrap;
 }
 
 .gmodal-audit-id {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 12px;
-  color: #f5f6f8;
+  color: var(--text);
   font-weight: 500;
 }
 
 .gmodal-audit-meta {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 10px;
-  color: #5a5e6b;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
   margin-top: 4px;
 }
 
 .gmodal-ack {
-  font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-sans);
   font-weight: 600;
-  font-size: 14px;
-  padding: 12px 26px;
-  border-radius: 10px;
-  background: linear-gradient(180deg, #ffffff 0%, #e0e4ec 100%);
-  color: #0a0b0f;
-  border: none;
+  font-size: 13.5px;
+  padding: 10px 22px;
+  border-radius: var(--radius-sm);
+  background: var(--text);
+  color: var(--bg-surface);
+  border: 1px solid var(--text);
   cursor: pointer;
-  box-shadow: 0 1px 0 rgba(255,255,255,0.5) inset, 0 10px 24px -10px rgba(255,255,255,0.25);
-  transition: transform 120ms ease, box-shadow 220ms ease;
+  transition: opacity 140ms ease, transform 140ms ease;
 }
 
 .gmodal-ack:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.5) inset, 0 14px 30px -10px rgba(52,168,83,0.45);
+  opacity: 0.88;
+}
+
+.gmodal-ack:active {
+  transform: translateY(1px);
 }
 
 @keyframes gmodal-fade-in {
@@ -567,7 +575,7 @@ const modalStyles = `
 }
 
 @keyframes gmodal-slide-up {
-  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 `

@@ -59,9 +59,9 @@ export default function HireFlowTracker({ hire, compact = false }) {
     <div style={{
       width: '100%',
       padding: compact ? '8px 4px' : '12px 6px',
-      background: 'var(--color-background-secondary, #FAFAFA)',
-      border: '0.5px solid var(--color-border-tertiary, #E5E7EB)',
-      borderRadius: 10,
+      background: 'var(--bg-canvas)',
+      border: '1px solid var(--border)',
+      borderRadius: 'var(--radius-lg)',
     }}>
       <div style={{
         display: 'grid',
@@ -76,7 +76,7 @@ export default function HireFlowTracker({ hire, compact = false }) {
           left: `calc((100% / ${steps.length}) / 2)`,
           right: `calc((100% / ${steps.length}) / 2)`,
           height: 3,
-          background: 'var(--color-border-tertiary, #E5E7EB)',
+          background: 'var(--border)',
           borderRadius: 2,
           zIndex: 0,
         }} />
@@ -88,7 +88,7 @@ export default function HireFlowTracker({ hire, compact = false }) {
             left: `calc((100% / ${steps.length}) / 2)`,
             width: `calc(${(lastDoneIdx / (steps.length - 1)) * 100}% - (100% / ${steps.length}))`,
             height: 3,
-            background: isFailed ? '#EF4444' : '#10B981',
+            background: isFailed ? 'var(--red)' : 'var(--green)',
             borderRadius: 2,
             zIndex: 1,
             transition: 'width 0.4s ease',
@@ -100,11 +100,11 @@ export default function HireFlowTracker({ hire, compact = false }) {
           const isLastDone = i === lastDoneIdx
           const isOutcomeFail = step.key === 'outcome' && step.done && isFailed
           const color = step.done
-            ? (isOutcomeFail ? '#EF4444' : '#10B981')
-            : (isCurrent ? '#3B82F6' : 'var(--color-border-tertiary, #D1D5DB)')
+            ? (isOutcomeFail ? 'var(--red)' : 'var(--green)')
+            : (isCurrent ? 'var(--blue)' : 'var(--border-strong)')
           const bg = step.done
-            ? (isOutcomeFail ? '#FEE2E2' : '#D1FAE5')
-            : (isCurrent ? '#DBEAFE' : 'var(--color-background-primary, #fff)')
+            ? (isOutcomeFail ? 'var(--red-bg)' : 'var(--green-bg)')
+            : (isCurrent ? 'var(--blue-bg)' : 'var(--bg-surface)')
 
           return (
             <div key={step.key} style={{
@@ -119,10 +119,10 @@ export default function HireFlowTracker({ hire, compact = false }) {
                 background: bg,
                 border: `2px solid ${color}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: step.done ? '#fff' : color,
+                color: step.done ? 'var(--bg-surface)' : color,
                 fontSize: compact ? 11 : 13,
-                fontWeight: 700,
-                boxShadow: isLastDone || isCurrent ? `0 0 0 4px ${isOutcomeFail ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)'}` : 'none',
+                fontWeight: 600,
+                boxShadow: isLastDone || isCurrent ? `0 0 0 4px ${isOutcomeFail ? 'var(--red-bg)' : 'var(--green-bg)'}` : 'none',
                 transition: 'all 0.2s',
                 background: step.done ? color : bg,
               }}>
@@ -133,8 +133,8 @@ export default function HireFlowTracker({ hire, compact = false }) {
                 fontSize: fontMain,
                 fontWeight: step.done || isCurrent ? 600 : 400,
                 color: step.done
-                  ? (isOutcomeFail ? '#991B1B' : 'var(--color-text-primary, #111)')
-                  : (isCurrent ? '#1E40AF' : 'var(--color-text-secondary, #6B7280)'),
+                  ? (isOutcomeFail ? 'var(--red)' : 'var(--text)')
+                  : (isCurrent ? 'var(--blue)' : 'var(--text-muted)'),
                 textAlign: 'center',
                 lineHeight: 1.25,
                 marginTop: 2,
@@ -146,7 +146,7 @@ export default function HireFlowTracker({ hire, compact = false }) {
               {step.done && step.at && (
                 <div style={{
                   fontSize: fontMeta,
-                  color: 'var(--color-text-secondary, #9CA3AF)',
+                  color: 'var(--text-faint)',
                   textAlign: 'center',
                   fontVariantNumeric: 'tabular-nums',
                   lineHeight: 1.2,
@@ -158,7 +158,7 @@ export default function HireFlowTracker({ hire, compact = false }) {
               {isCurrent && !step.done && (
                 <div style={{
                   fontSize: fontMeta,
-                  color: '#3B82F6',
+                  color: 'var(--blue)',
                   fontWeight: 600,
                   textAlign: 'center',
                   lineHeight: 1.2,
