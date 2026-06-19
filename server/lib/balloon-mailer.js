@@ -129,7 +129,7 @@ function buildContractEmail(hire, signingUrl) {
   const name = firstName(hire);
   const dates = balloonHireDates(hire.eventDate);
   return {
-    subject: `Balloon Box Hire Contract — Please Sign Before Collection — Order ${hire.orderNumber}`,
+    subject: `Sign Your Balloon Box Contract — Order ${hire.orderNumber}`,
     text: `Hi ${name},
 
 Before collecting your Helium Balloon Box on ${dates.pickupFormatted} (same day as your event), please sign the hire contract using the link below:

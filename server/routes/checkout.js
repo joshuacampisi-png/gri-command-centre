@@ -223,8 +223,9 @@ function renderCheckout({ type, hire, amount, label, sq, sdkUrl, logo }) {
     label { display: block; font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.04em; margin: 14px 0 6px; }
     #card-container { padding: 4px; border: 1px solid #CBD5E1; border-radius: 10px; min-height: 90px; background: #fff; }
     #card-container.sq-focus { border-color: ${accent}; box-shadow: 0 0 0 3px rgba(228,63,123,0.12); }
-    button { width: 100%; margin-top: 16px; padding: 14px; font-size: 16px; font-weight: 700; color: #fff; background: linear-gradient(135deg, ${accent}, #d1356b); border: none; border-radius: 10px; cursor: pointer; transition: opacity .15s; }
+    button { width: 100%; min-height: 48px; margin-top: 16px; padding: 14px; font-size: 16px; font-weight: 700; color: #fff; background: linear-gradient(135deg, ${accent}, #d1356b); border: none; border-radius: 10px; cursor: pointer; transition: opacity .15s, transform .05s ease; -webkit-tap-highlight-color: rgba(228,63,123,0.2); }
     button:hover { opacity: .92; }
+    button:active { transform: scale(0.98); opacity: .88; }
     button:disabled { opacity: .5; cursor: not-allowed; }
     .err { color: #DC2626; font-size: 13px; margin-top: 10px; min-height: 18px; }
     .ok { color: #047857; font-size: 13px; margin-top: 10px; }

@@ -120,13 +120,49 @@ process.on('unhandledRejection', async (reason) => {
 
 // ── EXPRESS APP ──
 const app = express()
+// Trust Railway's proxy so req.protocol / req.secure reflect the upstream TLS.
+// Without this, the HTTP→HTTPS redirect below loops on Railway.
+app.set('trust proxy', 1)
 app.use(cors())
+
+// ── HSTS: pin HTTPS for repeat visitors (mobile carriers can strip TLS on first hit) ──
+// Safe to send on every response — only HTTPS-served pages actually adopt it.
+app.use((req, res, next) => {
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+  next()
+})
+
+// ── HTTP → HTTPS upgrade on customer-facing routes ──
+// Railway terminates TLS upstream; trust proxy (above) makes req.secure honest.
+// Only redirect when we actually know the original scheme was http.
+app.use((req, res, next) => {
+  const proto = (req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http')).toString().split(',')[0].trim()
+  if (proto === 'http' && req.method === 'GET' && !req.path.startsWith('/api/')) {
+    const host = req.headers.host
+    if (host) return res.redirect(301, `https://${host}${req.originalUrl}`)
+  }
+  next()
+})
 
 // ── Defensive no-cache on all /api/* responses ─────────────
 // Belt-and-braces against Railway / Cloudflare / any intermediary
 // that might insert a CDN cache on API responses (including webhooks).
 app.use('/api', (req, res, next) => {
   res.set('Cache-Control', 'no-store, must-revalidate')
+  next()
+})
+
+// ── Customer-facing routes: strip WWW-Authenticate so browsers never show login prompts ──
+// Belt-and-braces — even before the auth middleware runs, ensure no upstream
+// (CDN, error handler) can leak a Basic-Auth challenge on these paths.
+app.use(['/sign', '/sign-balloon', '/checkout', '/signed', '/api/contract', '/api/balloon-contract'], (_req, res, next) => {
+  res.removeHeader('WWW-Authenticate')
+  // Also defend against an upstream sneaking one in after the response starts
+  const origSet = res.setHeader.bind(res)
+  res.setHeader = (name, value) => {
+    if (typeof name === 'string' && name.toLowerCase() === 'www-authenticate') return res
+    return origSet(name, value)
+  }
   next()
 })
 
@@ -167,6 +203,17 @@ if (DASHBOARD_PASSWORD && DASHBOARD_PASSWORD !== 'changeme') {
     '/robots.txt',
     '/manifest.json',
     '/api/shopify/shipping-costs-diag',
+    // ── Static bundle + PWA assets needed by /checkout and /sign HTML shells ──
+    // (Vite-built SPA bundle plus the PWA icons referenced from the manifest.)
+    '/assets/',
+    '/icon-192.png',
+    '/icon-192.svg',
+    '/icon-512.png',
+    '/icon-512.svg',
+    '/sw.js',
+    // ── Customer-facing checkout APIs used by the bond form ──
+    '/api/tnt/',
+    '/api/balloon/',
   ]
   const PUBLIC_EXACT = [
     '/api/ads/debug',
@@ -278,6 +325,16 @@ app.post('/sign-balloon/:orderNumber/:token', express.json(), (req, res, next) =
   if (!hire) return res.status(404).json({ ok: false, error: 'Balloon hire not found' })
   req.url = `/api/balloon-contract/${encodeURIComponent(hire.id)}/sign`
   next()
+})
+
+// Friendly fallback for /sign/:orderNumber and /sign-balloon/:orderNumber WITHOUT a
+// token segment. Some email clients (and link-preview crawlers) strip query / path
+// fragments — give the customer a human message instead of Express's default
+// `Cannot GET /sign/13082` 404 body.
+app.get(['/sign/:orderNumber', '/sign-balloon/:orderNumber'], (_req, res) => {
+  res.status(404).type('html').send(
+    `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Link incomplete</title><div style="font-family:system-ui;max-width:500px;margin:60px auto;padding:24px"><h1>This signing link is incomplete</h1><p>Your email may have shortened the link. Please open the original email and tap the full "Sign Contract" button, or call Gender Reveal Ideas on 0406 860 077 for a fresh link.</p></div>`
+  )
 })
 // Capture raw body for Shopify webhook HMAC verification
 app.use('/api/shopify/webhook', express.json({
@@ -583,6 +640,25 @@ app.get('/calendar', async (_req, res) => {
   } else {
     res.sendFile(join(__dirname, '..', 'public', 'calendar.html'))
   }
+})
+
+// Explicit /robots.txt with correct content-type (crawlers ignore text/html robots).
+app.get('/robots.txt', (_req, res) => {
+  res.type('text/plain').send('User-agent: *\nDisallow:\n')
+})
+
+// Explicit /favicon.ico — fall back to PNG icon if no .ico shipped.
+// Returning HTML on /favicon.ico breaks PWA install prompts + Gmail link previews.
+app.get('/favicon.ico', (_req, res) => {
+  const icoPath = join(__dirname, '..', 'public', 'favicon.ico')
+  if (existsSync(icoPath)) return res.sendFile(icoPath)
+  // Fall back to the 192px PNG so browsers still get a real image instead of HTML.
+  const pngPath = join(__dirname, '..', 'public', 'icon-192.png')
+  if (existsSync(pngPath)) {
+    res.type('image/png')
+    return res.sendFile(pngPath)
+  }
+  res.status(404).end()
 })
 
 // SPA fallback — serve index.html for non-API routes (must be AFTER all API routes)

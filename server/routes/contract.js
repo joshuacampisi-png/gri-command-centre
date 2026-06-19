@@ -168,7 +168,8 @@ router.get('/:hireId/sign', (req, res) => {
     .sign-area input[type="text"] {
       width: 100%;
       max-width: 320px;
-      padding: 10px 14px;
+      min-height: 48px;
+      padding: 14px 14px;
       font-size: 16px;
       border: 2px solid #ddd;
       border-radius: 6px;
@@ -181,17 +182,24 @@ router.get('/:hireId/sign', (req, res) => {
     .sign-area button {
       display: block;
       margin: 14px auto 0;
-      padding: 12px 36px;
-      font-size: 15px;
+      min-height: 48px;
+      padding: 14px 36px;
+      font-size: 16px;
       font-weight: 600;
       background: #E91E8C;
       color: #fff;
       border: none;
       border-radius: 6px;
       cursor: pointer;
+      -webkit-tap-highlight-color: rgba(233,30,140,0.2);
+      transition: background 0.15s ease, transform 0.05s ease;
     }
     .sign-area button:hover {
       background: #c71478;
+    }
+    .sign-area button:active {
+      transform: scale(0.98);
+      background: #c0167a;
     }
     .sign-area button:disabled {
       background: #ccc;
@@ -328,9 +336,9 @@ router.get('/:hireId/sign', (req, res) => {
         </div>
       ` : `
         <label for="signature">Type your full name to sign this agreement</label>
-        <input type="text" id="signature" placeholder="Your full name" autocomplete="name" />
+        <input type="text" id="signature" name="signature" placeholder="Your full name" autocomplete="name" autocapitalize="words" autocorrect="off" spellcheck="false" inputmode="text" required />
         <p class="error-msg" id="errorMsg"></p>
-        <button id="signBtn" onclick="submitSignature()">Sign Contract</button>
+        <button id="signBtn" type="button" onclick="submitSignature()">Sign Contract</button>
       `}
     </div>
 

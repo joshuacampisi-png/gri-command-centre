@@ -175,7 +175,7 @@ function buildContractEmail(hire, extraData) {
   const signingUrl = extraData;
 
   return {
-    subject: `TNT Hire Contract — Please Sign Before Collection — Order ${hire.orderNumber}`,
+    subject: `Sign Your TNT Hire Contract — Order ${hire.orderNumber}`,
     text: `Hi ${name},
 
 Before collecting the TNT kit on ${dates.pickupFormatted}, you must sign the hire contract.

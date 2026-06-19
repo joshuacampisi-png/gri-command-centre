@@ -99,9 +99,10 @@ router.get('/:hireId/sign', (req, res) => {
     .signed { background: #DCFCE7; border: 1px solid #10B981; border-radius: 8px; padding: 14px; text-align: center; color: #047857; font-weight: 600; }
     .sig-block { margin-top: 26px; padding-top: 18px; border-top: 2px solid #E43F7B; }
     .sig-block label { display: block; font-size: 12px; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
-    .sig-block input { width: 100%; padding: 10px 12px; font-size: 16px; border: 1px solid #CBD5E1; border-radius: 8px; font-family: 'Brush Script MT', cursive; color: #2D3A4A; }
-    .sig-block button { width: 100%; margin-top: 12px; padding: 14px; font-size: 16px; font-weight: 700; color: #fff; background: linear-gradient(135deg, #E43F7B, #d1356b); border: none; border-radius: 10px; cursor: pointer; transition: opacity .15s; }
+    .sig-block input { width: 100%; min-height: 48px; padding: 14px 12px; font-size: 16px; border: 1px solid #CBD5E1; border-radius: 8px; font-family: 'Brush Script MT', cursive; color: #2D3A4A; }
+    .sig-block button { width: 100%; min-height: 48px; margin-top: 12px; padding: 14px; font-size: 16px; font-weight: 700; color: #fff; background: linear-gradient(135deg, #E43F7B, #d1356b); border: none; border-radius: 10px; cursor: pointer; transition: opacity .15s, transform .05s ease; -webkit-tap-highlight-color: rgba(228,63,123,0.2); }
     .sig-block button:hover { opacity: .92; }
+    .sig-block button:active { transform: scale(0.98); opacity: .88; }
     .sig-block button:disabled { opacity: .5; cursor: not-allowed; }
     .ack { color: #475569; font-size: 12px; line-height: 1.5; margin-bottom: 14px; }
     .err { color: #DC2626; font-size: 13px; margin-top: 8px; }
@@ -163,7 +164,7 @@ router.get('/:hireId/sign', (req, res) => {
       <div class="sig-block">
         <p class="ack">By typing your full name below, you agree to all of the terms in this Helium Balloon Box Rental Agreement.</p>
         <label>Your full name</label>
-        <input id="sig" type="text" placeholder="Type your full name as your signature" autocomplete="name">
+        <input id="sig" name="signature" type="text" placeholder="Type your full name as your signature" autocomplete="name" autocapitalize="words" autocorrect="off" spellcheck="false" inputmode="text" required>
         <button id="submit" type="button">Sign &amp; submit</button>
         <div id="msg"></div>
       </div>
