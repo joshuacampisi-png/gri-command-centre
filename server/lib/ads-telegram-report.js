@@ -54,7 +54,7 @@ export async function sendAdsDailyReport() {
     let marketPulse = ''
     try {
       const claudeRes = await callClaude({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: 200,
         system: 'You are a concise Australian DTC media buying analyst. 3 sentences max. No filler. No greetings.',
         messages: [{

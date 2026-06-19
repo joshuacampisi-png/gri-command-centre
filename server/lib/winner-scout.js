@@ -173,7 +173,7 @@ JSON only:
 { "reason": "2-3 sentences explaining why", "scaleRecommendation": "1 sentence", "confidence": 1-10 }`
 
   const res = await callClaude({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 400,
     messages: [{ role: 'user', content: prompt }]
   }, 'winner-scout-analysis')

@@ -435,7 +435,7 @@ Format response as JSON:
 }`
 
     const response = await callClaude({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 800,
       messages: [{ role: 'user', content: prompt }]
     }, 'ads-refresh-recommendation')
@@ -1115,7 +1115,7 @@ Respond in JSON only:
 { "verdict": "SCALE|HOLD|CUT|EMERGENCY", "urgency": "LOW|MEDIUM|HIGH|CRITICAL", "headline": "one-line summary", "reasoning": "detailed analysis referencing numbers", "specificAction": "exactly what to do right now", "budgetSuggestion": "specific dollar amount or percentage change", "estimatedImpact": "what this action should achieve" }`
 
     const response = await callClaude({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 1000,
       messages: [{ role: 'user', content: prompt }]
     }, 'ads-campaign-recommendation')
@@ -1226,7 +1226,7 @@ Respond in JSON only:
 }`
 
     const response = await callClaude({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 1500,
       messages: [{ role: 'user', content: prompt }]
     }, 'ads-account-recommendation')
@@ -1429,7 +1429,7 @@ Respond as JSON array:
 ONLY return the JSON array. No markdown, no explanation.`
 
     const response = await callClaude({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 1000,
       messages: [{ role: 'user', content: prompt }]
     }, 'ads-copy-generation')

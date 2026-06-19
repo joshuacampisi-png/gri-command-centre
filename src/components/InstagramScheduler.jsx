@@ -90,7 +90,16 @@ async function uploadMediaAPI(files, onProgress) {
 
 async function generateCaptionAPI(params) {
   const res = await fetch(`${API}/generate-caption`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params) })
-  if (!res.ok) throw new Error('Caption generation failed')
+  if (!res.ok) {
+    // Surface the actual server error so staff can see what broke (stale model
+    // ID, rate limit, missing key, etc.) — previously this was opaque.
+    let detail = `HTTP ${res.status}`
+    try {
+      const data = await res.json()
+      detail = data.error || data.message || detail
+    } catch { /* response wasn't JSON */ }
+    throw new Error(detail)
+  }
   return res.json()
 }
 

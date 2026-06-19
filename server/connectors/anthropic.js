@@ -29,7 +29,7 @@ Respond ONLY with a valid JSON object, no markdown, no preamble. Use this exact 
 
 export async function parseTaskWithPablo(rawText) {
   const message = await callClaude({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 1024,
     system: PABLO_SYSTEM_PROMPT,
     messages: [{ role: 'user', content: `Parse this task message:\n\n${rawText}` }]

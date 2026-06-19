@@ -43,7 +43,7 @@ ${pagePath === '/' ? 'Homepage - main store overview'
 Write ONLY the meta description text. No explanation, no quotes.`
 
   const msg = await callClaude({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 200,
     messages: [{ role: 'user', content: prompt }]
   }, 'seo-meta-generator')
@@ -93,7 +93,7 @@ ${pagePath === '/' ? 'Homepage - main store'
 Write ONLY the H1 text. No explanation, no quotes.`
 
   const msg = await callClaude({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 100,
     messages: [{ role: 'user', content: prompt }]
   }, 'seo-h1-generator')

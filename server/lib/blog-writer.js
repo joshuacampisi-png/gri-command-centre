@@ -693,7 +693,7 @@ export async function generateBlogArticle(keyword, options = {}) {
   const prompt = buildArticlePrompt(keyword, articleType, productContext, scrapeContext) + quoteContext + briefContext + feedbackContext
 
   const message = await callClaude({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 16000,
     system: buildSystemPrompt(),
     messages: [{ role: 'user', content: prompt }],

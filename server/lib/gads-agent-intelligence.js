@@ -12,7 +12,7 @@ import { callClaude } from './claude-guard.js'
 import { projectImpact } from './gads-agent-engine.js'
 import { getConfig } from './gads-agent-store.js'
 
-const MODEL = 'claude-sonnet-4-20250514'
+const MODEL = 'claude-sonnet-4-6'
 const AI_ENRICHMENT_CAP = 5 // top N findings per scan get Claude + web search; rest are templated
 
 // ── Best-practice web search (single call, Anthropic web_search tool) ───────

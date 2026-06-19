@@ -288,7 +288,7 @@ Respond with ONLY valid JSON (no markdown, no code fences) in this exact structu
 }`
 
     const response = await callClaude({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 4096,
       messages: [{ role: 'user', content: prompt }]
     }, 'ads-strategist-health-check')
@@ -417,7 +417,7 @@ Respond with ONLY valid JSON (no markdown, no code fences):
 }`
 
     const response = await callClaude({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 2048,
       messages: [{ role: 'user', content: prompt }]
     }, 'ads-strategist-daily-briefing')

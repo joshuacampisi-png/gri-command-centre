@@ -1332,7 +1332,7 @@ Generate 1 ad copy with: primaryText (max 125 chars, hook first), headline (max 
 JSON only: { "primaryText": "...", "headline": "...", "description": "..." }`
 
     const aiRes = await callClaude({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 400,
       messages: [{ role: 'user', content: prompt }]
     }, 'flywheel-create-ad-copy')
@@ -1587,7 +1587,7 @@ Generate 3 ad copy variants. Each: primaryText (max 125 chars, hook first), head
 JSON array only: [{ "primaryText": "...", "headline": "...", "description": "..." }, ...]`
 
     const aiRes = await callClaude({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 1000,
       messages: [{ role: 'user', content: prompt }]
     }, 'flywheel-copy-gen')

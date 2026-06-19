@@ -16,7 +16,7 @@ import { dataFile } from './data-dir.js'
 
 const USAGE_FILE = dataFile('claude-usage.json')
 
-// Pricing per million tokens (claude-sonnet-4-20250514)
+// Pricing per million tokens (claude-sonnet-4-6)
 const PRICE_INPUT_PER_M  = 3.00   // $3.00 per 1M input tokens
 const PRICE_OUTPUT_PER_M = 15.00  // $15.00 per 1M output tokens
 

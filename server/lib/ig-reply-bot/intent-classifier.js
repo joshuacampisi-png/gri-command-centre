@@ -61,7 +61,7 @@ export async function classifyIntent(commentText, postCaption = '') {
 
   try {
     const response = await callClaude({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 256,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: `Comment: "${commentText}"\n\nPost caption context: "${postCaption?.slice(0, 300) || 'N/A'}"` }]

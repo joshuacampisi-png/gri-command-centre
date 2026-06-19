@@ -61,7 +61,7 @@ export async function researchTopic(topic, context = {}) {
 
     // Have Claude analyze and extract key learnings
     const analysis = await callClaude({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 2000,
       messages: [{
         role: 'user',
@@ -275,7 +275,7 @@ export async function analyzeCompetitors(competitors = []) {
   // Analyze patterns with Claude
   if (results.length > 0) {
     const analysis = await callClaude({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 1000,
       messages: [{
         role: 'user',

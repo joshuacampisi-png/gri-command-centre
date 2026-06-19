@@ -62,7 +62,7 @@ export async function generateBlogBrief(spike) {
     }
 
     const msg = await callClaude({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 1500,
       messages: [{ role: 'user', content: buildPrompt(spike) }],
     }, 'trends-blog-generator')

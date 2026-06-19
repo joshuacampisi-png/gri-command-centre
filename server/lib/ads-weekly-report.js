@@ -215,7 +215,7 @@ CRITICAL RULES (non-negotiable):
 - Output ONLY the report text, no preamble`
 
     const claudeRes = await callClaude({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 2500,
       messages: [{ role: 'user', content: claudePrompt }]
     }, 'ads-weekly-report')
