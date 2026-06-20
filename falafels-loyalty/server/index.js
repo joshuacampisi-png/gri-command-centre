@@ -6,7 +6,7 @@ import { existsSync } from 'node:fs';
 
 import { db, logEvent } from './db.js';
 import { hashPassword, checkPassword, issueToken, requireAuth } from './auth.js';
-import { ECONOMY, brisbaneDate, applyStreak } from './economy.js';
+import { ECONOMY, brisbaneDate, applyStreak, cashoutFor } from './economy.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -34,9 +34,13 @@ function publicUser(u) {
     freeRedeemed: u.free_redeemed,
     lastPurchaseDate: u.last_purchase_date,
     vouchers,
+    // What this balance could cash out to right now ($ value), before the
+    // streak-day check (which the client applies live from the device date).
+    cashout: cashoutFor(u.coins),
     economy: {
       signupBonus: ECONOMY.SIGNUP_BONUS,
       coinsPerCoffee: ECONOMY.COINS_PER_COFFEE,
+      coinsPerDollar: ECONOMY.COINS_PER_DOLLAR,
       redeemCoins: ECONOMY.REDEEM_COINS,
       redeemValueCents: ECONOMY.REDEEM_VALUE_CENTS,
       minCheckoutCents: ECONOMY.MIN_CHECKOUT_CENTS,
@@ -84,7 +88,9 @@ app.post('/api/auth/login', (req, res) => {
 });
 
 app.get('/api/me', requireAuth, (req, res) => {
-  res.json({ user: publicUser(req.user) });
+  // Sliding session: hand back a fresh token each visit so an active customer
+  // (especially an installed home-screen app) effectively never gets logged out.
+  res.json({ user: publicUser(req.user), token: issueToken(req.user) });
 });
 
 // ---- buy a coffee (stamp + streak coins; free coffees bank up) -------------
@@ -159,24 +165,44 @@ app.post('/api/free-coffee/claim', requireAuth, (req, res) => {
   res.json({ user: publicUser(fresh) });
 });
 
-// ---- redeem coins for a $5 voucher -----------------------------------------
+// ---- cash out coins for a $ discount voucher -------------------------------
+// Rules: $5 (200 coins) minimum; above that, cash out the largest whole-dollar
+// amount the balance covers (40 coins = $1), remainder stacks. Only allowed on
+// a STREAK DAY — a day the customer bought a coffee (last purchase is today on
+// their own device clock), never a random day.
 
 app.post('/api/redeem', requireAuth, (req, res) => {
   const u = req.user;
-  if (u.coins < ECONOMY.REDEEM_COINS) {
-    return res.status(400).json({ error: `You need ${ECONOMY.REDEEM_COINS} coins to redeem $5` });
+
+  const clientToday = typeof req.body?.today === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(req.body.today)
+    ? req.body.today
+    : null;
+  const today = clientToday || brisbaneDate();
+
+  // Streak-day gate: they must have bought a coffee today to cash out.
+  if (u.last_purchase_date !== today) {
+    return res.status(403).json({
+      error: 'You can only cash out on a streak day — buy a coffee today first',
+    });
   }
+
+  const cash = cashoutFor(u.coins);
+  if (!cash.eligible) {
+    return res.status(400).json({
+      error: `$${(ECONOMY.REDEEM_VALUE_CENTS / 100).toFixed(0)} minimum to cash out (${ECONOMY.REDEEM_COINS} coins)`,
+    });
+  }
+
   const code = voucherCode();
-  // Spend 200 coins for a $5 voucher; any remaining coins keep stacking
-  // towards the next discount.
-  db.prepare('UPDATE users SET coins = coins - ? WHERE id = ?').run(ECONOMY.REDEEM_COINS, u.id);
+  // Spend whole dollars worth of coins; the remainder (< 40) keeps stacking.
+  db.prepare('UPDATE users SET coins = coins - ? WHERE id = ?').run(cash.coinsToSpend, u.id);
   db.prepare(
     'INSERT INTO vouchers (user_id, code, value_cents, status, created_at) VALUES (?, ?, ?, ?, ?)'
-  ).run(u.id, code, ECONOMY.REDEEM_VALUE_CENTS, 'active', new Date().toISOString());
-  logEvent(u.id, 'redeem', { code, value_cents: ECONOMY.REDEEM_VALUE_CENTS, coinsSpent: ECONOMY.REDEEM_COINS });
+  ).run(u.id, code, cash.valueCents, 'active', new Date().toISOString());
+  logEvent(u.id, 'redeem', { code, value_cents: cash.valueCents, coinsSpent: cash.coinsToSpend });
 
   const fresh = db.prepare('SELECT * FROM users WHERE id = ?').get(u.id);
-  res.json({ user: publicUser(fresh), voucher: { code, value_cents: ECONOMY.REDEEM_VALUE_CENTS } });
+  res.json({ user: publicUser(fresh), voucher: { code, value_cents: cash.valueCents } });
 });
 
 // ---- mark a voucher as used at the till ------------------------------------

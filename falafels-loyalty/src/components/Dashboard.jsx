@@ -21,7 +21,9 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
   const eco = user.economy;
   // Streak as it stands on this device right now (handles a missed day live).
   const live = liveStreak(user.currentStreak, user.lastPurchaseDate);
-  const canRedeem = user.coins >= eco.redeemCoins;
+  const cash = user.cashout || { eligible: false, dollars: 0, valueCents: 0 };
+  const isStreakDay = live.boughtToday; // bought a coffee today on this device
+  const canCashout = cash.eligible && isStreakDay; // $5 min AND a streak day
   const progressToRedeem = Math.min(100, (user.coins / eco.redeemCoins) * 100);
   const activeVouchers = user.vouchers.filter((v) => v.status === 'active');
 
@@ -85,7 +87,7 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
   }
 
   async function redeem() {
-    if (!canRedeem || busy) return;
+    if (!canCashout || busy) return;
     setBusy(true);
     try {
       const { user: updated, voucher } = await api.redeem();
@@ -170,15 +172,20 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
           <div className="coin-bar-fill" style={{ width: `${progressToRedeem}%` }} />
         </div>
         <div className="coin-hint">
-          {canRedeem
-            ? `Ready to redeem ${dollars(eco.redeemValueCents)} off!`
-            : `${eco.redeemCoins - user.coins} more coins to your next ${dollars(eco.redeemValueCents)} voucher`}
+          {!cash.eligible
+            ? `${eco.redeemCoins - user.coins} more coins to your first ${dollars(eco.redeemValueCents)} cash-out`
+            : isStreakDay
+              ? `Ready — cash out $${cash.dollars} off today 🎉`
+              : `Buy a coffee today to cash out your $${cash.dollars} (streak day only)`}
         </div>
 
-        <button className="btn-redeem" onClick={redeem} disabled={!canRedeem || busy}>
-          Redeem {eco.redeemCoins} coins → {dollars(eco.redeemValueCents)} off
+        <button className="btn-redeem" onClick={redeem} disabled={!canCashout || busy}>
+          {cash.eligible ? `Cash out $${cash.dollars} off` : `Cash out — ${dollars(eco.redeemValueCents)} minimum`}
         </button>
-        <div className="coin-fine">Earn coins from your welcome bonus &amp; streaks · {eco.redeemCoins} coins = {dollars(eco.redeemValueCents)} (min spend {dollars(eco.minCheckoutCents)}) · leftover coins keep stacking</div>
+        <div className="coin-fine">
+          Welcome bonus + streaks earn coins · {eco.coinsPerDollar} coins = $1 · {dollars(eco.redeemValueCents)} minimum ·
+          cash out on a streak day · leftover coins keep stacking
+        </div>
       </section>
 
       {/* Vouchers */}
@@ -206,6 +213,27 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
         <div className="stat"><strong>{user.freeRedeemed}</strong><span>free claimed</span></div>
         <div className="stat"><strong>{user.longestStreak}</strong><span>best streak</span></div>
       </section>
+
+      {/* Follow us on Instagram */}
+      <a
+        className="ig-link"
+        href="https://www.instagram.com/fala_fels/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <span className="ig-glyph" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+          </svg>
+        </span>
+        <span className="ig-copy">
+          Follow us on Instagram
+          <span>@fala_fels — tag us in your coffee runs</span>
+        </span>
+        <span className="ig-go" aria-hidden="true">→</span>
+      </a>
 
       <footer className="dash-foot">Fala Fels · Shop 2c, 51-73 The Lanes Blv, Mermaid Waters · @fala_fels</footer>
     </div>

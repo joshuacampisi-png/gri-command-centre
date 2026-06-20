@@ -33,6 +33,8 @@ export const api = {
   // customer's real day, not the server's timezone.
   buyCoffee: () => request('/coffee', { method: 'POST', body: { today: localDate() } }),
   claimFreeCoffee: () => request('/free-coffee/claim', { method: 'POST' }),
-  redeem: () => request('/redeem', { method: 'POST' }),
+  // Cash-out also carries the device date so the server can enforce the
+  // "streak day only" rule against the customer's real day.
+  redeem: () => request('/redeem', { method: 'POST', body: { today: localDate() } }),
   useVoucher: (id) => request(`/voucher/${id}/use`, { method: 'POST' }),
 };

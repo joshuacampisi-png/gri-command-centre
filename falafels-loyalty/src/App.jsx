@@ -3,6 +3,7 @@ import { api, getToken, setToken } from './api.js';
 import AuthScreen from './components/AuthScreen.jsx';
 import Dashboard from './components/Dashboard.jsx';
 import Toast from './components/Toast.jsx';
+import InstallPrompt from './components/InstallPrompt.jsx';
 import logo from './assets/logo.png';
 
 export default function App() {
@@ -22,7 +23,10 @@ export default function App() {
     }
     api
       .me()
-      .then(({ user }) => setUser(user))
+      .then(({ user, token }) => {
+        if (token) setToken(token); // sliding session — keep them logged in
+        setUser(user);
+      })
       .catch(() => setToken(null))
       .finally(() => setLoading(false));
   }, []);
@@ -52,6 +56,9 @@ export default function App() {
       ) : (
         <AuthScreen onAuthed={handleAuthed} showToast={showToast} />
       )}
+      {/* Home-screen install prompt — shows once the customer is in the app
+          (so on Android the install carries their logged-in session). */}
+      {user && <InstallPrompt />}
       {toast && <Toast key={toast.id} toast={toast} onDone={() => setToast(null)} />}
     </>
   );

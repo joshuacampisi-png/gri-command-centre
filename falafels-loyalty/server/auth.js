@@ -3,7 +3,10 @@ import jwt from 'jsonwebtoken';
 import { db } from './db.js';
 
 const SECRET = process.env.FALAFELS_JWT_SECRET || 'falafels-dev-secret-change-me';
-const TOKEN_TTL = '60d';
+// Long-lived so an installed home-screen app effectively stays logged in. The
+// token is also re-issued on every /me call (sliding expiry), so an active
+// customer never gets signed out.
+const TOKEN_TTL = '365d';
 
 export function hashPassword(pw) {
   return bcrypt.hashSync(pw, 10);

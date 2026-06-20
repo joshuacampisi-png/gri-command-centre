@@ -11,10 +11,13 @@ export const ECONOMY = {
   // Coins come from the signup bonus + streaks, not per coffee.
   COINS_PER_COFFEE: 0,
 
-  // Redemption: 200 Falafel Coins = $5.00 off (min spend $5).
-  // Redeeming spends 200; any remainder keeps stacking.
-  REDEEM_COINS: 200,
-  REDEEM_VALUE_CENTS: 500,
+  // Cash-out: 40 Falafel Coins = $1.00 (so 200 = $5.00).
+  // $5 (200 coins) is the MINIMUM cash-out. Above that, a customer cashes out
+  // the largest whole-dollar amount their balance covers; leftover coins
+  // (under 40) keep stacking. Cash-out is only allowed on a streak day.
+  COINS_PER_DOLLAR: 40,
+  REDEEM_COINS: 200, // minimum coins to cash out ($5)
+  REDEEM_VALUE_CENTS: 500, // the $5 minimum, in cents
   MIN_CHECKOUT_CENTS: 500,
 
   // Streak milestones (consecutive Brisbane days with a purchase).
@@ -79,7 +82,18 @@ export function applyStreak(state, today) {
   return { streak, sameDay, streakBonus, milestone, today };
 }
 
-// How many whole $5 vouchers a coin balance can buy.
-export function redeemableVouchers(coins) {
-  return Math.floor(coins / ECONOMY.REDEEM_COINS);
+// Work out a cash-out for a coin balance. You must have at least the $5 minimum
+// (200 coins); then you cash out the largest whole-dollar amount your balance
+// covers, spending 40 coins per dollar and leaving the remainder to stack.
+export function cashoutFor(coins) {
+  if (coins < ECONOMY.REDEEM_COINS) {
+    return { eligible: false, dollars: 0, valueCents: 0, coinsToSpend: 0 };
+  }
+  const dollars = Math.floor(coins / ECONOMY.COINS_PER_DOLLAR);
+  return {
+    eligible: true,
+    dollars,
+    valueCents: dollars * 100,
+    coinsToSpend: dollars * ECONOMY.COINS_PER_DOLLAR,
+  };
 }

@@ -1,0 +1,16 @@
+{
+  "name": "Falafels Loyalty",
+  "short_name": "Falafels",
+  "description": "Your Fala Fels coffee card — stamps, streaks and Falafel Coins.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#149be0",
+  "theme_color": "#149be0",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
