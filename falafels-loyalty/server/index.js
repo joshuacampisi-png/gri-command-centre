@@ -152,14 +152,17 @@ app.post('/api/redeem', requireAuth, (req, res) => {
     return res.status(400).json({ error: `You need ${ECONOMY.REDEEM_COINS} coins to redeem $5` });
   }
   const code = voucherCode();
-  db.prepare('UPDATE users SET coins = coins - ? WHERE id = ?').run(ECONOMY.REDEEM_COINS, u.id);
+  const coinsSpent = u.coins;
+  // Cashing in the discount resets the coin balance to zero — a clean slate
+  // for the next streak cycle toward the next $5.
+  db.prepare('UPDATE users SET coins = 0 WHERE id = ?').run(u.id);
   db.prepare(
     'INSERT INTO vouchers (user_id, code, value_cents, status, created_at) VALUES (?, ?, ?, ?, ?)'
   ).run(u.id, code, ECONOMY.REDEEM_VALUE_CENTS, 'active', new Date().toISOString());
-  logEvent(u.id, 'redeem', { code, value_cents: ECONOMY.REDEEM_VALUE_CENTS });
+  logEvent(u.id, 'redeem', { code, value_cents: ECONOMY.REDEEM_VALUE_CENTS, coinsSpent });
 
   const fresh = db.prepare('SELECT * FROM users WHERE id = ?').get(u.id);
-  res.json({ user: publicUser(fresh), voucher: { code, value_cents: ECONOMY.REDEEM_VALUE_CENTS } });
+  res.json({ user: publicUser(fresh), voucher: { code, value_cents: ECONOMY.REDEEM_VALUE_CENTS }, coinsReset: coinsSpent });
 });
 
 // ---- mark a voucher as used at the till ------------------------------------

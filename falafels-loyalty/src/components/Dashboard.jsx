@@ -2,6 +2,8 @@ import React, { useState, useRef } from 'react';
 import { api } from '../api.js';
 import LoyaltyCard from './LoyaltyCard.jsx';
 import Confetti from './Confetti.jsx';
+import StreakTracker from './StreakTracker.jsx';
+import AnimatedNumber from './AnimatedNumber.jsx';
 
 function dollars(cents) {
   return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
@@ -12,6 +14,7 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
   const [confettiKey, setConfettiKey] = useState(0);
   const [lastStampIndex, setLastStampIndex] = useState(-1);
   const [coinPulse, setCoinPulse] = useState(false);
+  const [streakBump, setStreakBump] = useState(0);
   const stampTimer = useRef(null);
 
   const eco = user.economy;
@@ -23,6 +26,7 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
     if (busy) return;
     setBusy(true);
     const prevPunches = user.punches;
+    const prevStreak = user.currentStreak;
     try {
       const { user: updated, result } = await api.buyCoffee();
 
@@ -36,6 +40,11 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
       setUser(updated);
       setCoinPulse(true);
       setTimeout(() => setCoinPulse(false), 700);
+
+      // Fire the streak animation when the streak actually ticks up today.
+      if (result.streak > prevStreak) {
+        setStreakBump((k) => k + 1);
+      }
 
       // Feedback messages.
       if (result.type === 'free') {
@@ -67,7 +76,9 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
       const { user: updated, voucher } = await api.redeem();
       setUser(updated);
       setConfettiKey((k) => k + 1);
-      showToast(`${dollars(voucher.value_cents)} voucher unlocked! Code ${voucher.code}`, 'success');
+      setCoinPulse(true);
+      setTimeout(() => setCoinPulse(false), 700);
+      showToast(`${dollars(voucher.value_cents)} voucher unlocked — coins reset. Code ${voucher.code}`, 'success');
     } catch (err) {
       showToast(err.message, 'error');
     } finally {
@@ -100,18 +111,11 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
         <button className="link-logout" onClick={onLogout}>Log out</button>
       </header>
 
-      {/* Streak banner */}
-      <div className={`streak-banner ${user.currentStreak > 0 ? 'active' : ''}`}>
-        <span className="flame">🔥</span>
-        <div>
-          <strong>{user.currentStreak}-day streak</strong>
-          <span>
-            {user.currentStreak === 0
-              ? 'Buy a coffee today to start your streak'
-              : `Longest: ${user.longestStreak} days · keep it alive for bonus coins`}
-          </span>
-        </div>
-      </div>
+      <StreakTracker
+        streak={user.currentStreak}
+        longestStreak={user.longestStreak}
+        bumpKey={streakBump}
+      />
 
       <LoyaltyCard user={user} lastStampIndex={lastStampIndex} />
 
@@ -126,7 +130,7 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
           <div className="coin-label">Falafel Coins</div>
           <div className={`coin-balance ${coinPulse ? 'pulse' : ''}`}>
             <span className="coin-icon">🪙</span>
-            {user.coins}
+            <AnimatedNumber value={user.coins} />
           </div>
         </div>
 
@@ -142,7 +146,7 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
         <button className="btn-redeem" onClick={redeem} disabled={!canRedeem || busy}>
           Redeem {eco.redeemCoins} coins → {dollars(eco.redeemValueCents)} off
         </button>
-        <div className="coin-fine">{eco.redeemCoins} coins = {dollars(eco.redeemValueCents)} · min spend {dollars(eco.minCheckoutCents)}</div>
+        <div className="coin-fine">{eco.redeemCoins} coins = {dollars(eco.redeemValueCents)} · min spend {dollars(eco.minCheckoutCents)} · redeeming resets coins for your next streak</div>
       </section>
 
       {/* Vouchers */}
