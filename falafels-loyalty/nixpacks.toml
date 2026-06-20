@@ -1,0 +1,9 @@
+# Railway / Nixpacks build for the Falafels Loyalty app.
+# In Railway, set this service's Root Directory to "falafels-loyalty".
+providers = ["node"]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "npm start"

@@ -4,7 +4,9 @@ import { dirname, join } from 'node:path';
 import { mkdirSync } from 'node:fs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const dataDir = join(__dirname, '..', 'data');
+// On Railway this points at a mounted volume (e.g. /data) so the database
+// survives deploys/restarts. Locally it defaults to ./data.
+const dataDir = process.env.FALAFELS_DATA_DIR || join(__dirname, '..', 'data');
 mkdirSync(dataDir, { recursive: true });
 
 export const db = new Database(join(dataDir, 'falafels.db'));
