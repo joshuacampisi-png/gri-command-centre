@@ -27,7 +27,7 @@ function publicUser(u) {
     punches: u.punches,
     punchesNeeded: ECONOMY.PUNCHES_FOR_FREE,
     punchesLeft,
-    freeCoffeeReady: u.punches >= ECONOMY.PUNCHES_FOR_FREE,
+    freeCoffees: u.free_coffees,
     currentStreak: u.current_streak,
     longestStreak: u.longest_streak,
     totalCoffees: u.total_coffees,
@@ -35,6 +35,7 @@ function publicUser(u) {
     lastPurchaseDate: u.last_purchase_date,
     vouchers,
     economy: {
+      signupBonus: ECONOMY.SIGNUP_BONUS,
       coinsPerCoffee: ECONOMY.COINS_PER_COFFEE,
       redeemCoins: ECONOMY.REDEEM_COINS,
       redeemValueCents: ECONOMY.REDEEM_VALUE_CENTS,
@@ -65,11 +66,11 @@ app.post('/api/auth/signup', (req, res) => {
   if (existing) return res.status(409).json({ error: 'That name is taken — try logging in instead' });
 
   const info = db
-    .prepare('INSERT INTO users (name, username, password_hash, created_at) VALUES (?, ?, ?, ?)')
-    .run(name, username, hashPassword(password), new Date().toISOString());
+    .prepare('INSERT INTO users (name, username, password_hash, coins, created_at) VALUES (?, ?, ?, ?, ?)')
+    .run(name, username, hashPassword(password), ECONOMY.SIGNUP_BONUS, new Date().toISOString());
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(info.lastInsertRowid);
-  logEvent(user.id, 'signup');
-  res.json({ token: issueToken(user), user: publicUser(user) });
+  logEvent(user.id, 'signup', { bonus: ECONOMY.SIGNUP_BONUS });
+  res.json({ token: issueToken(user), user: publicUser(user), signupBonus: ECONOMY.SIGNUP_BONUS });
 });
 
 app.post('/api/auth/login', (req, res) => {
@@ -86,62 +87,71 @@ app.get('/api/me', requireAuth, (req, res) => {
   res.json({ user: publicUser(req.user) });
 });
 
-// ---- buy a coffee (punch + coins + streak) ---------------------------------
+// ---- buy a coffee (stamp + streak coins; free coffees bank up) -------------
 
 app.post('/api/coffee', requireAuth, (req, res) => {
   const u = req.user;
   const today = brisbaneDate();
 
-  const isFreeRedemption = u.punches >= ECONOMY.PUNCHES_FOR_FREE;
-
-  // Streak handling (a free coffee still counts as a visit).
+  // Streak handling.
   const s = applyStreak({ current_streak: u.current_streak, last_purchase_date: u.last_purchase_date }, today);
   const baseCoins = ECONOMY.COINS_PER_COFFEE;
   const coinsEarned = baseCoins + s.streakBonus;
 
-  let newPunches;
-  if (isFreeRedemption) {
-    newPunches = 0; // the 9th coffee was free — card resets
-  } else {
-    newPunches = u.punches + 1;
+  // Every coffee is a stamp. Filling the card banks a free coffee and resets
+  // the stamps so the customer can keep stacking towards the next free one.
+  let newPunches = u.punches + 1;
+  let freeEarned = false;
+  let newFreeCoffees = u.free_coffees;
+  if (newPunches >= ECONOMY.PUNCHES_FOR_FREE) {
+    newPunches = 0;
+    newFreeCoffees += 1;
+    freeEarned = true;
   }
 
   const newStreak = s.streak;
   const longest = Math.max(u.longest_streak, newStreak);
-  const freeRedeemed = u.free_redeemed + (isFreeRedemption ? 1 : 0);
 
   db.prepare(
     `UPDATE users SET
        coins = coins + ?,
        punches = ?,
-       free_redeemed = ?,
+       free_coffees = ?,
        current_streak = ?,
        longest_streak = ?,
        last_purchase_date = ?,
        total_coffees = total_coffees + 1
      WHERE id = ?`
-  ).run(coinsEarned, newPunches, freeRedeemed, newStreak, longest, today, u.id);
+  ).run(coinsEarned, newPunches, newFreeCoffees, newStreak, longest, today, u.id);
 
-  logEvent(u.id, isFreeRedemption ? 'free_coffee' : 'coffee', {
-    coinsEarned,
-    streak: newStreak,
-    milestone: s.milestone,
-  });
+  logEvent(u.id, 'coffee', { coinsEarned, streak: newStreak, milestone: s.milestone, freeEarned });
 
   const fresh = db.prepare('SELECT * FROM users WHERE id = ?').get(u.id);
   res.json({
     user: publicUser(fresh),
     result: {
-      type: isFreeRedemption ? 'free' : 'punch',
+      type: 'punch',
       baseCoins,
       streakBonus: s.streakBonus,
       coinsEarned,
       streak: newStreak,
       sameDay: s.sameDay,
       milestone: s.milestone,
-      freeCoffeeJustReady: !isFreeRedemption && newPunches >= ECONOMY.PUNCHES_FOR_FREE,
+      freeEarned,
+      freeCoffees: newFreeCoffees,
     },
   });
+});
+
+// ---- claim a banked free coffee --------------------------------------------
+
+app.post('/api/free-coffee/claim', requireAuth, (req, res) => {
+  const u = req.user;
+  if (u.free_coffees < 1) return res.status(400).json({ error: 'No free coffees to claim yet' });
+  db.prepare('UPDATE users SET free_coffees = free_coffees - 1, free_redeemed = free_redeemed + 1 WHERE id = ?').run(u.id);
+  logEvent(u.id, 'free_coffee_claimed');
+  const fresh = db.prepare('SELECT * FROM users WHERE id = ?').get(u.id);
+  res.json({ user: publicUser(fresh) });
 });
 
 // ---- redeem coins for a $5 voucher -----------------------------------------
@@ -152,17 +162,16 @@ app.post('/api/redeem', requireAuth, (req, res) => {
     return res.status(400).json({ error: `You need ${ECONOMY.REDEEM_COINS} coins to redeem $5` });
   }
   const code = voucherCode();
-  const coinsSpent = u.coins;
-  // Cashing in the discount resets the coin balance to zero — a clean slate
-  // for the next streak cycle toward the next $5.
-  db.prepare('UPDATE users SET coins = 0 WHERE id = ?').run(u.id);
+  // Spend 200 coins for a $5 voucher; any remaining coins keep stacking
+  // towards the next discount.
+  db.prepare('UPDATE users SET coins = coins - ? WHERE id = ?').run(ECONOMY.REDEEM_COINS, u.id);
   db.prepare(
     'INSERT INTO vouchers (user_id, code, value_cents, status, created_at) VALUES (?, ?, ?, ?, ?)'
   ).run(u.id, code, ECONOMY.REDEEM_VALUE_CENTS, 'active', new Date().toISOString());
-  logEvent(u.id, 'redeem', { code, value_cents: ECONOMY.REDEEM_VALUE_CENTS, coinsSpent });
+  logEvent(u.id, 'redeem', { code, value_cents: ECONOMY.REDEEM_VALUE_CENTS, coinsSpent: ECONOMY.REDEEM_COINS });
 
   const fresh = db.prepare('SELECT * FROM users WHERE id = ?').get(u.id);
-  res.json({ user: publicUser(fresh), voucher: { code, value_cents: ECONOMY.REDEEM_VALUE_CENTS }, coinsReset: coinsSpent });
+  res.json({ user: publicUser(fresh), voucher: { code, value_cents: ECONOMY.REDEEM_VALUE_CENTS } });
 });
 
 // ---- mark a voucher as used at the till ------------------------------------

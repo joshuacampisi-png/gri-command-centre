@@ -30,9 +30,8 @@ export default function LoyaltyCard({ user, lastStampIndex }) {
   for (let i = 0; i < total; i++) {
     slots.push({ filled: i < user.punches, free: false, index: i });
   }
-  // 9th slot = the free coffee reward
-  const freeReady = user.freeCoffeeReady;
-  slots.push({ filled: false, free: true, index: total, ready: freeReady });
+  // 9th slot = the free coffee reward marker
+  slots.push({ filled: false, free: true, index: total });
 
   return (
     <div className="loyalty-card">
@@ -41,7 +40,7 @@ export default function LoyaltyCard({ user, lastStampIndex }) {
         <div className="logo-box small"><span>Fala</span><span>Fels</span></div>
       </div>
 
-      <div className={`cups-grid ${freeReady ? 'all-ready' : ''}`}>
+      <div className="cups-grid">
         {slots.map((s) => (
           <Cup
             key={s.index}
@@ -53,11 +52,9 @@ export default function LoyaltyCard({ user, lastStampIndex }) {
       </div>
 
       <div className="card-foot">
-        {freeReady ? (
-          <span className="card-foot-free">🎉 Your next coffee is FREE</span>
-        ) : (
-          <span>{user.punchesLeft} more until a free coffee</span>
-        )}
+        <span>
+          <strong>{user.punchesLeft}</strong> more stamp{user.punchesLeft === 1 ? '' : 's'} until your next free coffee
+        </span>
       </div>
     </div>
   );

@@ -2,21 +2,26 @@
 // Every tunable number lives here so it's easy to adjust later.
 
 export const ECONOMY = {
-  // Stamp card: buy 8, the 9th is free.
+  // Stamp card: buy 8, the 9th is free. Free coffees bank up until claimed.
   PUNCHES_FOR_FREE: 8,
 
-  // Coins earned per coffee bought.
-  COINS_PER_COFFEE: 10,
+  // One-off welcome bonus when an account is created.
+  SIGNUP_BONUS: 50,
+
+  // Coins come from the signup bonus + streaks, not per coffee.
+  COINS_PER_COFFEE: 0,
 
   // Redemption: 200 Falafel Coins = $5.00 off (min spend $5).
+  // Redeeming spends 200; any remainder keeps stacking.
   REDEEM_COINS: 200,
   REDEEM_VALUE_CENTS: 500,
   MIN_CHECKOUT_CENTS: 500,
 
   // Streak milestones (consecutive Brisbane days with a purchase).
-  // These repeat every week: day 3 -> +50, day 7 -> +200, day 10 -> +50, day 14 -> +200 ...
+  // These repeat every week: day 3 -> +50, day 7 -> +100, day 10 -> +50, day 14 -> +100 ...
+  // Signup 50 + day-3 50 + day-7 100 = 200 = $5 off across the first week.
   STREAK_3DAY_BONUS: 50,
-  STREAK_7DAY_BONUS: 200,
+  STREAK_7DAY_BONUS: 100,
 };
 
 const TZ = 'Australia/Brisbane';

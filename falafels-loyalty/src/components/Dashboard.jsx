@@ -47,21 +47,33 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
       }
 
       // Feedback messages.
-      if (result.type === 'free') {
+      if (result.freeEarned) {
         setConfettiKey((k) => k + 1);
-        showToast('Free coffee redeemed — card reset. Enjoy! ☕', 'success');
-      } else if (result.freeCoffeeJustReady) {
-        setConfettiKey((k) => k + 1);
-        showToast('Card full! Your next coffee is FREE 🎉', 'success');
+        showToast(`Card full — free coffee earned! You have ${result.freeCoffees} to claim ☕`, 'success');
       } else if (result.milestone) {
         setConfettiKey((k) => k + 1);
         const m = result.milestone;
         showToast(`${m.days}-day streak! +${m.coins} Falafel Coins 🔥`, 'success');
-      } else if (result.streakBonus) {
+      } else if (result.coinsEarned > 0) {
         showToast(`+${result.coinsEarned} Falafel Coins · ${result.streak}-day streak 🔥`, 'success');
       } else {
-        showToast(`+${result.coinsEarned} Falafel Coins`, 'success');
+        showToast(`Stamp added · ${result.streak}-day streak`, 'success');
       }
+    } catch (err) {
+      showToast(err.message, 'error');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function claimFreeCoffee() {
+    if (user.freeCoffees < 1 || busy) return;
+    setBusy(true);
+    try {
+      const { user: updated } = await api.claimFreeCoffee();
+      setUser(updated);
+      setConfettiKey((k) => k + 1);
+      showToast('Enjoy your free coffee! ☕', 'success');
     } catch (err) {
       showToast(err.message, 'error');
     } finally {
@@ -78,7 +90,7 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
       setConfettiKey((k) => k + 1);
       setCoinPulse(true);
       setTimeout(() => setCoinPulse(false), 700);
-      showToast(`${dollars(voucher.value_cents)} voucher unlocked — coins reset. Code ${voucher.code}`, 'success');
+      showToast(`${dollars(voucher.value_cents)} voucher unlocked! Code ${voucher.code}`, 'success');
     } catch (err) {
       showToast(err.message, 'error');
     } finally {
@@ -121,8 +133,24 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
 
       <button className="btn-coffee" onClick={buyCoffee} disabled={busy}>
         <span className="coffee-emoji">☕</span>
-        {user.freeCoffeeReady ? 'Redeem my FREE coffee' : 'I bought a coffee'}
+        I bought a coffee
       </button>
+
+      {/* Banked free coffees — stack up, claim whenever */}
+      {user.freeCoffees > 0 && (
+        <section className="free-card">
+          <div className="free-left">
+            <div className="free-count">☕ {user.freeCoffees}</div>
+            <div className="free-text">
+              free coffee{user.freeCoffees === 1 ? '' : 's'} ready
+              <span>claim whenever you like — they keep stacking</span>
+            </div>
+          </div>
+          <button className="btn-claim" onClick={claimFreeCoffee} disabled={busy}>
+            Claim 1
+          </button>
+        </section>
+      )}
 
       {/* Falafel Coins */}
       <section className="coin-card">
@@ -140,13 +168,13 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
         <div className="coin-hint">
           {canRedeem
             ? `Ready to redeem ${dollars(eco.redeemValueCents)} off!`
-            : `${eco.redeemCoins - user.coins} coins to your next ${dollars(eco.redeemValueCents)} voucher`}
+            : `${eco.redeemCoins - user.coins} more coins to your next ${dollars(eco.redeemValueCents)} voucher`}
         </div>
 
         <button className="btn-redeem" onClick={redeem} disabled={!canRedeem || busy}>
           Redeem {eco.redeemCoins} coins → {dollars(eco.redeemValueCents)} off
         </button>
-        <div className="coin-fine">{eco.redeemCoins} coins = {dollars(eco.redeemValueCents)} · min spend {dollars(eco.minCheckoutCents)} · redeeming resets coins for your next streak</div>
+        <div className="coin-fine">Earn coins from your welcome bonus &amp; streaks · {eco.redeemCoins} coins = {dollars(eco.redeemValueCents)} (min spend {dollars(eco.minCheckoutCents)}) · leftover coins keep stacking</div>
       </section>
 
       {/* Vouchers */}
@@ -171,7 +199,7 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
       {/* Stats */}
       <section className="stats">
         <div className="stat"><strong>{user.totalCoffees}</strong><span>coffees</span></div>
-        <div className="stat"><strong>{user.freeRedeemed}</strong><span>free earned</span></div>
+        <div className="stat"><strong>{user.freeRedeemed}</strong><span>free claimed</span></div>
         <div className="stat"><strong>{user.longestStreak}</strong><span>best streak</span></div>
       </section>
 

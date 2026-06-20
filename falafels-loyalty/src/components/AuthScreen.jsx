@@ -13,8 +13,11 @@ export default function AuthScreen({ onAuthed, showToast }) {
     setBusy(true);
     try {
       const fn = mode === 'signup' ? api.signup : api.login;
-      const { token, user } = await fn(name.trim(), password);
-      onAuthed(token, user);
+      const res = await fn(name.trim(), password);
+      onAuthed(res.token, res.user);
+      if (mode === 'signup' && res.signupBonus) {
+        showToast(`Welcome! +${res.signupBonus} Falafel Coins to start 🪙`, 'success');
+      }
     } catch (err) {
       showToast(err.message, 'error');
     } finally {

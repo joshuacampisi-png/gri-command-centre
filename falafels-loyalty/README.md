@@ -6,11 +6,16 @@ daily streaks, and earns **Falafel Coins** that convert to cash discounts.
 
 ## How it works
 
-- **Stamp card:** buy 8 coffees, the 9th is free (mirrors the paper card).
-- **Falafel Coins:** earn 10 coins per coffee. 200 coins = **$5 off** (min spend $5).
-- **Streaks (Brisbane days):** every 3rd consecutive day = +50 coins, every 7th
-  day = +200 coins ($5). Repeats weekly.
-- **Vouchers:** redeem 200 coins for a $5 voucher with a code to show at the till.
+- **Stamp card:** every coffee is a stamp; 8 stamps bank a free coffee and the
+  card resets. Free coffees **stack** — claim them whenever you like.
+- **Falafel Coins** come from the welcome bonus + streaks (not per coffee):
+  - Signup bonus: **+50**
+  - 3-day streak: **+50**, 7-day streak: **+100** (repeats weekly)
+  - Signup 50 + day-3 50 + day-7 100 = **200 = $5 off across the first week**.
+- **Coins stack:** they keep building if unclaimed. Redeeming a $5 voucher spends
+  200 coins; any remainder carries over toward the next discount.
+- **Vouchers:** redeem 200 coins for a $5 voucher (min spend $5) with a code to
+  show at the till.
 
 All economy numbers live in [`server/economy.js`](server/economy.js) — tweak there.
 

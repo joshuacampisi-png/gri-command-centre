@@ -28,6 +28,7 @@ export const api = {
   login: (name, password) => request('/auth/login', { method: 'POST', body: { name, password } }),
   me: () => request('/me'),
   buyCoffee: () => request('/coffee', { method: 'POST' }),
+  claimFreeCoffee: () => request('/free-coffee/claim', { method: 'POST' }),
   redeem: () => request('/redeem', { method: 'POST' }),
   useVoucher: (id) => request(`/voucher/${id}/use`, { method: 'POST' }),
 };

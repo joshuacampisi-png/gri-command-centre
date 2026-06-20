@@ -92,6 +92,15 @@ button{font-family:inherit;cursor:pointer;border:none}
 .btn-coffee:active{transform:scale(.98)}
 .coffee-emoji{font-size:22px}
 
+.free-card{display:flex;align-items:center;justify-content:space-between;gap:12px;background:linear-gradient(135deg,#ffd95e 0%,var(--gold) 100%);border-radius:18px;padding:14px 16px;margin-bottom:16px;box-shadow:0 8px 20px rgba(245,180,24,.3);animation:rise .35s ease both}
+.free-left{display:flex;align-items:center;gap:12px}
+.free-count{font-size:26px;font-weight:900;color:var(--ink);white-space:nowrap}
+.free-text{font-size:14px;font-weight:800;color:var(--ink);line-height:1.2}
+.free-text span{display:block;font-size:11.5px;font-weight:600;color:#7a5c00;margin-top:2px}
+.btn-claim{background:var(--ink);color:#fff;font-weight:800;font-size:14px;padding:11px 16px;border-radius:12px;white-space:nowrap;transition:transform .08s}
+.btn-claim:active{transform:scale(.96)}
+.btn-claim:disabled{opacity:.6}
+
 .coin-card{background:#fff;border-radius:18px;padding:18px;box-shadow:0 6px 16px rgba(8,60,100,.08);margin-bottom:16px}
 .coin-head{display:flex;justify-content:space-between;align-items:center}
 .coin-label{font-size:14px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
@@ -162,12 +171,13 @@ button{font-family:inherit;cursor:pointer;border:none}
 // ---- Falafel economy (mirrors server/economy.js) --------------------------
 const ECO = {
   PUNCHES_FOR_FREE: 8,
-  COINS_PER_COFFEE: 10,
+  SIGNUP_BONUS: 50,
+  COINS_PER_COFFEE: 0,   // coins come from signup + streaks
   REDEEM_COINS: 200,
   REDEEM_VALUE_CENTS: 500,
   MIN_CHECKOUT_CENTS: 500,
   STREAK_3DAY_BONUS: 50,
-  STREAK_7DAY_BONUS: 200,
+  STREAK_7DAY_BONUS: 100, // signup 50 + day3 50 + day7 100 = 200 = $5
 };
 
 const KEY = 'falafel_demo_state';
@@ -183,7 +193,7 @@ function storeDel(k) { try { localStorage.removeItem(k); } catch { delete mem[k]
 
 function blankUser(name) {
   return {
-    name, coins: 0, punches: 0, freeRedeemed: 0,
+    name, coins: ECO.SIGNUP_BONUS, punches: 0, freeCoffees: 0, freeRedeemed: 0,
     currentStreak: 0, longestStreak: 0, lastDay: null,
     totalCoffees: 0, vouchers: [], day: 1, // demo simulated day
   };
@@ -270,7 +280,6 @@ function confetti() {
 
 // ---- actions ---------------------------------------------------------------
 function buyCoffee() {
-  const isFree = user.punches >= ECO.PUNCHES_FOR_FREE;
   const prevStreak = user.currentStreak;
   const s = applyStreak(user, user.day);
   const earned = ECO.COINS_PER_COFFEE + s.bonus;
@@ -280,18 +289,33 @@ function buyCoffee() {
   user.currentStreak = s.streak;
   user.longestStreak = Math.max(user.longestStreak, s.streak);
   user.lastDay = user.day;
-  user.punches = isFree ? 0 : user.punches + 1;
-  if (isFree) user.freeRedeemed += 1;
+
+  // Every coffee is a stamp; filling the card banks a free coffee and resets.
+  user.punches += 1;
+  let freeEarned = false;
+  if (user.punches >= ECO.PUNCHES_FOR_FREE) {
+    user.punches = 0;
+    user.freeCoffees += 1;
+    freeEarned = true;
+  }
 
   coinPulse = true;
   if (s.streak > prevStreak) streakBumpKey++;
 
-  if (isFree) { confetti(); toast('Free coffee redeemed — card reset. Enjoy!'); }
-  else if (user.punches >= ECO.PUNCHES_FOR_FREE) { confetti(); toast('Card full! Your next coffee is FREE'); }
+  if (freeEarned) { confetti(); toast('Card full — free coffee earned! You have ' + user.freeCoffees + ' to claim'); }
   else if (s.milestone) { confetti(); toast(s.milestone.days + '-day streak! +' + s.milestone.coins + ' Falafel Coins'); }
-  else if (s.bonus) toast('+' + earned + ' Falafel Coins · ' + s.streak + '-day streak');
-  else toast('+' + earned + ' Falafel Coins');
+  else if (earned > 0) toast('+' + earned + ' Falafel Coins · ' + s.streak + '-day streak');
+  else toast('Stamp added · ' + s.streak + '-day streak');
 
+  save(user); render();
+}
+
+function claimFreeCoffee() {
+  if (user.freeCoffees < 1) return;
+  user.freeCoffees -= 1;
+  user.freeRedeemed += 1;
+  confetti();
+  toast('Enjoy your free coffee!');
   save(user); render();
 }
 
@@ -299,10 +323,10 @@ function redeem() {
   if (user.coins < ECO.REDEEM_COINS) return;
   const code = 'FAL-' + Math.random().toString(36).slice(2, 6).toUpperCase() + Math.random().toString(36).slice(2, 6).toUpperCase();
   user.vouchers.unshift({ code, value: ECO.REDEEM_VALUE_CENTS, status: 'active' });
-  user.coins = 0; // reset for next streak cycle
+  user.coins -= ECO.REDEEM_COINS; // spend 200; remainder keeps stacking
   coinPulse = true;
   confetti();
-  toast(dollars(ECO.REDEEM_VALUE_CENTS) + ' voucher unlocked — coins reset. Code ' + code);
+  toast(dollars(ECO.REDEEM_VALUE_CENTS) + ' voucher unlocked! Code ' + code);
   save(user); render();
 }
 
@@ -322,6 +346,7 @@ function nextDay() {
 function signup(name) {
   user = blankUser(name.trim() || 'Mate');
   save(user); render();
+  toast('Welcome! +' + ECO.SIGNUP_BONUS + ' Falafel Coins to start');
 }
 function logout() { storeDel(KEY); user = null; render(); }
 
@@ -351,7 +376,6 @@ function cupSvg() {
 function dashView() {
   const u = user;
   const punchesLeft = Math.max(0, ECO.PUNCHES_FOR_FREE - u.punches);
-  const freeReady = u.punches >= ECO.PUNCHES_FOR_FREE;
   const pos = weekPos(u.currentStreak);
   const nb = nextBonus(pos);
   const flameSize = 30 + Math.min(u.currentStreak, 14) * 1.6;
@@ -366,7 +390,7 @@ function dashView() {
   let dots = '';
   for (let i = 1; i <= 7; i++) {
     const filled = i <= pos;
-    const reward = i === 3 ? 50 : i === 7 ? 200 : 0;
+    const reward = i === 3 ? ECO.STREAK_3DAY_BONUS : i === 7 ? ECO.STREAK_7DAY_BONUS : 0;
     dots += `<div class="day-wrap">
       <div class="day-dot ${filled ? 'on' : ''} ${reward ? 'is-reward' : ''}" data-day="${i}">${filled ? '<span class="day-tick">☕</span>' : '<span class="day-i">' + i + '</span>'}</div>
       ${reward ? '<span class="reward-tag">+' + reward + '</span>' : ''}
@@ -404,11 +428,19 @@ function dashView() {
         <div class="card-tagline">Purchase 8 coffees &amp; get your 9th FREE!</div>
         <div class="logo-box small"><span>Fala</span><span>Fels</span></div>
       </div>
-      <div class="cups-grid ${freeReady ? 'all-ready' : ''}">${cups}</div>
-      <div class="card-foot">${freeReady ? '<span class="card-foot-free">🎉 Your next coffee is FREE</span>' : punchesLeft + ' more until a free coffee'}</div>
+      <div class="cups-grid">${cups}</div>
+      <div class="card-foot"><strong>${punchesLeft}</strong> more stamp${punchesLeft === 1 ? '' : 's'} until your next free coffee</div>
     </div>
 
-    <button class="btn-coffee" id="buy"><span class="coffee-emoji">☕</span>${freeReady ? 'Redeem my FREE coffee' : 'I bought a coffee'}</button>
+    <button class="btn-coffee" id="buy"><span class="coffee-emoji">☕</span>I bought a coffee</button>
+
+    ${u.freeCoffees > 0 ? `<section class="free-card">
+      <div class="free-left">
+        <div class="free-count">☕ ${u.freeCoffees}</div>
+        <div class="free-text">free coffee${u.freeCoffees === 1 ? '' : 's'} ready<span>claim whenever you like — they keep stacking</span></div>
+      </div>
+      <button class="btn-claim" id="claim">Claim 1</button>
+    </section>` : ''}
 
     <section class="coin-card">
       <div class="coin-head">
@@ -416,9 +448,9 @@ function dashView() {
         <div class="coin-balance ${coinPulse ? 'pulse' : ''}"><span class="coin-icon">🪙</span><span id="coinNum" data-val="${u.coins}">${u.coins}</span></div>
       </div>
       <div class="coin-bar"><div class="coin-bar-fill" style="width:${progress}%"></div></div>
-      <div class="coin-hint">${canRedeem ? 'Ready to redeem ' + dollars(ECO.REDEEM_VALUE_CENTS) + ' off!' : (ECO.REDEEM_COINS - u.coins) + ' coins to your next ' + dollars(ECO.REDEEM_VALUE_CENTS) + ' voucher'}</div>
+      <div class="coin-hint">${canRedeem ? 'Ready to redeem ' + dollars(ECO.REDEEM_VALUE_CENTS) + ' off!' : (ECO.REDEEM_COINS - u.coins) + ' more coins to your next ' + dollars(ECO.REDEEM_VALUE_CENTS) + ' voucher'}</div>
       <button class="btn-redeem" id="redeem" ${canRedeem ? '' : 'disabled'}>Redeem ${ECO.REDEEM_COINS} coins → ${dollars(ECO.REDEEM_VALUE_CENTS)} off</button>
-      <div class="coin-fine">${ECO.REDEEM_COINS} coins = ${dollars(ECO.REDEEM_VALUE_CENTS)} · min spend ${dollars(ECO.MIN_CHECKOUT_CENTS)} · redeeming resets coins for your next streak</div>
+      <div class="coin-fine">Earn coins from your welcome bonus &amp; streaks · ${ECO.REDEEM_COINS} coins = ${dollars(ECO.REDEEM_VALUE_CENTS)} (min spend ${dollars(ECO.MIN_CHECKOUT_CENTS)}) · leftover coins keep stacking</div>
     </section>
 
     ${active.length ? `<section class="voucher-section"><h3>Your vouchers</h3>
@@ -427,7 +459,7 @@ function dashView() {
 
     <section class="stats">
       <div class="stat"><strong>${u.totalCoffees}</strong><span>coffees</span></div>
-      <div class="stat"><strong>${u.freeRedeemed}</strong><span>free earned</span></div>
+      <div class="stat"><strong>${u.freeRedeemed}</strong><span>free claimed</span></div>
       <div class="stat"><strong>${u.longestStreak}</strong><span>best streak</span></div>
     </section>
 
@@ -451,6 +483,8 @@ function render() {
   $('#redeem').addEventListener('click', redeem);
   $('#logout').addEventListener('click', logout);
   $('#nextDay').addEventListener('click', nextDay);
+  const claimBtn = $('#claim');
+  if (claimBtn) claimBtn.addEventListener('click', claimFreeCoffee);
   app.querySelectorAll('[data-use]').forEach((b) => b.addEventListener('click', () => useVoucher(b.dataset.use)));
 
   // count-up the coins + streak number

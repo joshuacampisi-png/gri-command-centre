@@ -18,6 +18,7 @@ db.exec(`
     password_hash       TEXT    NOT NULL,
     coins               INTEGER NOT NULL DEFAULT 0,
     punches             INTEGER NOT NULL DEFAULT 0,
+    free_coffees        INTEGER NOT NULL DEFAULT 0,
     free_redeemed       INTEGER NOT NULL DEFAULT 0,
     current_streak      INTEGER NOT NULL DEFAULT 0,
     longest_streak      INTEGER NOT NULL DEFAULT 0,
@@ -46,6 +47,12 @@ db.exec(`
     FOREIGN KEY (user_id) REFERENCES users(id)
   );
 `);
+
+// Migration: add free_coffees to databases created before banking existed.
+const cols = db.prepare('PRAGMA table_info(users)').all().map((c) => c.name);
+if (!cols.includes('free_coffees')) {
+  db.exec('ALTER TABLE users ADD COLUMN free_coffees INTEGER NOT NULL DEFAULT 0');
+}
 
 export function logEvent(userId, type, detail = null) {
   db.prepare(
