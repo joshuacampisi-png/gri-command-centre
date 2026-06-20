@@ -4,6 +4,7 @@ import LoyaltyCard from './LoyaltyCard.jsx';
 import Confetti from './Confetti.jsx';
 import StreakTracker from './StreakTracker.jsx';
 import AnimatedNumber from './AnimatedNumber.jsx';
+import { liveStreak } from '../lib/streak.js';
 
 function dollars(cents) {
   return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
@@ -18,6 +19,8 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
   const stampTimer = useRef(null);
 
   const eco = user.economy;
+  // Streak as it stands on this device right now (handles a missed day live).
+  const live = liveStreak(user.currentStreak, user.lastPurchaseDate);
   const canRedeem = user.coins >= eco.redeemCoins;
   const progressToRedeem = Math.min(100, (user.coins / eco.redeemCoins) * 100);
   const activeVouchers = user.vouchers.filter((v) => v.status === 'active');
@@ -26,7 +29,7 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
     if (busy) return;
     setBusy(true);
     const prevPunches = user.punches;
-    const prevStreak = user.currentStreak;
+    const prevStreak = live.streak;
     try {
       const { user: updated, result } = await api.buyCoffee();
 
@@ -124,8 +127,9 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
       </header>
 
       <StreakTracker
-        streak={user.currentStreak}
+        streak={live.streak}
         longestStreak={user.longestStreak}
+        boughtToday={live.boughtToday}
         bumpKey={streakBump}
       />
 

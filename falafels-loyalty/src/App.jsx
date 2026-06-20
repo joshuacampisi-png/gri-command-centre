@@ -3,6 +3,7 @@ import { api, getToken, setToken } from './api.js';
 import AuthScreen from './components/AuthScreen.jsx';
 import Dashboard from './components/Dashboard.jsx';
 import Toast from './components/Toast.jsx';
+import logo from './assets/logo.png';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -39,7 +40,7 @@ export default function App() {
   if (loading) {
     return (
       <div className="splash-loading">
-        <div className="logo-box small"><span>Fala</span><span>Fels</span></div>
+        <img className="splash-logo" src={logo} alt="Fala Fels Loyalty" />
       </div>
     );
   }

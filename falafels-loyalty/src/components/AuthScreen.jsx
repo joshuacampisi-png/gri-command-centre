@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { api } from '../api.js';
+import logo from '../assets/logo.png';
+import hero from '../assets/hero.jpg';
 
 export default function AuthScreen({ onAuthed, showToast }) {
   const [mode, setMode] = useState('signup'); // 'signup' | 'login'
@@ -28,11 +30,14 @@ export default function AuthScreen({ onAuthed, showToast }) {
   return (
     <div className="auth-screen">
       <div className="auth-inner">
-        <div className="logo-box"><span>Fala</span><span>Fels</span></div>
+        <div className="hero-wrap">
+          <img className="hero-img" src={hero} alt="The Fala Fels team" />
+          <img className="hero-logo" src={logo} alt="Fala Fels Loyalty" />
+        </div>
 
         <h1 className="auth-title">Falafels Loyalty</h1>
         <p className="auth-sub">
-          Your coffee card, reimagined. Stamp every cup, build a streak,
+          Your coffee card, reimagined. Stamp every cup, build a streak
           and earn Falafel Coins for free coffee. ☕
         </p>
 

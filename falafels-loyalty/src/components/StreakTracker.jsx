@@ -15,7 +15,7 @@ function nextBonus(pos) {
   return { days: 3, coins: 50 }; // just completed a week, next is the day-3 bonus
 }
 
-export default function StreakTracker({ streak, longestStreak, bumpKey }) {
+export default function StreakTracker({ streak, longestStreak, boughtToday = false, bumpKey }) {
   const [popDot, setPopDot] = useState(0);
   const [flare, setFlare] = useState(false);
 
@@ -88,13 +88,19 @@ export default function StreakTracker({ streak, longestStreak, bumpKey }) {
       </div>
 
       <div className="streak-hint">
-        {active ? (
+        {!active ? (
+          <>Buy a coffee today to light the streak 🔥</>
+        ) : boughtToday ? (
           <>
-            <strong>{next.days}</strong> day{next.days === 1 ? '' : 's'} to your
-            <span className="hint-coins"> +{next.coins} 🪙</span> bonus
+            Stamped today ✓ — come back tomorrow to keep your
+            <strong> {streak}-day</strong> streak
           </>
         ) : (
-          <>Buy a coffee today to light the streak 🔥</>
+          <>
+            Buy today to keep your streak ·
+            <strong> {next.days}</strong> day{next.days === 1 ? '' : 's'} to your
+            <span className="hint-coins"> +{next.coins} 🪙</span> bonus
+          </>
         )}
       </div>
     </section>

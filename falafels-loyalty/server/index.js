@@ -91,7 +91,12 @@ app.get('/api/me', requireAuth, (req, res) => {
 
 app.post('/api/coffee', requireAuth, (req, res) => {
   const u = req.user;
-  const today = brisbaneDate();
+  // Use the date reported by the customer's own device so streaks track their
+  // real local day. Fall back to Brisbane time if it's missing/malformed.
+  const clientToday = typeof req.body?.today === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(req.body.today)
+    ? req.body.today
+    : null;
+  const today = clientToday || brisbaneDate();
 
   // Streak handling.
   const s = applyStreak({ current_streak: u.current_streak, last_purchase_date: u.last_purchase_date }, today);

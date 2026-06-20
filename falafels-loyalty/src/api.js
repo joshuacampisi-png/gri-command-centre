@@ -1,3 +1,5 @@
+import { localDate } from './lib/streak.js';
+
 const TOKEN_KEY = 'falafels_token';
 
 export function getToken() {
@@ -27,7 +29,9 @@ export const api = {
   signup: (name, password) => request('/auth/signup', { method: 'POST', body: { name, password } }),
   login: (name, password) => request('/auth/login', { method: 'POST', body: { name, password } }),
   me: () => request('/me'),
-  buyCoffee: () => request('/coffee', { method: 'POST' }),
+  // Pass the phone's own local date so the streak is judged against the
+  // customer's real day, not the server's timezone.
+  buyCoffee: () => request('/coffee', { method: 'POST', body: { today: localDate() } }),
   claimFreeCoffee: () => request('/free-coffee/claim', { method: 'POST' }),
   redeem: () => request('/redeem', { method: 'POST' }),
   useVoucher: (id) => request(`/voucher/${id}/use`, { method: 'POST' }),
