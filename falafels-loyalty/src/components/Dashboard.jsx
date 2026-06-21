@@ -28,8 +28,10 @@ const User = (p) => (<svg viewBox="0 0 24 24" {...S} {...p}><circle cx="12" cy="
 const Phone = (p) => (<svg viewBox="0 0 24 24" {...S} {...p}><rect x="6" y="2" width="12" height="20" rx="3" /><path d="M11 18h2" /></svg>);
 const LogOut = (p) => (<svg viewBox="0 0 24 24" {...S} {...p}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="M16 17l5-5-5-5M21 12H9" /></svg>);
 
+const SECTIONS = ['card', 'rewards', 'activity', 'profile'];
+
 export default function Dashboard({ user, setUser, onLogout, showToast }) {
-  const [tab, setTab] = useState('card');
+  const [active, setActive] = useState('card');
   const [busy, setBusy] = useState(false);
   const [confettiKey, setConfettiKey] = useState(0);
   const [coinPulse, setCoinPulse] = useState(false);
@@ -89,6 +91,49 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
     if (!user.igFollowClaimed) localStorage.setItem(IG_PENDING_KEY, '1');
     window.open(IG_URL, '_blank', 'noopener');
   }
+
+  /* ── One-page scroll: bottom nav scrolls to a section ───────────── */
+  function scrollTo(key) {
+    setActive(key);
+    document.getElementById(`sec-${key}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // Scroll-spy: highlight the nav item for whatever section is up top.
+  useEffect(() => {
+    const els = SECTIONS.map((k) => document.getElementById(`sec-${k}`)).filter(Boolean);
+    const obs = new IntersectionObserver(
+      (entries) => {
+        const vis = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (vis[0]) setActive(vis[0].target.id.replace('sec-', ''));
+      },
+      { rootMargin: '-42% 0px -52% 0px', threshold: 0 }
+    );
+    els.forEach((el) => obs.observe(el));
+    return () => obs.disconnect();
+  }, []);
+
+  // Reveal each section as it scrolls into view (subtle fade + rise).
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add('in');
+            obs.unobserve(e.target);
+          }
+        });
+      },
+      { threshold: 0.08 }
+    );
+    document.querySelectorAll('.d-reveal').forEach((el) => {
+      // Anything already on screen at mount reveals now; the rest on scroll-in.
+      if (el.getBoundingClientRect().top < window.innerHeight * 0.9) el.classList.add('in');
+      else obs.observe(el);
+    });
+    return () => obs.disconnect();
+  }, []);
 
   /* ── Actions ────────────────────────────────────────────────────── */
   async function buyCoffee() {
@@ -259,7 +304,7 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
     if (cash.eligible) bits.push(`${dollars(cash.valueCents)} to cash out`);
     if (!bits.length) return null;
     return (
-      <button className="d-nudge" onClick={() => setTab('rewards')}>
+      <button className="d-nudge" onClick={() => scrollTo('rewards')}>
         <Gift width="18" height="18" />
         <span>{bits.join(' & ')} ready</span>
         <span className="d-nudge-go">View</span>
@@ -387,27 +432,12 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
     );
   }
 
-  function profile() {
+  function profileRows() {
     return (
-      <section className="d-profile">
-        <div className="d-profile-head">
-          <span className="d-avatar lg"><img src={logo} alt="" /></span>
-          <div>
-            <div className="d-greet">Member</div>
-            <div className="d-name big">{user.name}</div>
-          </div>
-        </div>
+      <>
         <button className="d-row" onClick={() => window.dispatchEvent(new Event('falafels-install'))}>
           <span className="d-row-ico"><Phone width="20" height="20" /></span>
           <div className="d-row-copy"><div>Add to home screen</div><span>One tap to open — stay signed in</span></div>
-          <span className="d-row-go">›</span>
-        </button>
-        <button className="d-row" onClick={followInstagram}>
-          <span className="d-row-ico"><Insta width="20" height="20" /></span>
-          <div className="d-row-copy">
-            <div>{user.igFollowClaimed ? 'Following @fala_fels' : `Follow @fala_fels`}</div>
-            <span>{user.igFollowClaimed ? 'Thanks for the follow' : `Earn ${eco.igFollowBonus} bonus coins`}</span>
-          </div>
           <span className="d-row-go">›</span>
         </button>
         <button className="d-row danger" onClick={onLogout}>
@@ -416,7 +446,16 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
           <span className="d-row-go">›</span>
         </button>
         <p className="d-foot">Fala Fels · Shop 2c, 51-73 The Lanes Blv, Mermaid Waters · @fala_fels</p>
-      </section>
+      </>
+    );
+  }
+
+  function sectionHeader(title, sub) {
+    return (
+      <div className="d-sec-head">
+        <h2>{title}</h2>
+        {sub && <span>{sub}</span>}
+      </div>
     );
   }
 
@@ -430,7 +469,7 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
     return (
       <nav className="d-tabs">
         {tabs.map(({ k, label, Ico }) => (
-          <button key={k} className={`d-tab ${tab === k ? 'active' : ''}`} onClick={() => setTab(k)}>
+          <button key={k} className={`d-tab ${active === k ? 'active' : ''}`} onClick={() => scrollTo(k)}>
             <Ico width="22" height="22" />
             <span>{label}</span>
           </button>
@@ -442,12 +481,32 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
   return (
     <div className="d-screen">
       <Confetti fire={confettiKey} />
-      {tab !== 'profile' && topBar()}
-      <main className="d-body" key={tab}>
-        {tab === 'card' && (<>{loyaltyCard()}{buyButton()}{readyNudge()}{igCard()}</>)}
-        {tab === 'rewards' && (<>{freeCoffeeCard()}{coinsCard()}{vouchers()}</>)}
-        {tab === 'activity' && (<>{streakTracker()}{stats()}</>)}
-        {tab === 'profile' && profile()}
+      {topBar()}
+      <main className="d-body">
+        <section id="sec-card" className="d-sec">
+          {loyaltyCard()}
+          {buyButton()}
+          {readyNudge()}
+        </section>
+
+        <section id="sec-rewards" className="d-sec d-reveal">
+          {sectionHeader('Rewards', 'Free coffees, coins & vouchers')}
+          {freeCoffeeCard()}
+          {coinsCard()}
+          {vouchers()}
+        </section>
+
+        <section id="sec-activity" className="d-sec d-reveal">
+          {sectionHeader('Activity', 'Your streak & milestones')}
+          {streakTracker()}
+          {stats()}
+        </section>
+
+        <section id="sec-profile" className="d-sec d-reveal">
+          {sectionHeader('More', 'Follow us & account')}
+          {igCard()}
+          {profileRows()}
+        </section>
       </main>
       {tabBar()}
     </div>

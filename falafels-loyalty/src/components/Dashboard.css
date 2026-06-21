@@ -1,7 +1,7 @@
 /* Member dashboard — warm "cream" daily screen, premium cafe look. */
 .d-screen {
   min-height: 100svh;
-  background: var(--canvas);
+  background: linear-gradient(180deg, #f5efe4 0%, var(--canvas) 26%);
   color: var(--ink-text);
   max-width: 480px;
   margin: 0 auto;
@@ -10,12 +10,19 @@
   padding-bottom: calc(74px + env(safe-area-inset-bottom, 0px));
 }
 
-/* ---------- Top bar ---------- */
+/* ---------- Top bar (sticky app-shell header) ---------- */
 .d-top {
+  position: sticky;
+  top: 0;
+  z-index: 30;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: calc(26px + env(safe-area-inset-top, 0px)) 22px 12px;
+  padding: calc(20px + env(safe-area-inset-top, 0px)) 22px 12px;
+  background: rgba(244, 238, 227, 0.86);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(230, 222, 206, 0.7);
 }
 .d-id { display: flex; align-items: center; gap: 12px; }
 .d-avatar {
@@ -35,8 +42,31 @@
 }
 .d-streak-chip.on { color: var(--gold); }
 
-/* ---------- Body / tab transitions ---------- */
-.d-body { flex: 1; padding: 8px 22px 22px; animation: ffRise 0.4s cubic-bezier(.2,.6,.2,1) both; }
+/* ---------- Body — one continuous scroll ---------- */
+.d-body { flex: 1; padding: 12px 22px 22px; animation: ffRise 0.4s cubic-bezier(.2,.6,.2,1) both; }
+
+/* Each section is a scroll anchor; offset for the sticky header. */
+.d-sec { scroll-margin-top: 84px; }
+.d-sec + .d-sec { margin-top: 6px; }
+
+/* Section heading */
+.d-sec-head { margin: 24px 2px 12px; }
+.d-sec-head h2 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 500;
+  font-size: 21px;
+  line-height: 1.1;
+  margin: 0;
+  color: var(--ink-text);
+}
+.d-sec-head span { display: block; font-size: 12.5px; color: var(--ink-muted); margin-top: 3px; }
+
+/* Reveal sections as they scroll into view */
+.d-reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.55s ease, transform 0.55s cubic-bezier(.2,.7,.2,1); }
+.d-reveal.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .d-reveal { opacity: 1; transform: none; transition: none; }
+}
 
 /* ---------- Loyalty card ---------- */
 .d-card {
