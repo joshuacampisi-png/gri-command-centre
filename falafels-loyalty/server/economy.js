@@ -8,6 +8,9 @@ export const ECONOMY = {
   // One-off welcome bonus when an account is created.
   SIGNUP_BONUS: 50,
 
+  // One-off bonus for following on Instagram (claimed once, on return to app).
+  IG_FOLLOW_BONUS: 50,
+
   // Coins come from the signup bonus + streaks, not per coffee.
   COINS_PER_COFFEE: 0,
 

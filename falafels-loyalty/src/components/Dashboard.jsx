@@ -1,66 +1,118 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { api } from '../api.js';
-import LoyaltyCard from './LoyaltyCard.jsx';
 import Confetti from './Confetti.jsx';
-import StreakTracker from './StreakTracker.jsx';
 import AnimatedNumber from './AnimatedNumber.jsx';
 import { liveStreak } from '../lib/streak.js';
+import logo from '../assets/logo.png';
+import './Dashboard.css';
+
+const IG_URL = 'https://www.instagram.com/fala_fels/';
+const IG_PENDING_KEY = 'falafels_ig_pending';
 
 function dollars(cents) {
   return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
 }
 
+/* ── Lucide-style icons (1.7 stroke, currentColor) ───────────────── */
+const S = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round' };
+const Coffee = (p) => (<svg viewBox="0 0 24 24" {...S} {...p}><path d="M17 8h1a3 3 0 0 1 0 6h-1" /><path d="M3 8h14v5a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8Z" /><path d="M6 1v2M10 1v2M14 1v2" /></svg>);
+const CoffeeTo = (p) => (<svg viewBox="0 0 24 24" {...S} {...p}><path d="M17 8h1a4 4 0 1 1 0 8h-1" /><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" /><line x1="6" x2="6" y1="2" y2="4" /><line x1="10" x2="10" y1="2" y2="4" /><line x1="14" x2="14" y1="2" y2="4" /></svg>);
+const Gift = (p) => (<svg viewBox="0 0 24 24" {...S} {...p}><rect x="3" y="8" width="18" height="4" rx="1" /><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7" /><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8M16.5 8a2.5 2.5 0 0 0 0-5C13 3 12 8 12 8" /></svg>);
+const Coin = (p) => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...p}><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="4.5" /></svg>);
+const Ticket = (p) => (<svg viewBox="0 0 24 24" {...S} {...p}><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" /><path d="M13 5v14" /></svg>);
+const Insta = (p) => (<svg viewBox="0 0 24 24" {...S} {...p}><rect x="2" y="2" width="20" height="20" rx="5.5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1.1" fill="currentColor" stroke="none" /></svg>);
+const Flame = (p) => (<svg viewBox="0 0 24 24" {...S} {...p}><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5Z" /></svg>);
+const Home = (p) => (<svg viewBox="0 0 24 24" {...S} {...p}><path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1Z" /></svg>);
+const Chart = (p) => (<svg viewBox="0 0 24 24" {...S} {...p}><path d="M3 3v18h18" /><path d="M7 14l3-3 3 3 4-5" /></svg>);
+const User = (p) => (<svg viewBox="0 0 24 24" {...S} {...p}><circle cx="12" cy="8" r="4" /><path d="M5 21a7 7 0 0 1 14 0" /></svg>);
+const Phone = (p) => (<svg viewBox="0 0 24 24" {...S} {...p}><rect x="6" y="2" width="12" height="20" rx="3" /><path d="M11 18h2" /></svg>);
+const LogOut = (p) => (<svg viewBox="0 0 24 24" {...S} {...p}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="M16 17l5-5-5-5M21 12H9" /></svg>);
+
 export default function Dashboard({ user, setUser, onLogout, showToast }) {
+  const [tab, setTab] = useState('card');
   const [busy, setBusy] = useState(false);
   const [confettiKey, setConfettiKey] = useState(0);
-  const [lastStampIndex, setLastStampIndex] = useState(-1);
   const [coinPulse, setCoinPulse] = useState(false);
-  const [streakBump, setStreakBump] = useState(0);
+  const [stampPop, setStampPop] = useState(-1);
+  const [claimCount, setClaimCount] = useState(1);
   const stampTimer = useRef(null);
 
   const eco = user.economy;
-  // Streak as it stands on this device right now (handles a missed day live).
   const live = liveStreak(user.currentStreak, user.lastPurchaseDate);
   const cash = user.cashout || { eligible: false, dollars: 0, valueCents: 0 };
-  const isStreakDay = live.boughtToday; // bought a coffee today on this device
-  const canCashout = cash.eligible && isStreakDay; // $5 min AND a streak day
-  const progressToRedeem = Math.min(100, (user.coins / eco.redeemCoins) * 100);
+  const isStreakDay = live.boughtToday;
+  const canCashout = cash.eligible && isStreakDay;
+  const remaining = Math.max(0, user.punchesNeeded - user.punches);
   const activeVouchers = user.vouchers.filter((v) => v.status === 'active');
 
+  const hour = new Date().getHours();
+  const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+
+  useEffect(() => {
+    setClaimCount((c) => Math.min(Math.max(1, c), Math.max(1, user.freeCoffees)));
+  }, [user.freeCoffees]);
+
+  /* ── Instagram follow bonus: credited only when they return ─────── */
+  const claimIg = useCallback(async () => {
+    if (!localStorage.getItem(IG_PENDING_KEY)) return;
+    if (user.igFollowClaimed) { localStorage.removeItem(IG_PENDING_KEY); return; }
+    try {
+      const res = await api.followInstagram();
+      localStorage.removeItem(IG_PENDING_KEY);
+      setUser(res.user);
+      if (res.awarded) {
+        setConfettiKey((k) => k + 1);
+        setCoinPulse(true);
+        setTimeout(() => setCoinPulse(false), 900);
+        showToast(`You've earned ${res.coinsEarned} bonus Falafel Coins`, 'success');
+      }
+    } catch {
+      /* leave pending; will retry on next return */
+    }
+  }, [user.igFollowClaimed, setUser, showToast]);
+
+  useEffect(() => {
+    claimIg(); // covers the back-button / reload return path
+    const onVisibility = () => { if (document.visibilityState === 'visible') claimIg(); };
+    const onReturn = () => claimIg(); // focus/pageshow imply we're back in front
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('focus', onReturn);
+    window.addEventListener('pageshow', onReturn);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('focus', onReturn);
+      window.removeEventListener('pageshow', onReturn);
+    };
+  }, [claimIg]);
+
+  function followInstagram() {
+    if (!user.igFollowClaimed) localStorage.setItem(IG_PENDING_KEY, '1');
+    window.open(IG_URL, '_blank', 'noopener');
+  }
+
+  /* ── Actions ────────────────────────────────────────────────────── */
   async function buyCoffee() {
     if (busy) return;
     setBusy(true);
     const prevPunches = user.punches;
-    const prevStreak = live.streak;
     try {
       const { user: updated, result } = await api.buyCoffee();
-
-      // Stamp animation on the cup that was just filled.
       if (result.type === 'punch') {
-        setLastStampIndex(prevPunches);
+        setStampPop(prevPunches);
         clearTimeout(stampTimer.current);
-        stampTimer.current = setTimeout(() => setLastStampIndex(-1), 700);
+        stampTimer.current = setTimeout(() => setStampPop(-1), 700);
       }
-
       setUser(updated);
       setCoinPulse(true);
       setTimeout(() => setCoinPulse(false), 700);
-
-      // Fire the streak animation when the streak actually ticks up today.
-      if (result.streak > prevStreak) {
-        setStreakBump((k) => k + 1);
-      }
-
-      // Feedback messages.
       if (result.freeEarned) {
         setConfettiKey((k) => k + 1);
-        showToast(`Card full — free coffee earned! You have ${result.freeCoffees} to claim ☕`, 'success');
+        showToast(`Card full — a free coffee's banked. You have ${result.freeCoffees} ready`, 'success');
       } else if (result.milestone) {
         setConfettiKey((k) => k + 1);
-        const m = result.milestone;
-        showToast(`${m.days}-day streak! +${m.coins} Falafel Coins 🔥`, 'success');
+        showToast(`${result.milestone.days}-day streak. +${result.milestone.coins} Falafel Coins`, 'success');
       } else if (result.coinsEarned > 0) {
-        showToast(`+${result.coinsEarned} Falafel Coins · ${result.streak}-day streak 🔥`, 'success');
+        showToast(`+${result.coinsEarned} Falafel Coins · ${result.streak}-day streak`, 'success');
       } else {
         showToast(`Stamp added · ${result.streak}-day streak`, 'success');
       }
@@ -71,14 +123,14 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
     }
   }
 
-  async function claimFreeCoffee() {
+  async function claimFree() {
     if (user.freeCoffees < 1 || busy) return;
     setBusy(true);
     try {
-      const { user: updated } = await api.claimFreeCoffee();
+      const { user: updated, claimed } = await api.claimFreeCoffee(claimCount);
       setUser(updated);
       setConfettiKey((k) => k + 1);
-      showToast('Enjoy your free coffee! ☕', 'success');
+      showToast(`Enjoy — ${claimed} free coffee${claimed > 1 ? 's' : ''} to redeem at the counter`, 'success');
     } catch (err) {
       showToast(err.message, 'error');
     } finally {
@@ -95,7 +147,7 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
       setConfettiKey((k) => k + 1);
       setCoinPulse(true);
       setTimeout(() => setCoinPulse(false), 700);
-      showToast(`${dollars(voucher.value_cents)} voucher unlocked! Code ${voucher.code}`, 'success');
+      showToast(`${dollars(voucher.value_cents)} voucher ready. Code ${voucher.code}`, 'success');
     } catch (err) {
       showToast(err.message, 'error');
     } finally {
@@ -116,126 +168,288 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
     }
   }
 
-  return (
-    <div className="dashboard">
-      <Confetti fire={confettiKey} />
-
-      <header className="dash-header">
-        <div>
-          <div className="hello">Hey {user.name} 👋</div>
-          <div className="hello-sub">Falafels Loyalty</div>
+  /* ── Sections (called as functions to avoid remounts) ───────────── */
+  function topBar() {
+    return (
+      <header className="d-top">
+        <div className="d-id">
+          <span className="d-avatar"><img src={logo} alt="" /></span>
+          <div>
+            <div className="d-greet">{greet}</div>
+            <div className="d-name">{user.name}</div>
+          </div>
         </div>
-        <button className="link-logout" onClick={onLogout}>Log out</button>
+        <span className={`d-streak-chip ${live.streak > 0 ? 'on' : ''}`}>
+          <Flame width="14" height="14" />
+          {live.streak > 0 ? `${live.streak} day streak` : 'Start a streak'}
+        </span>
       </header>
+    );
+  }
 
-      <StreakTracker
-        streak={live.streak}
-        longestStreak={user.longestStreak}
-        boughtToday={live.boughtToday}
-        bumpKey={streakBump}
-      />
+  function loyaltyCard() {
+    const stamps = [];
+    for (let i = 1; i <= user.punchesNeeded; i++) {
+      const filled = i <= user.punches;
+      const isReward = i === user.punchesNeeded;
+      stamps.push(
+        <div
+          key={i}
+          className={`d-stamp ${filled ? 'filled' : isReward ? 'reward' : 'empty'} ${stampPop === i - 1 ? 'pop' : ''}`}
+        >
+          {filled ? <Coffee width="18" height="18" /> : isReward ? <Gift width="16" height="16" /> : null}
+        </div>
+      );
+    }
+    return (
+      <section className="d-card">
+        <span className="d-card-glow" />
+        <div className="d-card-head">
+          <div>
+            <div className="d-eyebrow muted">Coffee card</div>
+            <div className="d-card-count">{user.punches} of {user.punchesNeeded} cups</div>
+          </div>
+          <div className="d-card-reward">
+            <div className="d-eyebrow muted">Reward</div>
+            <div className="d-card-free">{user.punchesNeeded + 1}th free</div>
+          </div>
+        </div>
+        <div className="d-stamps">{stamps}</div>
+        <div className="d-card-foot">
+          {remaining > 0
+            ? <><strong>{remaining} more cup{remaining > 1 ? 's' : ''}</strong> and your {user.punchesNeeded + 1}th coffee's on us.</>
+            : <><strong>Card full</strong> — a free coffee's waiting in your bank.</>}
+        </div>
+      </section>
+    );
+  }
 
-      <LoyaltyCard user={user} lastStampIndex={lastStampIndex} />
-
-      <button className="btn-coffee" onClick={buyCoffee} disabled={busy}>
-        <span className="coffee-emoji">☕</span>
+  function buyButton() {
+    return (
+      <button className="d-buy" onClick={buyCoffee} disabled={busy}>
+        <CoffeeTo width="19" height="19" />
         I bought a coffee
       </button>
+    );
+  }
 
-      {/* Banked free coffees — stack up, claim whenever */}
-      {user.freeCoffees > 0 && (
-        <section className="free-card">
-          <div className="free-left">
-            <div className="free-count">☕ {user.freeCoffees}</div>
-            <div className="free-text">
-              free coffee{user.freeCoffees === 1 ? '' : 's'} ready
-              <span>claim whenever you like — they keep stacking</span>
-            </div>
-          </div>
-          <button className="btn-claim" onClick={claimFreeCoffee} disabled={busy}>
-            Claim 1
-          </button>
-        </section>
-      )}
-
-      {/* Falafel Coins */}
-      <section className="coin-card">
-        <div className="coin-head">
-          <div className="coin-label">Falafel Coins</div>
-          <div className={`coin-balance ${coinPulse ? 'pulse' : ''}`}>
-            <span className="coin-icon">🪙</span>
-            <AnimatedNumber value={user.coins} />
+  function igCard() {
+    const claimed = user.igFollowClaimed;
+    return (
+      <section className="d-ig">
+        <span className="d-ig-glyph"><Insta width="21" height="21" /></span>
+        <div className="d-ig-copy">
+          <div className="d-ig-title">Follow the kitchen</div>
+          <div className="d-ig-sub">
+            {claimed ? '@fala_fels · specials & new drops' : `@fala_fels · follow for ${eco.igFollowBonus} bonus coins`}
           </div>
         </div>
+        {claimed ? (
+          <span className="d-ig-done">Following</span>
+        ) : (
+          <button className="d-ig-btn" onClick={followInstagram}>Follow &amp; earn {eco.igFollowBonus}</button>
+        )}
+      </section>
+    );
+  }
 
-        <div className="coin-bar">
-          <div className="coin-bar-fill" style={{ width: `${progressToRedeem}%` }} />
+  function readyNudge() {
+    const bits = [];
+    if (user.freeCoffees > 0) bits.push(`${user.freeCoffees} free coffee${user.freeCoffees > 1 ? 's' : ''}`);
+    if (cash.eligible) bits.push(`${dollars(cash.valueCents)} to cash out`);
+    if (!bits.length) return null;
+    return (
+      <button className="d-nudge" onClick={() => setTab('rewards')}>
+        <Gift width="18" height="18" />
+        <span>{bits.join(' & ')} ready</span>
+        <span className="d-nudge-go">View</span>
+      </button>
+    );
+  }
+
+  function freeCoffeeCard() {
+    const n = user.freeCoffees;
+    return (
+      <section className="d-panel">
+        <div className="d-panel-head">
+          <span className="d-panel-ico"><Gift width="20" height="20" /></span>
+          <div>
+            <div className="d-panel-title">Free coffees</div>
+            <div className="d-panel-sub">{n > 0 ? 'Banked and ready — claim any time' : 'Earn one every 8 stamps'}</div>
+          </div>
+          <span className={`d-count-pill ${n > 0 ? '' : 'zero'}`}>×{n}</span>
         </div>
-        <div className="coin-hint">
+        {n > 0 && (
+          <div className="d-claim-row">
+            {n > 1 && (
+              <div className="d-stepper" role="group" aria-label="How many to claim">
+                <button onClick={() => setClaimCount((c) => Math.max(1, c - 1))} disabled={claimCount <= 1} aria-label="Fewer">−</button>
+                <span>{claimCount}</span>
+                <button onClick={() => setClaimCount((c) => Math.min(n, c + 1))} disabled={claimCount >= n} aria-label="More">+</button>
+              </div>
+            )}
+            <button className="d-claim-btn" onClick={claimFree} disabled={busy}>
+              Claim {n > 1 ? claimCount : ''}
+            </button>
+          </div>
+        )}
+        {n > 1 && <div className="d-panel-fine">The rest stay banked in your unclaimed coffees.</div>}
+      </section>
+    );
+  }
+
+  function coinsCard() {
+    return (
+      <section className="d-panel">
+        <div className="d-panel-head">
+          <span className="d-panel-ico"><Coin width="20" height="20" /></span>
+          <div>
+            <div className="d-panel-title">Falafel Coins</div>
+            <div className="d-panel-sub">{eco.coinsPerDollar} coins = $1 · {dollars(eco.redeemValueCents)} minimum</div>
+          </div>
+          <span className={`d-coin-num ${coinPulse ? 'pulse' : ''}`}><AnimatedNumber value={user.coins} /></span>
+        </div>
+
+        <div className="d-coin-hint">
           {!cash.eligible
             ? `${eco.redeemCoins - user.coins} more coins to your first ${dollars(eco.redeemValueCents)} cash-out`
             : isStreakDay
-              ? `Ready — cash out $${cash.dollars} off today 🎉`
-              : `Buy a coffee today to cash out your $${cash.dollars} (streak day only)`}
+              ? `Ready — cash out ${dollars(cash.valueCents)} off today`
+              : `Buy a coffee today to cash out your ${dollars(cash.valueCents)} (streak day only)`}
         </div>
 
-        <button className="btn-redeem" onClick={redeem} disabled={!canCashout || busy}>
-          {cash.eligible ? `Cash out $${cash.dollars} off` : `Cash out — ${dollars(eco.redeemValueCents)} minimum`}
+        <button className="d-redeem" onClick={redeem} disabled={!canCashout || busy}>
+          {cash.eligible ? `Cash out ${dollars(cash.valueCents)} off` : `Cash out — ${dollars(eco.redeemValueCents)} minimum`}
         </button>
-        <div className="coin-fine">
-          Welcome bonus + streaks earn coins · {eco.coinsPerDollar} coins = $1 · {dollars(eco.redeemValueCents)} minimum ·
-          cash out on a streak day · leftover coins keep stacking
-        </div>
+        <div className="d-panel-fine">Earn coins from your welcome bonus &amp; streaks · cash out on a streak day · leftover coins keep stacking.</div>
       </section>
+    );
+  }
 
-      {/* Vouchers */}
-      {activeVouchers.length > 0 && (
-        <section className="voucher-section">
-          <h3>Your vouchers</h3>
-          {activeVouchers.map((v) => (
-            <div className="voucher" key={v.id}>
-              <div className="voucher-left">
-                <div className="voucher-value">{dollars(v.value_cents)} off</div>
-                <div className="voucher-code">{v.code}</div>
-              </div>
-              <button className="btn-use" onClick={() => useVoucher(v.id)} disabled={busy}>
-                Use at till
-              </button>
+  function vouchers() {
+    if (!activeVouchers.length) return null;
+    return (
+      <section className="d-vouchers">
+        <h3 className="d-section-h">Your vouchers</h3>
+        {activeVouchers.map((v) => (
+          <div className="d-voucher" key={v.id}>
+            <span className="d-voucher-ico"><Ticket width="20" height="20" /></span>
+            <div className="d-voucher-copy">
+              <div className="d-voucher-val">{dollars(v.value_cents)} off · ready</div>
+              <div className="d-voucher-sub">Show at the counter · min spend {dollars(eco.minCheckoutCents)} · {v.code}</div>
             </div>
-          ))}
-          <p className="voucher-note">Show the code to staff to apply your discount.</p>
-        </section>
-      )}
-
-      {/* Stats */}
-      <section className="stats">
-        <div className="stat"><strong>{user.totalCoffees}</strong><span>coffees</span></div>
-        <div className="stat"><strong>{user.freeRedeemed}</strong><span>free claimed</span></div>
-        <div className="stat"><strong>{user.longestStreak}</strong><span>best streak</span></div>
+            <button className="d-voucher-use" onClick={() => useVoucher(v.id)} disabled={busy}>Use</button>
+          </div>
+        ))}
       </section>
+    );
+  }
 
-      {/* Follow us on Instagram */}
-      <a
-        className="ig-link"
-        href="https://www.instagram.com/fala_fels/"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <span className="ig-glyph" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-          </svg>
-        </span>
-        <span className="ig-copy">
-          Follow us on Instagram
-          <span>@fala_fels — tag us in your coffee runs</span>
-        </span>
-        <span className="ig-go" aria-hidden="true">→</span>
-      </a>
+  function streakTracker() {
+    const pos = live.streak <= 0 ? 0 : ((live.streak - 1) % 7) + 1;
+    const dots = [];
+    for (let i = 1; i <= 7; i++) {
+      const reward = i === 3 ? eco.streak3 : i === 7 ? eco.streak7 + eco.streak3 : 0;
+      dots.push(
+        <div className="d-day" key={i}>
+          <div className={`d-day-dot ${i <= pos ? 'on' : ''} ${reward ? 'reward' : ''}`}>
+            {i <= pos ? <Coffee width="14" height="14" /> : <span>{i}</span>}
+          </div>
+          {reward ? <span className="d-day-tag">+{i === 3 ? eco.streak3 : eco.streak7}</span> : <span className="d-day-tag empty" />}
+        </div>
+      );
+    }
+    return (
+      <section className="d-panel">
+        <div className="d-streak-head">
+          <span className={`d-flame ${live.streak > 0 ? 'on' : ''}`}><Flame width="26" height="26" /></span>
+          <div className="d-streak-meta">
+            <div className="d-streak-num">{live.streak}<span> day{live.streak === 1 ? '' : 's'}</span></div>
+            <div className="d-streak-label">
+              {live.streak <= 0 ? 'no streak yet' : isStreakDay ? 'stamped today' : 'keep it alive — buy today'}
+            </div>
+          </div>
+          <div className="d-streak-best"><strong>{user.longestStreak}</strong><span>best</span></div>
+        </div>
+        <div className="d-week">{dots}</div>
+        <div className="d-panel-fine center">3-day streak earns +{eco.streak3} · 7-day earns +{eco.streak7} · repeats weekly</div>
+      </section>
+    );
+  }
 
-      <footer className="dash-foot">Fala Fels · Shop 2c, 51-73 The Lanes Blv, Mermaid Waters · @fala_fels</footer>
+  function stats() {
+    return (
+      <section className="d-stats">
+        <div className="d-stat"><strong>{user.totalCoffees}</strong><span>coffees</span></div>
+        <div className="d-stat"><strong>{user.freeRedeemed}</strong><span>free claimed</span></div>
+        <div className="d-stat"><strong>{user.longestStreak}</strong><span>best streak</span></div>
+      </section>
+    );
+  }
+
+  function profile() {
+    return (
+      <section className="d-profile">
+        <div className="d-profile-head">
+          <span className="d-avatar lg"><img src={logo} alt="" /></span>
+          <div>
+            <div className="d-greet">Member</div>
+            <div className="d-name big">{user.name}</div>
+          </div>
+        </div>
+        <button className="d-row" onClick={() => window.dispatchEvent(new Event('falafels-install'))}>
+          <span className="d-row-ico"><Phone width="20" height="20" /></span>
+          <div className="d-row-copy"><div>Add to home screen</div><span>One tap to open — stay signed in</span></div>
+          <span className="d-row-go">›</span>
+        </button>
+        <button className="d-row" onClick={followInstagram}>
+          <span className="d-row-ico"><Insta width="20" height="20" /></span>
+          <div className="d-row-copy">
+            <div>{user.igFollowClaimed ? 'Following @fala_fels' : `Follow @fala_fels`}</div>
+            <span>{user.igFollowClaimed ? 'Thanks for the follow' : `Earn ${eco.igFollowBonus} bonus coins`}</span>
+          </div>
+          <span className="d-row-go">›</span>
+        </button>
+        <button className="d-row danger" onClick={onLogout}>
+          <span className="d-row-ico"><LogOut width="20" height="20" /></span>
+          <div className="d-row-copy"><div>Log out</div></div>
+          <span className="d-row-go">›</span>
+        </button>
+        <p className="d-foot">Fala Fels · Shop 2c, 51-73 The Lanes Blv, Mermaid Waters · @fala_fels</p>
+      </section>
+    );
+  }
+
+  function tabBar() {
+    const tabs = [
+      { k: 'card', label: 'Card', Ico: Home },
+      { k: 'rewards', label: 'Rewards', Ico: Gift },
+      { k: 'activity', label: 'Activity', Ico: Chart },
+      { k: 'profile', label: 'Profile', Ico: User },
+    ];
+    return (
+      <nav className="d-tabs">
+        {tabs.map(({ k, label, Ico }) => (
+          <button key={k} className={`d-tab ${tab === k ? 'active' : ''}`} onClick={() => setTab(k)}>
+            <Ico width="22" height="22" />
+            <span>{label}</span>
+          </button>
+        ))}
+      </nav>
+    );
+  }
+
+  return (
+    <div className="d-screen">
+      <Confetti fire={confettiKey} />
+      {tab !== 'profile' && topBar()}
+      <main className="d-body" key={tab}>
+        {tab === 'card' && (<>{loyaltyCard()}{buyButton()}{readyNudge()}{igCard()}</>)}
+        {tab === 'rewards' && (<>{freeCoffeeCard()}{coinsCard()}{vouchers()}</>)}
+        {tab === 'activity' && (<>{streakTracker()}{stats()}</>)}
+        {tab === 'profile' && profile()}
+      </main>
+      {tabBar()}
     </div>
   );
 }

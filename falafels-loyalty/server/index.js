@@ -33,12 +33,14 @@ function publicUser(u) {
     totalCoffees: u.total_coffees,
     freeRedeemed: u.free_redeemed,
     lastPurchaseDate: u.last_purchase_date,
+    igFollowClaimed: !!u.ig_follow_claimed,
     vouchers,
     // What this balance could cash out to right now ($ value), before the
     // streak-day check (which the client applies live from the device date).
     cashout: cashoutFor(u.coins),
     economy: {
       signupBonus: ECONOMY.SIGNUP_BONUS,
+      igFollowBonus: ECONOMY.IG_FOLLOW_BONUS,
       coinsPerCoffee: ECONOMY.COINS_PER_COFFEE,
       coinsPerDollar: ECONOMY.COINS_PER_DOLLAR,
       redeemCoins: ECONOMY.REDEEM_COINS,
@@ -82,7 +84,7 @@ app.post('/api/auth/login', (req, res) => {
   const password = req.body?.password ?? '';
   const user = db.prepare('SELECT * FROM users WHERE username = ?').get(name.toLowerCase());
   if (!user || !checkPassword(password, user.password_hash)) {
-    return res.status(401).json({ error: 'Wrong name or password' });
+    return res.status(401).json({ error: 'Password or username is incorrect' });
   }
   res.json({ token: issueToken(user), user: publicUser(user) });
 });
@@ -159,10 +161,27 @@ app.post('/api/coffee', requireAuth, (req, res) => {
 app.post('/api/free-coffee/claim', requireAuth, (req, res) => {
   const u = req.user;
   if (u.free_coffees < 1) return res.status(400).json({ error: 'No free coffees to claim yet' });
-  db.prepare('UPDATE users SET free_coffees = free_coffees - 1, free_redeemed = free_redeemed + 1 WHERE id = ?').run(u.id);
-  logEvent(u.id, 'free_coffee_claimed');
+  // Customer chooses how many banked free coffees to claim now; the rest stay
+  // in the unclaimed bank. Clamp to what they actually hold.
+  const requested = Number.isInteger(req.body?.count) ? req.body.count : 1;
+  const count = Math.max(1, Math.min(requested, u.free_coffees));
+  db.prepare('UPDATE users SET free_coffees = free_coffees - ?, free_redeemed = free_redeemed + ? WHERE id = ?').run(count, count, u.id);
+  logEvent(u.id, 'free_coffee_claimed', { count });
   const fresh = db.prepare('SELECT * FROM users WHERE id = ?').get(u.id);
-  res.json({ user: publicUser(fresh) });
+  res.json({ user: publicUser(fresh), claimed: count });
+});
+
+// ---- Instagram follow bonus (one-time +50 coins, credited on return) --------
+
+app.post('/api/instagram/claim', requireAuth, (req, res) => {
+  const u = req.user;
+  if (u.ig_follow_claimed) {
+    return res.json({ awarded: false, user: publicUser(u) });
+  }
+  db.prepare('UPDATE users SET coins = coins + ?, ig_follow_claimed = 1 WHERE id = ?').run(ECONOMY.IG_FOLLOW_BONUS, u.id);
+  logEvent(u.id, 'instagram_follow', { bonus: ECONOMY.IG_FOLLOW_BONUS });
+  const fresh = db.prepare('SELECT * FROM users WHERE id = ?').get(u.id);
+  res.json({ awarded: true, coinsEarned: ECONOMY.IG_FOLLOW_BONUS, user: publicUser(fresh) });
 });
 
 // ---- cash out coins for a $ discount voucher -------------------------------

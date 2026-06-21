@@ -1,0 +1,512 @@
+/* =========================================================================
+   Fala Fels — Auth screen (login / create account)
+   High-end cafe at night. Full-bleed responsive, no fixed phone frame.
+   ========================================================================= */
+
+.af-screen {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;          /* fallback */
+  min-height: 100svh;         /* mobile dynamic viewport */
+  background: #080c12;
+  color: #f1ebdf;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* =========================================================================
+   1 · SCENE — pure CSS cafe, absolutely positioned, full bleed
+   ========================================================================= */
+.af-scene {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Base vertical gradient */
+.af-scene__base {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    #101d28 0%,
+    #0d1822 28%,
+    #0a121a 50%,
+    #080c12 100%
+  );
+}
+
+/* Blurred depth-of-field group */
+.af-scene__dof {
+  position: absolute;
+  inset: 0;
+  filter: blur(3px);
+}
+
+/* Warm radial wash across the top ~48% */
+.af-wash {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 48%;
+  background: radial-gradient(
+    120% 90% at 50% 8%,
+    rgba(214, 158, 92, 0.22) 0%,
+    rgba(214, 158, 92, 0.08) 38%,
+    transparent 70%
+  );
+}
+
+/* Thin shelf hairline ~22% down */
+.af-shelf {
+  position: absolute;
+  top: 22%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(214, 188, 150, 0.28) 12%,
+    rgba(214, 188, 150, 0.4) 50%,
+    rgba(214, 188, 150, 0.28) 88%,
+    transparent 100%
+  );
+}
+
+/* Row of small bottle/jar rectangles sitting on the shelf */
+.af-bottles {
+  position: absolute;
+  top: 22%;
+  left: 6%;
+  right: 6%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 1px;
+}
+.af-bottles span {
+  display: block;
+  width: var(--w);
+  height: var(--h);
+  margin-bottom: 1px;
+  background: var(--c);
+  border-radius: 2px 2px 1px 1px;
+  opacity: 0.5;
+  box-shadow: inset 0 6px 6px -4px rgba(255, 255, 255, 0.25);
+}
+
+/* Pendant lights — bright warm dot + soft glow + drop line from the top */
+.af-pendant {
+  position: absolute;
+  top: 0;
+}
+.af-pendant--left { left: 26%; }
+.af-pendant--right { left: 72%; }
+
+.af-pendant__line {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 14%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 214, 150, 0.5),
+    rgba(255, 214, 150, 0.05)
+  );
+  transform: translateX(-0.5px);
+}
+.af-pendant__bulb {
+  position: absolute;
+  top: 14%;
+  left: 50%;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  border-radius: 50%;
+  background: #ffe6b8;
+  box-shadow:
+    0 0 10px 4px rgba(255, 216, 150, 0.85),
+    0 0 34px 16px rgba(255, 198, 120, 0.45),
+    0 0 70px 40px rgba(230, 165, 90, 0.18);
+}
+
+/* Brand-blue ambient orb, off the right edge ~16% down */
+.af-orb {
+  position: absolute;
+  top: 16%;
+  right: -14%;
+  width: 56%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(20, 155, 224, 0.22) 0%,
+    rgba(20, 155, 224, 0.1) 42%,
+    transparent 70%
+  );
+}
+
+/* Warm "counter" glow band ~33–53% */
+.af-counter-glow {
+  position: absolute;
+  top: 33%;
+  left: 0;
+  right: 0;
+  height: 20%;
+  background: radial-gradient(
+    120% 100% at 50% 50%,
+    rgba(214, 158, 92, 0.16) 0%,
+    transparent 72%
+  );
+}
+
+/* 3 · Soft radial darken behind the subjects (centre, upper third) */
+.af-subject-darken {
+  position: absolute;
+  top: 4%;
+  left: 50%;
+  width: 78%;
+  height: 46%;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    60% 60% at 50% 45%,
+    rgba(8, 12, 18, 0.55) 0%,
+    rgba(8, 12, 18, 0.25) 55%,
+    transparent 80%
+  );
+}
+
+/* 4 · Lower fade to solid #080C12 so the form is dark + readable */
+.af-lower-fade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    transparent 30%,
+    rgba(8, 12, 18, 0.55) 48%,
+    rgba(8, 12, 18, 0.92) 62%,
+    #080c12 74%
+  );
+}
+
+/* 5 · Subtle vignette */
+.af-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    120% 100% at 50% 38%,
+    transparent 55%,
+    rgba(0, 0, 0, 0.45) 100%
+  );
+}
+
+/* =========================================================================
+   2 · CONTENT — logo, hero, form
+   ========================================================================= */
+.af-content {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding:
+    calc(env(safe-area-inset-top, 0px) + 18px)
+    34px
+    calc(env(safe-area-inset-bottom, 0px) + 26px);
+  box-sizing: border-box;
+  animation: af-enter 0.8s cubic-bezier(0.2, 0.6, 0.2, 1) both;
+}
+
+@keyframes af-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Logo — black circle, image scaled so cream ring meets the edge */
+.af-logo {
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  background: #0c0b09;
+  overflow: hidden;
+  flex: none;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5);
+}
+.af-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.24);
+  display: block;
+}
+
+/* Hero — transparent team PNG, capped so it never overflows narrow screens.
+   Masked to fade out at the bottom; cup + roll stay fully in frame. */
+.af-hero {
+  margin-top: 10px;
+  width: min(300px, 78vw);
+  flex: none;
+  line-height: 0;
+}
+.af-hero img {
+  width: 100%;
+  height: auto;
+  display: block;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 87%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 87%, transparent 100%);
+}
+
+/* =========================================================================
+   FORM
+   ========================================================================= */
+.af-form {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-top: 4px;
+}
+
+.af-eyebrow {
+  margin: 0 0 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #7fb1d6;
+}
+
+.af-title {
+  margin: 0;
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 400;
+  font-size: 30px;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: #f4efe4;
+}
+.af-title em {
+  font-style: italic;
+  font-weight: 500;
+  color: #e7dfcf;
+}
+
+.af-sub {
+  margin: 12px 0 0;
+  max-width: 310px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(241, 235, 223, 0.6);
+}
+
+/* Fields */
+.af-fields {
+  width: 100%;
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.af-field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  text-align: left;
+}
+
+.af-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #8e826e;
+  padding-left: 2px;
+}
+
+.af-shell {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 52px;
+  padding: 0 16px;
+  box-sizing: border-box;
+  background: rgba(220, 234, 245, 0.05);
+  border: 1px solid rgba(220, 234, 245, 0.18);
+  border-radius: 14px;
+  transition: border-color 0.25s ease, background-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+.af-shell:focus-within {
+  border-color: #149be0;
+  background: rgba(20, 155, 224, 0.07);
+  box-shadow: 0 0 0 3px rgba(20, 155, 224, 0.16);
+}
+
+.af-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 15px;
+  color: #f1ebdf;
+}
+.af-input::placeholder {
+  color: #7e7768;
+}
+/* Keep the iOS / browser autofill skin from going white */
+.af-input:-webkit-autofill,
+.af-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #f1ebdf;
+  transition: background-color 600000s 0s, color 600000s 0s;
+}
+
+/* Eye toggle */
+.af-eye {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  margin-right: -8px;
+  flex: none;
+  border: none;
+  background: transparent;
+  color: #7e7768;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.af-eye:hover { color: #b6ac99; }
+.af-eye:focus-visible {
+  outline: 2px solid #149be0;
+  outline-offset: 2px;
+}
+.af-eye svg {
+  width: 19px;
+  height: 19px;
+}
+
+/* Primary button */
+.af-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 54px;
+  margin-top: 22px;
+  border: none;
+  border-radius: 14px;
+  background: #149be0;
+  color: #fff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: 0 14px 30px rgba(20, 155, 224, 0.34);
+  transition: transform 0.12s ease, opacity 0.12s ease,
+    box-shadow 0.2s ease, background-color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.af-submit:hover:not(:disabled) {
+  background: #1aa6ed;
+}
+.af-submit:active:not(:disabled) {
+  transform: translateY(1px);
+  opacity: 0.95;
+}
+.af-submit:focus-visible {
+  outline: 2px solid #7fb1d6;
+  outline-offset: 3px;
+}
+.af-submit:disabled {
+  opacity: 0.7;
+  cursor: default;
+  box-shadow: 0 8px 20px rgba(20, 155, 224, 0.22);
+}
+.af-icon {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+
+/* Footer / mode toggle */
+.af-foot {
+  margin: 18px 0 0;
+  font-size: 13px;
+  color: rgba(241, 235, 223, 0.6);
+}
+.af-link {
+  border: none;
+  background: transparent;
+  padding: 0 0 1px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #f1ebdf;
+  border-bottom: 1px solid #149be0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.af-link:focus-visible {
+  outline: 2px solid #149be0;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* =========================================================================
+   RESPONSIVE — short phones & larger screens
+   ========================================================================= */
+
+/* Short phones (e.g. 360×640): tighten the hero so the form stays in view */
+@media (max-height: 720px) {
+  .af-content { padding-top: calc(env(safe-area-inset-top, 0px) + 14px); }
+  .af-logo { width: 58px; height: 58px; }
+  .af-hero { width: min(248px, 64vw); margin-top: 6px; }
+  .af-title { font-size: 27px; }
+  .af-fields { margin-top: 18px; }
+  .af-submit { margin-top: 18px; }
+}
+
+@media (max-height: 600px) {
+  .af-hero { width: min(200px, 52vw); }
+  .af-sub { margin-top: 8px; }
+}
+
+/* Desktop / wide: centre the content column, give a comfortable max width */
+@media (min-width: 600px) {
+  .af-content {
+    justify-content: flex-start;
+    padding-top: max(env(safe-area-inset-top, 0px), 40px);
+  }
+  .af-hero { width: 300px; }
+}
+
+/* Honour reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .af-content { animation: none; }
+  .af-submit,
+  .af-shell,
+  .af-eye {
+    transition: none;
+  }
+}

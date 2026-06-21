@@ -32,7 +32,8 @@ export const api = {
   // Pass the phone's own local date so the streak is judged against the
   // customer's real day, not the server's timezone.
   buyCoffee: () => request('/coffee', { method: 'POST', body: { today: localDate() } }),
-  claimFreeCoffee: () => request('/free-coffee/claim', { method: 'POST' }),
+  claimFreeCoffee: (count = 1) => request('/free-coffee/claim', { method: 'POST', body: { count } }),
+  followInstagram: () => request('/instagram/claim', { method: 'POST' }),
   // Cash-out also carries the device date so the server can enforce the
   // "streak day only" rule against the customer's real day.
   redeem: () => request('/redeem', { method: 'POST', body: { today: localDate() } }),

@@ -55,6 +55,10 @@ const cols = db.prepare('PRAGMA table_info(users)').all().map((c) => c.name);
 if (!cols.includes('free_coffees')) {
   db.exec('ALTER TABLE users ADD COLUMN free_coffees INTEGER NOT NULL DEFAULT 0');
 }
+// Migration: one-time +50 coin bonus for following on Instagram (claimed once).
+if (!cols.includes('ig_follow_claimed')) {
+  db.exec('ALTER TABLE users ADD COLUMN ig_follow_claimed INTEGER NOT NULL DEFAULT 0');
+}
 
 export function logEvent(userId, type, detail = null) {
   db.prepare(
