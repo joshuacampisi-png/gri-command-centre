@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../api.js';
-import wordmark from '../assets/wordmark.png';
 import bg from '../assets/login-bg.jpg';
 import './AuthScreen.css';
 
@@ -107,13 +106,9 @@ export default function AuthScreen({ onAuthed, showToast }) {
         <div className="af-photo-scrim" />
       </div>
 
-      {/* ── Content ────────────────────────────────────────────────── */}
+      {/* ── Content (logo is baked into the photo) ─────────────────── */}
       <div className="af-content">
-        <img className="af-wordmark" src={wordmark} alt="Fala Fels Loyalty" />
-
         <form className="af-form" onSubmit={submit} noValidate>
-          <p className="af-eyebrow">Fala Fels &middot; Loyalty</p>
-
           <h1 className="af-title">
             {isSignup ? (
               <>
