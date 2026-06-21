@@ -2,6 +2,11 @@
 # In Railway, set this service's Root Directory to "falafels-loyalty".
 providers = ["node"]
 
+# NODE_ENV=production (a runtime env var) makes npm omit devDependencies, but the
+# build tool (vite) lives there. Force a full install so `vite build` works.
+[phases.install]
+cmds = ["npm install --include=dev --no-audit --no-fund"]
+
 [phases.build]
 cmds = ["npm run build"]
 
