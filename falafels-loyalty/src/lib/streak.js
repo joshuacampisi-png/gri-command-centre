@@ -34,3 +34,18 @@ export function liveStreak(storedStreak, lastPurchaseDate, today = localDate()) 
   if (diff === 1) return { streak: stored, status: 'active', boughtToday: false, atRisk: true };
   return { streak: 0, status: 'broken', boughtToday: false, atRisk: false };
 }
+
+// The NEXT streak coin bonus from the current streak. Coins land on a streak day:
+// day 3, 10, 17… (≡3 mod 7) earn `streak3`; day 7, 14, 21… (≡0 mod 7) earn
+// `streak7`. Returns how many more daily coffees until it, the target day, and
+// the coin amount. (One coffee per day extends the streak.)
+export function nextCoinBonus(streak, streak3, streak7) {
+  const s = Math.max(0, streak || 0);
+  for (let i = 1; i <= 7; i++) {
+    const d = s + i;
+    const c = d % 7;
+    if (c === 3) return { day: d, coffees: i, coins: streak3 };
+    if (c === 0) return { day: d, coffees: i, coins: streak7 };
+  }
+  return { day: s + 3, coffees: 3, coins: streak3 };
+}

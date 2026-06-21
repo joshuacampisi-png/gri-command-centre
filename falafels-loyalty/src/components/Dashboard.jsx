@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { api } from '../api.js';
 import Confetti from './Confetti.jsx';
 import AnimatedNumber from './AnimatedNumber.jsx';
-import { liveStreak } from '../lib/streak.js';
+import { liveStreak, nextCoinBonus } from '../lib/streak.js';
 import logo from '../assets/logo.png';
 import './Dashboard.css';
 
@@ -46,6 +46,7 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
   const canCashout = cash.eligible && isStreakDay;
   const remaining = Math.max(0, user.punchesNeeded - user.punches);
   const activeVouchers = user.vouchers.filter((v) => v.status === 'active');
+  const nextBonus = nextCoinBonus(live.streak, eco.streak3, eco.streak7);
 
   const hour = new Date().getHours();
   const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
@@ -265,6 +266,16 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
             ? <><strong>{remaining} more cup{remaining > 1 ? 's' : ''}</strong> and your {user.punchesNeeded + 1}th coffee's on us.</>
             : <><strong>Card full</strong> — a free coffee's waiting in your bank.</>}
         </div>
+        <div className="d-card-streak">
+          <span className="d-card-streak-l">
+            <Flame width="14" height="14" />
+            {live.streak > 0 ? `${live.streak}-day streak` : 'No streak yet'}
+          </span>
+          <span className="d-card-streak-r">
+            <strong>{nextBonus.coffees} more day{nextBonus.coffees > 1 ? 's' : ''}</strong>
+            <span className="d-card-streak-coins"><Coin width="13" height="13" />+{nextBonus.coins} coins</span>
+          </span>
+        </div>
       </section>
     );
   }
@@ -417,7 +428,11 @@ export default function Dashboard({ user, setUser, onLogout, showToast }) {
           <div className="d-streak-best"><strong>{user.longestStreak}</strong><span>best</span></div>
         </div>
         <div className="d-week">{dots}</div>
-        <div className="d-panel-fine center">3-day streak earns +{eco.streak3} · 7-day earns +{eco.streak7} · repeats weekly</div>
+        <div className="d-streak-next">
+          Buy <strong>{nextBonus.coffees} more day{nextBonus.coffees > 1 ? 's' : ''}</strong> in a row to earn
+          <span className="d-next-coins"><Coin width="14" height="14" /> +{nextBonus.coins} coins</span>
+        </div>
+        <div className="d-panel-fine center">Day 3 earns +{eco.streak3} coins · day 7 earns +{eco.streak7} coins · repeats weekly</div>
       </section>
     );
   }

@@ -100,6 +100,24 @@
 .d-card-foot { margin-top: 16px; font-size: 12.5px; color: rgba(241, 235, 223, 0.64); line-height: 1.4; }
 .d-card-foot strong { color: var(--cream-2); font-weight: 600; }
 
+/* Coin-streak strip on the coffee card: when the next coin bonus lands */
+.d-card-streak {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 13px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(241, 235, 223, 0.12);
+  font-size: 12.5px;
+}
+.d-card-streak-l { display: inline-flex; align-items: center; gap: 6px; color: rgba(241, 235, 223, 0.72); font-weight: 600; }
+.d-card-streak-l svg { color: #ef8a33; }
+.d-card-streak-r { display: inline-flex; align-items: center; gap: 8px; color: rgba(241, 235, 223, 0.72); }
+.d-card-streak-r strong { color: var(--cream-2); font-weight: 600; }
+.d-card-streak-coins { display: inline-flex; align-items: center; gap: 4px; color: var(--gold); font-weight: 700; white-space: nowrap; }
+
 /* ---------- Primary action ---------- */
 .d-buy {
   margin-top: 14px; width: 100%; height: 56px;
@@ -229,6 +247,22 @@
 .d-streak-best strong { display: block; font-size: 20px; font-weight: 800; color: var(--brown); }
 .d-streak-best span { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-muted); }
 .d-week { display: flex; justify-content: space-between; gap: 4px; margin: 18px 0 12px; }
+
+/* Clear "next coin bonus" call-out in the streak panel */
+.d-streak-next {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: var(--ink-text);
+  background: #f4ead5;
+  border: 1px solid #e7d9b8;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.d-streak-next strong { font-weight: 700; }
+.d-next-coins { display: inline-flex; align-items: center; gap: 4px; color: var(--brown); font-weight: 700; white-space: nowrap; }
+.d-next-coins svg { color: var(--gold-deep); vertical-align: -2px; }
 .d-day { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
 .d-day-dot {
   width: 100%; max-width: 40px; aspect-ratio: 1; border-radius: 50%;
