@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../api.js';
 import wordmark from '../assets/wordmark.png';
-import team from '../assets/team-cutout.png';
+import bg from '../assets/login-bg.jpg';
 import './AuthScreen.css';
 
 const LAST_USER_KEY = 'falafels_last_user';
@@ -101,51 +101,15 @@ export default function AuthScreen({ onAuthed, showToast }) {
 
   return (
     <div className="af-screen">
-      {/* ── Scene (pure CSS, full bleed) ───────────────────────────── */}
+      {/* ── Background photo + dark scrim (form sits on the dark base) ── */}
       <div className="af-scene" aria-hidden="true">
-        <div className="af-scene__base" />
-
-        <div className="af-scene__dof">
-          <div className="af-wash" />
-          <div className="af-shelf" />
-          <div className="af-bottles">
-            <span style={{ '--h': '34px', '--w': '12px', '--c': 'rgba(214,158,92,0.5)' }} />
-            <span style={{ '--h': '46px', '--w': '14px', '--c': 'rgba(122,150,170,0.45)' }} />
-            <span style={{ '--h': '28px', '--w': '16px', '--c': 'rgba(214,158,92,0.42)' }} />
-            <span style={{ '--h': '52px', '--w': '11px', '--c': 'rgba(122,150,170,0.5)' }} />
-            <span style={{ '--h': '38px', '--w': '15px', '--c': 'rgba(214,158,92,0.48)' }} />
-            <span style={{ '--h': '44px', '--w': '13px', '--c': 'rgba(122,150,170,0.42)' }} />
-            <span style={{ '--h': '30px', '--w': '17px', '--c': 'rgba(214,158,92,0.5)' }} />
-            <span style={{ '--h': '50px', '--w': '12px', '--c': 'rgba(122,150,170,0.46)' }} />
-            <span style={{ '--h': '36px', '--w': '14px', '--c': 'rgba(214,158,92,0.44)' }} />
-            <span style={{ '--h': '42px', '--w': '13px', '--c': 'rgba(122,150,170,0.5)' }} />
-          </div>
-
-          <div className="af-pendant af-pendant--left">
-            <span className="af-pendant__line" />
-            <span className="af-pendant__bulb" />
-          </div>
-          <div className="af-pendant af-pendant--right">
-            <span className="af-pendant__line" />
-            <span className="af-pendant__bulb" />
-          </div>
-
-          <div className="af-orb" />
-          <div className="af-counter-glow" />
-        </div>
-
-        <div className="af-subject-darken" />
-        <div className="af-lower-fade" />
-        <div className="af-vignette" />
+        <img className="af-photo" src={bg} alt="" />
+        <div className="af-photo-scrim" />
       </div>
 
       {/* ── Content ────────────────────────────────────────────────── */}
       <div className="af-content">
         <img className="af-wordmark" src={wordmark} alt="Fala Fels Loyalty" />
-
-        <div className="af-hero">
-          <img src={team} alt="The Fala Fels team holding a coffee and a falafel roll" />
-        </div>
 
         <form className="af-form" onSubmit={submit} noValidate>
           <p className="af-eyebrow">Fala Fels &middot; Loyalty</p>

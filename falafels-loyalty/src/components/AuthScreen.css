@@ -26,186 +26,35 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
+  background: #080c12;
 }
 
-/* Base vertical gradient */
-.af-scene__base {
+/* The real team-in-the-cafe photo, full-bleed, framed on the staff */
+.af-photo {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    180deg,
-    #101d28 0%,
-    #0d1822 28%,
-    #0a121a 50%,
-    #080c12 100%
-  );
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 20%;
 }
 
-/* Blurred depth-of-field group */
-.af-scene__dof {
+/* Darken the very top (so the cream wordmark reads) and fade the lower half to
+   solid #080C12 so the headline + glass fields sit on a dark, readable base. */
+.af-photo-scrim {
   position: absolute;
   inset: 0;
-  filter: blur(3px);
-}
-
-/* Warm radial wash across the top ~48% */
-.af-wash {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 48%;
-  background: radial-gradient(
-    120% 90% at 50% 8%,
-    rgba(214, 158, 92, 0.22) 0%,
-    rgba(214, 158, 92, 0.08) 38%,
-    transparent 70%
-  );
-}
-
-/* Thin shelf hairline ~22% down */
-.af-shelf {
-  position: absolute;
-  top: 22%;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(214, 188, 150, 0.28) 12%,
-    rgba(214, 188, 150, 0.4) 50%,
-    rgba(214, 188, 150, 0.28) 88%,
-    transparent 100%
-  );
-}
-
-/* Row of small bottle/jar rectangles sitting on the shelf */
-.af-bottles {
-  position: absolute;
-  top: 22%;
-  left: 6%;
-  right: 6%;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  height: 1px;
-}
-.af-bottles span {
-  display: block;
-  width: var(--w);
-  height: var(--h);
-  margin-bottom: 1px;
-  background: var(--c);
-  border-radius: 2px 2px 1px 1px;
-  opacity: 0.5;
-  box-shadow: inset 0 6px 6px -4px rgba(255, 255, 255, 0.25);
-}
-
-/* Pendant lights — bright warm dot + soft glow + drop line from the top */
-.af-pendant {
-  position: absolute;
-  top: 0;
-}
-.af-pendant--left { left: 26%; }
-.af-pendant--right { left: 72%; }
-
-.af-pendant__line {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 1px;
-  height: 14%;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 214, 150, 0.5),
-    rgba(255, 214, 150, 0.05)
-  );
-  transform: translateX(-0.5px);
-}
-.af-pendant__bulb {
-  position: absolute;
-  top: 14%;
-  left: 50%;
-  width: 7px;
-  height: 7px;
-  margin: -3.5px 0 0 -3.5px;
-  border-radius: 50%;
-  background: #ffe6b8;
-  box-shadow:
-    0 0 10px 4px rgba(255, 216, 150, 0.85),
-    0 0 34px 16px rgba(255, 198, 120, 0.45),
-    0 0 70px 40px rgba(230, 165, 90, 0.18);
-}
-
-/* Brand-blue ambient orb, off the right edge ~16% down */
-.af-orb {
-  position: absolute;
-  top: 16%;
-  right: -14%;
-  width: 56%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(20, 155, 224, 0.22) 0%,
-    rgba(20, 155, 224, 0.1) 42%,
-    transparent 70%
-  );
-}
-
-/* Warm "counter" glow band ~33–53% */
-.af-counter-glow {
-  position: absolute;
-  top: 33%;
-  left: 0;
-  right: 0;
-  height: 20%;
-  background: radial-gradient(
-    120% 100% at 50% 50%,
-    rgba(214, 158, 92, 0.16) 0%,
-    transparent 72%
-  );
-}
-
-/* 3 · Soft radial darken behind the subjects (centre, upper third) */
-.af-subject-darken {
-  position: absolute;
-  top: 4%;
-  left: 50%;
-  width: 78%;
-  height: 46%;
-  transform: translateX(-50%);
-  background: radial-gradient(
-    60% 60% at 50% 45%,
-    rgba(8, 12, 18, 0.55) 0%,
-    rgba(8, 12, 18, 0.25) 55%,
-    transparent 80%
-  );
-}
-
-/* 4 · Lower fade to solid #080C12 so the form is dark + readable */
-.af-lower-fade {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    transparent 30%,
-    rgba(8, 12, 18, 0.55) 48%,
-    rgba(8, 12, 18, 0.92) 62%,
-    #080c12 74%
-  );
-}
-
-/* 5 · Subtle vignette */
-.af-vignette {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    120% 100% at 50% 38%,
-    transparent 55%,
-    rgba(0, 0, 0, 0.45) 100%
-  );
+  background:
+    linear-gradient(
+      180deg,
+      rgba(8, 12, 18, 0.55) 0%,
+      rgba(8, 12, 18, 0.14) 14%,
+      rgba(8, 12, 18, 0) 27%,
+      rgba(8, 12, 18, 0.4) 44%,
+      rgba(8, 12, 18, 0.88) 57%,
+      #080c12 67%
+    ),
+    radial-gradient(120% 100% at 50% 34%, transparent 52%, rgba(0, 0, 0, 0.42) 100%);
 }
 
 /* =========================================================================
@@ -218,9 +67,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: space-between; /* wordmark up top over the photo, form on the dark base */
   width: 100%;
   padding:
-    calc(env(safe-area-inset-top, 0px) + 18px)
+    calc(env(safe-area-inset-top, 0px) + 26px)
     34px
     calc(env(safe-area-inset-bottom, 0px) + 26px);
   box-sizing: border-box;
@@ -241,21 +91,8 @@
   filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.45));
 }
 
-/* Hero — transparent team PNG, capped so it never overflows narrow screens.
-   Masked to fade out at the bottom; cup + roll stay fully in frame. */
-.af-hero {
-  margin-top: 10px;
-  width: min(300px, 78vw);
-  flex: none;
-  line-height: 0;
-}
-.af-hero img {
-  width: 100%;
-  height: auto;
-  display: block;
-  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 87%, transparent 100%);
-  mask-image: linear-gradient(180deg, #000 0%, #000 87%, transparent 100%);
-}
+/* Give the form group a little breathing room from the photo above it. */
+.af-form { margin-top: auto; }
 
 /* =========================================================================
    FORM
@@ -468,28 +305,23 @@
    RESPONSIVE — short phones & larger screens
    ========================================================================= */
 
-/* Short phones (e.g. 360×640): tighten the hero so the form stays in view */
+/* Short phones (e.g. 360×640): tighten things so the form stays in view */
 @media (max-height: 720px) {
-  .af-content { padding-top: calc(env(safe-area-inset-top, 0px) + 14px); }
+  .af-content { padding-top: calc(env(safe-area-inset-top, 0px) + 16px); }
   .af-wordmark { width: min(200px, 56vw); }
-  .af-hero { width: min(248px, 64vw); margin-top: 6px; }
   .af-title { font-size: 27px; }
   .af-fields { margin-top: 18px; }
   .af-submit { margin-top: 18px; }
 }
 
 @media (max-height: 600px) {
-  .af-hero { width: min(200px, 52vw); }
   .af-sub { margin-top: 8px; }
 }
 
-/* Desktop / wide: centre the content column, give a comfortable max width */
+/* Desktop / wide: cap the form width so the fields don't stretch */
 @media (min-width: 600px) {
-  .af-content {
-    justify-content: flex-start;
-    padding-top: max(env(safe-area-inset-top, 0px), 40px);
-  }
-  .af-hero { width: 300px; }
+  .af-content { padding-top: max(env(safe-area-inset-top, 0px), 40px); }
+  .af-form { width: 420px; }
 }
 
 /* Honour reduced-motion preferences */
