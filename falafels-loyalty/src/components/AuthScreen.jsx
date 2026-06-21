@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../api.js';
-import logo from '../assets/logo.png';
+import wordmark from '../assets/wordmark.png';
 import team from '../assets/team-cutout.png';
 import './AuthScreen.css';
 
@@ -141,9 +141,7 @@ export default function AuthScreen({ onAuthed, showToast }) {
 
       {/* ── Content ────────────────────────────────────────────────── */}
       <div className="af-content">
-        <div className="af-logo">
-          <img src={logo} alt="Fala Fels" />
-        </div>
+        <img className="af-wordmark" src={wordmark} alt="Fala Fels Loyalty" />
 
         <div className="af-hero">
           <img src={team} alt="The Fala Fels team holding a coffee and a falafel roll" />

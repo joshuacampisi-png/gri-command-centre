@@ -232,22 +232,13 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Logo — black circle, image scaled so cream ring meets the edge */
-.af-logo {
-  width: 66px;
-  height: 66px;
-  border-radius: 50%;
-  background: #0c0b09;
-  overflow: hidden;
+/* Logo — the cream/gold wordmark on the dark scene (transparent PNG) */
+.af-wordmark {
+  width: min(232px, 62vw);
+  height: auto;
   flex: none;
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5);
-}
-.af-logo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transform: scale(1.24);
   display: block;
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.45));
 }
 
 /* Hero — transparent team PNG, capped so it never overflows narrow screens.
@@ -480,7 +471,7 @@
 /* Short phones (e.g. 360×640): tighten the hero so the form stays in view */
 @media (max-height: 720px) {
   .af-content { padding-top: calc(env(safe-area-inset-top, 0px) + 14px); }
-  .af-logo { width: 58px; height: 58px; }
+  .af-wordmark { width: min(200px, 56vw); }
   .af-hero { width: min(248px, 64vw); margin-top: 6px; }
   .af-title { font-size: 27px; }
   .af-fields { margin-top: 18px; }

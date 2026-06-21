@@ -54,12 +54,9 @@ a { color: inherit; }
   background: linear-gradient(180deg, var(--cafe-1) 0%, var(--cafe-2) 40%, var(--ink) 100%);
 }
 .splash-logo {
-  width: 84px;
-  height: 84px;
-  border-radius: 50%;
-  background: #0c0b09;
-  object-fit: cover;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+  width: min(248px, 64vw);
+  height: auto;
+  filter: drop-shadow(0 8px 22px rgba(0, 0, 0, 0.5));
   animation: pulseSoft 1.4s ease-in-out infinite;
 }
 

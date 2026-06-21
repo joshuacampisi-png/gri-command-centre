@@ -4,7 +4,7 @@ import AuthScreen from './components/AuthScreen.jsx';
 import Dashboard from './components/Dashboard.jsx';
 import Toast from './components/Toast.jsx';
 import InstallPrompt from './components/InstallPrompt.jsx';
-import logo from './assets/logo.png';
+import wordmark from './assets/wordmark.png';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -44,7 +44,7 @@ export default function App() {
   if (loading) {
     return (
       <div className="splash-loading">
-        <img className="splash-logo" src={logo} alt="Fala Fels Loyalty" />
+        <img className="splash-logo" src={wordmark} alt="Fala Fels Loyalty" />
       </div>
     );
   }
