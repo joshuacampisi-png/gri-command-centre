@@ -1,32 +1,33 @@
-NovaPeptides.com.au - Combined Landed-Cost Stocktake & Profit/Loss,,,,,,,
+NovaPeptides.com.au - Combined Landed-Cost Stocktake & Profit/Loss (AUD),,,,,,,
 Prepared,2026-06-23,,,,,,
-Both orders pooled. All supplier costs in USD. Freight spread across all products by value.,,,,,,,
+Both orders pooled. Supplier costs in USD; all AUD figures convert at the rate cell below.,,,,,,,
 ,,,,,,,
-COMBINED IMPORT - both orders + all freight pooled (multiplier x1.3165),,,,,,,
-Product,Vials,Unit Cost USD (ex-freight),Goods Cost USD,Freight Share USD,Landed Total USD,Landed/Vial USD,
-Reta RT60,10,24.80,248.00,78.48,326.48,32.65,
-KLOW 80mg,10,20.48,204.80,64.81,269.61,26.96,
-GLOW 70mg,10,17.36,173.60,54.94,228.54,22.85,
-Reta RT30,10,16.40,164.00,51.90,215.90,21.59,
-BPC-157 + TB-500 10mg,10,8.96,89.60,28.35,117.96,11.80,
-SS-31 10mg,10,7.84,78.40,24.81,103.21,10.32,
-BAC water 3ml (70 paid + 20 free),90,0.59,52.80,16.71,69.51,0.77,
-Total,150,,1011.20,320.00,1331.20,,
+USD to AUD rate (edit me),1.45,Mid-market ~1.43 Jun 2026 - set to the rate you actually paid,,,,,
 ,,,,,,,
-PROFIT / LOSS,,,,,,,
-USD to AUD rate (edit me),1.55,,,,,,
-Product,Vials in Stock,Landed/Vial USD,Landed/Vial AUD,Retail/Vial AUD (enter),Profit/Vial AUD,Margin %,Stock Value AUD,Potential Profit AUD
-Reta RT60,10,32.65,=C19*$B$17,,=E19-D19,=IF(E19>0,F19/E19,0),=D19*B19,=F19*B19
-KLOW 80mg,10,26.96,=C20*$B$17,,=E20-D20,=IF(E20>0,F20/E20,0),=D20*B20,=F20*B20
-GLOW 70mg,10,22.85,=C21*$B$17,,=E21-D21,=IF(E21>0,F21/E21,0),=D21*B21,=F21*B21
-Reta RT30,10,21.59,=C22*$B$17,,=E22-D22,=IF(E22>0,F22/E22,0),=D22*B22,=F22*B22
-BPC-157 + TB-500 10mg,10,11.80,=C23*$B$17,,=E23-D23,=IF(E23>0,F23/E23,0),=D23*B23,=F23*B23
-SS-31 10mg,10,10.32,=C24*$B$17,,=E24-D24,=IF(E24>0,F24/E24,0),=D24*B24,=F24*B24
-BAC water 3ml (incl 20 free),90,0.77,=C25*$B$17,,=E25-D25,=IF(E25>0,F25/E25,0),=D25*B25,=F25*B25
-Portfolio Total,,,,,,,=SUM(H19:H25),=SUM(I19:I25)
+COMBINED IMPORT - both orders + all freight pooled (freight multiplier x1.3165),,,,,,,
+Product,Vials,Goods USD,Freight USD,Landed Total USD,Landed Total AUD,Landed/Vial AUD,
+Reta RT60,10,248.00,78.48,=C9+D9,=E9*$B$5,=F9/B9,
+KLOW 80mg,10,204.80,64.81,=C10+D10,=E10*$B$5,=F10/B10,
+GLOW 70mg,10,173.60,54.94,=C11+D11,=E11*$B$5,=F11/B11,
+Reta RT30,10,164.00,51.90,=C12+D12,=E12*$B$5,=F12/B12,
+BPC-157 + TB-500 10mg,10,89.60,28.35,=C13+D13,=E13*$B$5,=F13/B13,
+SS-31 10mg,10,78.40,24.81,=C14+D14,=E14*$B$5,=F14/B14,
+BAC water 3ml (70 paid + 20 free),90,52.80,16.71,=C15+D15,=E15*$B$5,=F15/B15,
+Total,150,=SUM(C9:C15),=SUM(D9:D15),=SUM(E9:E15),=SUM(F9:F15),,
+,,,,,,,
+PROFIT / LOSS - all AUD,,,,,,,
+Product,Vials in Stock,Landed/Vial AUD,Retail/Vial AUD (enter),Profit/Vial AUD,Margin %,Stock Value AUD,Potential Profit AUD
+Reta RT60,10,=G9,,=D20-C20,=IF(D20>0,E20/D20,0),=C20*B20,=E20*B20
+KLOW 80mg,10,=G10,,=D21-C21,=IF(D21>0,E21/D21,0),=C21*B21,=E21*B21
+GLOW 70mg,10,=G11,,=D22-C22,=IF(D22>0,E22/D22,0),=C22*B22,=E22*B22
+Reta RT30,10,=G12,,=D23-C23,=IF(D23>0,E23/D23,0),=C23*B23,=E23*B23
+BPC-157 + TB-500 10mg,10,=G13,,=D24-C24,=IF(D24>0,E24/D24,0),=C24*B24,=E24*B24
+SS-31 10mg,10,=G14,,=D25-C25,=IF(D25>0,E25/D25,0),=C25*B25,=E25*B25
+BAC water 3ml (incl 20 free),90,=G15,,=D26-C26,=IF(D26>0,E26/D26,0),=C26*B26,=E26*B26
+Portfolio Total,,,,,,=SUM(G20:G26),=SUM(H20:H26)
 ,,,,,,,
 NOTES,,,,,,,
-Both orders are pooled: goods 1011.20 + freight 320.00 = 1331.20 total landed cost.,,,,,,,
-Landed/Vial = (goods cost + freight share) / vials. Freight multiplier = 1331.20 / 1011.20 = 1.3165.,,,,,,,
+Change the rate in cell B5 and every AUD figure updates automatically.,,,,,,,
+Landed/Vial AUD = landed USD cost x rate. Goods 1011.20 + freight 320.00 = 1331.20 USD total.,,,,,,,
 BAC water: 70 paid vials cost 69.51 USD landed; 20 came free; cost spread over 90 = 0.77/vial.,,,,,,,
-Enter Retail/Vial AUD in column E and margins calculate automatically.,,,,,,,
+Enter Retail/Vial AUD in column D and profit/margin calculate automatically.,,,,,,,

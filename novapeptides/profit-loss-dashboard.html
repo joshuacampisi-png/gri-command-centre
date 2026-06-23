@@ -30,7 +30,15 @@
   .doctag .t1{font-size:15px;font-weight:600}
   .doctag .t2{font-size:12px;color:#aeb9dd;margin-top:3px}
 
-  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:18px}
+  /* master FX bar */
+  .fxbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:18px;
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:12px 16px}
+  .fxbar .lab{font-size:12px;color:#cdd6f5;font-weight:700;text-transform:uppercase;letter-spacing:.6px}
+  .fxbar input{width:110px;font-size:17px;font-weight:800;padding:8px 12px;border-radius:10px;border:none;
+    color:var(--ink);background:#fff;text-align:center}
+  .fxbar .note{font-size:11.5px;color:#aeb9dd}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:14px}
   .kpi{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;
     box-shadow:0 6px 18px rgba(11,20,55,.05)}
   .kpi .label{font-size:11.5px;color:var(--mist);text-transform:uppercase;letter-spacing:.7px;font-weight:600}
@@ -49,12 +57,14 @@
   th,td{padding:11px 12px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
   th:first-child,td:first-child{text-align:left}
   thead th{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--mist);font-weight:700;border-bottom:2px solid var(--line)}
+  .aud-col{background:#f6f4ff}
   tbody tr:hover{background:#fafbff}
   tfoot td{font-weight:800;border-top:2px solid var(--line);border-bottom:none;background:#f8faff}
+  tfoot td.aud-col{background:#efeaff}
   .prod{font-weight:700;color:var(--ink)}
   .muted{color:var(--mist)}
-  .land{font-weight:800;color:var(--ink)}
-  .landbig{font-weight:800;color:var(--violet)}
+  .land{font-weight:700;color:var(--ink)}
+  .audbig{font-weight:800;color:var(--violet)}
   .freight{color:var(--violet);font-weight:600}
 
   .controls{display:flex;gap:22px;flex-wrap:wrap;align-items:center;margin-bottom:14px;
@@ -104,20 +114,26 @@
       </div>
       <div class="doctag">
         <div class="t1">Cost &amp; Profit Dashboard</div>
-        <div class="t2">Combined landed-cost stocktake &middot; Prepared 23 Jun 2026</div>
+        <div class="t2">Combined landed-cost stocktake &middot; All figures AUD &middot; 23 Jun 2026</div>
       </div>
+    </div>
+
+    <div class="fxbar">
+      <span class="lab">USD &rarr; AUD rate</span>
+      <input id="fx" type="number" step="0.01" value="1.45">
+      <span class="note">Drives every AUD figure below. Mid-market ~1.43 (Jun 2026) &mdash; set this to the rate you actually paid (incl. card/transfer fees).</span>
     </div>
 
     <div class="kpis">
       <div class="kpi accent">
         <div class="label">Total Landed Cost</div>
-        <div class="val">$1,331.20</div>
-        <div class="sub">Both orders combined (USD)</div>
+        <div class="val" id="kLandAud">A$0</div>
+        <div class="sub" id="kLandUsd">US$1,331.20</div>
       </div>
       <div class="kpi">
         <div class="label">Total Freight</div>
-        <div class="val">$320.00</div>
-        <div class="sub">Pooled across all products</div>
+        <div class="val" id="kFreightAud">A$0</div>
+        <div class="sub" id="kFreightUsd">US$320.00</div>
       </div>
       <div class="kpi">
         <div class="label">Peptide Vials</div>
@@ -136,27 +152,28 @@
   <section>
     <div class="sec-head">
       <div>
-        <h2>Combined Import &mdash; cost per vial, shipping included</h2>
-        <p class="sec-sub">Both orders pooled &middot; $320 total freight spread by product value &middot; multiplier &times;1.3165</p>
+        <h2>Combined Import &mdash; cost per vial in AUD, shipping included</h2>
+        <p class="sec-sub">Both orders pooled &middot; $320 total freight spread by value (&times;1.3165) &middot; USD converted at your rate</p>
       </div>
-      <span class="pill">Total $1,331.20 USD</span>
+      <span class="pill" id="pillLand">A$0 landed</span>
     </div>
     <div class="scroll">
-    <table>
+    <table id="imp">
       <thead><tr>
-        <th>Product</th><th>Vials</th><th>Unit cost<br>(ex-freight)</th><th>Goods cost</th>
-        <th>Freight share</th><th>Landed total</th><th>Landed / vial</th>
+        <th>Product</th><th>Vials</th><th>Goods (USD)</th><th>Freight (USD)</th><th>Landed total (USD)</th>
+        <th class="aud-col">Landed total (AUD)</th><th class="aud-col">Landed / vial (AUD)</th>
       </tr></thead>
       <tbody>
-        <tr><td class="prod">Reta RT60</td><td>10</td><td class="muted">$24.80</td><td>$248.00</td><td class="freight">$78.48</td><td class="land">$326.48</td><td class="landbig">$32.65</td></tr>
-        <tr><td class="prod">KLOW 80mg</td><td>10</td><td class="muted">$20.48</td><td>$204.80</td><td class="freight">$64.81</td><td class="land">$269.61</td><td class="landbig">$26.96</td></tr>
-        <tr><td class="prod">GLOW 70mg</td><td>10</td><td class="muted">$17.36</td><td>$173.60</td><td class="freight">$54.94</td><td class="land">$228.54</td><td class="landbig">$22.85</td></tr>
-        <tr><td class="prod">Reta RT30</td><td>10</td><td class="muted">$16.40</td><td>$164.00</td><td class="freight">$51.90</td><td class="land">$215.90</td><td class="landbig">$21.59</td></tr>
-        <tr><td class="prod">BPC-157 + TB-500 10mg</td><td>10</td><td class="muted">$8.96</td><td>$89.60</td><td class="freight">$28.35</td><td class="land">$117.96</td><td class="landbig">$11.80</td></tr>
-        <tr><td class="prod">SS-31 10mg</td><td>10</td><td class="muted">$7.84</td><td>$78.40</td><td class="freight">$24.81</td><td class="land">$103.21</td><td class="landbig">$10.32</td></tr>
-        <tr><td class="prod">BAC water 3ml <span class="muted" style="font-weight:500">(70 paid + 20 free)</span></td><td>90</td><td class="muted">$0.59</td><td>$52.80</td><td class="freight">$16.71</td><td class="land">$69.51</td><td class="landbig">$0.77</td></tr>
+        <!-- data-landed = landed total USD, data-vials -->
+        <tr data-landed="326.48" data-vials="10"><td class="prod">Reta RT60</td><td>10</td><td class="muted">$248.00</td><td class="freight">$78.48</td><td class="land">$326.48</td></tr>
+        <tr data-landed="269.61" data-vials="10"><td class="prod">KLOW 80mg</td><td>10</td><td class="muted">$204.80</td><td class="freight">$64.81</td><td class="land">$269.61</td></tr>
+        <tr data-landed="228.54" data-vials="10"><td class="prod">GLOW 70mg</td><td>10</td><td class="muted">$173.60</td><td class="freight">$54.94</td><td class="land">$228.54</td></tr>
+        <tr data-landed="215.90" data-vials="10"><td class="prod">Reta RT30</td><td>10</td><td class="muted">$164.00</td><td class="freight">$51.90</td><td class="land">$215.90</td></tr>
+        <tr data-landed="117.96" data-vials="10"><td class="prod">BPC-157 + TB-500 10mg</td><td>10</td><td class="muted">$89.60</td><td class="freight">$28.35</td><td class="land">$117.96</td></tr>
+        <tr data-landed="103.21" data-vials="10"><td class="prod">SS-31 10mg</td><td>10</td><td class="muted">$78.40</td><td class="freight">$24.81</td><td class="land">$103.21</td></tr>
+        <tr data-landed="69.51" data-vials="90"><td class="prod">BAC water 3ml <span class="muted" style="font-weight:500">(70 paid + 20 free)</span></td><td>90</td><td class="muted">$52.80</td><td class="freight">$16.71</td><td class="land">$69.51</td></tr>
       </tbody>
-      <tfoot><tr><td>Total</td><td>150</td><td></td><td>$1,011.20</td><td class="freight">$320.00</td><td>$1,331.20</td><td></td></tr></tfoot>
+      <tfoot><tr><td>Total</td><td>150</td><td>$1,011.20</td><td class="freight">$320.00</td><td>$1,331.20</td><td class="aud-col" id="impAudTot"></td><td class="aud-col"></td></tr></tfoot>
     </table>
     </div>
   </section>
@@ -165,7 +182,7 @@
   <section>
     <div class="sec-head">
       <div>
-        <h2>Profit / Loss calculator</h2>
+        <h2>Profit / Loss calculator (AUD)</h2>
         <p class="sec-sub">Enter your AUD retail price per vial to see margin live</p>
       </div>
       <span class="pill">Editable</span>
@@ -173,22 +190,17 @@
 
     <div class="controls">
       <div class="ctrl">
-        <label>USD &rarr; AUD rate</label>
-        <input id="fx" type="number" step="0.01" value="1.55">
-        <span class="hint">Edit to today's rate</span>
-      </div>
-      <div class="ctrl">
         <label>Suggested markup &times;</label>
         <input id="markup" type="number" step="0.1" value="4">
-        <span class="hint">Pre-fills retail (AUD) &mdash; override any cell</span>
+        <span class="hint">Pre-fills retail (AUD) &mdash; override any cell. Rate is set up top.</span>
       </div>
     </div>
 
     <div class="scroll">
     <table id="pnl">
       <thead><tr>
-        <th>Product</th><th>Vials in stock</th><th>Landed/vial<br>(USD)</th><th>Landed/vial<br>(AUD)</th>
-        <th>Retail/vial<br>(AUD)</th><th>Profit/vial</th><th>Margin</th><th>Stock value<br>(AUD)</th><th>Potential profit</th>
+        <th>Product</th><th>Vials in stock</th><th class="aud-col">Landed/vial (AUD)</th>
+        <th>Retail/vial (AUD)</th><th>Profit/vial</th><th>Margin</th><th>Stock value (AUD)</th><th>Potential profit</th>
       </tr></thead>
       <tbody>
         <tr data-cost="32.65" data-units="10"><td class="prod">Reta RT60</td></tr>
@@ -200,7 +212,7 @@
         <tr data-cost="0.77" data-units="90"><td class="prod">BAC water 3ml <span class="muted" style="font-weight:500">(incl. 20 free)</span></td></tr>
       </tbody>
       <tfoot><tr>
-        <td>Portfolio</td><td id="tUnits"></td><td></td><td id="tLandAud"></td><td></td><td></td><td id="tMargin"></td><td id="tStock"></td><td id="tProfit"></td>
+        <td>Portfolio</td><td id="tUnits"></td><td class="aud-col" id="tLandAud"></td><td></td><td></td><td id="tMargin"></td><td id="tStock"></td><td id="tProfit"></td>
       </tr></tfoot>
     </table>
     </div>
@@ -211,17 +223,17 @@
     <h2>How these numbers were built</h2>
     <p class="sec-sub">So you and your wife can re-run the maths on every future order</p>
     <div class="notes">
-      <b>One pooled order.</b> Both shipments are merged. All goods = <b>$1,011.20</b>, all freight = <b>$320.00</b>.
-      Each product carries a slice of freight equal to its share of the goods value
-      (multiplier = 1,331.20 &divide; 1,011.20 = <b>&times;1.3165</b>), so every "landed/vial" already includes shipping.
+      <b>One pooled order, converted to AUD.</b> Both shipments merged: goods <b>US$1,011.20</b> + freight
+      <b>US$320.00</b> = <b>US$1,331.20</b>. Each product carries a slice of freight equal to its share of goods
+      value (multiplier <b>&times;1.3165</b>), then the landed USD cost is converted to AUD at the rate up top.
       <ul>
-        <li><b>Landed/vial</b> = (goods cost + freight share) &divide; vials &mdash; the true delivered cost of each vial.</li>
-        <li><b>BAC water.</b> 70 paid vials cost $69.51 landed; you also got <b>20 free</b>, so the cost spreads over 90 vials = <b>$0.77/vial</b> ($0.99 on paid vials only).</li>
-        <li><b>Currency.</b> Supplier bills in <b>USD</b>; the P&amp;L converts to AUD using the rate you set &mdash; update it to the day you paid.</li>
-        <li><b>RT30 vs RT60</b> stay separate &mdash; different strengths, different landed cost ($21.59 vs $32.65).</li>
-        <li><b>Profit / Margin</b> appear once you enter a retail price. The &times;4 markup is a placeholder, not advice &mdash; set your real shelf prices.</li>
+        <li><b>Landed/vial (AUD)</b> = landed USD cost &times; FX rate &mdash; the true delivered cost of each vial in your currency.</li>
+        <li><b>BAC water.</b> 70 paid vials cost US$69.51 landed; you also got <b>20 free</b>, so the cost spreads over 90 vials = <b>US$0.77/vial</b> (A$1.12 at 1.45).</li>
+        <li><b>The FX rate is yours to set.</b> Mid-market was ~1.43 in Jun 2026; banks/cards add ~2-3%, so 1.45 is a safe default. Set it to your actual rate for exact margins.</li>
+        <li><b>RT30 vs RT60</b> stay separate &mdash; different strengths, different cost.</li>
+        <li><b>Profit / Margin</b> appear once you enter a retail price. The &times;4 markup is a placeholder, not advice.</li>
       </ul>
-      <b>Reconciliation:</b> $993.60 (order 1) + $337.60 (order 2) = <b>$1,331.20</b> &mdash; matches both supplier totals to the cent.
+      <b>Reconciliation:</b> US$993.60 (order 1) + US$337.60 (order 2) = <b>US$1,331.20</b> &mdash; matches both supplier totals to the cent.
     </div>
   </section>
 
@@ -231,17 +243,25 @@
 </div>
 
 <script>
-  const fmt = n => '$' + n.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const aud = n => 'A$' + n.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const usd = n => 'US$' + n.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});
   const fxEl = document.getElementById('fx');
   const mkEl = document.getElementById('markup');
+
+  const LANDED_USD = 1331.20, FREIGHT_USD = 320.00;
+  const impRows = [...document.querySelectorAll('#imp tbody tr')];
   const rows = [...document.querySelectorAll('#pnl tbody tr')];
 
+  // build AUD cells for the import table
+  impRows.forEach(tr=>{
+    tr.insertAdjacentHTML('beforeend','<td class="aud-col audAudTot land"></td><td class="aud-col audAudVial audbig"></td>');
+  });
+  // build editable cells for the P&L
   rows.forEach(tr=>{
-    const cost=+tr.dataset.cost, units=+tr.dataset.units;
+    const units=+tr.dataset.units;
     tr.insertAdjacentHTML('beforeend',
       `<td>${units}</td>
-       <td class="muted">${fmt(cost)}</td>
-       <td class="landAud land"></td>
+       <td class="aud-col landAud audbig"></td>
        <td><input class="retail" type="number" step="0.01" min="0"></td>
        <td class="ppu"></td>
        <td class="mgn"></td>
@@ -249,7 +269,7 @@
        <td class="pprofit"></td>`);
   });
 
-  function marginClass(m){return m>=60?'mgood':m>=35?'mok':'mbad';}
+  const marginClass = m => m>=60?'mgood':m>=35?'mok':'mbad';
 
   function prefill(){
     const fx=+fxEl.value||0, mk=+mkEl.value||0;
@@ -262,6 +282,19 @@
 
   function recalc(){
     const fx=+fxEl.value||0;
+
+    // KPIs + import table
+    document.getElementById('kLandAud').textContent=aud(LANDED_USD*fx);
+    document.getElementById('kFreightAud').textContent=aud(FREIGHT_USD*fx);
+    document.getElementById('pillLand').textContent=aud(LANDED_USD*fx)+' landed';
+    document.getElementById('impAudTot').textContent=aud(LANDED_USD*fx);
+    impRows.forEach(tr=>{
+      const landed=+tr.dataset.landed, vials=+tr.dataset.vials;
+      tr.querySelector('.audAudTot').textContent=aud(landed*fx);
+      tr.querySelector('.audAudVial').textContent=aud(landed*fx/vials);
+    });
+
+    // P&L
     let tUnits=0,tStock=0,tProfit=0,tRev=0;
     rows.forEach(tr=>{
       const cost=+tr.dataset.cost, units=+tr.dataset.units;
@@ -269,27 +302,27 @@
       const retail=+tr.querySelector('.retail').value||0;
       const ppu=retail-landAud;
       const mgn=retail>0?(ppu/retail*100):0;
-      tr.querySelector('.landAud').textContent=fmt(landAud);
+      tr.querySelector('.landAud').textContent=aud(landAud);
       const ppuCell=tr.querySelector('.ppu');
-      ppuCell.textContent=fmt(ppu); ppuCell.className='ppu '+(ppu>=0?'pos':'neg');
+      ppuCell.textContent=aud(ppu); ppuCell.className='ppu '+(ppu>=0?'pos':'neg');
       const mCell=tr.querySelector('.mgn');
       mCell.textContent=retail>0?mgn.toFixed(0)+'%':'—';
       mCell.className='mgn '+(retail>0?marginClass(mgn):'muted');
-      tr.querySelector('.sval').textContent=fmt(landAud*units);
-      tr.querySelector('.pprofit').textContent=fmt(ppu*units);
+      tr.querySelector('.sval').textContent=aud(landAud*units);
+      tr.querySelector('.pprofit').textContent=aud(ppu*units);
       tUnits+=units; tStock+=landAud*units; tProfit+=ppu*units; tRev+=retail*units;
     });
     document.getElementById('tUnits').textContent=tUnits;
-    document.getElementById('tLandAud').textContent=fmt(tStock/(tUnits||1));
-    document.getElementById('tStock').textContent=fmt(tStock);
-    document.getElementById('tProfit').textContent=fmt(tProfit);
+    document.getElementById('tLandAud').textContent=aud(tStock/(tUnits||1));
+    document.getElementById('tStock').textContent=aud(tStock);
+    document.getElementById('tProfit').textContent=aud(tProfit);
     const tM=tRev>0?(tProfit/tRev*100):0;
     const tMcell=document.getElementById('tMargin');
     tMcell.textContent=tRev>0?tM.toFixed(0)+'%':'—';
     tMcell.className=tRev>0?marginClass(tM):'';
   }
 
-  fxEl.addEventListener('input',recalc);
+  fxEl.addEventListener('input',prefill);
   mkEl.addEventListener('input',prefill);
   document.querySelectorAll('.retail').forEach(i=>i.addEventListener('input',recalc));
   prefill();
