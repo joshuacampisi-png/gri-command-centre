@@ -8,80 +8,60 @@
   :root{
     --ink:#0b1437; --ink2:#1b2a5b; --mist:#5b6b94; --line:#e4e9f5;
     --bg:#f4f7fd; --card:#ffffff; --teal:#16c2c2; --violet:#6a5cff;
-    --green:#0fae6e; --amber:#f0a020; --red:#e2585b;
-    --grad:linear-gradient(120deg,#6a5cff 0%,#16c2c2 100%);
+    --green:#0fae6e; --grad:linear-gradient(120deg,#6a5cff 0%,#16c2c2 100%);
   }
   *{box-sizing:border-box}
   body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
-  .wrap{max-width:860px;margin:0 auto;padding:26px 18px 60px}
+  .wrap{max-width:860px;margin:0 auto;padding:22px 16px 56px}
 
-  header{background:var(--ink);border-radius:20px;padding:24px 26px;color:#fff;
+  header{background:var(--ink);border-radius:18px;padding:22px 22px;color:#fff;
     background-image:radial-gradient(900px 300px at 85% -40%,rgba(106,92,255,.55),transparent),
-                     radial-gradient(700px 260px at 10% 140%,rgba(22,194,194,.45),transparent);
-    box-shadow:0 18px 50px rgba(11,20,55,.28)}
-  .brandrow{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px}
-  .brand{display:flex;align-items:center;gap:13px}
-  .nova-mark{width:44px;height:44px;flex:0 0 auto}
-  .brand h1{margin:0;font-size:24px;letter-spacing:.4px;font-weight:800}
+                     radial-gradient(700px 260px at 10% 140%,rgba(22,194,194,.45),transparent)}
+  .brandrow{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .nova-mark{width:42px;height:42px;flex:0 0 auto}
+  .brand h1{margin:0;font-size:23px;font-weight:800}
   .brand h1 .nova{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .brand .url{font-size:12px;color:#aeb9dd;letter-spacing:1.4px;text-transform:uppercase;margin-top:2px}
-  .doctag{text-align:right}
-  .doctag .t1{font-size:14px;font-weight:600}
-  .doctag .t2{font-size:11.5px;color:#aeb9dd;margin-top:3px}
+  .brand .url{font-size:11.5px;color:#aeb9dd;letter-spacing:1.3px;text-transform:uppercase;margin-top:2px}
+  .basis{font-size:11.5px;color:#cdd6f5;margin-top:14px;background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:9px 13px;display:inline-block}
 
-  .fxbar{display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;margin-top:16px;
-    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:12px 16px}
-  .fxctrl{display:flex;flex-direction:column;gap:5px}
-  .fxctrl .lab{font-size:11px;color:#cdd6f5;font-weight:700;text-transform:uppercase;letter-spacing:.6px}
-  .fxctrl input{width:96px;font-size:16px;font-weight:800;padding:7px 11px;border-radius:9px;border:none;
-    color:var(--ink);background:#fff;text-align:center}
-  .fxbar .note{font-size:11px;color:#aeb9dd;max-width:330px;line-height:1.5}
-
-  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:13px}
-  .kpi{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:14px 16px;
-    box-shadow:0 6px 18px rgba(11,20,55,.05)}
-  .kpi .label{font-size:11px;color:var(--mist);text-transform:uppercase;letter-spacing:.6px;font-weight:600}
-  .kpi .val{font-size:22px;font-weight:800;margin-top:5px;color:var(--ink)}
-  .kpi .sub{font-size:11.5px;color:var(--mist);margin-top:3px}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 14px}
+  .kpi .label{font-size:10.5px;color:var(--mist);text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+  .kpi .val{font-size:21px;font-weight:800;margin-top:5px}
+  .kpi .sub{font-size:11px;color:var(--mist);margin-top:3px}
   .kpi.accent .val{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 
-  section{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px 22px;margin-top:20px;
-    box-shadow:0 6px 18px rgba(11,20,55,.05)}
-  h2{font-size:18px;margin:0 0 2px;font-weight:800}
-  .sec-sub{font-size:12.5px;color:var(--mist);margin:0 0 16px}
+  section{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 18px;margin-top:18px}
+  h2{font-size:17px;margin:0 0 2px;font-weight:800}
+  .sec-sub{font-size:12px;color:var(--mist);margin:0 0 14px}
 
-  /* ranked rows */
-  .row{display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--line)}
+  .row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
   .row:last-child{border-bottom:none}
-  .rk{flex:0 0 28px;height:28px;border-radius:50%;background:#eef1fb;color:var(--ink2);
-    font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
+  .rk{flex:0 0 26px;height:26px;border-radius:50%;background:#eef1fb;color:var(--ink2);
+    font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center}
   .row.top .rk{background:var(--grad);color:#fff}
   .info{flex:1 1 auto;min-width:0}
-  .rtop{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-  .rname{font-weight:800;font-size:15px;color:var(--ink)}
-  .chip{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;padding:2px 8px;border-radius:999px}
+  .rtop{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .rname{font-weight:800;font-size:14.5px}
+  .chip{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;padding:2px 7px;border-radius:999px}
   .chip.kit{background:#ece9ff;color:#5847e0}
   .chip.vial{background:#dff6f6;color:#0f8f8f}
-  .rmeta{font-size:12px;color:var(--mist);margin-top:3px}
+  .rmeta{font-size:11.5px;color:var(--mist);margin-top:3px}
   .rmeta .mg{font-weight:700;color:var(--green)}
-  .bar{height:7px;border-radius:99px;background:#eef1f8;margin-top:8px;overflow:hidden}
+  .bar{height:6px;border-radius:99px;background:#eef1f8;margin-top:7px;overflow:hidden}
   .bar span{display:block;height:100%;border-radius:99px;background:var(--grad)}
-  .rprofit{flex:0 0 auto;text-align:right;font-weight:800;font-size:18px;color:var(--ink);min-width:96px}
+  .rprofit{flex:0 0 auto;text-align:right;font-weight:800;font-size:17px;min-width:88px}
 
-  .notes{font-size:12.5px;color:var(--mist);line-height:1.7}
+  .notes{font-size:12px;color:var(--mist);line-height:1.7}
   .notes b{color:var(--ink2)}
-  .notes ul{margin:8px 0 0;padding-left:18px}
-
-  footer{text-align:center;color:var(--mist);font-size:12px;margin-top:24px}
+  footer{text-align:center;color:var(--mist);font-size:12px;margin-top:22px}
+  footer a{color:var(--violet);font-weight:700;text-decoration:none}
   footer .nova{font-weight:800;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 
-  @media(max-width:640px){
-    .kpis{grid-template-columns:repeat(2,1fr)}
-    .rprofit{font-size:16px;min-width:84px}
-    .rname{font-size:14px}
-  }
-  @media print{ body{background:#fff} section,header,.kpi{box-shadow:none} }
+  @media(max-width:640px){ .kpis{grid-template-columns:repeat(2,1fr)} .rprofit{font-size:16px;min-width:80px} }
 </style>
 </head>
 <body>
@@ -102,121 +82,166 @@
           <div class="url">NovaPeptides.com.au</div>
         </div>
       </div>
-      <div class="doctag">
-        <div class="t1">Profit Dashboard</div>
-        <div class="t2">Profit per sale &middot; All AUD &middot; 23 Jun 2026</div>
-      </div>
     </div>
-
-    <div class="fxbar">
-      <div class="fxctrl">
-        <span class="lab">USD &rarr; AUD rate</span>
-        <input id="fx" type="number" step="0.01" value="1.45">
-      </div>
-      <div class="fxctrl">
-        <span class="lab">Kit extras (A$/kit)</span>
-        <input id="kit" type="number" step="0.5" value="6">
-      </div>
-      <span class="note">Cost/vial includes shipping. Full kits add the "kit extras" (BAC water + syringe + swabs + box) &mdash; set both to your real figures.</span>
-    </div>
+    <div class="basis">Profit dashboard &middot; all AUD &middot; USD&rarr;AUD rate 1.45 &middot; kit extras A$6/kit &middot; 23 Jun 2026</div>
 
     <div class="kpis">
-      <div class="kpi accent"><div class="label">Top profit / sale</div><div class="val" id="kTop"></div><div class="sub" id="kTopName"></div></div>
-      <div class="kpi"><div class="label">Best margin</div><div class="val" id="kMargin"></div><div class="sub" id="kMarginName"></div></div>
-      <div class="kpi"><div class="label">Avg margin</div><div class="val" id="kAvg"></div><div class="sub">across 13 lines</div></div>
-      <div class="kpi"><div class="label">Stock cost</div><div class="val" id="kStock"></div><div class="sub">all imported stock</div></div>
+      <div class="kpi accent"><div class="label">Top profit / sale</div><div class="val">A$346</div><div class="sub">Reta 60mg kit</div></div>
+      <div class="kpi"><div class="label">Best margin</div><div class="val">94%</div><div class="sub">BAC water</div></div>
+      <div class="kpi"><div class="label">Avg margin</div><div class="val">85%</div><div class="sub">across 13 lines</div></div>
+      <div class="kpi"><div class="label">Stock cost</div><div class="val">A$1,930</div><div class="sub">all imported stock</div></div>
     </div>
   </header>
 
   <section>
     <h2>Profit per sale &mdash; best to lowest</h2>
-    <p class="sec-sub">Retail price minus cost (landed cost/vial incl. shipping). Ranked highest profit first.</p>
-    <div id="list"></div>
+    <p class="sec-sub">Retail price minus cost (landed cost/vial incl. shipping). Highest profit first.</p>
+
+    <div class="row top">
+      <div class="rk">1</div>
+      <div class="info">
+        <div class="rtop"><span class="rname">Reta 60mg</span><span class="chip kit">Full kit</span></div>
+        <div class="rmeta">Cost A$53.34 &middot; Retail A$399 &middot; <span class="mg">87% margin</span></div>
+        <div class="bar"><span style="width:100%"></span></div>
+      </div>
+      <div class="rprofit">A$345.66</div>
+    </div>
+
+    <div class="row">
+      <div class="rk">2</div>
+      <div class="info">
+        <div class="rtop"><span class="rname">Reta RT30</span><span class="chip kit">Full kit</span></div>
+        <div class="rmeta">Cost A$37.31 &middot; Retail A$315 &middot; <span class="mg">88% margin</span></div>
+        <div class="bar"><span style="width:80.3%"></span></div>
+      </div>
+      <div class="rprofit">A$277.69</div>
+    </div>
+
+    <div class="row">
+      <div class="rk">3</div>
+      <div class="info">
+        <div class="rtop"><span class="rname">Reta 60mg</span><span class="chip vial">Vial only</span></div>
+        <div class="rmeta">Cost A$47.34 &middot; Retail A$320 &middot; <span class="mg">85% margin</span></div>
+        <div class="bar"><span style="width:78.9%"></span></div>
+      </div>
+      <div class="rprofit">A$272.66</div>
+    </div>
+
+    <div class="row">
+      <div class="rk">4</div>
+      <div class="info">
+        <div class="rtop"><span class="rname">Reta RT30</span><span class="chip vial">Vial only</span></div>
+        <div class="rmeta">Cost A$31.31 &middot; Retail A$289 &middot; <span class="mg">89% margin</span></div>
+        <div class="bar"><span style="width:74.6%"></span></div>
+      </div>
+      <div class="rprofit">A$257.69</div>
+    </div>
+
+    <div class="row">
+      <div class="rk">5</div>
+      <div class="info">
+        <div class="rtop"><span class="rname">KLOW 80mg</span><span class="chip kit">Full kit</span></div>
+        <div class="rmeta">Cost A$45.09 &middot; Retail A$230 &middot; <span class="mg">80% margin</span></div>
+        <div class="bar"><span style="width:53.5%"></span></div>
+      </div>
+      <div class="rprofit">A$184.91</div>
+    </div>
+
+    <div class="row">
+      <div class="rk">6</div>
+      <div class="info">
+        <div class="rtop"><span class="rname">GLOW 70mg</span><span class="chip kit">Full kit</span></div>
+        <div class="rmeta">Cost A$39.13 &middot; Retail A$219 &middot; <span class="mg">82% margin</span></div>
+        <div class="bar"><span style="width:52.0%"></span></div>
+      </div>
+      <div class="rprofit">A$179.87</div>
+    </div>
+
+    <div class="row">
+      <div class="rk">7</div>
+      <div class="info">
+        <div class="rtop"><span class="rname">KLOW 80mg</span><span class="chip vial">Vial only</span></div>
+        <div class="rmeta">Cost A$39.09 &middot; Retail A$195 &middot; <span class="mg">80% margin</span></div>
+        <div class="bar"><span style="width:45.1%"></span></div>
+      </div>
+      <div class="rprofit">A$155.91</div>
+    </div>
+
+    <div class="row">
+      <div class="rk">8</div>
+      <div class="info">
+        <div class="rtop"><span class="rname">BPC-157 + TB-500</span><span class="chip kit">Full kit</span></div>
+        <div class="rmeta">Cost A$23.11 &middot; Retail A$170 &middot; <span class="mg">86% margin</span></div>
+        <div class="bar"><span style="width:42.5%"></span></div>
+      </div>
+      <div class="rprofit">A$146.89</div>
+    </div>
+
+    <div class="row">
+      <div class="rk">9</div>
+      <div class="info">
+        <div class="rtop"><span class="rname">GLOW 70mg</span><span class="chip vial">Vial only</span></div>
+        <div class="rmeta">Cost A$33.13 &middot; Retail A$179 &middot; <span class="mg">81% margin</span></div>
+        <div class="bar"><span style="width:42.2%"></span></div>
+      </div>
+      <div class="rprofit">A$145.87</div>
+    </div>
+
+    <div class="row">
+      <div class="rk">10</div>
+      <div class="info">
+        <div class="rtop"><span class="rname">SS-31 10mg</span><span class="chip kit">Full kit</span></div>
+        <div class="rmeta">Cost A$20.96 &middot; Retail A$130 &middot; <span class="mg">84% margin</span></div>
+        <div class="bar"><span style="width:31.5%"></span></div>
+      </div>
+      <div class="rprofit">A$109.04</div>
+    </div>
+
+    <div class="row">
+      <div class="rk">11</div>
+      <div class="info">
+        <div class="rtop"><span class="rname">BPC-157 + TB-500</span><span class="chip vial">Vial only</span></div>
+        <div class="rmeta">Cost A$17.11 &middot; Retail A$120 &middot; <span class="mg">86% margin</span></div>
+        <div class="bar"><span style="width:29.8%"></span></div>
+      </div>
+      <div class="rprofit">A$102.89</div>
+    </div>
+
+    <div class="row">
+      <div class="rk">12</div>
+      <div class="info">
+        <div class="rtop"><span class="rname">SS-31 10mg</span><span class="chip vial">Vial only</span></div>
+        <div class="rmeta">Cost A$14.96 &middot; Retail A$85 &middot; <span class="mg">82% margin</span></div>
+        <div class="bar"><span style="width:20.3%"></span></div>
+      </div>
+      <div class="rprofit">A$70.04</div>
+    </div>
+
+    <div class="row">
+      <div class="rk">13</div>
+      <div class="info">
+        <div class="rtop"><span class="rname">BAC water 3ml</span><span class="chip vial">Single vial</span></div>
+        <div class="rmeta">Cost A$1.12 &middot; Retail A$19.99 &middot; <span class="mg">94% margin</span></div>
+        <div class="bar"><span style="width:5.5%"></span></div>
+      </div>
+      <div class="rprofit">A$18.87</div>
+    </div>
   </section>
 
   <section>
     <h2>How it's worked out</h2>
     <div class="notes">
-      <b>Profit = your retail price &minus; cost.</b> Cost is the landed cost per vial (both China orders pooled,
-      freight shared across all products), converted to AUD at the rate up top.
-      <ul>
-        <li><b>Vial only</b> cost = the bare landed cost of that peptide vial.</li>
-        <li><b>Full kit</b> cost = vial + <b>kit extras</b> (BAC water, syringe, swabs, packaging). Default A$6 &mdash; set it to what your kit supplies actually cost so the kit profits are exact.</li>
-        <li>Margins are huge (~80%+) because the China landed cost is very low against AU retail &mdash; double-check the kit-extras figure is realistic.</li>
-        <li><b>BAC water</b> is sold as a single vial; it has no kit version so it carries no kit extras.</li>
-      </ul>
+      <b>Profit = retail price &minus; cost.</b> Cost is the landed cost per vial (both China orders pooled, freight
+      shared across all products), converted to AUD at <b>1.45</b>. Full kits add <b>A$6</b> for kit extras
+      (BAC water + syringe + swabs + packaging) &mdash; change that figure later and I'll re-rank.
+      BAC water is a single vial with no kit, so it carries no extras.
     </div>
   </section>
 
   <footer>
-    <a href="novapeptides-stocktake.csv" download style="color:var(--violet);font-weight:700;text-decoration:none">&darr; Download spreadsheet (CSV)</a><br><br>
+    <a href="novapeptides-stocktake.csv" download>&darr; Download spreadsheet (CSV)</a><br><br>
     <span class="nova">Nova</span>Peptides &middot; NovaPeptides.com.au &middot; Internal dashboard
   </footer>
 </div>
-
-<script>
-  const aud = n => 'A$' + n.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});
-  const aud0 = n => 'A$' + Math.round(n).toLocaleString('en-AU');
-  const money = n => Number.isInteger(n) ? aud0(n) : aud(n);
-  const fxEl = document.getElementById('fx');
-  const kitEl = document.getElementById('kit');
-  const list = document.getElementById('list');
-  const LANDED_USD = 1331.20;
-
-  // costUsd = landed cost per vial in USD (incl. shipping)
-  const products = [
-    {name:'Reta 60mg',         type:'kit',  costUsd:32.65, retail:399},
-    {name:'Reta 60mg',         type:'vial', costUsd:32.65, retail:320},
-    {name:'KLOW 80mg',         type:'kit',  costUsd:26.96, retail:230},
-    {name:'KLOW 80mg',         type:'vial', costUsd:26.96, retail:195},
-    {name:'GLOW 70mg',         type:'kit',  costUsd:22.85, retail:219},
-    {name:'GLOW 70mg',         type:'vial', costUsd:22.85, retail:179},
-    {name:'SS-31 10mg',        type:'kit',  costUsd:10.32, retail:130},
-    {name:'SS-31 10mg',        type:'vial', costUsd:10.32, retail:85},
-    {name:'BPC-157 + TB-500',  type:'kit',  costUsd:11.80, retail:170},
-    {name:'BPC-157 + TB-500',  type:'vial', costUsd:11.80, retail:120},
-    {name:'Reta RT30',         type:'kit',  costUsd:21.59, retail:315},
-    {name:'Reta RT30',         type:'vial', costUsd:21.59, retail:289},
-    {name:'BAC water 3ml',     type:'vial', costUsd:0.77,  retail:19.99},
-  ];
-
-  function render(){
-    const fx=+fxEl.value||0, kit=+kitEl.value||0;
-    const rows = products.map(p=>{
-      const cost = p.costUsd*fx + (p.type==='kit'?kit:0);
-      const profit = p.retail - cost;
-      return {...p, cost, profit, margin: profit/p.retail*100};
-    }).sort((a,b)=>b.profit-a.profit);
-
-    const maxP = Math.max(...rows.map(r=>r.profit));
-    list.innerHTML = rows.map((r,i)=>`
-      <div class="row${i===0?' top':''}">
-        <div class="rk">${i+1}</div>
-        <div class="info">
-          <div class="rtop">
-            <span class="rname">${r.name}</span>
-            <span class="chip ${r.type}">${r.type==='kit'?'Full kit':'Vial only'}</span>
-          </div>
-          <div class="rmeta">Cost ${aud(r.cost)} &middot; Retail ${money(r.retail)} &middot; <span class="mg">${r.margin.toFixed(0)}% margin</span></div>
-          <div class="bar"><span style="width:${(r.profit/maxP*100).toFixed(1)}%"></span></div>
-        </div>
-        <div class="rprofit">${aud(r.profit)}</div>
-      </div>`).join('');
-
-    const top=rows[0];
-    const best=rows.reduce((a,b)=>b.margin>a.margin?b:a);
-    const avg=rows.reduce((s,r)=>s+r.margin,0)/rows.length;
-    document.getElementById('kTop').textContent=aud0(top.profit);
-    document.getElementById('kTopName').textContent=top.name+' '+(top.type==='kit'?'kit':'vial');
-    document.getElementById('kMargin').textContent=best.margin.toFixed(0)+'%';
-    document.getElementById('kMarginName').textContent=best.name+' '+(best.type==='kit'?'kit':'vial');
-    document.getElementById('kAvg').textContent=avg.toFixed(0)+'%';
-    document.getElementById('kStock').textContent=aud0(LANDED_USD*fx);
-  }
-
-  fxEl.addEventListener('input',render);
-  kitEl.addEventListener('input',render);
-  render();
-</script>
 </body>
 </html>
