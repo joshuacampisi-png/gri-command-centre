@@ -6,6 +6,9 @@
   "googleAccount": "contact.genderrevealideas@gmail.com",
   "queueFolder": "/Users/mallubernabe/Desktop/GMB-Queue",
   "alertEmail": "joshuacampisi@gmail.com",
+  "descriptionMode": "static",
+  "aiCategoryRotation": ["tnt", "smoke", "cannon", "bundle", "balloon", "powder", "default"],
+  "aiPostWhenQueueEmpty": true,
   "urlMapping": [
     { "filenameMatch": "tnt", "url": "https://genderrevealideas.com.au/products/tnt-gender-reveal-australia", "button": "Book" },
     { "filenameMatch": "smoke", "url": "https://genderrevealideas.com.au/products/gender-reveal-smoke-bombs", "button": "Book" },

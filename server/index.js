@@ -356,6 +356,9 @@ app.use('/review-captures', express.static(join(process.cwd(), 'public/review-ca
 import { dataDir as _calVidDir } from './lib/data-dir.js'
 const calendarVideoDir = _calVidDir('calendar-videos')
 app.use('/calendar-videos', express.static(calendarVideoDir))
+// Serve AI-generated GMB images so the dashboard preview can render them
+const gmbAiImagesDir = _calVidDir('gmb-ai-generated')
+app.use('/gmb-images', express.static(gmbAiImagesDir))
 // Also serve from public dir as fallback for old uploads
 app.use('/calendar-videos', express.static(join(process.cwd(), 'public/calendar-videos')))
 app.use('/api/calendar', calendarRoutes)

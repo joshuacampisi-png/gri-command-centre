@@ -39,8 +39,22 @@ import {
   getStats,
 } from '../lib/gmb-state.js'
 import { pickDescription, getDescriptionStats } from '../lib/gmb-descriptions.js'
+import { buildAiPromptPreview } from '../lib/gmb-ai-describer.js'
+import { isOpenAIConfigured } from '../lib/openai-client.js'
+import { generateAiPreview, generateGmbAiPost } from '../lib/gmb-fal-generator.js'
+import { hasFalConfig } from '../lib/fal.js'
 
 const router = Router()
+
+// Allowed values for config.descriptionMode. 'static' keeps the existing
+// 30-variant pool; 'ai-openai' routes each post through GPT-4o vision;
+// 'ai-fal-generated' generates both the image and the description copy via
+// FAL Nano Banana Pro + Claude (see gmb-fal-generator.js).
+const ALLOWED_DESCRIPTION_MODES = ['static', 'ai-openai', 'ai-fal-generated']
+
+// Substring stamped onto post.generatedBy when the post was produced through
+// the FAL pipeline — used to attribute cost in /status.aiMode.aiCostLast30Days.
+const FAL_GENERATED_BY_TAG = 'fal-nano-banana-pro'
 
 const CONFIG_PATH = dataFile('gmb-config.json')
 const DESCRIPTIONS_PATH = dataFile('gmb-descriptions.json')
@@ -120,7 +134,80 @@ function validateConfigShape(cfg) {
   }
   const hasDefault = cfg.urlMapping.some(m => m.filenameMatch === 'default')
   if (!hasDefault) return 'urlMapping must contain a {filenameMatch:"default"} fallback'
+  // descriptionMode is optional for backward-compat (treat missing as
+  // 'static') but if present must be one of the allowed values.
+  if (cfg.descriptionMode !== undefined) {
+    if (typeof cfg.descriptionMode !== 'string' || !ALLOWED_DESCRIPTION_MODES.includes(cfg.descriptionMode)) {
+      return `descriptionMode must be one of: ${ALLOWED_DESCRIPTION_MODES.join(', ')}`
+    }
+  }
+  // aiCategoryRotation is the ordered list of category keys the FAL pipeline
+  // walks through when descriptionMode === 'ai-fal-generated'. Optional;
+  // empty/missing means the caller must always supply { category } explicitly.
+  if (cfg.aiCategoryRotation !== undefined) {
+    if (!Array.isArray(cfg.aiCategoryRotation)) {
+      return 'aiCategoryRotation must be an array when provided'
+    }
+    for (const [i, c] of cfg.aiCategoryRotation.entries()) {
+      if (typeof c !== 'string' || !c.trim()) {
+        return `aiCategoryRotation[${i}] must be a non-empty string`
+      }
+    }
+  }
+  // aiPostWhenQueueEmpty toggles the cron's behaviour when the static image
+  // queue runs dry — if true, the cron generates a fresh FAL post instead of
+  // failing with QUEUE_EMPTY. Pure boolean.
+  if (cfg.aiPostWhenQueueEmpty !== undefined && typeof cfg.aiPostWhenQueueEmpty !== 'boolean') {
+    return 'aiPostWhenQueueEmpty must be a boolean when provided'
+  }
   return null
+}
+
+/**
+ * Resolve which category the next AI post should target. Walks the
+ * aiCategoryRotation list in order using the existing post count modulo the
+ * rotation length, so the rotation is deterministic and survives restarts
+ * (state is derived from logPost history, not in-memory counters).
+ */
+function pickNextAiCategory(cfg, posts) {
+  const rotation = Array.isArray(cfg?.aiCategoryRotation) ? cfg.aiCategoryRotation : []
+  if (!rotation.length) return null
+  const n = Array.isArray(posts) ? posts.length : 0
+  return rotation[n % rotation.length]
+}
+
+/**
+ * Look up the urlMapping entry for a category key. Falls back to the
+ * {filenameMatch:"default"} row (which validateConfigShape guarantees exists)
+ * so generateAiPreview / generateGmbAiPost always get a populated urlInfo.
+ */
+function urlInfoForCategory(cfg, category) {
+  const map = Array.isArray(cfg?.urlMapping) ? cfg.urlMapping : []
+  const exact = map.find(m => m.filenameMatch === category)
+  const fallback = map.find(m => m.filenameMatch === 'default')
+  const chosen = exact || fallback
+  if (!chosen) return null
+  return { url: chosen.url, button: chosen.button }
+}
+
+/**
+ * Sum costUsd from posts whose postedAt falls inside the last 30 days.
+ * Posts predating the AI mode rollout have no costUsd field — those count
+ * as 0. Returned with 6-decimal precision to match how openai-client.js
+ * rounds individual call costs.
+ */
+function sumCostLast30Days(posts, generatedByFilter = null) {
+  if (!Array.isArray(posts) || !posts.length) return 0
+  const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000
+  let total = 0
+  for (const p of posts) {
+    const t = Date.parse(p?.postedAt) || 0
+    if (t < cutoff) continue
+    if (generatedByFilter && !String(p?.generatedBy || '').includes(generatedByFilter)) continue
+    const c = Number(p?.costUsd)
+    if (Number.isFinite(c) && c > 0) total += c
+  }
+  return Number(total.toFixed(6))
 }
 
 /**
@@ -323,6 +410,20 @@ router.get('/status', (_req, res) => {
     const descriptionStats = getDescriptionStats()
     const auth = inspectAuthState()
 
+    const aiMode = {
+      configured: isOpenAIConfigured(),
+      mode: (cfg && cfg.descriptionMode) || 'static',
+      costLast30Days: sumCostLast30Days(posts),
+      // FAL-pipeline-specific surface — separate from the legacy
+      // OpenAI-describer fields above so the dashboard can render both
+      // without conflating them.
+      falConfigured: hasFalConfig(),
+      claudeConfigured: Boolean(process.env.ANTHROPIC_API_KEY),
+      categoryRotation: (cfg && Array.isArray(cfg.aiCategoryRotation)) ? cfg.aiCategoryRotation : [],
+      aiCostLast30Days: sumCostLast30Days(posts, FAL_GENERATED_BY_TAG),
+      nextCategoryIfAi: pickNextAiCategory(cfg, posts),
+    }
+
     res.json({
       ok: true,
       state,
@@ -334,6 +435,7 @@ router.get('/status', (_req, res) => {
       lastPost,
       lastFailure,
       descriptionStats,
+      aiMode,
       config: redactConfig(cfg),
       configError: cfgValidationErr || null,
       authValid: auth.valid,
@@ -384,6 +486,26 @@ router.post('/config', (req, res) => {
     const err = validateConfigShape(incoming)
     if (err) return res.status(400).json({ ok: false, error: err })
 
+    // Guardrail: switching to ai-openai with no API key configured would
+    // mean every cron run falls back to the static pool silently — block
+    // the save so the dashboard surfaces the missing env var instead.
+    if (incoming.descriptionMode === 'ai-openai' && !isOpenAIConfigured()) {
+      return res.status(400).json({
+        ok: false,
+        error: 'descriptionMode "ai-openai" requires OPENAI_API_KEY in the server environment. Add it to .env (or Railway variables) and restart, then try again.',
+      })
+    }
+
+    // Same guardrail for the FAL pipeline — without FAL_KEY the generator
+    // throws on the first cron tick, so reject the save up front rather than
+    // letting the misconfiguration land on disk.
+    if (incoming.descriptionMode === 'ai-fal-generated' && !hasFalConfig()) {
+      return res.status(400).json({
+        ok: false,
+        error: 'descriptionMode "ai-fal-generated" requires FAL_KEY in the server environment. Add it to .env (or Railway variables) and restart, then try again.',
+      })
+    }
+
     // Atomic write so a crash mid-save never leaves a half-formed config on
     // disk — the cron reads this file on every run.
     atomicWriteJson(CONFIG_PATH, incoming)
@@ -391,6 +513,190 @@ router.post('/config', (req, res) => {
     res.json({ ok: true, config: redactConfig(incoming), savedAt: new Date().toISOString() })
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+/**
+ * POST /api/gmb/ai-preview — read-only AI preview.
+ *
+ * Two shapes, distinguished by the body:
+ *
+ *  1. { filename }            → legacy OpenAI describer preview. Resolves the
+ *                               queued image, runs buildAiPromptPreview()
+ *                               (grounded site fetch + GPT-4o prompt assembly)
+ *                               and returns what WOULD be sent. Zero tokens.
+ *
+ *  2. { category? } (or {})   → FAL pipeline preview. Calls generateAiPreview()
+ *                               from gmb-fal-generator.js to produce the hook,
+ *                               description, and image prompt that the next
+ *                               ai-fal-generated post would use. Zero FAL spend.
+ *                               If category is omitted, picks the next entry
+ *                               from cfg.aiCategoryRotation based on post count.
+ */
+router.post('/ai-preview', async (req, res) => {
+  try {
+    const body = req.body || {}
+    const filename = body.filename || req.query.filename
+
+    // ── Legacy OpenAI describer preview ────────────────────────────────
+    if (typeof filename === 'string' && filename.trim()) {
+      if (filename.includes('/') || filename.includes('\\') || filename.startsWith('.')) {
+        return res.status(400).json({ ok: false, error: 'filename must be a plain image name in the queue folder' })
+      }
+
+      const cfg = readConfig()
+      if (!cfg) {
+        return res.status(500).json({ ok: false, error: 'gmb-config.json is missing or unreadable' })
+      }
+      if (!cfg.queueFolder) {
+        return res.status(500).json({ ok: false, error: 'gmb-config.json missing queueFolder' })
+      }
+
+      const imagePath = join(cfg.queueFolder, basename(filename))
+      if (!existsSync(imagePath)) {
+        return res.status(404).json({ ok: false, error: `${filename} not found in queue folder` })
+      }
+
+      const mapping = getCategoryFromFilename(basename(filename), cfg.urlMapping)
+      if (!mapping) {
+        return res.status(400).json({ ok: false, error: `No URL mapping matched filename "${filename}" and no default fallback` })
+      }
+
+      const preview = await buildAiPromptPreview({
+        imagePath,
+        imageName: basename(filename),
+        category: mapping.filenameMatch,
+        buttonUrl: mapping.url,
+      })
+
+      return res.json({
+        ok: true,
+        filename: basename(filename),
+        category: mapping.filenameMatch,
+        buttonUrl: mapping.url,
+        preview,
+        apiCalled: false,
+        fetchedAt: new Date().toISOString(),
+      })
+    }
+
+    // ── FAL pipeline preview (no filename → driven by rotation) ────────
+    const cfg = readConfig()
+    if (!cfg) {
+      return res.status(500).json({ ok: false, error: 'gmb-config.json is missing or unreadable' })
+    }
+    const cfgErr = validateConfigShape(cfg)
+    if (cfgErr) {
+      return res.status(500).json({ ok: false, error: `gmb-config.json invalid: ${cfgErr}` })
+    }
+
+    const { posts } = readState()
+    const category = (typeof body.category === 'string' && body.category.trim())
+      ? body.category.trim()
+      : pickNextAiCategory(cfg, posts)
+
+    if (!category) {
+      return res.status(400).json({
+        ok: false,
+        error: 'category is required (none supplied and aiCategoryRotation is empty)',
+      })
+    }
+
+    const urlInfo = urlInfoForCategory(cfg, category)
+    if (!urlInfo) {
+      return res.status(400).json({ ok: false, error: `No urlMapping entry for category "${category}" and no default fallback` })
+    }
+
+    const aiPreview = await generateAiPreview({ category, urlInfo })
+
+    return res.json({
+      ok: true,
+      preview: {
+        category,
+        hookText: aiPreview.hookText,
+        description: aiPreview.description,
+        prompt: aiPreview.prompt,
+        estimatedCostUsd: aiPreview.estimatedCostUsd,
+        urlInfo,
+      },
+      apiCalled: false,
+      fetchedAt: new Date().toISOString(),
+    })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
+/**
+ * POST /api/gmb/ai-generate-now — REAL FAL call.
+ *
+ * Body: { category? } — omitted falls back to next from aiCategoryRotation.
+ *
+ * Spends ~$0.15 on FAL Nano Banana Pro + ~$0.003 on Claude. Saves the
+ * generated PNG to data/gmb-ai-generated/ and returns its path. Does NOT
+ * post the result to GBP — call /post-now (or a future ai-post-now) for
+ * that. Gated on hasFalConfig() so a missing FAL_KEY 400s instead of
+ * burning a queued request.
+ */
+router.post('/ai-generate-now', async (req, res) => {
+  try {
+    if (!hasFalConfig()) {
+      return res.status(400).json({
+        ok: false,
+        error: 'FAL_KEY missing from server environment — add it to .env (or Railway variables) and restart',
+      })
+    }
+
+    const cfg = readConfig()
+    if (!cfg) {
+      return res.status(500).json({ ok: false, error: 'gmb-config.json is missing or unreadable' })
+    }
+    const cfgErr = validateConfigShape(cfg)
+    if (cfgErr) {
+      return res.status(500).json({ ok: false, error: `gmb-config.json invalid: ${cfgErr}` })
+    }
+
+    const body = req.body || {}
+    const { posts } = readState()
+    const category = (typeof body.category === 'string' && body.category.trim())
+      ? body.category.trim()
+      : pickNextAiCategory(cfg, posts)
+
+    if (!category) {
+      return res.status(400).json({
+        ok: false,
+        error: 'category is required (none supplied and aiCategoryRotation is empty)',
+      })
+    }
+
+    const urlInfo = urlInfoForCategory(cfg, category)
+    if (!urlInfo) {
+      return res.status(400).json({ ok: false, error: `No urlMapping entry for category "${category}" and no default fallback` })
+    }
+
+    const generated = await generateGmbAiPost({ category, urlInfo })
+
+    res.json({
+      ok: true,
+      post: {
+        imagePath: generated.imagePath,
+        description: generated.description,
+        costUsd: generated.costEstimateUsd,
+        generatedBy: generated.generatedBy,
+      },
+      hookText: generated.hookText,
+      prompt: generated.prompt,
+      fallbackUsed: generated.fallbackUsed,
+      category,
+      urlInfo,
+      generatedAt: new Date().toISOString(),
+    })
+  } catch (err) {
+    res.status(err?.code === 'GMB_FAL_FAILED' ? 502 : 500).json({
+      ok: false,
+      code: err?.code || 'AI_GENERATE_FAILED',
+      error: err.message,
+    })
   }
 })
 
