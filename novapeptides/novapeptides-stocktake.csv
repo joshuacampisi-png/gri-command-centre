@@ -1,38 +1,32 @@
-NovaPeptides.com.au - Cost & Profit / Landed-Cost Stocktake,,,,,,,
+NovaPeptides.com.au - Combined Landed-Cost Stocktake & Profit/Loss,,,,,,,
 Prepared,2026-06-23,,,,,,
-All supplier costs in USD. Freight distributed across products by value.,,,,,,,
+Both orders pooled. All supplier costs in USD. Freight spread across all products by value.,,,,,,,
 ,,,,,,,
-IMPORT ORDER 1 - Main shipment (freight multiplier x1.3185),,,,,,,
-Product,Qty,Unit Cost USD (ex-freight),Order Cost USD,Freight Share USD,Landed Total USD,Landed Cost/Unit USD,
-GLOW 70mg,10,17.36,173.60,55.29,228.89,22.89,
-KLOW 80mg,10,20.48,204.80,65.22,270.02,27.00,
-Reta RT30,10,16.40,164.00,52.23,216.23,21.62,
-SS-31 10mg,10,7.84,78.40,24.97,103.37,10.34,
-BPC-157 + TB-500 10mg,10,8.96,89.60,28.53,118.14,11.81,
-BAC water 3ml,60,0.72,43.20,13.76,56.96,0.95,
-Order 1 Total,110,,753.60,240.00,993.60,,
+COMBINED IMPORT - both orders + all freight pooled (multiplier x1.3165),,,,,,,
+Product,Vials,Unit Cost USD (ex-freight),Goods Cost USD,Freight Share USD,Landed Total USD,Landed/Vial USD,
+Reta RT60,10,24.80,248.00,78.48,326.48,32.65,
+KLOW 80mg,10,20.48,204.80,64.81,269.61,26.96,
+GLOW 70mg,10,17.36,173.60,54.94,228.54,22.85,
+Reta RT30,10,16.40,164.00,51.90,215.90,21.59,
+BPC-157 + TB-500 10mg,10,8.96,89.60,28.35,117.96,11.80,
+SS-31 10mg,10,7.84,78.40,24.81,103.21,10.32,
+BAC water 3ml (70 paid + 20 free),90,0.59,52.80,16.71,69.51,0.77,
+Total,150,,1011.20,320.00,1331.20,,
 ,,,,,,,
-IMPORT ORDER 2 - RT60 shipment (freight multiplier x1.3106),,,,,,,
-Product,Qty,Unit Cost USD (ex-freight),Order Cost USD,Freight Share USD,Landed Total USD,Landed Cost/Unit USD,
-Reta RT60,10,24.80,248.00,77.02,325.02,32.50,
-BAC water 3ml,10,0.96,9.60,2.98,12.58,1.26,
-Order 2 Total,20,,257.60,80.00,337.60,,
-,,,,,,,
-COMBINED STOCKTAKE & PROFIT/LOSS,,,,,,,
+PROFIT / LOSS,,,,,,,
 USD to AUD rate (edit me),1.55,,,,,,
-Product,Vials in Stock,Landed/Unit USD,Landed/Unit AUD,Retail/Unit AUD (enter),Profit/Unit AUD,Margin %,Stock Value AUD,Potential Profit AUD
-Reta RT60,10,32.50,=C24*$B$22,,=E24-D24,=IF(E24>0,F24/E24,0),=D24*B24,=F24*B24
-GLOW 70mg,10,22.89,=C25*$B$22,,=E25-D25,=IF(E25>0,F25/E25,0),=D25*B25,=F25*B25
-KLOW 80mg,10,27.00,=C26*$B$22,,=E26-D26,=IF(E26>0,F26/E26,0),=D26*B26,=F26*B26
-Reta RT30,10,21.62,=C27*$B$22,,=E27-D27,=IF(E27>0,F27/E27,0),=D27*B27,=F27*B27
-SS-31 10mg,10,10.34,=C28*$B$22,,=E28-D28,=IF(E28>0,F28/E28,0),=D28*B28,=F28*B28
-BPC-157 + TB-500 10mg,10,11.81,=C29*$B$22,,=E29-D29,=IF(E29>0,F29/E29,0),=D29*B29,=F29*B29
-BAC water 3ml (incl 20 free),90,0.77,=C30*$B$22,,=E30-D30,=IF(E30>0,F30/E30,0),=D30*B30,=F30*B30
-Portfolio Total,,,,,,,=SUM(H24:H30),=SUM(I24:I30)
+Product,Vials in Stock,Landed/Vial USD,Landed/Vial AUD,Retail/Vial AUD (enter),Profit/Vial AUD,Margin %,Stock Value AUD,Potential Profit AUD
+Reta RT60,10,32.65,=C19*$B$17,,=E19-D19,=IF(E19>0,F19/E19,0),=D19*B19,=F19*B19
+KLOW 80mg,10,26.96,=C20*$B$17,,=E20-D20,=IF(E20>0,F20/E20,0),=D20*B20,=F20*B20
+GLOW 70mg,10,22.85,=C21*$B$17,,=E21-D21,=IF(E21>0,F21/E21,0),=D21*B21,=F21*B21
+Reta RT30,10,21.59,=C22*$B$17,,=E22-D22,=IF(E22>0,F22/E22,0),=D22*B22,=F22*B22
+BPC-157 + TB-500 10mg,10,11.80,=C23*$B$17,,=E23-D23,=IF(E23>0,F23/E23,0),=D23*B23,=F23*B23
+SS-31 10mg,10,10.32,=C24*$B$17,,=E24-D24,=IF(E24>0,F24/E24,0),=D24*B24,=F24*B24
+BAC water 3ml (incl 20 free),90,0.77,=C25*$B$17,,=E25-D25,=IF(E25>0,F25/E25,0),=D25*B25,=F25*B25
+Portfolio Total,,,,,,,=SUM(H19:H25),=SUM(I19:I25)
 ,,,,,,,
 NOTES,,,,,,,
-Landed/Unit = (product cost + freight share) / qty. The true delivered cost per vial.,,,,,,,
-Freight is split by each product's share of the order value (standard landed-cost method).,,,,,,,
-BAC water: 70 paid vials cost 69.54 USD landed; 20 came free; true cost spread over 90 = 0.77/vial.,,,,,,,
-Reconciliation: Order1 993.60 + Order2 337.60 = 1331.20 total landed cost.,,,,,,,
-Enter Retail/Unit AUD in column E and margins calculate automatically.,,,,,,,
+Both orders are pooled: goods 1011.20 + freight 320.00 = 1331.20 total landed cost.,,,,,,,
+Landed/Vial = (goods cost + freight share) / vials. Freight multiplier = 1331.20 / 1011.20 = 1.3165.,,,,,,,
+BAC water: 70 paid vials cost 69.51 USD landed; 20 came free; cost spread over 90 = 0.77/vial.,,,,,,,
+Enter Retail/Vial AUD in column E and margins calculate automatically.,,,,,,,
