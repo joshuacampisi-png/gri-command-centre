@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// Load .env when run standalone (Railway sets env vars natively so this is a no-op there)
+import 'dotenv/config'
 /**
  * gmb-post-daily.js — cron entry point for the GMB Auto-Poster Flywheel.
  *
@@ -55,11 +57,11 @@ import { getNextImage, getCategoryFromFilename, markPosted } from '../server/lib
 import { pickDescription } from '../server/lib/gmb-descriptions.js'
 import { generateAiDescription } from '../server/lib/gmb-ai-describer.js'
 import { generateGmbAiPost } from '../server/lib/gmb-fal-generator.js'
-import { buildClaudePromptForGmb } from '../server/lib/gmb-prompt-templates.js'
+import { buildClaudePromptForGmb, inferCategoryFromKeyword } from '../server/lib/gmb-prompt-templates.js'
 import { callClaude } from '../server/lib/claude-guard.js'
 import { postToGmb } from '../server/lib/gmb-poster.js'
 import { logPost, logFailure, consecutiveFailures, readState } from '../server/lib/gmb-state.js'
-import { pickTodaysTrend, inferCategoryFromKeyword } from '../server/lib/gmb-trend-source.js'
+import { pickTodaysTrend } from '../server/lib/gmb-trend-source.js'
 
 const CONFIG_PATH = dataFile('gmb-config.json')
 

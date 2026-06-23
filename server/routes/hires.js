@@ -852,6 +852,47 @@ router.post('/resend-pre-bond-by-order', async (req, res) => {
 // POST /api/hires/convert-to-historical-by-order — flip a hire to historical state
 // (event already happened, no further automation). NO emails sent, NO contract fired.
 // Use when a past-event hire slipped through the normal flow.
+// POST /api/hires/cancel-by-order — cancel a hire (customer swapped product,
+// duplicate booking, etc.). Sets status to 'cancelled', wipes the bond
+// payment URL so the link 404s if clicked, records reason + timestamp.
+// Does NOT issue Square refunds — if the customer already paid the bond,
+// staff must use /process-return with decision='refund'.
+// Body: { orderNumber, reason? }
+router.post('/cancel-by-order', async (req, res) => {
+  try {
+    const { orderNumber, reason } = req.body || {};
+    if (!orderNumber) return res.status(400).json({ error: 'orderNumber required' });
+    const normalised = String(orderNumber).replace(/^#/, '');
+    const hire = getAll().find(h => h.orderNumber === `#${normalised}` || h.orderNumber === normalised);
+    if (!hire) return res.status(404).json({ error: `No hire for order ${normalised}` });
+    if (hire.bondStatus === 'paid' && !req.body.allowPaidBondCancel) {
+      return res.status(409).json({
+        error: 'Bond already paid — cancelling will leave the bond unrefunded',
+        hint: 'Issue the refund first via /process-return { decision: "refund" }, OR resubmit with { allowPaidBondCancel: true } to cancel the hire and handle the refund manually',
+        bondPaymentId: hire.bondPaymentId,
+      });
+    }
+    const updated = update(hire.id, {
+      status: 'cancelled',
+      bondStatus: hire.bondStatus === 'paid' ? 'paid_pending_refund' : 'cancelled',
+      bondPaymentUrl: null,         // invalidate the checkout link (was the customer-facing URL)
+      bondPaymentLinkId: null,      // invalidate any Square Quick-Pay link id
+      cancelledAt: new Date().toISOString(),
+      cancellationReason: reason || 'staff-initiated',
+    });
+    res.json({
+      ok: true,
+      orderNumber: hire.orderNumber,
+      customerName: hire.customerName,
+      previousBondStatus: hire.bondStatus,
+      hire: updated,
+    });
+  } catch (err) {
+    console.error('[cancel-by-order]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.post('/convert-to-historical-by-order', async (req, res) => {
   try {
     const { orderNumber } = req.body || {};

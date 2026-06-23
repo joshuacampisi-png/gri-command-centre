@@ -182,6 +182,7 @@ if (DASHBOARD_PASSWORD && DASHBOARD_PASSWORD !== 'changeme') {
     '/api/hires/resend-pre-bond-by-order',
     '/api/hires/mark-bond-paid-by-order',
     '/api/hires/convert-to-historical-by-order',
+    '/api/hires/cancel-by-order',
     '/api/hires/diag-by-order',
     '/api/hires/last-webhook',
     '/api/hires/reset-contract',
