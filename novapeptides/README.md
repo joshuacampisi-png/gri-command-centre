@@ -19,18 +19,18 @@ includes shipping.
 - Total landed cost: **$1,331.20 USD** — multiplier = 1,331.20 ÷ 1,011.20 = **×1.3165**
 - Reconciles to both supplier totals: $993.60 + $337.60 = $1,331.20
 
-### Landed cost per vial — shipping included (at 1.45 USD→AUD)
-| Product | USD | AUD |
-|---|---|---|
-| Reta RT60 | $32.65 | A$47.34 |
-| KLOW 80mg | $26.96 | A$39.09 |
-| GLOW 70mg | $22.85 | A$33.13 |
-| Reta RT30 | $21.59 | A$31.31 |
-| BPC-157 + TB-500 10mg | $11.80 | A$17.11 |
-| SS-31 10mg | $10.32 | A$14.96 |
-| BAC water 3ml | $0.77 | A$1.12 (incl. 20 free vials) |
-| **Total landed** | **$1,331.20** | **A$1,930.24** |
+### Cost per vial in AUD — shipping included (at 1.45 USD→AUD)
+| Product | Cost / vial |
+|---|---|
+| Reta RT60 | A$47.34 |
+| KLOW 80mg | A$39.09 |
+| GLOW 70mg | A$33.13 |
+| Reta RT30 | A$31.31 |
+| BPC-157 + TB-500 10mg | A$17.11 |
+| SS-31 10mg | A$14.96 |
+| BAC water 3ml | A$1.12 (incl. 20 free vials) |
+| **Total landed** | **A$1,930.24** |
 
-Supplier costs are USD. One master rate field (HTML up top / CSV cell B5) converts
-everything to AUD — set it to the rate you actually paid (incl. card/transfer fees).
-Mid-market was ~1.43 in June 2026; 1.45 is the default to cover typical fees.
+Everything displays in AUD. One master rate field (HTML up top / CSV cell B5) sets the
+USD→AUD conversion — change it to the rate you actually paid and every price updates.
+Mid-market was ~1.43 in June 2026; 1.45 is the default to cover typical card/transfer fees.
