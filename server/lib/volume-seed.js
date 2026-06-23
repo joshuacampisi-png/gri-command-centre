@@ -56,6 +56,8 @@ import { join, dirname } from 'path'
 const SEED_WHITELIST = [
   'flywheel/customer-index.json',
   'gads-agent/grace-period.json',
+  'gmb-config.json',
+  'gmb-descriptions.json',
 ]
 
 export function seedVolumeFromRepo() {

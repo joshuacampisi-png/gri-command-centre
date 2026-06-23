@@ -1,0 +1,22 @@
+{
+  "scheduleHour": 9,
+  "scheduleMinute": 30,
+  "timezone": "Australia/Sydney",
+  "gbpSearchQuery": "Gender Reveal Ideas - Gender Reveal Store Gold Coast",
+  "googleAccount": "contact.genderrevealideas@gmail.com",
+  "queueFolder": "/Users/mallubernabe/Desktop/GMB-Queue",
+  "alertEmail": "joshuacampisi@gmail.com",
+  "urlMapping": [
+    { "filenameMatch": "tnt", "url": "https://genderrevealideas.com.au/products/tnt-gender-reveal-australia", "button": "Book" },
+    { "filenameMatch": "smoke", "url": "https://genderrevealideas.com.au/products/gender-reveal-smoke-bombs", "button": "Book" },
+    { "filenameMatch": "cannon", "url": "https://genderrevealideas.com.au/collections/gender-reveal-cannons", "button": "Order online" },
+    { "filenameMatch": "powder", "url": "https://genderrevealideas.com.au/collections/gender-reveal-cannons", "button": "Order online" },
+    { "filenameMatch": "burnout", "url": "https://genderrevealideas.com.au/products/gender-reveal-burnout-powder", "button": "Book" },
+    { "filenameMatch": "balloon", "url": "https://genderrevealideas.com.au/collections/gender-reveal-balloons", "button": "Order online" },
+    { "filenameMatch": "bundle", "url": "https://genderrevealideas.com.au/collections/gender-reveal-bundles", "button": "Order online" },
+    { "filenameMatch": "sydney", "url": "https://genderrevealideas.com.au/collections/gender-reveal-ideas-sydney", "button": "Book" },
+    { "filenameMatch": "melbourne", "url": "https://genderrevealideas.com.au/collections/gender-reveal-ideas-melbourne", "button": "Book" },
+    { "filenameMatch": "brisbane", "url": "https://genderrevealideas.com.au/collections/gender-reveal-ideas-brisbane", "button": "Book" },
+    { "filenameMatch": "default", "url": "https://genderrevealideas.com.au", "button": "Learn more" }
+  ]
+}

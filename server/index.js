@@ -17,6 +17,7 @@ import competitorRoutes from './routes/competitors.js'
 import trendsRoutes from './routes/trends.js'
 import publishRoutes from './routes/publish.js'
 import hiresRoutes from './routes/hires.js'
+import gmbAdminRoutes from './routes/gmb-admin.js'
 import balloonsRoutes from './routes/balloons.js'
 import balloonContractRoutes from './routes/balloon-contract.js'
 import checkoutRoutes from './routes/checkout.js'
@@ -401,6 +402,7 @@ app.use('/api/competitors', competitorRoutes)
 app.use('/api/trends', trendsRoutes)
 app.use('/api/publish', publishRoutes)
 app.use('/api/hires', hiresRoutes)
+app.use('/api/gmb', gmbAdminRoutes)
 app.use('/api/balloons', balloonsRoutes)
 app.use('/api/balloon-contract', balloonContractRoutes)
 app.use('/checkout', checkoutRoutes)
