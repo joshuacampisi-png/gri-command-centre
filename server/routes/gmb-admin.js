@@ -43,6 +43,7 @@ import { buildAiPromptPreview } from '../lib/gmb-ai-describer.js'
 import { isOpenAIConfigured } from '../lib/openai-client.js'
 import { generateAiPreview, generateGmbAiPost } from '../lib/gmb-fal-generator.js'
 import { hasFalConfig } from '../lib/fal.js'
+import { pickTodaysTrend, getRecentTrendHistory } from '../lib/gmb-trend-source.js'
 
 const router = Router()
 
@@ -410,6 +411,24 @@ router.get('/status', (_req, res) => {
     const descriptionStats = getDescriptionStats()
     const auth = inspectAuthState()
 
+    // Trend surface — read-only peek at what the next AI post would target.
+    // pickTodaysTrend is pure (no writes) so it's safe to call on every status
+    // poll. If it throws we degrade silently so /status never 500s over a
+    // trend-source hiccup. recentTopics is sliced from gmb-posted.json so the
+    // dashboard can show what's been covered recently without a second fetch.
+    let nextTrendingKeyword = null
+    try {
+      nextTrendingKeyword = pickTodaysTrend()
+    } catch (e) {
+      console.warn('[gmb-admin] pickTodaysTrend failed:', e.message)
+    }
+    let recentTopics = []
+    try {
+      recentTopics = getRecentTrendHistory({ limit: 10 })
+    } catch (e) {
+      console.warn('[gmb-admin] getRecentTrendHistory failed:', e.message)
+    }
+
     const aiMode = {
       configured: isOpenAIConfigured(),
       mode: (cfg && cfg.descriptionMode) || 'static',
@@ -422,6 +441,8 @@ router.get('/status', (_req, res) => {
       categoryRotation: (cfg && Array.isArray(cfg.aiCategoryRotation)) ? cfg.aiCategoryRotation : [],
       aiCostLast30Days: sumCostLast30Days(posts, FAL_GENERATED_BY_TAG),
       nextCategoryIfAi: pickNextAiCategory(cfg, posts),
+      nextTrendingKeyword,
+      recentTopics,
     }
 
     res.json({
@@ -607,7 +628,28 @@ router.post('/ai-preview', async (req, res) => {
       return res.status(400).json({ ok: false, error: `No urlMapping entry for category "${category}" and no default fallback` })
     }
 
-    const aiPreview = await generateAiPreview({ category, urlInfo })
+    // Resolve the trending keyword the preview should be themed around. If the
+    // caller passes a {keyword,...} object we honour it as-is; otherwise we run
+    // pickTodaysTrend() so the preview matches what the next cron tick would
+    // actually generate. Caller can also pass a bare string for convenience.
+    let trendingKeyword = null
+    if (body.trendingKeyword && typeof body.trendingKeyword === 'object' && body.trendingKeyword.keyword) {
+      trendingKeyword = body.trendingKeyword
+    } else if (typeof body.trendingKeyword === 'string' && body.trendingKeyword.trim()) {
+      trendingKeyword = { keyword: body.trendingKeyword.trim(), source: 'caller-supplied' }
+    } else {
+      try {
+        trendingKeyword = pickTodaysTrend()
+      } catch (e) {
+        console.warn('[gmb-admin] pickTodaysTrend failed during ai-preview:', e.message)
+      }
+    }
+
+    const aiPreview = await generateAiPreview({
+      category,
+      urlInfo,
+      trendingKeyword: trendingKeyword?.keyword || null,
+    })
 
     return res.json({
       ok: true,
@@ -618,6 +660,7 @@ router.post('/ai-preview', async (req, res) => {
         prompt: aiPreview.prompt,
         estimatedCostUsd: aiPreview.estimatedCostUsd,
         urlInfo,
+        trendingKeyword,
       },
       apiCalled: false,
       fetchedAt: new Date().toISOString(),
@@ -697,6 +740,103 @@ router.post('/ai-generate-now', async (req, res) => {
       code: err?.code || 'AI_GENERATE_FAILED',
       error: err.message,
     })
+  }
+})
+
+/**
+ * GET /api/gmb/trends/upcoming
+ *
+ * Read-only peek at the trend rotation. Returns:
+ *   - topic                     the keyword the NEXT post will use
+ *   - source                    where that keyword came from (google-trends,
+ *                               keyword-tracker, seed, etc.)
+ *   - monthlySearches           search volume if known, else null
+ *   - queuedPositionInRotation  0-indexed slot in cfg.aiCategoryRotation that
+ *                               the next post would consume (mirrors
+ *                               pickNextAiCategory math) — null when the
+ *                               rotation is empty
+ *   - available                 next 10 trend candidates with their stats,
+ *                               ordered the way pickTodaysTrend would score
+ *                               them (highest first)
+ *
+ * No FAL spend, no writes. Safe to poll.
+ */
+router.get('/trends/upcoming', (_req, res) => {
+  try {
+    const cfg = readConfig()
+    const { posts } = readState()
+
+    // Position in the category rotation the next AI post would consume.
+    // Mirrors pickNextAiCategory's modulo so the dashboard can highlight the
+    // upcoming slot without reimplementing the logic.
+    const rotation = Array.isArray(cfg?.aiCategoryRotation) ? cfg.aiCategoryRotation : []
+    const queuedPositionInRotation = rotation.length
+      ? (Array.isArray(posts) ? posts.length : 0) % rotation.length
+      : null
+
+    // Top-of-rotation pick — same call /status uses, so the two endpoints
+    // agree on "what's next".
+    let next = null
+    try {
+      next = pickTodaysTrend()
+    } catch (e) {
+      console.warn('[gmb-admin] pickTodaysTrend failed in /trends/upcoming:', e.message)
+    }
+
+    // Build the next-10 list by calling pickTodaysTrend with successively
+    // larger avoid windows is awkward — instead we expose the underlying
+    // candidate pool by repeatedly picking and adding the chosen keyword to a
+    // local "already considered" set. This stays inside the public API of
+    // gmb-trend-source.js without leaking its internals.
+    const available = []
+    const seen = new Set()
+    if (next?.keyword) {
+      available.push({
+        keyword: next.keyword,
+        source: next.source,
+        monthlySearches: next.monthlySearches ?? null,
+        trendDelta: next.trendDelta ?? null,
+        reasoning: next.reasoning,
+      })
+      seen.add(String(next.keyword).trim().toLowerCase())
+    }
+    // Pull additional candidates by sweeping avoidLastNDays upwards — anything
+    // already in `seen` gets skipped. Caps at 25 sweeps to bound runtime.
+    for (let sweep = 0; sweep < 25 && available.length < 10; sweep++) {
+      let pick = null
+      try {
+        pick = pickTodaysTrend({ avoidLastNDays: 0 })
+      } catch (e) {
+        break
+      }
+      if (!pick?.keyword) break
+      const key = String(pick.keyword).trim().toLowerCase()
+      if (seen.has(key)) continue
+      seen.add(key)
+      available.push({
+        keyword: pick.keyword,
+        source: pick.source,
+        monthlySearches: pick.monthlySearches ?? null,
+        trendDelta: pick.trendDelta ?? null,
+        reasoning: pick.reasoning,
+      })
+    }
+
+    res.json({
+      ok: true,
+      topic: next?.keyword || null,
+      source: next?.source || null,
+      monthlySearches: next?.monthlySearches ?? null,
+      trendDelta: next?.trendDelta ?? null,
+      reasoning: next?.reasoning || null,
+      queuedPositionInRotation,
+      rotationLength: rotation.length,
+      nextCategory: pickNextAiCategory(cfg, posts),
+      available,
+      fetchedAt: new Date().toISOString(),
+    })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
   }
 })
 

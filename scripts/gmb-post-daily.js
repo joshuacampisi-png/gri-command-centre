@@ -59,6 +59,7 @@ import { buildClaudePromptForGmb } from '../server/lib/gmb-prompt-templates.js'
 import { callClaude } from '../server/lib/claude-guard.js'
 import { postToGmb } from '../server/lib/gmb-poster.js'
 import { logPost, logFailure, consecutiveFailures, readState } from '../server/lib/gmb-state.js'
+import { pickTodaysTrend, inferCategoryFromKeyword } from '../server/lib/gmb-trend-source.js'
 
 const CONFIG_PATH = dataFile('gmb-config.json')
 
@@ -277,8 +278,33 @@ async function main() {
       return 0
     }
 
-    const category = pickNextRotationCategory(config)
-    console.log(`[gmb-post-daily] Queue empty + ai-fal-generated mode → generating fully via AI (category: ${category})`)
+    // Prefer a trending keyword for today's post so the GBP listing tracks
+    // live search demand. Falls back to the existing static rotation only if
+    // the trend seed list is exhausted (rare).
+    let trend = null
+    try {
+      trend = await pickTodaysTrend()
+    } catch (trendErr) {
+      console.warn(`[gmb-post-daily] pickTodaysTrend failed — falling back to static rotation: ${trendErr?.message || trendErr}`)
+      trend = null
+    }
+
+    let category
+    let trendingKeyword = null
+    let keywordSource = 'static-rotation'
+    let keywordMonthlySearches = null
+
+    if (trend && trend.keyword) {
+      trendingKeyword = trend.keyword
+      keywordSource = trend.source || 'trend-source'
+      keywordMonthlySearches =
+        typeof trend.monthlySearches === 'number' ? trend.monthlySearches : null
+      category = inferCategoryFromKeyword(trend.keyword) || pickNextRotationCategory(config)
+      console.log(`[gmb-post-daily] Queue empty + ai-fal-generated mode → trending keyword "${trendingKeyword}" (source: ${keywordSource}, vol: ${keywordMonthlySearches ?? 'n/a'}) → category: ${category}`)
+    } else {
+      category = pickNextRotationCategory(config)
+      console.log(`[gmb-post-daily] Queue empty + ai-fal-generated mode → no trend available, static rotation category: ${category}`)
+    }
 
     const mapping = resolveMappingForCategory(category, config.urlMapping)
     if (!mapping) {
@@ -292,6 +318,7 @@ async function main() {
     try {
       aiPost = await generateGmbAiPost({
         category,
+        trendingKeyword,
         urlInfo: { url: mapping.url, button: mapping.button },
         siteContext: null,
       })
@@ -341,9 +368,15 @@ async function main() {
         fallbackReason: aiPost.fallbackUsed ? 'claude-copy-fallback-used' : null,
         sourceMode: 'ai-fal-generated/queue-empty',
         category,
+        trendingKeyword,
+        keywordSource,
+        keywordMonthlySearches,
       })
 
-      console.log(`[gmb-post-daily] ✓ Posted AI image for "${category}" at ${result.postedAt}`)
+      const postedAboutMsg = trendingKeyword
+        ? ` (posted about: ${trendingKeyword})`
+        : ''
+      console.log(`[gmb-post-daily] ✓ Posted AI image for "${category}"${postedAboutMsg} at ${result.postedAt}`)
       return 0
     } catch (err) {
       const at = new Date().toISOString()
@@ -448,6 +481,9 @@ async function main() {
       fallbackReason: description.fallbackReason,
       sourceMode,
       category,
+      trendingKeyword: null,
+      keywordSource: 'queue-image',
+      keywordMonthlySearches: null,
     })
 
     console.log(`[gmb-post-daily] ✓ Posted ${image.name} at ${result.postedAt}`)

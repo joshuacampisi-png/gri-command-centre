@@ -55,6 +55,36 @@ function safeSlug(text, maxLen = 20) {
 }
 
 /**
+ * Lightweight keyword → category mapper. Used when the caller hands us a
+ * trendingKeyword but no explicit category — so the CTA URL still resolves
+ * to a sensible product page. Mirrors inferCategoryFromFilename() in
+ * gmb-site-context.js so both pipelines agree on the same vocabulary.
+ *
+ * Order matters: more specific matches (e.g. 'blaster') should win over
+ * generic ones ('cannon'). Returns null when nothing matches so callers can
+ * decide whether to fall back to 'default' or leave category unset.
+ */
+function inferCategoryFromKeyword(keyword) {
+  const k = String(keyword || '').toLowerCase().trim()
+  if (!k) return null
+  if (k.includes('tnt') || k.includes('detonator')) return 'tnt'
+  if (k.includes('blaster')) return 'blaster'
+  if (k.includes('basketball') || k.includes(' ball')) return 'basketball'
+  if (k.includes('smoke')) return 'smoke'
+  if (k.includes('balloon')) return 'balloon'
+  if (k.includes('cake')) return 'cake'
+  if (k.includes('confetti')) return 'confetti'
+  if (k.includes('powder') || k.includes('holi')) return 'powder'
+  if (k.includes('cannon')) return 'cannon'
+  if (k.includes('burnout') || k.includes('tyre') || k.includes('tire')) return 'burnout'
+  if (k.includes('bundle') || k.includes('package') || k.includes('kit')) return 'bundle'
+  if (k.includes('sydney')) return 'sydney'
+  if (k.includes('melbourne')) return 'melbourne'
+  if (k.includes('brisbane')) return 'brisbane'
+  return null
+}
+
+/**
  * Pull the JSON body out of Claude's response, tolerating markdown fences.
  * Returns { hookText, description, imagePromptHint } on success, null on fail.
  */
@@ -80,9 +110,14 @@ function parseClaudeJson(response) {
  * Wrapped in try/catch — never throws upstream. Returns fully-populated obj
  * with `fallbackUsed: true` if Claude was unavailable / unparseable.
  */
-async function generateCopyViaClaude({ category, urlInfo, siteContext }) {
+async function generateCopyViaClaude({ category, urlInfo, siteContext, trendingKeyword }) {
   try {
-    const { system, user } = buildClaudePromptForGmb({ category, urlInfo, siteContext })
+    const { system, user } = buildClaudePromptForGmb({
+      category,
+      urlInfo,
+      siteContext,
+      trendingKeyword,
+    })
     const response = await callClaude({
       model: 'claude-sonnet-4-6',
       max_tokens: 1200,
@@ -171,9 +206,18 @@ async function generateAndDownloadImage({ prompt, hookText }) {
  * Full pipeline: Claude copy → image prompt → FAL render → local download.
  *
  * @param {object} opts
- * @param {string} opts.category    — gmb-prompt-templates category key
+ * @param {string|null} [opts.category]    — gmb-prompt-templates category key.
+ *   When null, auto-derived from trendingKeyword via inferCategoryFromKeyword()
+ *   so the CTA URL still points at a sensible product page.
  * @param {{url:string, button:string}} opts.urlInfo
  * @param {object|null} [opts.siteContext]
+ * @param {string|null} [opts.trendingKeyword]  — optional SEO keyword pulled
+ *   from Google Trends / DataForSEO / seed fallback. When provided it is
+ *   threaded into both the Claude copy prompt and the FAL image prompt so the
+ *   post can lean into a fresh search angle.
+ * @param {string|null} [opts.keywordSource]    — provenance tag for the
+ *   keyword, e.g. 'google-trends' | 'dataforseo' | 'seed-fallback'. Echoed
+ *   back in the return shape so the caller can log/audit.
  * @returns {Promise<{
  *   imagePath: string,
  *   description: string,
@@ -182,27 +226,46 @@ async function generateAndDownloadImage({ prompt, hookText }) {
  *   costEstimateUsd: number,
  *   generatedBy: string,
  *   fallbackUsed: boolean,
+ *   trendingKeyword: string|null,
+ *   keywordSource: string|null,
  * }>}
  *
  * Throws Error with .code = 'GMB_FAL_FAILED' if the FAL step fails — caller
  * is expected to fall back to the static image pool + queue a regen.
  */
-export async function generateGmbAiPost({ category, urlInfo, siteContext = null }) {
+export async function generateGmbAiPost({
+  category = null,
+  urlInfo,
+  siteContext = null,
+  trendingKeyword = null,
+  keywordSource = null,
+} = {}) {
+  // Step 0 — if no category was supplied, try to derive one from the trending
+  // keyword so the CTA URL resolution downstream still has something to chew
+  // on. Pure best-effort: null in → null out → 'default' template branch wins.
+  const resolvedCategory = category || inferCategoryFromKeyword(trendingKeyword)
+
   // Step 1 — copy via Claude (never throws; falls back internally)
-  const copy = await generateCopyViaClaude({ category, urlInfo, siteContext })
+  const copy = await generateCopyViaClaude({
+    category: resolvedCategory,
+    urlInfo,
+    siteContext,
+    trendingKeyword,
+  })
 
   // Step 2 — assemble the image prompt (pure function, can't throw meaningfully
   // but wrap defensively anyway)
   let prompt
   try {
     prompt = buildImagePrompt({
-      category,
+      category: resolvedCategory,
       hookText: copy.hookText,
       styleHint: copy.imagePromptHint,
+      trendingKeyword,
     })
   } catch (err) {
     console.warn(`[GMB-FAL] buildImagePrompt failed, using minimal prompt: ${err.message}`)
-    prompt = buildImagePrompt({ category, hookText: copy.hookText })
+    prompt = buildImagePrompt({ category: resolvedCategory, hookText: copy.hookText })
   }
 
   // Steps 3 + 4 — FAL + download. Bubbles GMB_FAL_FAILED upward.
@@ -220,6 +283,8 @@ export async function generateGmbAiPost({ category, urlInfo, siteContext = null 
     costEstimateUsd: TOTAL_COST_ESTIMATE,
     generatedBy: GENERATED_BY,
     fallbackUsed: copy.fallbackUsed,
+    trendingKeyword: trendingKeyword || null,
+    keywordSource: keywordSource || null,
   }
 }
 
@@ -227,26 +292,44 @@ export async function generateGmbAiPost({ category, urlInfo, siteContext = null 
  * Dry-run variant: runs Claude + builds the prompt, but does NOT call FAL.
  * Lets staff preview what would be generated without spending $0.15.
  *
+ * Accepts the same trendingKeyword / keywordSource params as the live pipeline
+ * so the preview reflects exactly what the real run would produce.
+ *
  * @returns {Promise<{
  *   hookText: string,
  *   description: string,
  *   prompt: string,
  *   estimatedCostUsd: number,   // what the real run *would* cost
  *   willGenerate: string,
+ *   trendingKeyword: string|null,
+ *   keywordSource: string|null,
  * }>}
  */
-export async function generateAiPreview({ category, urlInfo }) {
-  const copy = await generateCopyViaClaude({ category, urlInfo, siteContext: null })
+export async function generateAiPreview({
+  category = null,
+  urlInfo,
+  trendingKeyword = null,
+  keywordSource = null,
+} = {}) {
+  const resolvedCategory = category || inferCategoryFromKeyword(trendingKeyword)
+
+  const copy = await generateCopyViaClaude({
+    category: resolvedCategory,
+    urlInfo,
+    siteContext: null,
+    trendingKeyword,
+  })
 
   let prompt
   try {
     prompt = buildImagePrompt({
-      category,
+      category: resolvedCategory,
       hookText: copy.hookText,
       styleHint: copy.imagePromptHint,
+      trendingKeyword,
     })
   } catch {
-    prompt = buildImagePrompt({ category, hookText: copy.hookText })
+    prompt = buildImagePrompt({ category: resolvedCategory, hookText: copy.hookText })
   }
 
   return {
@@ -255,5 +338,7 @@ export async function generateAiPreview({ category, urlInfo }) {
     prompt,
     estimatedCostUsd: 0.16, // 0.15 FAL + ~0.01 Claude rounded up
     willGenerate: 'would-generate-via-fal',
+    trendingKeyword: trendingKeyword || null,
+    keywordSource: keywordSource || null,
   }
 }
