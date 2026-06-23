@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NovaPeptides — Cost &amp; Profit Dashboard</title>
+<style>
+  :root{
+    --ink:#0b1437; --ink2:#1b2a5b; --mist:#5b6b94; --line:#e4e9f5;
+    --bg:#f4f7fd; --card:#ffffff; --teal:#16c2c2; --violet:#6a5cff;
+    --green:#0fae6e; --amber:#f0a020; --red:#e2585b;
+    --grad:linear-gradient(120deg,#6a5cff 0%,#16c2c2 100%);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 22px 60px}
+
+  /* Header / brand */
+  header{background:var(--ink);border-radius:20px;padding:26px 30px;color:#fff;
+    background-image:radial-gradient(900px 300px at 85% -40%,rgba(106,92,255,.55),transparent),
+                     radial-gradient(700px 260px at 10% 140%,rgba(22,194,194,.45),transparent);
+    box-shadow:0 18px 50px rgba(11,20,55,.28)}
+  .brandrow{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+  .brand{display:flex;align-items:center;gap:14px}
+  .nova-mark{width:46px;height:46px;flex:0 0 auto}
+  .brand h1{margin:0;font-size:26px;letter-spacing:.4px;font-weight:800}
+  .brand h1 .nova{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .brand .url{font-size:12.5px;color:#aeb9dd;letter-spacing:1.5px;text-transform:uppercase;margin-top:2px}
+  .doctag{text-align:right}
+  .doctag .t1{font-size:15px;font-weight:600}
+  .doctag .t2{font-size:12px;color:#aeb9dd;margin-top:3px}
+
+  /* KPI cards */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:18px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;
+    box-shadow:0 6px 18px rgba(11,20,55,.05)}
+  .kpi .label{font-size:11.5px;color:var(--mist);text-transform:uppercase;letter-spacing:.7px;font-weight:600}
+  .kpi .val{font-size:25px;font-weight:800;margin-top:6px;color:var(--ink)}
+  .kpi .sub{font-size:12px;color:var(--mist);margin-top:3px}
+  .kpi.accent .val{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+  section{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px 24px;margin-top:22px;
+    box-shadow:0 6px 18px rgba(11,20,55,.05)}
+  .sec-head{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:6px}
+  h2{font-size:18px;margin:0 0 2px;font-weight:800}
+  .sec-sub{font-size:12.5px;color:var(--mist);margin:0 0 14px}
+  .pill{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;background:#eef1fb;color:var(--ink2)}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{padding:11px 12px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+  th:first-child,td:first-child{text-align:left}
+  thead th{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--mist);font-weight:700;border-bottom:2px solid var(--line)}
+  tbody tr:hover{background:#fafbff}
+  tfoot td{font-weight:800;border-top:2px solid var(--line);border-bottom:none;background:#f8faff}
+  .prod{font-weight:700;color:var(--ink)}
+  .muted{color:var(--mist)}
+  .land{font-weight:800;color:var(--ink)}
+  .freight{color:var(--violet);font-weight:600}
+
+  /* P&L editable */
+  .controls{display:flex;gap:22px;flex-wrap:wrap;align-items:center;margin-bottom:14px;
+    background:#f8faff;border:1px solid var(--line);border-radius:12px;padding:12px 16px}
+  .ctrl{display:flex;flex-direction:column;gap:4px}
+  .ctrl label{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--mist);font-weight:700}
+  .ctrl input{width:120px;font-size:14px;font-weight:700;padding:7px 10px;border:1px solid var(--line);
+    border-radius:9px;color:var(--ink);background:#fff}
+  .ctrl .hint{font-size:10.5px;color:var(--mist);font-weight:500;text-transform:none;letter-spacing:0}
+  input.retail{width:96px;text-align:right;font-size:13.5px;font-weight:700;padding:6px 8px;
+    border:1px solid #cdd6ee;border-radius:8px;color:var(--ink);background:#fff}
+  input.retail:focus{outline:none;border-color:var(--violet);box-shadow:0 0 0 3px rgba(106,92,255,.15)}
+  .pos{color:var(--green);font-weight:800}
+  .neg{color:var(--red);font-weight:800}
+  .mgood{color:var(--green);font-weight:700}
+  .mok{color:var(--amber);font-weight:700}
+  .mbad{color:var(--red);font-weight:700}
+
+  .notes{font-size:12.5px;color:var(--mist);line-height:1.7}
+  .notes b{color:var(--ink2)}
+  .notes ul{margin:8px 0 0;padding-left:18px}
+
+  footer{text-align:center;color:var(--mist);font-size:12px;margin-top:26px}
+  footer .nova{font-weight:800;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+  @media(max-width:780px){
+    .kpis{grid-template-columns:repeat(2,1fr)}
+    .scroll{overflow-x:auto}
+  }
+  @media print{
+    body{background:#fff}
+    section,header,.kpi{box-shadow:none}
+    .controls{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brandrow">
+      <div class="brand">
+        <svg class="nova-mark" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#6a5cff"/><stop offset="1" stop-color="#16c2c2"/>
+          </linearGradient></defs>
+          <path d="M50 4 L58 38 L92 50 L58 62 L50 96 L42 62 L8 50 L42 38 Z" fill="url(#g)"/>
+          <circle cx="50" cy="50" r="7" fill="#fff"/>
+        </svg>
+        <div>
+          <h1><span class="nova">Nova</span>Peptides</h1>
+          <div class="url">NovaPeptides.com.au</div>
+        </div>
+      </div>
+      <div class="doctag">
+        <div class="t1">Cost &amp; Profit Dashboard</div>
+        <div class="t2">Landed-cost stocktake &middot; Prepared 23 Jun 2026</div>
+      </div>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi accent">
+        <div class="label">Total Landed Cost</div>
+        <div class="val">$1,331.20</div>
+        <div class="sub">2 import orders (USD)</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Total Freight</div>
+        <div class="val">$320.00</div>
+        <div class="sub">Spread across all products</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Peptide Vials</div>
+        <div class="val">60</div>
+        <div class="sub">6 peptide SKUs &times; 10</div>
+      </div>
+      <div class="kpi">
+        <div class="label">BAC Water Vials</div>
+        <div class="val">90</div>
+        <div class="sub">70 paid + 20 free 3ml</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ORDER 1 -->
+  <section>
+    <div class="sec-head">
+      <div>
+        <h2>Import Order 1 &mdash; Main shipment</h2>
+        <p class="sec-sub">Freight $240 distributed by product value &middot; multiplier &times;1.3185</p>
+      </div>
+      <span class="pill">Total $993.60 USD</span>
+    </div>
+    <div class="scroll">
+    <table>
+      <thead><tr>
+        <th>Product</th><th>Qty</th><th>Unit cost<br>(ex-freight)</th><th>Order cost</th>
+        <th>Freight share</th><th>Landed total</th><th>Landed / unit</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="prod">GLOW 70mg</td><td>10</td><td class="muted">$17.36</td><td>$173.60</td><td class="freight">$55.29</td><td class="land">$228.89</td><td class="land">$22.89</td></tr>
+        <tr><td class="prod">KLOW 80mg</td><td>10</td><td class="muted">$20.48</td><td>$204.80</td><td class="freight">$65.22</td><td class="land">$270.02</td><td class="land">$27.00</td></tr>
+        <tr><td class="prod">Reta RT30</td><td>10</td><td class="muted">$16.40</td><td>$164.00</td><td class="freight">$52.23</td><td class="land">$216.23</td><td class="land">$21.62</td></tr>
+        <tr><td class="prod">SS-31 10mg</td><td>10</td><td class="muted">$7.84</td><td>$78.40</td><td class="freight">$24.97</td><td class="land">$103.37</td><td class="land">$10.34</td></tr>
+        <tr><td class="prod">BPC-157 + TB-500 10mg</td><td>10</td><td class="muted">$8.96</td><td>$89.60</td><td class="freight">$28.53</td><td class="land">$118.14</td><td class="land">$11.81</td></tr>
+        <tr><td class="prod">BAC water 3ml</td><td>60</td><td class="muted">$0.72</td><td>$43.20</td><td class="freight">$13.76</td><td class="land">$56.96</td><td class="land">$0.95</td></tr>
+      </tbody>
+      <tfoot><tr><td>Total</td><td>110</td><td></td><td>$753.60</td><td class="freight">$240.00</td><td>$993.60</td><td></td></tr></tfoot>
+    </table>
+    </div>
+  </section>
+
+  <!-- ORDER 2 -->
+  <section>
+    <div class="sec-head">
+      <div>
+        <h2>Import Order 2 &mdash; RT60 shipment</h2>
+        <p class="sec-sub">Freight $80 distributed by product value &middot; multiplier &times;1.3106</p>
+      </div>
+      <span class="pill">Total $337.60 USD</span>
+    </div>
+    <div class="scroll">
+    <table>
+      <thead><tr>
+        <th>Product</th><th>Qty</th><th>Unit cost<br>(ex-freight)</th><th>Order cost</th>
+        <th>Freight share</th><th>Landed total</th><th>Landed / unit</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="prod">Reta RT60</td><td>10</td><td class="muted">$24.80</td><td>$248.00</td><td class="freight">$77.02</td><td class="land">$325.02</td><td class="land">$32.50</td></tr>
+        <tr><td class="prod">BAC water 3ml</td><td>10</td><td class="muted">$0.96</td><td>$9.60</td><td class="freight">$2.98</td><td class="land">$12.58</td><td class="land">$1.26</td></tr>
+      </tbody>
+      <tfoot><tr><td>Total</td><td>20</td><td></td><td>$257.60</td><td class="freight">$80.00</td><td>$337.60</td><td></td></tr></tfoot>
+    </table>
+    </div>
+  </section>
+
+  <!-- STOCKTAKE + P&L -->
+  <section>
+    <div class="sec-head">
+      <div>
+        <h2>Stocktake &amp; Profit / Loss</h2>
+        <p class="sec-sub">True landed cost per vial &middot; enter your retail price to see margin live</p>
+      </div>
+      <span class="pill">Editable</span>
+    </div>
+
+    <div class="controls">
+      <div class="ctrl">
+        <label>USD &rarr; AUD rate</label>
+        <input id="fx" type="number" step="0.01" value="1.55">
+        <span class="hint">Edit to today's rate</span>
+      </div>
+      <div class="ctrl">
+        <label>Suggested markup &times;</label>
+        <input id="markup" type="number" step="0.1" value="4">
+        <span class="hint">Pre-fills retail (AUD) &mdash; override any cell</span>
+      </div>
+    </div>
+
+    <div class="scroll">
+    <table id="pnl">
+      <thead><tr>
+        <th>Product</th><th>Vials in stock</th><th>Landed/unit<br>(USD)</th><th>Landed/unit<br>(AUD)</th>
+        <th>Retail/unit<br>(AUD)</th><th>Profit/unit</th><th>Margin</th><th>Stock value<br>(AUD)</th><th>Potential profit</th>
+      </tr></thead>
+      <tbody>
+        <!-- data-cost = landed USD per unit, data-units = vials -->
+        <tr data-cost="32.50" data-units="10"><td class="prod">Reta RT60</td></tr>
+        <tr data-cost="22.89" data-units="10"><td class="prod">GLOW 70mg</td></tr>
+        <tr data-cost="27.00" data-units="10"><td class="prod">KLOW 80mg</td></tr>
+        <tr data-cost="21.62" data-units="10"><td class="prod">Reta RT30</td></tr>
+        <tr data-cost="10.34" data-units="10"><td class="prod">SS-31 10mg</td></tr>
+        <tr data-cost="11.81" data-units="10"><td class="prod">BPC-157 + TB-500 10mg</td></tr>
+        <tr data-cost="0.77" data-units="90"><td class="prod">BAC water 3ml <span class="muted" style="font-weight:500">(incl. 20 free)</span></td></tr>
+      </tbody>
+      <tfoot><tr>
+        <td>Portfolio</td><td id="tUnits"></td><td></td><td id="tLandAud"></td><td></td><td></td><td id="tMargin"></td><td id="tStock"></td><td id="tProfit"></td>
+      </tr></tfoot>
+    </table>
+    </div>
+  </section>
+
+  <!-- METHOD NOTES -->
+  <section>
+    <h2>How these numbers were built</h2>
+    <p class="sec-sub">So you and your wife can trust and re-run the maths on every future order</p>
+    <div class="notes">
+      <b>Freight allocation.</b> Each product carries a slice of shipping proportional to its value
+      (product cost &divide; order subtotal &times; freight). Higher-value lines absorb more freight, which keeps the
+      landed cost per vial honest. Order&nbsp;1 freight multiplier = 993.60 &divide; 753.60 = <b>&times;1.3185</b>;
+      Order&nbsp;2 = 337.60 &divide; 257.60 = <b>&times;1.3106</b>.
+      <ul>
+        <li><b>Landed/unit</b> = (product cost + freight share) &divide; quantity &mdash; this is what each vial truly costs you, delivered.</li>
+        <li><b>BAC water.</b> 70 paid vials cost $69.54 landed; you also received <b>20 free</b>, so the true cost spreads over 90 vials = <b>$0.77/vial</b> ($0.99/vial on paid units alone).</li>
+        <li><b>Currency.</b> Supplier invoices are in <b>USD</b>. The P&amp;L converts landed cost to AUD using the rate you set &mdash; update it to the day you actually paid for accurate margins.</li>
+        <li><b>Reta note.</b> RT30 (Order 1) and RT60 (Order 2) are kept as separate SKUs since they're different strengths and landed costs.</li>
+        <li><b>Profit / Margin</b> only appear once you enter a retail price. The default markup (&times;4) is a placeholder starting point, not a recommendation &mdash; set your real shelf prices.</li>
+      </ul>
+      <b>Reconciliation:</b> Order 1 ($993.60) + Order 2 ($337.60) = <b>$1,331.20</b> total landed cost &mdash; matches both supplier totals to the cent.
+    </div>
+  </section>
+
+  <footer>
+    <span class="nova">Nova</span>Peptides &middot; NovaPeptides.com.au &middot; Internal cost dashboard &mdash; not for distribution
+  </footer>
+</div>
+
+<script>
+  const fmt = n => '$' + n.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const fxEl = document.getElementById('fx');
+  const mkEl = document.getElementById('markup');
+  const rows = [...document.querySelectorAll('#pnl tbody tr')];
+
+  // build editable cells once
+  rows.forEach(tr=>{
+    const cost=+tr.dataset.cost, units=+tr.dataset.units;
+    tr.insertAdjacentHTML('beforeend',
+      `<td>${units}</td>
+       <td class="muted">${fmt(cost)}</td>
+       <td class="landAud land"></td>
+       <td><input class="retail" type="number" step="0.01" min="0"></td>
+       <td class="ppu"></td>
+       <td class="mgn"></td>
+       <td class="sval"></td>
+       <td class="pprofit"></td>`);
+  });
+
+  function marginClass(m){return m>=60?'mgood':m>=35?'mok':'mbad';}
+
+  function prefill(){
+    const fx=+fxEl.value||0, mk=+mkEl.value||0;
+    rows.forEach(tr=>{
+      const cost=+tr.dataset.cost;
+      const landAud=cost*fx;
+      tr.querySelector('.retail').value = (Math.ceil(landAud*mk*100)/100).toFixed(2);
+    });
+    recalc();
+  }
+
+  function recalc(){
+    const fx=+fxEl.value||0;
+    let tUnits=0,tStock=0,tProfit=0,tRev=0;
+    rows.forEach(tr=>{
+      const cost=+tr.dataset.cost, units=+tr.dataset.units;
+      const landAud=cost*fx;
+      const retail=+tr.querySelector('.retail').value||0;
+      const ppu=retail-landAud;
+      const mgn=retail>0?(ppu/retail*100):0;
+      tr.querySelector('.landAud').textContent=fmt(landAud);
+      const ppuCell=tr.querySelector('.ppu');
+      ppuCell.textContent=fmt(ppu); ppuCell.className='ppu '+(ppu>=0?'pos':'neg');
+      const mCell=tr.querySelector('.mgn');
+      mCell.textContent=retail>0?mgn.toFixed(0)+'%':'—';
+      mCell.className='mgn '+(retail>0?marginClass(mgn):'muted');
+      tr.querySelector('.sval').textContent=fmt(landAud*units);
+      tr.querySelector('.pprofit').textContent=fmt(ppu*units);
+      tUnits+=units; tStock+=landAud*units; tProfit+=ppu*units; tRev+=retail*units;
+    });
+    document.getElementById('tUnits').textContent=tUnits;
+    document.getElementById('tLandAud').textContent=fmt(tStock/ (tUnits||1));
+    document.getElementById('tStock').textContent=fmt(tStock);
+    document.getElementById('tProfit').textContent=fmt(tProfit);
+    const tM=tRev>0?(tProfit/tRev*100):0;
+    const tMcell=document.getElementById('tMargin');
+    tMcell.textContent=tRev>0?tM.toFixed(0)+'%':'—';
+    tMcell.className=tRev>0?marginClass(tM):'';
+  }
+
+  fxEl.addEventListener('input',recalc);
+  mkEl.addEventListener('input',prefill);
+  document.querySelectorAll('.retail').forEach(i=>i.addEventListener('input',recalc));
+  prefill();
+</script>
+</body>
+</html>

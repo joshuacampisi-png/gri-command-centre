@@ -1,0 +1,38 @@
+NovaPeptides.com.au - Cost & Profit / Landed-Cost Stocktake,,,,,,,
+Prepared,2026-06-23,,,,,,
+All supplier costs in USD. Freight distributed across products by value.,,,,,,,
+,,,,,,,
+IMPORT ORDER 1 - Main shipment (freight multiplier x1.3185),,,,,,,
+Product,Qty,Unit Cost USD (ex-freight),Order Cost USD,Freight Share USD,Landed Total USD,Landed Cost/Unit USD,
+GLOW 70mg,10,17.36,173.60,55.29,228.89,22.89,
+KLOW 80mg,10,20.48,204.80,65.22,270.02,27.00,
+Reta RT30,10,16.40,164.00,52.23,216.23,21.62,
+SS-31 10mg,10,7.84,78.40,24.97,103.37,10.34,
+BPC-157 + TB-500 10mg,10,8.96,89.60,28.53,118.14,11.81,
+BAC water 3ml,60,0.72,43.20,13.76,56.96,0.95,
+Order 1 Total,110,,753.60,240.00,993.60,,
+,,,,,,,
+IMPORT ORDER 2 - RT60 shipment (freight multiplier x1.3106),,,,,,,
+Product,Qty,Unit Cost USD (ex-freight),Order Cost USD,Freight Share USD,Landed Total USD,Landed Cost/Unit USD,
+Reta RT60,10,24.80,248.00,77.02,325.02,32.50,
+BAC water 3ml,10,0.96,9.60,2.98,12.58,1.26,
+Order 2 Total,20,,257.60,80.00,337.60,,
+,,,,,,,
+COMBINED STOCKTAKE & PROFIT/LOSS,,,,,,,
+USD to AUD rate (edit me),1.55,,,,,,
+Product,Vials in Stock,Landed/Unit USD,Landed/Unit AUD,Retail/Unit AUD (enter),Profit/Unit AUD,Margin %,Stock Value AUD,Potential Profit AUD
+Reta RT60,10,32.50,=C24*$B$22,,=E24-D24,=IF(E24>0,F24/E24,0),=D24*B24,=F24*B24
+GLOW 70mg,10,22.89,=C25*$B$22,,=E25-D25,=IF(E25>0,F25/E25,0),=D25*B25,=F25*B25
+KLOW 80mg,10,27.00,=C26*$B$22,,=E26-D26,=IF(E26>0,F26/E26,0),=D26*B26,=F26*B26
+Reta RT30,10,21.62,=C27*$B$22,,=E27-D27,=IF(E27>0,F27/E27,0),=D27*B27,=F27*B27
+SS-31 10mg,10,10.34,=C28*$B$22,,=E28-D28,=IF(E28>0,F28/E28,0),=D28*B28,=F28*B28
+BPC-157 + TB-500 10mg,10,11.81,=C29*$B$22,,=E29-D29,=IF(E29>0,F29/E29,0),=D29*B29,=F29*B29
+BAC water 3ml (incl 20 free),90,0.77,=C30*$B$22,,=E30-D30,=IF(E30>0,F30/E30,0),=D30*B30,=F30*B30
+Portfolio Total,,,,,,,=SUM(H24:H30),=SUM(I24:I30)
+,,,,,,,
+NOTES,,,,,,,
+Landed/Unit = (product cost + freight share) / qty. The true delivered cost per vial.,,,,,,,
+Freight is split by each product's share of the order value (standard landed-cost method).,,,,,,,
+BAC water: 70 paid vials cost 69.54 USD landed; 20 came free; true cost spread over 90 = 0.77/vial.,,,,,,,
+Reconciliation: Order1 993.60 + Order2 337.60 = 1331.20 total landed cost.,,,,,,,
+Enter Retail/Unit AUD in column E and margins calculate automatically.,,,,,,,
