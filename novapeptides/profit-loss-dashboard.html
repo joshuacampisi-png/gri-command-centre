@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NovaPeptides — Cost &amp; Profit Dashboard</title>
+<title>NovaPeptides — Profit Dashboard</title>
 <style>
   :root{
     --ink:#0b1437; --ink2:#1b2a5b; --mist:#5b6b94; --line:#e4e9f5;
@@ -14,81 +14,74 @@
   *{box-sizing:border-box}
   body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
-  .wrap{max-width:1040px;margin:0 auto;padding:28px 22px 60px}
+  .wrap{max-width:860px;margin:0 auto;padding:26px 18px 60px}
 
-  header{background:var(--ink);border-radius:20px;padding:26px 30px;color:#fff;
+  header{background:var(--ink);border-radius:20px;padding:24px 26px;color:#fff;
     background-image:radial-gradient(900px 300px at 85% -40%,rgba(106,92,255,.55),transparent),
                      radial-gradient(700px 260px at 10% 140%,rgba(22,194,194,.45),transparent);
     box-shadow:0 18px 50px rgba(11,20,55,.28)}
-  .brandrow{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
-  .brand{display:flex;align-items:center;gap:14px}
-  .nova-mark{width:46px;height:46px;flex:0 0 auto}
-  .brand h1{margin:0;font-size:26px;letter-spacing:.4px;font-weight:800}
+  .brandrow{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px}
+  .brand{display:flex;align-items:center;gap:13px}
+  .nova-mark{width:44px;height:44px;flex:0 0 auto}
+  .brand h1{margin:0;font-size:24px;letter-spacing:.4px;font-weight:800}
   .brand h1 .nova{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .brand .url{font-size:12.5px;color:#aeb9dd;letter-spacing:1.5px;text-transform:uppercase;margin-top:2px}
+  .brand .url{font-size:12px;color:#aeb9dd;letter-spacing:1.4px;text-transform:uppercase;margin-top:2px}
   .doctag{text-align:right}
-  .doctag .t1{font-size:15px;font-weight:600}
-  .doctag .t2{font-size:12px;color:#aeb9dd;margin-top:3px}
+  .doctag .t1{font-size:14px;font-weight:600}
+  .doctag .t2{font-size:11.5px;color:#aeb9dd;margin-top:3px}
 
-  .fxbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:18px;
+  .fxbar{display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;margin-top:16px;
     background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:12px 16px}
-  .fxbar .lab{font-size:12px;color:#cdd6f5;font-weight:700;text-transform:uppercase;letter-spacing:.6px}
-  .fxbar input{width:104px;font-size:17px;font-weight:800;padding:8px 12px;border-radius:10px;border:none;
+  .fxctrl{display:flex;flex-direction:column;gap:5px}
+  .fxctrl .lab{font-size:11px;color:#cdd6f5;font-weight:700;text-transform:uppercase;letter-spacing:.6px}
+  .fxctrl input{width:96px;font-size:16px;font-weight:800;padding:7px 11px;border-radius:9px;border:none;
     color:var(--ink);background:#fff;text-align:center}
-  .fxbar .note{font-size:11.5px;color:#aeb9dd}
+  .fxbar .note{font-size:11px;color:#aeb9dd;max-width:330px;line-height:1.5}
 
-  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:14px}
-  .kpi{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:13px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:14px 16px;
     box-shadow:0 6px 18px rgba(11,20,55,.05)}
-  .kpi .label{font-size:11.5px;color:var(--mist);text-transform:uppercase;letter-spacing:.7px;font-weight:600}
-  .kpi .val{font-size:25px;font-weight:800;margin-top:6px;color:var(--ink)}
-  .kpi .sub{font-size:12px;color:var(--mist);margin-top:3px}
+  .kpi .label{font-size:11px;color:var(--mist);text-transform:uppercase;letter-spacing:.6px;font-weight:600}
+  .kpi .val{font-size:22px;font-weight:800;margin-top:5px;color:var(--ink)}
+  .kpi .sub{font-size:11.5px;color:var(--mist);margin-top:3px}
   .kpi.accent .val{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 
-  section{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px 24px;margin-top:22px;
+  section{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px 22px;margin-top:20px;
     box-shadow:0 6px 18px rgba(11,20,55,.05)}
-  .sec-head{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:6px}
   h2{font-size:18px;margin:0 0 2px;font-weight:800}
-  .sec-sub{font-size:12.5px;color:var(--mist);margin:0 0 14px}
-  .pill{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;background:#eef1fb;color:var(--ink2)}
+  .sec-sub{font-size:12.5px;color:var(--mist);margin:0 0 16px}
 
-  table{width:100%;border-collapse:collapse;font-size:13.5px}
-  th,td{padding:11px 12px;text-align:right;border-bottom:1px solid var(--line)}
-  th:first-child,td:first-child{text-align:left}
-  thead th{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--mist);font-weight:700;border-bottom:2px solid var(--line)}
-  tbody tr:hover{background:#fafbff}
-  tfoot td{font-weight:800;border-top:2px solid var(--line);border-bottom:none;background:#f8faff}
-  .prod{font-weight:700;color:var(--ink)}
-  .muted{color:var(--mist)}
-  .land{font-weight:700;color:var(--ink)}
-  .audbig{font-weight:800;color:var(--violet);font-size:15px}
-  .freight{color:var(--violet);font-weight:600}
-
-  .controls{display:flex;gap:22px;flex-wrap:wrap;align-items:center;margin-bottom:14px;
-    background:#f8faff;border:1px solid var(--line);border-radius:12px;padding:12px 16px}
-  .ctrl{display:flex;flex-direction:column;gap:4px}
-  .ctrl label{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--mist);font-weight:700}
-  .ctrl input{width:120px;font-size:14px;font-weight:700;padding:7px 10px;border:1px solid var(--line);
-    border-radius:9px;color:var(--ink);background:#fff}
-  .ctrl .hint{font-size:10.5px;color:var(--mist);font-weight:500;text-transform:none;letter-spacing:0}
-  input.retail{width:96px;text-align:right;font-size:13.5px;font-weight:700;padding:6px 8px;
-    border:1px solid #cdd6ee;border-radius:8px;color:var(--ink);background:#fff}
-  input.retail:focus{outline:none;border-color:var(--violet);box-shadow:0 0 0 3px rgba(106,92,255,.15)}
-  .pos{color:var(--green);font-weight:800}
-  .neg{color:var(--red);font-weight:800}
-  .mgood{color:var(--green);font-weight:700}
-  .mok{color:var(--amber);font-weight:700}
-  .mbad{color:var(--red);font-weight:700}
+  /* ranked rows */
+  .row{display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--line)}
+  .row:last-child{border-bottom:none}
+  .rk{flex:0 0 28px;height:28px;border-radius:50%;background:#eef1fb;color:var(--ink2);
+    font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
+  .row.top .rk{background:var(--grad);color:#fff}
+  .info{flex:1 1 auto;min-width:0}
+  .rtop{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .rname{font-weight:800;font-size:15px;color:var(--ink)}
+  .chip{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;padding:2px 8px;border-radius:999px}
+  .chip.kit{background:#ece9ff;color:#5847e0}
+  .chip.vial{background:#dff6f6;color:#0f8f8f}
+  .rmeta{font-size:12px;color:var(--mist);margin-top:3px}
+  .rmeta .mg{font-weight:700;color:var(--green)}
+  .bar{height:7px;border-radius:99px;background:#eef1f8;margin-top:8px;overflow:hidden}
+  .bar span{display:block;height:100%;border-radius:99px;background:var(--grad)}
+  .rprofit{flex:0 0 auto;text-align:right;font-weight:800;font-size:18px;color:var(--ink);min-width:96px}
 
   .notes{font-size:12.5px;color:var(--mist);line-height:1.7}
   .notes b{color:var(--ink2)}
   .notes ul{margin:8px 0 0;padding-left:18px}
 
-  footer{text-align:center;color:var(--mist);font-size:12px;margin-top:26px}
+  footer{text-align:center;color:var(--mist);font-size:12px;margin-top:24px}
   footer .nova{font-weight:800;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 
-  @media(max-width:780px){ .kpis{grid-template-columns:repeat(2,1fr)} .scroll{overflow-x:auto} th,td{padding:9px 8px} }
-  @media print{ body{background:#fff} section,header,.kpi{box-shadow:none} .controls{break-inside:avoid} }
+  @media(max-width:640px){
+    .kpis{grid-template-columns:repeat(2,1fr)}
+    .rprofit{font-size:16px;min-width:84px}
+    .rname{font-size:14px}
+  }
+  @media print{ body{background:#fff} section,header,.kpi{box-shadow:none} }
 </style>
 </head>
 <body>
@@ -110,207 +103,113 @@
         </div>
       </div>
       <div class="doctag">
-        <div class="t1">Cost &amp; Profit Dashboard</div>
-        <div class="t2">Combined landed-cost stocktake &middot; All prices AUD &middot; 23 Jun 2026</div>
+        <div class="t1">Profit Dashboard</div>
+        <div class="t2">Profit per sale &middot; All AUD &middot; 23 Jun 2026</div>
       </div>
     </div>
 
     <div class="fxbar">
-      <span class="lab">USD &rarr; AUD rate</span>
-      <input id="fx" type="number" step="0.01" value="1.45">
-      <span class="note">Set this to the rate you paid (incl. fees). Mid-market was ~1.43 in Jun 2026. Every AUD price updates.</span>
+      <div class="fxctrl">
+        <span class="lab">USD &rarr; AUD rate</span>
+        <input id="fx" type="number" step="0.01" value="1.45">
+      </div>
+      <div class="fxctrl">
+        <span class="lab">Kit extras (A$/kit)</span>
+        <input id="kit" type="number" step="0.5" value="6">
+      </div>
+      <span class="note">Cost/vial includes shipping. Full kits add the "kit extras" (BAC water + syringe + swabs + box) &mdash; set both to your real figures.</span>
     </div>
 
     <div class="kpis">
-      <div class="kpi accent">
-        <div class="label">Total Landed Cost</div>
-        <div class="val" id="kLandAud">A$1,930.24</div>
-        <div class="sub">Both orders + freight</div>
-      </div>
-      <div class="kpi">
-        <div class="label">Total Freight</div>
-        <div class="val" id="kFreightAud">A$464.00</div>
-        <div class="sub">Spread across products</div>
-      </div>
-      <div class="kpi">
-        <div class="label">Peptide Vials</div>
-        <div class="val">60</div>
-        <div class="sub">6 peptide SKUs &times; 10</div>
-      </div>
-      <div class="kpi">
-        <div class="label">BAC Water Vials</div>
-        <div class="val">90</div>
-        <div class="sub">70 paid + 20 free 3ml</div>
-      </div>
+      <div class="kpi accent"><div class="label">Top profit / sale</div><div class="val" id="kTop"></div><div class="sub" id="kTopName"></div></div>
+      <div class="kpi"><div class="label">Best margin</div><div class="val" id="kMargin"></div><div class="sub" id="kMarginName"></div></div>
+      <div class="kpi"><div class="label">Avg margin</div><div class="val" id="kAvg"></div><div class="sub">across 10 lines</div></div>
+      <div class="kpi"><div class="label">Stock cost</div><div class="val" id="kStock"></div><div class="sub">60 vials landed</div></div>
     </div>
   </header>
 
-  <!-- COST PER PEPTIDE (AUD) -->
   <section>
-    <div class="sec-head">
-      <div>
-        <h2>Cost per peptide &mdash; AUD, shipping included</h2>
-        <p class="sec-sub">Both orders pooled &middot; freight distributed across every product</p>
-      </div>
-      <span class="pill" id="pillLand">A$1,930.24 landed</span>
-    </div>
-    <div class="scroll">
-    <table id="imp">
-      <thead><tr>
-        <th>Product</th><th>Vials</th><th>Freight in cost</th><th>Cost / vial</th><th>Line total</th>
-      </tr></thead>
-      <tbody>
-        <!-- data-freight + data-landed are per-line USD; JS multiplies by rate -->
-        <tr data-freight="78.48" data-landed="326.48" data-vials="10"><td class="prod">Reta RT60</td><td>10</td><td class="freight">A$113.80</td><td class="audbig">A$47.34</td><td class="land">A$473.40</td></tr>
-        <tr data-freight="64.81" data-landed="269.61" data-vials="10"><td class="prod">KLOW 80mg</td><td>10</td><td class="freight">A$93.97</td><td class="audbig">A$39.09</td><td class="land">A$390.93</td></tr>
-        <tr data-freight="54.94" data-landed="228.54" data-vials="10"><td class="prod">GLOW 70mg</td><td>10</td><td class="freight">A$79.66</td><td class="audbig">A$33.13</td><td class="land">A$331.38</td></tr>
-        <tr data-freight="51.90" data-landed="215.90" data-vials="10"><td class="prod">Reta RT30</td><td>10</td><td class="freight">A$75.26</td><td class="audbig">A$31.31</td><td class="land">A$313.06</td></tr>
-        <tr data-freight="28.35" data-landed="117.96" data-vials="10"><td class="prod">BPC-157 + TB-500 10mg</td><td>10</td><td class="freight">A$41.11</td><td class="audbig">A$17.11</td><td class="land">A$171.04</td></tr>
-        <tr data-freight="24.81" data-landed="103.21" data-vials="10"><td class="prod">SS-31 10mg</td><td>10</td><td class="freight">A$35.97</td><td class="audbig">A$14.96</td><td class="land">A$149.65</td></tr>
-        <tr data-freight="16.71" data-landed="69.51" data-vials="90"><td class="prod">BAC water 3ml <span class="muted" style="font-weight:500">(70 paid + 20 free)</span></td><td>90</td><td class="freight">A$24.23</td><td class="audbig">A$1.12</td><td class="land">A$100.79</td></tr>
-      </tbody>
-      <tfoot><tr><td>Total</td><td>150</td><td class="freight" id="impFreight">A$464.00</td><td></td><td id="impTotal">A$1,930.24</td></tr></tfoot>
-    </table>
-    </div>
+    <h2>Profit per sale &mdash; best to lowest</h2>
+    <p class="sec-sub">Retail price minus cost (landed cost/vial incl. shipping). Ranked highest profit first.</p>
+    <div id="list"></div>
   </section>
 
-  <!-- P&L -->
   <section>
-    <div class="sec-head">
-      <div>
-        <h2>Profit / Loss calculator</h2>
-        <p class="sec-sub">All AUD &middot; enter your retail price per vial to see margin live</p>
-      </div>
-      <span class="pill">Editable</span>
-    </div>
-
-    <div class="controls">
-      <div class="ctrl">
-        <label>Suggested markup &times;</label>
-        <input id="markup" type="number" step="0.1" value="4">
-        <span class="hint">Pre-fills retail &mdash; override any cell. Rate is set up top.</span>
-      </div>
-    </div>
-
-    <div class="scroll">
-    <table id="pnl">
-      <thead><tr>
-        <th>Product</th><th>Vials</th><th>Cost/vial</th>
-        <th>Retail/vial</th><th>Profit/vial</th><th>Margin</th><th>Stock value</th><th>Potential profit</th>
-      </tr></thead>
-      <tbody>
-        <tr data-cost="32.65" data-units="10"><td class="prod">Reta RT60</td></tr>
-        <tr data-cost="26.96" data-units="10"><td class="prod">KLOW 80mg</td></tr>
-        <tr data-cost="22.85" data-units="10"><td class="prod">GLOW 70mg</td></tr>
-        <tr data-cost="21.59" data-units="10"><td class="prod">Reta RT30</td></tr>
-        <tr data-cost="11.80" data-units="10"><td class="prod">BPC-157 + TB-500 10mg</td></tr>
-        <tr data-cost="10.32" data-units="10"><td class="prod">SS-31 10mg</td></tr>
-        <tr data-cost="0.77" data-units="90"><td class="prod">BAC water 3ml <span class="muted" style="font-weight:500">(incl. 20 free)</span></td></tr>
-      </tbody>
-      <tfoot><tr>
-        <td>Portfolio</td><td id="tUnits"></td><td id="tLandAud"></td><td></td><td></td><td id="tMargin"></td><td id="tStock"></td><td id="tProfit"></td>
-      </tr></tfoot>
-    </table>
-    </div>
-  </section>
-
-  <!-- NOTES -->
-  <section>
-    <h2>How these numbers were built</h2>
+    <h2>How it's worked out</h2>
     <div class="notes">
-      Both China orders are pooled into one, and the total freight is shared across every product by its value, so
-      each <b>cost/vial</b> already includes shipping. Supplier costs are USD &mdash; the dashboard converts to AUD at the
-      rate you set up top (default 1.45).
+      <b>Profit = your retail price &minus; cost.</b> Cost is the landed cost per vial (both China orders pooled,
+      freight shared across all products), converted to AUD at the rate up top.
       <ul>
-        <li><b>BAC water</b> &mdash; 70 vials were paid for and 20 came free, so the cost spreads over 90 vials = A$1.12 each.</li>
-        <li><b>Set your real FX rate</b> for exact figures. Mid-market was ~1.43 in Jun 2026; banks/cards add ~2-3%.</li>
-        <li><b>Profit / Margin</b> appear once you type a retail price. The &times;4 markup is just a starting placeholder.</li>
+        <li><b>Vial only</b> cost = the bare landed cost of that peptide vial.</li>
+        <li><b>Full kit</b> cost = vial + <b>kit extras</b> (BAC water, syringe, swabs, packaging). Default A$6 &mdash; set it to what your kit supplies actually cost so the kit profits are exact.</li>
+        <li>Margins are huge (~80%+) because the China landed cost is very low against AU retail &mdash; double-check the kit-extras figure is realistic.</li>
+        <li><b>Reta RT30</b> and standalone <b>BAC water</b> aren't listed here (no retail price given) &mdash; tell me their prices and I'll add them.</li>
       </ul>
     </div>
   </section>
 
-  <footer>
-    <span class="nova">Nova</span>Peptides &middot; NovaPeptides.com.au &middot; Internal cost dashboard
-  </footer>
+  <footer><span class="nova">Nova</span>Peptides &middot; NovaPeptides.com.au &middot; Internal dashboard</footer>
 </div>
 
 <script>
   const aud = n => 'A$' + n.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const aud0 = n => 'A$' + Math.round(n).toLocaleString('en-AU');
   const fxEl = document.getElementById('fx');
-  const mkEl = document.getElementById('markup');
-  const LANDED_USD = 1331.20, FREIGHT_USD = 320.00;
-  const impRows = [...document.querySelectorAll('#imp tbody tr')];
-  const rows = [...document.querySelectorAll('#pnl tbody tr')];
+  const kitEl = document.getElementById('kit');
+  const list = document.getElementById('list');
+  const LANDED_USD = 1331.20;
 
-  rows.forEach(tr=>{
-    const units=+tr.dataset.units;
-    tr.insertAdjacentHTML('beforeend',
-      `<td>${units}</td>
-       <td class="audbig landAud"></td>
-       <td><input class="retail" type="number" step="0.01" min="0"></td>
-       <td class="ppu"></td>
-       <td class="mgn"></td>
-       <td class="sval"></td>
-       <td class="pprofit"></td>`);
-  });
+  // costUsd = landed cost per vial in USD (incl. shipping)
+  const products = [
+    {name:'Reta 60mg',         type:'kit',  costUsd:32.65, retail:399},
+    {name:'Reta 60mg',         type:'vial', costUsd:32.65, retail:320},
+    {name:'KLOW 80mg',         type:'kit',  costUsd:26.96, retail:230},
+    {name:'KLOW 80mg',         type:'vial', costUsd:26.96, retail:195},
+    {name:'GLOW 70mg',         type:'kit',  costUsd:22.85, retail:219},
+    {name:'GLOW 70mg',         type:'vial', costUsd:22.85, retail:179},
+    {name:'SS-31 10mg',        type:'kit',  costUsd:10.32, retail:130},
+    {name:'SS-31 10mg',        type:'vial', costUsd:10.32, retail:85},
+    {name:'BPC-157 + TB-500',  type:'kit',  costUsd:11.80, retail:170},
+    {name:'BPC-157 + TB-500',  type:'vial', costUsd:11.80, retail:120},
+  ];
 
-  const marginClass = m => m>=60?'mgood':m>=35?'mok':'mbad';
+  function render(){
+    const fx=+fxEl.value||0, kit=+kitEl.value||0;
+    const rows = products.map(p=>{
+      const cost = p.costUsd*fx + (p.type==='kit'?kit:0);
+      const profit = p.retail - cost;
+      return {...p, cost, profit, margin: profit/p.retail*100};
+    }).sort((a,b)=>b.profit-a.profit);
 
-  function prefill(){
-    const fx=+fxEl.value||0, mk=+mkEl.value||0;
-    rows.forEach(tr=>{
-      const landAud=(+tr.dataset.cost)*fx;
-      tr.querySelector('.retail').value=(Math.ceil(landAud*mk*100)/100).toFixed(2);
-    });
-    recalc();
+    const maxP = Math.max(...rows.map(r=>r.profit));
+    list.innerHTML = rows.map((r,i)=>`
+      <div class="row${i===0?' top':''}">
+        <div class="rk">${i+1}</div>
+        <div class="info">
+          <div class="rtop">
+            <span class="rname">${r.name}</span>
+            <span class="chip ${r.type}">${r.type==='kit'?'Full kit':'Vial only'}</span>
+          </div>
+          <div class="rmeta">Cost ${aud(r.cost)} &middot; Retail ${aud0(r.retail)} &middot; <span class="mg">${r.margin.toFixed(0)}% margin</span></div>
+          <div class="bar"><span style="width:${(r.profit/maxP*100).toFixed(1)}%"></span></div>
+        </div>
+        <div class="rprofit">${aud(r.profit)}</div>
+      </div>`).join('');
+
+    const top=rows[0];
+    const best=rows.reduce((a,b)=>b.margin>a.margin?b:a);
+    const avg=rows.reduce((s,r)=>s+r.margin,0)/rows.length;
+    document.getElementById('kTop').textContent=aud0(top.profit);
+    document.getElementById('kTopName').textContent=top.name+' '+(top.type==='kit'?'kit':'vial');
+    document.getElementById('kMargin').textContent=best.margin.toFixed(0)+'%';
+    document.getElementById('kMarginName').textContent=best.name+' '+(best.type==='kit'?'kit':'vial');
+    document.getElementById('kAvg').textContent=avg.toFixed(0)+'%';
+    document.getElementById('kStock').textContent=aud0(LANDED_USD*fx);
   }
 
-  function recalc(){
-    const fx=+fxEl.value||0;
-
-    document.getElementById('kLandAud').textContent=aud(LANDED_USD*fx);
-    document.getElementById('kFreightAud').textContent=aud(FREIGHT_USD*fx);
-    document.getElementById('pillLand').textContent=aud(LANDED_USD*fx)+' landed';
-    document.getElementById('impFreight').textContent=aud(FREIGHT_USD*fx);
-    document.getElementById('impTotal').textContent=aud(LANDED_USD*fx);
-    impRows.forEach(tr=>{
-      const freight=+tr.dataset.freight, landed=+tr.dataset.landed, vials=+tr.dataset.vials;
-      tr.children[2].textContent=aud(freight*fx);
-      tr.children[3].textContent=aud(landed*fx/vials);
-      tr.children[4].textContent=aud(landed*fx);
-    });
-
-    let tUnits=0,tStock=0,tProfit=0,tRev=0;
-    rows.forEach(tr=>{
-      const cost=+tr.dataset.cost, units=+tr.dataset.units;
-      const landAud=cost*fx;
-      const retail=+tr.querySelector('.retail').value||0;
-      const ppu=retail-landAud;
-      const mgn=retail>0?(ppu/retail*100):0;
-      tr.querySelector('.landAud').textContent=aud(landAud);
-      const ppuCell=tr.querySelector('.ppu');
-      ppuCell.textContent=aud(ppu); ppuCell.className='ppu '+(ppu>=0?'pos':'neg');
-      const mCell=tr.querySelector('.mgn');
-      mCell.textContent=retail>0?mgn.toFixed(0)+'%':'—';
-      mCell.className='mgn '+(retail>0?marginClass(mgn):'muted');
-      tr.querySelector('.sval').textContent=aud(landAud*units);
-      tr.querySelector('.pprofit').textContent=aud(ppu*units);
-      tUnits+=units; tStock+=landAud*units; tProfit+=ppu*units; tRev+=retail*units;
-    });
-    document.getElementById('tUnits').textContent=tUnits;
-    document.getElementById('tLandAud').textContent=aud(tStock/(tUnits||1));
-    document.getElementById('tStock').textContent=aud(tStock);
-    document.getElementById('tProfit').textContent=aud(tProfit);
-    const tM=tRev>0?(tProfit/tRev*100):0;
-    const tMcell=document.getElementById('tMargin');
-    tMcell.textContent=tRev>0?tM.toFixed(0)+'%':'—';
-    tMcell.className=tRev>0?marginClass(tM):'';
-  }
-
-  fxEl.addEventListener('input',prefill);
-  mkEl.addEventListener('input',prefill);
-  prefill();
-  document.querySelectorAll('.retail').forEach(i=>i.addEventListener('input',recalc));
+  fxEl.addEventListener('input',render);
+  kitEl.addEventListener('input',render);
+  render();
 </script>
 </body>
 </html>
