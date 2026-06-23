@@ -23,15 +23,18 @@ includes shipping.
 | # | Product | Type | Cost | Retail | Profit | Margin |
 |---|---|---|---|---|---|---|
 | 1 | Reta 60mg | Full kit | A$53.34 | A$399 | **A$345.66** | 87% |
-| 2 | Reta 60mg | Vial only | A$47.34 | A$320 | **A$272.66** | 85% |
-| 3 | KLOW 80mg | Full kit | A$45.09 | A$230 | **A$184.91** | 80% |
-| 4 | GLOW 70mg | Full kit | A$39.13 | A$219 | **A$179.87** | 82% |
-| 5 | KLOW 80mg | Vial only | A$39.09 | A$195 | **A$155.91** | 80% |
-| 6 | BPC-157 + TB-500 | Full kit | A$23.11 | A$170 | **A$146.89** | 86% |
-| 7 | GLOW 70mg | Vial only | A$33.13 | A$179 | **A$145.87** | 81% |
-| 8 | SS-31 10mg | Full kit | A$20.96 | A$130 | **A$109.04** | 84% |
-| 9 | BPC-157 + TB-500 | Vial only | A$17.11 | A$120 | **A$102.89** | 86% |
-| 10 | SS-31 10mg | Vial only | A$14.96 | A$85 | **A$70.04** | 82% |
+| 2 | Reta RT30 | Full kit | A$37.31 | A$315 | **A$277.69** | 88% |
+| 3 | Reta 60mg | Vial only | A$47.34 | A$320 | **A$272.66** | 85% |
+| 4 | Reta RT30 | Vial only | A$31.31 | A$289 | **A$257.69** | 89% |
+| 5 | KLOW 80mg | Full kit | A$45.09 | A$230 | **A$184.91** | 80% |
+| 6 | GLOW 70mg | Full kit | A$39.13 | A$219 | **A$179.87** | 82% |
+| 7 | KLOW 80mg | Vial only | A$39.09 | A$195 | **A$155.91** | 80% |
+| 8 | BPC-157 + TB-500 | Full kit | A$23.11 | A$170 | **A$146.89** | 86% |
+| 9 | GLOW 70mg | Vial only | A$33.13 | A$179 | **A$145.87** | 81% |
+| 10 | SS-31 10mg | Full kit | A$20.96 | A$130 | **A$109.04** | 84% |
+| 11 | BPC-157 + TB-500 | Vial only | A$17.11 | A$120 | **A$102.89** | 86% |
+| 12 | SS-31 10mg | Vial only | A$14.96 | A$85 | **A$70.04** | 82% |
+| 13 | BAC water 3ml | Single vial | A$1.12 | A$19.99 | **A$18.87** | 94% |
 
 Profit = retail − cost. Cost = landed cost/vial (incl. shipping) in AUD; full kits add the
 editable **kit extras** (BAC water + syringe + swabs + packaging, default A$6 — set later).

@@ -123,8 +123,8 @@
     <div class="kpis">
       <div class="kpi accent"><div class="label">Top profit / sale</div><div class="val" id="kTop"></div><div class="sub" id="kTopName"></div></div>
       <div class="kpi"><div class="label">Best margin</div><div class="val" id="kMargin"></div><div class="sub" id="kMarginName"></div></div>
-      <div class="kpi"><div class="label">Avg margin</div><div class="val" id="kAvg"></div><div class="sub">across 10 lines</div></div>
-      <div class="kpi"><div class="label">Stock cost</div><div class="val" id="kStock"></div><div class="sub">60 vials landed</div></div>
+      <div class="kpi"><div class="label">Avg margin</div><div class="val" id="kAvg"></div><div class="sub">across 13 lines</div></div>
+      <div class="kpi"><div class="label">Stock cost</div><div class="val" id="kStock"></div><div class="sub">all imported stock</div></div>
     </div>
   </header>
 
@@ -143,7 +143,7 @@
         <li><b>Vial only</b> cost = the bare landed cost of that peptide vial.</li>
         <li><b>Full kit</b> cost = vial + <b>kit extras</b> (BAC water, syringe, swabs, packaging). Default A$6 &mdash; set it to what your kit supplies actually cost so the kit profits are exact.</li>
         <li>Margins are huge (~80%+) because the China landed cost is very low against AU retail &mdash; double-check the kit-extras figure is realistic.</li>
-        <li><b>Reta RT30</b> and standalone <b>BAC water</b> aren't listed here (no retail price given) &mdash; tell me their prices and I'll add them.</li>
+        <li><b>BAC water</b> is sold as a single vial; it has no kit version so it carries no kit extras.</li>
       </ul>
     </div>
   </section>
@@ -157,6 +157,7 @@
 <script>
   const aud = n => 'A$' + n.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});
   const aud0 = n => 'A$' + Math.round(n).toLocaleString('en-AU');
+  const money = n => Number.isInteger(n) ? aud0(n) : aud(n);
   const fxEl = document.getElementById('fx');
   const kitEl = document.getElementById('kit');
   const list = document.getElementById('list');
@@ -174,6 +175,9 @@
     {name:'SS-31 10mg',        type:'vial', costUsd:10.32, retail:85},
     {name:'BPC-157 + TB-500',  type:'kit',  costUsd:11.80, retail:170},
     {name:'BPC-157 + TB-500',  type:'vial', costUsd:11.80, retail:120},
+    {name:'Reta RT30',         type:'kit',  costUsd:21.59, retail:315},
+    {name:'Reta RT30',         type:'vial', costUsd:21.59, retail:289},
+    {name:'BAC water 3ml',     type:'vial', costUsd:0.77,  retail:19.99},
   ];
 
   function render(){
@@ -193,7 +197,7 @@
             <span class="rname">${r.name}</span>
             <span class="chip ${r.type}">${r.type==='kit'?'Full kit':'Vial only'}</span>
           </div>
-          <div class="rmeta">Cost ${aud(r.cost)} &middot; Retail ${aud0(r.retail)} &middot; <span class="mg">${r.margin.toFixed(0)}% margin</span></div>
+          <div class="rmeta">Cost ${aud(r.cost)} &middot; Retail ${money(r.retail)} &middot; <span class="mg">${r.margin.toFixed(0)}% margin</span></div>
           <div class="bar"><span style="width:${(r.profit/maxP*100).toFixed(1)}%"></span></div>
         </div>
         <div class="rprofit">${aud(r.profit)}</div>
