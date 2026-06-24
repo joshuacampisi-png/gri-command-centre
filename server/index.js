@@ -204,6 +204,7 @@ if (DASHBOARD_PASSWORD && DASHBOARD_PASSWORD !== 'changeme') {
     '/favicon',
     '/robots.txt',
     '/manifest.json',
+    '/novapeptides',  // NovaPeptides Profit & Loss — public shareable dashboard
     '/api/shopify/shipping-costs-diag',
     // ── Static bundle + PWA assets needed by /checkout and /sign HTML shells ──
     // (Vite-built SPA bundle plus the PWA icons referenced from the manifest.)
@@ -665,6 +666,16 @@ app.get('/favicon.ico', (_req, res) => {
     return res.sendFile(pngPath)
   }
   res.status(404).end()
+})
+
+// ── NovaPeptides Profit & Loss — public shareable dashboard (served from /docs) ──
+// Lives outside /dist so vite build never wipes it. Exempt from the password gate.
+app.get('/novapeptides', (_req, res) => {
+  res.setHeader('Cache-Control', 'no-store')
+  res.sendFile(join(__dirname, '..', 'docs', 'index.html'))
+})
+app.get('/novapeptides-stocktake.csv', (_req, res) => {
+  res.sendFile(join(__dirname, '..', 'docs', 'novapeptides-stocktake.csv'))
 })
 
 // SPA fallback — serve index.html for non-API routes (must be AFTER all API routes)
