@@ -13,7 +13,7 @@
   *{box-sizing:border-box}
   body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
-  .wrap{max-width:860px;margin:0 auto;padding:22px 16px 56px}
+  .wrap{max-width:900px;margin:0 auto;padding:22px 16px 56px}
 
   header{background:var(--ink);border-radius:18px;padding:22px 22px;color:#fff;
     background-image:radial-gradient(900px 300px at 85% -40%,rgba(106,92,255,.55),transparent),
@@ -24,8 +24,13 @@
   .brand h1{margin:0;font-size:23px;font-weight:800}
   .brand h1 .nova{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
   .brand .url{font-size:11.5px;color:#aeb9dd;letter-spacing:1.3px;text-transform:uppercase;margin-top:2px}
-  .basis{font-size:11.5px;color:#cdd6f5;margin-top:14px;background:rgba(255,255,255,.08);
-    border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:9px 13px;display:inline-block}
+
+  .fxbar{display:flex;gap:18px;flex-wrap:wrap;margin-top:16px}
+  .fxctrl{display:flex;flex-direction:column;gap:4px}
+  .fxctrl .lab{font-size:10.5px;color:#cdd6f5;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+  .fxctrl input{width:120px;font-size:15px;font-weight:800;padding:7px 11px;border-radius:9px;border:none;
+    color:var(--ink);background:#fff;text-align:center}
+  .fxctrl .hint{font-size:10px;color:#aeb9dd}
 
   .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
   .kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 14px}
@@ -33,35 +38,34 @@
   .kpi .val{font-size:21px;font-weight:800;margin-top:5px}
   .kpi .sub{font-size:11px;color:var(--mist);margin-top:3px}
   .kpi.accent .val{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .toggle{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-top:7px}
+  .toggle button{border:none;background:#fff;color:var(--mist);font-weight:800;font-size:11px;
+    padding:5px 12px;cursor:pointer;text-transform:uppercase;letter-spacing:.4px}
+  .toggle button.on{background:var(--violet);color:#fff}
 
-  section{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 18px;margin-top:18px}
-  h2{font-size:17px;margin:0 0 2px;font-weight:800}
-  .sec-sub{font-size:12px;color:var(--mist);margin:0 0 14px}
+  section.cards{margin-top:18px;display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  @media(max-width:640px){ .kpis{grid-template-columns:repeat(2,1fr)} section.cards{grid-template-columns:1fr} }
+  .pcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px 16px}
+  .pcard h3{margin:0;font-size:16px;font-weight:800}
+  .pcost{font-size:11.5px;color:var(--mist);margin:3px 0 12px}
+  .pcost b{color:var(--violet);font-weight:800}
+  .variant{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 0;border-top:1px solid var(--line)}
+  .vleft{min-width:0}
+  .vtag{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;padding:2px 7px;border-radius:999px}
+  .vtag.vial{background:#dff6f6;color:#0f8f8f}
+  .vtag.kit{background:#ece9ff;color:#5847e0}
+  .vmeta{font-size:11px;color:var(--mist);margin-top:4px}
+  .vmeta .mg{color:var(--green);font-weight:700}
+  .vprofit{text-align:right;font-weight:800;font-size:15.5px;white-space:nowrap}
 
-  .row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
-  .row:last-child{border-bottom:none}
-  .rk{flex:0 0 26px;height:26px;border-radius:50%;background:#eef1fb;color:var(--ink2);
-    font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center}
-  .row.top .rk{background:var(--grad);color:#fff}
-  .info{flex:1 1 auto;min-width:0}
-  .rtop{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-  .rname{font-weight:800;font-size:14.5px}
-  .chip{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;padding:2px 7px;border-radius:999px}
-  .chip.kit{background:#ece9ff;color:#5847e0}
-  .chip.vial{background:#dff6f6;color:#0f8f8f}
-  .rmeta{font-size:11.5px;color:var(--mist);margin-top:3px}
-  .rmeta .mg{font-weight:700;color:var(--green)}
-  .bar{height:6px;border-radius:99px;background:#eef1f8;margin-top:7px;overflow:hidden}
-  .bar span{display:block;height:100%;border-radius:99px;background:var(--grad)}
-  .rprofit{flex:0 0 auto;text-align:right;font-weight:800;font-size:17px;min-width:88px}
-
-  .notes{font-size:12px;color:var(--mist);line-height:1.7}
+  .secttl{font-size:13px;font-weight:800;color:var(--ink2);margin:22px 2px 0;text-transform:uppercase;letter-spacing:.5px}
+  .notes{font-size:12px;color:var(--mist);line-height:1.7;background:var(--card);border:1px solid var(--line);
+    border-radius:16px;padding:16px 18px;margin-top:18px}
   .notes b{color:var(--ink2)}
+  noscript .ns{background:#fff3cd;border:1px solid #ffe08a;color:#7a5b00;padding:12px;border-radius:10px;margin-top:14px;font-size:13px}
   footer{text-align:center;color:var(--mist);font-size:12px;margin-top:22px}
   footer a{color:var(--violet);font-weight:700;text-decoration:none}
   footer .nova{font-weight:800;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
-
-  @media(max-width:640px){ .kpis{grid-template-columns:repeat(2,1fr)} .rprofit{font-size:16px;min-width:80px} }
 </style>
 </head>
 <body>
@@ -79,169 +83,141 @@
         </svg>
         <div>
           <h1><span class="nova">Nova</span>Peptides</h1>
-          <div class="url">NovaPeptides.com.au</div>
+          <div class="url">Profit &amp; Loss &middot; NovaPeptides.com.au</div>
         </div>
       </div>
     </div>
-    <div class="basis">Profit &amp; Loss &middot; all AUD &middot; USD&rarr;AUD rate 1.45 &middot; kit extras A$6/kit &middot; 23 Jun 2026</div>
+    <div class="fxbar">
+      <div class="fxctrl">
+        <span class="lab">USD &rarr; AUD rate</span>
+        <input id="fx" type="number" step="0.01" value="1.45">
+        <span class="hint">supplier bills in USD</span>
+      </div>
+      <div class="fxctrl">
+        <span class="lab">Kit value (A$/kit)</span>
+        <input id="kv" type="number" step="0.5" value="0">
+        <span class="hint">syringe/box etc &mdash; set this soon</span>
+      </div>
+    </div>
 
     <div class="kpis">
-      <div class="kpi accent"><div class="label">Top profit / sale</div><div class="val">A$346</div><div class="sub">Reta 60mg kit</div></div>
-      <div class="kpi"><div class="label">Best margin</div><div class="val">94%</div><div class="sub">BAC water</div></div>
-      <div class="kpi"><div class="label">Avg margin</div><div class="val">85%</div><div class="sub">across 13 lines</div></div>
-      <div class="kpi"><div class="label">Stock cost</div><div class="val">A$1,930</div><div class="sub">all imported stock</div></div>
+      <div class="kpi">
+        <div class="label">Shipping &mdash; both orders</div>
+        <div class="val" id="kShip"></div>
+        <div class="sub">combined freight</div>
+      </div>
+      <div class="kpi accent">
+        <div class="label">Total retail</div>
+        <div class="val" id="kRetail"></div>
+        <div class="toggle">
+          <button data-mode="vial" class="on">All vials</button>
+          <button data-mode="kit">All kits</button>
+        </div>
+      </div>
+      <div class="kpi">
+        <div class="label">Total profit</div>
+        <div class="val" id="kProfit"></div>
+        <div class="sub" id="kProfitSub"></div>
+      </div>
+      <div class="kpi">
+        <div class="label">Stock cost</div>
+        <div class="val" id="kStock"></div>
+        <div class="sub">all imported stock</div>
+      </div>
     </div>
   </header>
 
-  <section>
-    <h2>Profit per sale &mdash; best to lowest</h2>
-    <p class="sec-sub">Retail price minus cost (landed cost/vial incl. shipping). Highest profit first.</p>
+  <noscript><div class="ns">This is an interactive dashboard — please open it in a web browser to see the numbers.</div></noscript>
 
-    <div class="row top">
-      <div class="rk">1</div>
-      <div class="info">
-        <div class="rtop"><span class="rname">Reta 60mg</span><span class="chip kit">Full kit</span></div>
-        <div class="rmeta">Cost A$53.34 &middot; Retail A$399 &middot; <span class="mg">87% margin</span></div>
-        <div class="bar"><span style="width:100%"></span></div>
-      </div>
-      <div class="rprofit">A$345.66</div>
-    </div>
+  <div class="secttl">Per peptide &mdash; vial vs kit</div>
+  <section class="cards" id="sections"></section>
 
-    <div class="row">
-      <div class="rk">2</div>
-      <div class="info">
-        <div class="rtop"><span class="rname">Reta RT30</span><span class="chip kit">Full kit</span></div>
-        <div class="rmeta">Cost A$37.31 &middot; Retail A$315 &middot; <span class="mg">88% margin</span></div>
-        <div class="bar"><span style="width:80.3%"></span></div>
-      </div>
-      <div class="rprofit">A$277.69</div>
-    </div>
-
-    <div class="row">
-      <div class="rk">3</div>
-      <div class="info">
-        <div class="rtop"><span class="rname">Reta 60mg</span><span class="chip vial">Vial only</span></div>
-        <div class="rmeta">Cost A$47.34 &middot; Retail A$320 &middot; <span class="mg">85% margin</span></div>
-        <div class="bar"><span style="width:78.9%"></span></div>
-      </div>
-      <div class="rprofit">A$272.66</div>
-    </div>
-
-    <div class="row">
-      <div class="rk">4</div>
-      <div class="info">
-        <div class="rtop"><span class="rname">Reta RT30</span><span class="chip vial">Vial only</span></div>
-        <div class="rmeta">Cost A$31.31 &middot; Retail A$289 &middot; <span class="mg">89% margin</span></div>
-        <div class="bar"><span style="width:74.6%"></span></div>
-      </div>
-      <div class="rprofit">A$257.69</div>
-    </div>
-
-    <div class="row">
-      <div class="rk">5</div>
-      <div class="info">
-        <div class="rtop"><span class="rname">KLOW 80mg</span><span class="chip kit">Full kit</span></div>
-        <div class="rmeta">Cost A$45.09 &middot; Retail A$230 &middot; <span class="mg">80% margin</span></div>
-        <div class="bar"><span style="width:53.5%"></span></div>
-      </div>
-      <div class="rprofit">A$184.91</div>
-    </div>
-
-    <div class="row">
-      <div class="rk">6</div>
-      <div class="info">
-        <div class="rtop"><span class="rname">GLOW 70mg</span><span class="chip kit">Full kit</span></div>
-        <div class="rmeta">Cost A$39.13 &middot; Retail A$219 &middot; <span class="mg">82% margin</span></div>
-        <div class="bar"><span style="width:52.0%"></span></div>
-      </div>
-      <div class="rprofit">A$179.87</div>
-    </div>
-
-    <div class="row">
-      <div class="rk">7</div>
-      <div class="info">
-        <div class="rtop"><span class="rname">KLOW 80mg</span><span class="chip vial">Vial only</span></div>
-        <div class="rmeta">Cost A$39.09 &middot; Retail A$195 &middot; <span class="mg">80% margin</span></div>
-        <div class="bar"><span style="width:45.1%"></span></div>
-      </div>
-      <div class="rprofit">A$155.91</div>
-    </div>
-
-    <div class="row">
-      <div class="rk">8</div>
-      <div class="info">
-        <div class="rtop"><span class="rname">BPC-157 + TB-500</span><span class="chip kit">Full kit</span></div>
-        <div class="rmeta">Cost A$23.11 &middot; Retail A$170 &middot; <span class="mg">86% margin</span></div>
-        <div class="bar"><span style="width:42.5%"></span></div>
-      </div>
-      <div class="rprofit">A$146.89</div>
-    </div>
-
-    <div class="row">
-      <div class="rk">9</div>
-      <div class="info">
-        <div class="rtop"><span class="rname">GLOW 70mg</span><span class="chip vial">Vial only</span></div>
-        <div class="rmeta">Cost A$33.13 &middot; Retail A$179 &middot; <span class="mg">81% margin</span></div>
-        <div class="bar"><span style="width:42.2%"></span></div>
-      </div>
-      <div class="rprofit">A$145.87</div>
-    </div>
-
-    <div class="row">
-      <div class="rk">10</div>
-      <div class="info">
-        <div class="rtop"><span class="rname">SS-31 10mg</span><span class="chip kit">Full kit</span></div>
-        <div class="rmeta">Cost A$20.96 &middot; Retail A$130 &middot; <span class="mg">84% margin</span></div>
-        <div class="bar"><span style="width:31.5%"></span></div>
-      </div>
-      <div class="rprofit">A$109.04</div>
-    </div>
-
-    <div class="row">
-      <div class="rk">11</div>
-      <div class="info">
-        <div class="rtop"><span class="rname">BPC-157 + TB-500</span><span class="chip vial">Vial only</span></div>
-        <div class="rmeta">Cost A$17.11 &middot; Retail A$120 &middot; <span class="mg">86% margin</span></div>
-        <div class="bar"><span style="width:29.8%"></span></div>
-      </div>
-      <div class="rprofit">A$102.89</div>
-    </div>
-
-    <div class="row">
-      <div class="rk">12</div>
-      <div class="info">
-        <div class="rtop"><span class="rname">SS-31 10mg</span><span class="chip vial">Vial only</span></div>
-        <div class="rmeta">Cost A$14.96 &middot; Retail A$85 &middot; <span class="mg">82% margin</span></div>
-        <div class="bar"><span style="width:20.3%"></span></div>
-      </div>
-      <div class="rprofit">A$70.04</div>
-    </div>
-
-    <div class="row">
-      <div class="rk">13</div>
-      <div class="info">
-        <div class="rtop"><span class="rname">BAC water 3ml</span><span class="chip vial">Single vial</span></div>
-        <div class="rmeta">Cost A$1.12 &middot; Retail A$19.99 &middot; <span class="mg">94% margin</span></div>
-        <div class="bar"><span style="width:5.5%"></span></div>
-      </div>
-      <div class="rprofit">A$18.87</div>
-    </div>
-  </section>
-
-  <section>
-    <h2>How it's worked out</h2>
-    <div class="notes">
-      <b>Profit = retail price &minus; cost.</b> Cost is the landed cost per vial (both China orders pooled, freight
-      shared across all products), converted to AUD at <b>1.45</b>. Full kits add <b>A$6</b> for kit extras
-      (BAC water + syringe + swabs + packaging) &mdash; change that figure later and I'll re-rank.
-      BAC water is a single vial with no kit, so it carries no extras.
-    </div>
-  </section>
+  <div class="notes" id="method"></div>
 
   <footer>
     <a href="novapeptides-stocktake.csv" download>&darr; Download spreadsheet (CSV)</a><br><br>
     <span class="nova">Nova</span>Peptides &middot; NovaPeptides.com.au &middot; Internal dashboard
   </footer>
 </div>
+
+<script>
+  // Landed cost per vial in USD (shipping already spread in). Stock = 10 of each peptide.
+  const PEPTIDES = [
+    {name:'Reta RT60',        vialUsd:32.65, vialRetail:320, kitRetail:399},
+    {name:'Reta RT30',        vialUsd:21.59, vialRetail:289, kitRetail:315},
+    {name:'KLOW 80mg',        vialUsd:26.96, vialRetail:195, kitRetail:230},
+    {name:'GLOW 70mg',        vialUsd:22.85, vialRetail:179, kitRetail:219},
+    {name:'SS-31 10mg',       vialUsd:10.32, vialRetail:85,  kitRetail:130},
+    {name:'BPC-157 + TB-500', vialUsd:11.80, vialRetail:120, kitRetail:170},
+  ];
+  const BAC_USD = 0.77;     // 1x 3ml BAC water landed cost per kit (USD)
+  const QTY = 10;           // vials in stock per peptide
+  const FREIGHT_USD = 320;  // both orders combined
+  const STOCK_USD = 1331.20;// total landed cost of both orders
+
+  const fxEl = document.getElementById('fx');
+  const kvEl = document.getElementById('kv');
+  const sections = document.getElementById('sections');
+  let mode = 'vial';
+
+  const money = n => 'A$' + n.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const money0 = n => 'A$' + Math.round(n).toLocaleString('en-AU');
+
+  function render(){
+    const fx = +fxEl.value||0, kv = +kvEl.value||0;
+    const bac = BAC_USD*fx;
+    let allVialRetail=0, allKitRetail=0, allVialProfit=0, allKitProfit=0;
+
+    sections.innerHTML = PEPTIDES.map(p=>{
+      const vialCost = p.vialUsd*fx;
+      const kitCost  = vialCost + bac + kv;
+      const vp = p.vialRetail - vialCost, kp = p.kitRetail - kitCost;
+      const vm = vp/p.vialRetail*100, km = kp/p.kitRetail*100;
+      allVialRetail += p.vialRetail*QTY; allKitRetail += p.kitRetail*QTY;
+      allVialProfit += vp*QTY;           allKitProfit += kp*QTY;
+      return `<div class="pcard">
+        <h3>${p.name}</h3>
+        <div class="pcost">Peptide cost <b>${money(vialCost)}</b>/vial <span style="opacity:.7">(shipping incl)</span></div>
+        <div class="variant">
+          <div class="vleft"><span class="vtag vial">Vial</span>
+            <div class="vmeta">Retail ${money0(p.vialRetail)} &middot; cost ${money(vialCost)} &middot; <span class="mg">${vm.toFixed(0)}%</span></div></div>
+          <div class="vprofit">${money(vp)}</div>
+        </div>
+        <div class="variant">
+          <div class="vleft"><span class="vtag kit">Kit</span>
+            <div class="vmeta">Retail ${money0(p.kitRetail)} &middot; cost ${money(kitCost)} <span style="opacity:.7">(+bac ${money(bac)}${kv?` +kit ${money(kv)}`:''})</span> &middot; <span class="mg">${km.toFixed(0)}%</span></div></div>
+          <div class="vprofit">${money(kp)}</div>
+        </div>
+      </div>`;
+    }).join('');
+
+    document.getElementById('kShip').textContent = money0(FREIGHT_USD*fx);
+    document.getElementById('kStock').textContent = money0(STOCK_USD*fx);
+    const retail = mode==='vial'?allVialRetail:allKitRetail;
+    const profit = mode==='vial'?allVialProfit:allKitProfit;
+    document.getElementById('kRetail').textContent = money0(retail);
+    document.getElementById('kProfit').textContent = money0(profit);
+    document.getElementById('kProfitSub').textContent = mode==='vial'?'if all sold as vials':'if all sold as kits';
+
+    document.getElementById('method').innerHTML =
+      `<b>How it works.</b> Profit = retail &minus; cost. Peptide cost is the landed cost per vial with shipping
+       already included, converted to AUD at ${fx}. <b>Kits</b> also carry 1&times; 3ml BAC water
+       (${money(bac)}) plus the editable <b>kit value</b> (${money(kv)} &mdash; set it when you have it).
+       The <b>All vials / All kits</b> switch shows total retail &amp; profit if your whole stock (10 of each
+       peptide) sold one way or the other. Stock cost ${money0(STOCK_USD*fx)} covers both orders; combined
+       shipping ${money0(FREIGHT_USD*fx)}.`;
+  }
+
+  document.querySelectorAll('.toggle button').forEach(b=>{
+    b.addEventListener('click',()=>{
+      mode = b.dataset.mode;
+      document.querySelectorAll('.toggle button').forEach(x=>x.classList.toggle('on', x===b));
+      render();
+    });
+  });
+  fxEl.addEventListener('input',render);
+  kvEl.addEventListener('input',render);
+  render();
+</script>
 </body>
 </html>
