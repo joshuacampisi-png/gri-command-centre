@@ -49,15 +49,28 @@ npm run build      # emits dist/
 npm start          # Express serves dist/ + the API on $PORT (default 8787)
 ```
 
-### Deploy on Railway
+### Deploy on Vercel (gives the shareable link)
+
+The backend ships as Vercel **serverless functions** (`api/*.js`) — the same handlers the
+local server wraps — so it deploys on Vercel with no separate service.
+
+1. **Import the repo** in Vercel → set **Root Directory** to `health-tracker`. Vercel
+   auto-detects Vite (build `npm run build`, output `dist`) and deploys `api/` as functions.
+2. **Add persistent storage** (important). Vercel's filesystem is ephemeral, so add a KV
+   store: project → **Storage → Create → KV** (free tier) and connect it. That injects
+   `KV_REST_API_URL` / `KV_REST_API_TOKEN`, which the store layer picks up automatically.
+   *Without KV the app still runs, but her PIN, token and blood results reset on cold
+   starts* (`/api/status` reports `persistence: "ephemeral"` in that case, `"kv"` when set).
+3. **Redeploy**, then open the Vercel URL on her phone → *Add to Home Screen*.
+
+First launch: set a PIN, then paste her Oura Personal Access Token.
+
+### Deploy on Railway (alternative)
 
 1. New service from this repo, **root directory** `health-tracker`.
 2. Build command `npm install && npm run build`, start command `npm start`.
 3. Set `NODE_ENV=production` (so the auth cookie is Secure). Railway provides `PORT`.
-4. Open the URL on her phone → *Add to Home Screen*.
-
-Data is written to `health-tracker/data/` (git-ignored). On Railway, attach a volume at
-that path if you want it to survive redeploys.
+4. Attach a volume at `health-tracker/data/` so the JSON store survives redeploys.
 
 ## Notes / next steps
 
@@ -71,7 +84,13 @@ that path if you want it to survive redeploys.
 
 ```
 health-tracker/
-  server.js              Express: Oura proxy, blood store, PIN auth, serves dist/
+  api/                   Vercel serverless functions (also wrapped by server.js locally)
+    _lib/                store (KV/file), auth (PIN), oura (API v2) — shared core
+    state|login|logout|status|connect|oura.js
+    bloods/index.js      GET list + POST add
+    bloods/[id].js       DELETE one
+  vercel.json            framework + SPA rewrite
+  server.js              Express adapter over api/* for local dev + self-host; serves dist/
   index.html             PWA shell (manifest + iOS meta)
   public/                manifest.webmanifest, service worker, icons
   src/
