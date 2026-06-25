@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "Vitals",
+    "slug": "vitals-health-tracker",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "scheme": "vitals",
+    "newArchEnabled": true,
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0B0F14"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.vitals.healthtracker"
+    },
+    "android": {
+      "package": "com.vitals.healthtracker",
+      "adaptiveIcon": {
+        "backgroundColor": "#0B0F14"
+      }
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}
