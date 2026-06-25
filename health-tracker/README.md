@@ -1,85 +1,83 @@
-# Vitals — personal health tracker
+# Vitals — health tracker (installable PWA)
 
-An in-depth mobile health app (iOS + Android) that pulls **live Oura Ring data**
-and tracks **historic blood tests**, then surfaces plain-language insights across both.
+A mobile-first, installable web app (Add to Home Screen) that pulls **live Oura Ring
+data** and tracks **historic blood tests**, then surfaces plain-language insights across
+both. Built on the same stack as the rest of the repo: **Vite + React** frontend, a small
+**Node/Express** backend, deployable on Railway.
 
-Built with Expo (React Native). Everything stays on the phone — no backend, no
-account, no data leaves the device except direct calls to the Oura API.
+## Why a PWA + tiny backend
 
-## What it does
+- **Installs like an app** — open the URL on her iPhone/Android, *Add to Home Screen*, and
+  it runs full-screen with its own icon. No App Store needed.
+- **Her Oura token stays server-side.** The Oura API doesn't allow direct browser calls
+  (CORS), and a token shouldn't live in the browser anyway. The Express backend holds it
+  and proxies requests.
+- **Private by default.** All data (Oura token, blood results) lives in small JSON files
+  on the server, behind a **PIN** she sets on first launch.
 
-- **Today** — readiness, sleep and activity scores at a glance, last night's body
-  vitals (HRV, resting HR, temperature deviation, SpO₂, respiratory rate), today's
-  stress load, and the top insights.
-- **Sleep** — last night's sleep stages (deep/REM/light/awake), efficiency, latency,
-  overnight HRV and heart rate, plus trends for sleep score, hours asleep, HRV and
-  efficiency.
-- **Body** — HRV, resting heart rate, body-temperature deviation, SpO₂, daily steps,
-  resilience, VO₂ max and cardiovascular age, each with trends.
-- **Bloods** — enter results from her pathology reports against a built-in reference
-  library (Australian units, ~45 common markers). Out-of-range values are flagged and
-  every marker is tracked over time with a trend chart.
-- **Insights** — combines Oura trends and blood markers (e.g. low ferritin alongside an
-  elevated resting heart rate, low vitamin D against sleep quality) into clear notes to
-  discuss with her GP.
+## Features
 
-> Not a medical device. Reference ranges are general adult guides and vary by lab,
-> age and cycle phase — always defer to the ranges on her actual report.
+- **Today** — readiness / sleep / activity rings, last night's HRV, resting HR, temperature
+  deviation, SpO₂, respiratory rate, today's stress load, and the top insights.
+- **Sleep** — sleep stages (deep/REM/light/awake), efficiency, latency, overnight HRV & HR,
+  plus trends.
+- **Body** — HRV, resting HR, temperature deviation, SpO₂, steps, resilience, VO₂ max and
+  cardiovascular age, each trended.
+- **Bloods** — enter results against a built-in reference library (~45 markers, Australian
+  units). Out-of-range values are flagged; every marker is tracked over time.
+- **Insights** — correlates Oura trends with blood markers (e.g. low ferritin alongside an
+  elevated resting heart rate; low vitamin D vs sleep quality).
 
-## Getting her Oura token
+> Not a medical device. Reference ranges are general adult guides and vary by lab, age and
+> cycle phase — always defer to the ranges on her actual report.
 
-1. Sign in at <https://cloud.ouraring.com> with her Oura account.
-2. Open **Personal Access Tokens** → create a token.
-3. Paste it into the app's onboarding screen. It's stored encrypted on the device
-   (secure keystore) and only used to call Oura directly.
-
-Some metrics (resilience, cardiovascular age, VO₂ max, detailed stress) require an
-active Oura membership; the app degrades gracefully if any are unavailable.
-
-## Run it
-
-You need Node 18+ and the **Expo Go** app on her phone (App Store / Play Store).
+## Run it locally
 
 ```bash
 cd health-tracker
 npm install
-npx expo install --fix   # aligns native module versions to the installed Expo SDK
-npx expo start           # scan the QR code with Expo Go (or press i / a for a simulator)
+npm run dev        # Vite UI on :5173, API on :8787 (Vite proxies /api → :8787)
 ```
 
-That's it — the app loads on her phone over the same Wi-Fi. No build or app-store
-submission needed to use it day to day.
+Open <http://localhost:5173>. First launch: set a PIN, then paste her Oura **Personal
+Access Token** (from <https://cloud.ouraring.com/personal-access-tokens>).
 
-### Turning it into a standalone installable app (optional)
-
-When you want a real installable build (TestFlight / APK) rather than Expo Go:
+## Build & serve (production)
 
 ```bash
-npm install -g eas-cli
-eas build -p ios      # or -p android
+npm run build      # emits dist/
+npm start          # Express serves dist/ + the API on $PORT (default 8787)
 ```
+
+### Deploy on Railway
+
+1. New service from this repo, **root directory** `health-tracker`.
+2. Build command `npm install && npm run build`, start command `npm start`.
+3. Set `NODE_ENV=production` (so the auth cookie is Secure). Railway provides `PORT`.
+4. Open the URL on her phone → *Add to Home Screen*.
+
+Data is written to `health-tracker/data/` (git-ignored). On Railway, attach a volume at
+that path if you want it to survive redeploys.
+
+## Notes / next steps
+
+- Blood results are entered manually today. Natural next step: **photo/PDF import** of
+  pathology reports with OCR to auto-fill markers.
+- The insights engine (`src/lib/insights.js`) is deterministic and easy to extend; an
+  optional AI layer could be added later.
+- Single-user by design (her). The PIN protects the deployed URL.
 
 ## Project layout
 
 ```
 health-tracker/
-  App.js                     entry — onboarding gate + navigation
+  server.js              Express: Oura proxy, blood store, PIN auth, serves dist/
+  index.html             PWA shell (manifest + iOS meta)
+  public/                manifest.webmanifest, service worker, icons
   src/
-    api/oura.js              Oura Ring API v2 client
-    storage/                 secure token + local blood-results store
-    data/bloodMarkers.js     reference-range library (AU units)
-    hooks/                   Oura data loader + shared provider
-    insights/engine.js       Oura × bloods correlation engine
-    components/              ScoreRing, TrendChart, shared UI
-    screens/                 Today, Sleep, Body, Bloods, BloodDetail, BloodEntry, Insights, Settings, Onboarding
-    navigation/              tab + stack navigator
-    utils/                   dates, stats, Oura selectors
+    lib/                 api client, Oura selectors, blood markers, insights, stats, dates
+    components/          Ring, TrendChart, shared UI, TabBar
+    pages/               Login, Connect, Today, Sleep, Body, Bloods, BloodDetail, BloodEntry, Insights, Settings
+    state/useOura.js     backend-backed Oura loader with localStorage cache
+    App.jsx              auth/connect gate + tab routing
 ```
-
-## Notes for future work
-
-- Blood results are entered manually today; a natural next step is PDF/photo import of
-  pathology reports with OCR to auto-fill markers.
-- The insights engine is deterministic/rule-based and easy to extend in
-  `src/insights/engine.js`. An optional AI layer could be added later.
-- Cycle-aware ranges for hormones could use a logged period start date.

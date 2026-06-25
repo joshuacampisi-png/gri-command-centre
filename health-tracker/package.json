@@ -1,31 +1,26 @@
 {
-  "name": "vitals-health-tracker",
+  "name": "vitals-health-pwa",
   "version": "1.0.0",
-  "description": "In-depth personal health tracker — live Oura Ring data + historic blood tests, with insights.",
-  "main": "index.js",
+  "description": "Installable PWA — live Oura Ring data + historic blood tests, with insights.",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web",
-    "fix": "expo install --fix"
+    "dev": "concurrently -k \"npm:dev:server\" \"npm:dev:web\"",
+    "dev:web": "vite",
+    "dev:server": "node server.js",
+    "build": "vite build",
+    "start": "node server.js"
   },
   "dependencies": {
-    "@react-native-async-storage/async-storage": "2.1.2",
-    "@react-navigation/bottom-tabs": "^7.2.0",
-    "@react-navigation/native": "^7.0.14",
-    "@react-navigation/native-stack": "^7.2.0",
-    "expo": "^53.0.0",
-    "expo-secure-store": "~14.0.1",
-    "expo-status-bar": "~2.0.1",
-    "react": "19.0.0",
-    "react-native": "0.79.5",
-    "react-native-safe-area-context": "5.4.0",
-    "react-native-screens": "~4.10.0",
-    "react-native-svg": "15.11.2"
+    "@vitejs/plugin-react": "^4.3.4",
+    "express": "^4.21.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "vite": "^6.0.7"
   },
   "devDependencies": {
-    "@babel/core": "^7.25.2"
-  },
-  "private": true
+    "concurrently": "^9.1.0"
+  }
 }

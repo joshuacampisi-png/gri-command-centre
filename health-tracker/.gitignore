@@ -1,12 +1,8 @@
 node_modules/
-.expo/
 dist/
-web-build/
-*.log
-.DS_Store
-*.pem
+data/
 .env
 .env.local
-npm-debug.*
-yarn-debug.*
-yarn-error.*
+*.log
+.DS_Store
+.vite/
