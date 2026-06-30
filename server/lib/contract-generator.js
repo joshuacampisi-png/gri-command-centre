@@ -1,5 +1,6 @@
 import PDFDocument from 'pdfkit';
 import { getHireDates } from './date-helpers.js';
+import { resolvePickupLocation } from './pickup-locations.js';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { existsSync } from 'fs';
@@ -24,6 +25,7 @@ export async function generateContractPdf(hire) {
       doc.on('error', reject);
 
       const dates = getHireDates(hire.eventDate);
+      const pickup = resolvePickupLocation(hire.pickupLocation);
       const hasLogo = existsSync(LOGO_PATH);
       const qty = hire.kitQty || 1;
       // Bond scales linearly with kit quantity ($200 × kitQty)
@@ -132,7 +134,7 @@ export async function generateContractPdf(hire) {
       doc.text(`\u2022 Pick Up Date: ${dates.pickupFormatted}`, col2X, doc.y + 3, { width: 220 });
       doc.moveDown(0.3);
       doc.text(`\u2022 Return Date: ${dates.returnFormatted}`, col2X, doc.y, { width: 220 });
-      doc.text('to: 2 Monaco St \u2013 Surfers Paradise', col2X, doc.y, { width: 220 });
+      doc.text(`to: ${pickup.shortAddress}`, col2X, doc.y, { width: 220 });
 
       doc.moveDown(1.2);
 

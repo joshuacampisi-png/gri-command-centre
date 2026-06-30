@@ -8,6 +8,7 @@ import { notifyTNTEvent } from '../lib/tnt-telegram.js';
 import { verifyOrderToken } from '../lib/contract-signing-token.js';
 import { getGriLogoDataUri } from '../lib/gri-logo-data-uri.js';
 import { dataDir } from '../lib/data-dir.js';
+import { resolvePickupLocation } from '../lib/pickup-locations.js';
 
 // Signed contract PDFs live on the Railway volume so they survive redeploys.
 // Previously written to /app/data/contracts inside the Docker image — shadowed
@@ -41,6 +42,7 @@ router.get('/:hireId/sign', (req, res) => {
   if (!hire) return res.status(404).send('Hire not found');
 
   const dates = getHireDates(hire.eventDate);
+  const pickup = resolvePickupLocation(hire.pickupLocation);
   const alreadySigned = hire.contractStatus === 'signed';
   const qty = hire.kitQty || 1;
   // Bond scales linearly with kit quantity ($200 × kitQty)
@@ -290,7 +292,7 @@ router.get('/:hireId/sign', (req, res) => {
         <ul class="terms-list">
           <li>Pick Up Date: ${dates.pickupFormatted}</li>
           <li>Return Date: ${dates.returnFormatted}</li>
-          <li>to: 2 Monaco St \u2013 Surfers Paradise</li>
+          <li>to: ${pickup.shortAddress}</li>
         </ul>
       </div>
     </div>

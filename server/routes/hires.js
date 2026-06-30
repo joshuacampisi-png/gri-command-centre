@@ -8,6 +8,7 @@ import { env } from '../lib/env.js';
 import { buildSigningUrl, buildBondCheckoutUrl } from '../lib/contract-signing-token.js';
 import { chargeCardOnFile } from '../lib/square-cards.js';
 import { dataFile, dataDir, DATA_ROOT } from '../lib/data-dir.js';
+import { extractPickupKeyFromLineItem } from '../lib/pickup-locations.js';
 
 const router = Router();
 
@@ -124,6 +125,7 @@ router.post('/sync', async (_req, res) => {
 
       const kitQty = tntItems.reduce((sum, item) => sum + (item.quantity || 1), 0)
       const hireRevenue = tntItems.reduce((sum, item) => sum + parseFloat(item.price || 0) * (item.quantity || 1), 0)
+      const pickupLocation = tntItems.map(extractPickupKeyFromLineItem).find(v => v) || null
 
       const hire = create({
         orderNumber: orderName,
@@ -133,6 +135,7 @@ router.post('/sync', async (_req, res) => {
         eventDate,
         kitQty,
         revenue: hireRevenue,
+        pickupLocation,
       })
 
       console.log(`[hires/sync] Created hire ${hire.id} for ${orderName} (${customerName})`)

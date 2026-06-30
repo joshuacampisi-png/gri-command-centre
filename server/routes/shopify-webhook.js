@@ -2,6 +2,7 @@ import { Router } from 'express';
 import crypto from 'crypto';
 import { env } from '../lib/env.js';
 import { create, getAll } from '../lib/hire-store.js';
+import { extractPickupKeyFromLineItem } from '../lib/pickup-locations.js';
 import { createBondPaymentLink } from '../lib/square-client.js';
 import { sendHireEmail } from '../lib/hire-mailer.js';
 import { update } from '../lib/hire-store.js';
@@ -257,6 +258,11 @@ async function processOrder(order) {
   const kitQty = tntItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
   const hireRevenue = tntItems.reduce((sum, item) => sum + parseFloat(item.price || 0) * (item.quantity || 1), 0);
 
+  // Pick Up Location property — Sydney customers MUST get Sydney address in
+  // their email/contract, not Gold Coast. First TNT line item with the
+  // property wins; absent property defaults to Gold Coast HQ at the email layer.
+  const pickupLocation = tntItems.map(extractPickupKeyFromLineItem).find(v => v) || null;
+
   const hire = create({
     orderNumber: orderName,
     customerName,
@@ -265,6 +271,7 @@ async function processOrder(order) {
     eventDate: eventDate || '', // May need manual entry if not provided
     kitQty,
     revenue: hireRevenue,
+    pickupLocation,
   });
 
   console.log(`[shopify-webhook] TNT hire created: ${hire.id} for order ${orderName} (${customerName})`);
@@ -407,6 +414,7 @@ async function importHistoricalOrder(order, res) {
   const eventDate = extractEventDate(order) || '';
   const kitQty = tntItems.reduce((s, i) => s + (i.quantity || 1), 0);
   const revenue = tntItems.reduce((s, i) => s + parseFloat(i.price || 0) * (i.quantity || 1), 0);
+  const pickupLocation = tntItems.map(extractPickupKeyFromLineItem).find(v => v) || null;
 
   const hire = create({
     orderNumber: orderName,
@@ -416,6 +424,7 @@ async function importHistoricalOrder(order, res) {
     eventDate,
     kitQty,
     revenue,
+    pickupLocation,
   });
 
   const { update } = await import('../lib/hire-store.js');

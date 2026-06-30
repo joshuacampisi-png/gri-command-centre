@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import { getHireDates } from './date-helpers.js';
+import { resolvePickupLocation } from './pickup-locations.js';
 
 let _transport = null;
 let _provider = null;
@@ -77,6 +78,7 @@ function firstName(hire) {
 function buildConfirmationEmail(hire) {
   const name = firstName(hire);
   const dates = getHireDates(hire.eventDate);
+  const loc = resolvePickupLocation(hire.pickupLocation);
 
   return {
     subject: `TNT Kit Collection and Return Details — ${hire.orderNumber}`,
@@ -84,13 +86,13 @@ function buildConfirmationEmail(hire) {
 
 Thank you for renting our TNT KIT.
 
-The TNT kit must be collected ${dates.pickupFormatted} from our local store at 2 Monaco Street, Surfers Paradise between 7 a.m. and 2 p.m.
+The TNT kit must be collected ${dates.pickupFormatted} from our local store at ${loc.address} ${loc.pickupHours}.
 
 Please follow the link below to watch the YouTube setup video, which provides clear, step by step instructions on how to set up the TNT kit:
 
 https://youtube.com/shorts/vg1xm_YO7Tw
 
-The TNT kit must be returned on ${dates.returnFormatted} at 2 Monaco Street, Surfers Paradise before 2:00 pm, in the same condition it was provided. All items should be clean, fully functional, and free from scratches.
+The TNT kit must be returned on ${dates.returnFormatted} at ${loc.address} ${loc.returnHours}, in the same condition it was provided. All items should be clean, fully functional, and free from scratches.
 
 Please note: A $${(parseInt(process.env.TNT_BOND_AMOUNT || '200', 10)) * (hire.kitQty || 1)} bond is held on a credit card during purchase. You will receive a separate email shortly with a secure link to submit your bond payment.
 
