@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="70mm" height="38mm" viewBox="0 0 700 380">
+<!-- NovaPeptides Bacteriostatic Water label for a 10 mL vial. Physical size 70 x 38 mm. Print / Cricut Print-then-Cut at 100% / Actual size; the rounded border is the cut line. -->
+  <rect x="0" y="0" width="700" height="380" fill="#ffffff"/>
+  <rect x="6" y="6" width="688" height="368" rx="26" fill="#ffffff" stroke="#16357e" stroke-width="4"/>
+
+  <text x="350" y="54" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700"><tspan fill="#16357e">Nova</tspan><tspan fill="#2f6fd0">Peptides</tspan></text>
+  <line x1="70" y1="68" x2="630" y2="68" stroke="#cdd8ef" stroke-width="2"/>
+
+  <text x="350" y="152" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="52" font-weight="800" letter-spacing="-0.5" fill="#16357e">Bacteriostatic Water</text>
+  <text x="350" y="196" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="700" fill="#2f6fd0">10 mL &#183; 0.9% Benzyl Alcohol</text>
+
+  <rect x="225" y="214" width="250" height="40" rx="20" fill="#1a54c8"/>
+  <text x="350" y="241" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" letter-spacing="1" fill="#ffffff">RESEARCH USE ONLY</text>
+
+  <text x="350" y="300" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#333333"><tspan font-weight="700">Lot</tspan> NP240601     <tspan font-weight="700">EXP</tspan> 06/2028</text>
+  <text x="350" y="334" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#667">For reconstitution &#183; Store at room temp 20&#8211;25&#176;C</text>
+</svg>
