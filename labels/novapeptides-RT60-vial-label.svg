@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="50mm" height="20mm" viewBox="0 0 500 200">
+  <!-- NovaPeptides RT60 vial wrap label. Physical size 50 x 20 mm (width = ~vial circumference, height = vial body). -->
+  <rect x="0" y="0" width="500" height="200" fill="#ffffff"/>
+  <rect x="6" y="6" width="488" height="188" rx="18" fill="#ffffff" stroke="#16357e" stroke-width="3"/>
+
+  <!-- molecule logo -->
+  <g stroke="#7aa0e0" stroke-width="2">
+    <line x1="36" y1="38" x2="51" y2="38"/><line x1="36" y1="38" x2="49" y2="30.5"/>
+    <line x1="36" y1="38" x2="43.5" y2="25"/><line x1="36" y1="38" x2="36" y2="23"/>
+    <line x1="36" y1="38" x2="28.5" y2="25"/><line x1="36" y1="38" x2="23" y2="30.5"/>
+    <line x1="36" y1="38" x2="21" y2="38"/><line x1="36" y1="38" x2="23" y2="45.5"/>
+    <line x1="36" y1="38" x2="28.5" y2="51"/><line x1="36" y1="38" x2="36" y2="53"/>
+    <line x1="36" y1="38" x2="43.5" y2="51"/><line x1="36" y1="38" x2="49" y2="45.5"/>
+  </g>
+  <g>
+    <circle cx="51" cy="38" r="2.6" fill="#16357e"/><circle cx="49" cy="30.5" r="2.6" fill="#2f6fd0"/>
+    <circle cx="43.5" cy="25" r="2.6" fill="#16357e"/><circle cx="36" cy="23" r="2.6" fill="#2f6fd0"/>
+    <circle cx="28.5" cy="25" r="2.6" fill="#16357e"/><circle cx="23" cy="30.5" r="2.6" fill="#2f6fd0"/>
+    <circle cx="21" cy="38" r="2.6" fill="#16357e"/><circle cx="23" cy="45.5" r="2.6" fill="#2f6fd0"/>
+    <circle cx="28.5" cy="51" r="2.6" fill="#16357e"/><circle cx="36" cy="53" r="2.6" fill="#2f6fd0"/>
+    <circle cx="43.5" cy="51" r="2.6" fill="#16357e"/><circle cx="49" cy="45.5" r="2.6" fill="#2f6fd0"/>
+  </g>
+  <circle cx="36" cy="38" r="4.5" fill="#16357e"/>
+
+  <text x="60" y="47" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="700"><tspan fill="#16357e">Nova</tspan><tspan fill="#2f6fd0">Peptides</tspan></text>
+
+  <!-- research use only pill -->
+  <rect x="336" y="22" width="152" height="30" rx="15" fill="#1a54c8"/>
+  <text x="412" y="42" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" letter-spacing="1" fill="#ffffff">RESEARCH USE ONLY</text>
+
+  <line x1="14" y1="64" x2="486" y2="64" stroke="#cdd8ef" stroke-width="1.5"/>
+
+  <!-- code + name -->
+  <text x="16" y="130" font-family="Arial, Helvetica, sans-serif" font-size="58" font-weight="800" letter-spacing="-1" fill="#16357e">RT60</text>
+  <text x="200" y="108" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="#2f6fd0">Retatrutide 60 mg</text>
+  <text x="200" y="134" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#555555">Lyophilized Peptide &#183; sterile vial</text>
+
+  <line x1="14" y1="150" x2="486" y2="150" stroke="#cdd8ef" stroke-width="1.5"/>
+
+  <!-- batch line -->
+  <text x="16" y="182" font-family="Arial, Helvetica, sans-serif" font-size="17" fill="#333333"><tspan font-weight="700">Lot</tspan> NP240601   <tspan font-weight="700">MFG</tspan> 06/2026   <tspan font-weight="700">EXP</tspan> 06/2028   <tspan font-weight="700">Store</tspan> 2&#8211;8&#176;C</text>
+</svg>
