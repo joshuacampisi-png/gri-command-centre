@@ -138,9 +138,8 @@ router.post('/', async (req, res) => {
             if (h.orderNumber && note.includes(h.orderNumber.replace('#', ''))) { b = h; break; }
           }
         }
-        if (!b) {
-          b = bHires.find(h => h.bondStatus !== 'paid' && amountCents === balloonBondCents(h));
-        }
+        // (Removed: amount-only fallback for balloons — could route an unrelated
+        //  $200 payment to any pending balloon hire with the same bond amount.)
         if (b) {
           console.log(`[square-webhook] Matched BALLOON payment → hire ${b.id} (${b.orderNumber})`);
           updateBalloon(b.id, {
@@ -188,17 +187,10 @@ router.post('/', async (req, res) => {
         }
       }
 
-      // Strategy 3: Fallback — match any pending hire with correct bond amount
-      // $200 (20000c) for 1 kit, $400 (40000c) for 2 kits
-      if (!matchedHire) {
-        matchedHire = hires.find(h => {
-          if (h.bondStatus !== 'pending' || !h.bondPaymentUrl) return false;
-          const tntBase = parseInt(process.env.TNT_BOND_AMOUNT || '200', 10);
-          const expectedCents = tntBase * 100 * (h.kitQty || 1);
-          return amountCents === expectedCents;
-        });
-        if (matchedHire) console.log(`[square-webhook] Matched by fallback amount: ${amountCents}c`);
-      }
+      // Strategy 3 (REMOVED — used to match any pending hire with the correct
+      // bond amount. That risks routing an unrelated $200 Square payment to a
+      // pending hire that happens to have the same bond. Only strict order-id
+      // + order-number-in-note matches are allowed now.)
 
       if (!matchedHire) {
         console.log(`[square-webhook] No matching hire found for payment ${paymentId}`);

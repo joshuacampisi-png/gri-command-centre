@@ -14,6 +14,7 @@ import { sendBalloonEmail } from '../lib/balloon-mailer.js'
 import { notifyBalloonEvent } from '../lib/balloon-telegram.js'
 import { buildSigningUrl, buildBondCheckoutUrl } from '../lib/contract-signing-token.js'
 import { chargeCardOnFile } from '../lib/square-cards.js'
+import { verifyCompletedPayment, findCompletedPaymentByOrder } from '../lib/square-payment-verify.js'
 
 const router = Router()
 
@@ -227,21 +228,68 @@ router.get('/refund-audit', async (req, res) => {
 // ── Helpers by order number (public — same auth pattern as TNT) ────────────
 router.post('/mark-bond-paid-by-order', async (req, res) => {
   try {
-    const { orderNumber, paymentId } = req.body || {}
+    const { orderNumber, paymentId, autoFindPayment, manualOverride, manualReason } = req.body || {}
     if (!orderNumber) return res.status(400).json({ error: 'orderNumber required' })
     const norm = String(orderNumber).replace(/^#/, '')
     const hire = getAll().find(h => h.orderNumber === `#${norm}` || h.orderNumber === norm)
     if (!hire) return res.status(404).json({ error: `No balloon hire for order ${norm}` })
     if (hire.bondStatus === 'paid') return res.json({ ok: true, alreadyPaid: true, orderNumber: hire.orderNumber })
-    const pid = paymentId || 'manual_' + Date.now().toString(36)
+
+    let recordedPaymentId = null
+    let recordedOrderId = null
+    let paidAt = new Date().toISOString()
+    let verifiedPayment = null
+
+    if (paymentId) {
+      try {
+        verifiedPayment = await verifyCompletedPayment(paymentId)
+        recordedPaymentId = verifiedPayment.id
+        recordedOrderId = verifiedPayment.order_id
+        paidAt = verifiedPayment.created_at || paidAt
+      } catch (e) {
+        return res.status(400).json({ ok: false, error: `Square did not confirm payment ${paymentId}: ${e.message}` })
+      }
+    } else if (autoFindPayment === true) {
+      const expectedCents = balloonBondCents(hire)
+      const found = await findCompletedPaymentByOrder(hire.orderNumber, expectedCents).catch(e => { throw e })
+      if (!found) return res.status(404).json({ ok: false, error: `No COMPLETED Square payment found for order ${hire.orderNumber}` })
+      verifiedPayment = found
+      recordedPaymentId = found.id
+      recordedOrderId = found.order_id
+      paidAt = found.created_at || paidAt
+    } else if (manualOverride === true) {
+      if (!manualReason || String(manualReason).trim().length < 8) {
+        return res.status(400).json({ ok: false, error: 'manualOverride requires manualReason (min 8 chars).' })
+      }
+      recordedPaymentId = 'manual_' + Date.now().toString(36)
+    } else {
+      return res.status(400).json({
+        ok: false,
+        error: 'One of { paymentId } / { autoFindPayment: true } / { manualOverride: true, manualReason } is required.',
+      })
+    }
+
     const updated = update(hire.id, {
-      status: 'bond_paid', bondStatus: 'paid', bondPaymentId: pid, bondPaidAt: new Date().toISOString(),
+      status: 'bond_paid',
+      bondStatus: 'paid',
+      bondPaymentId: recordedPaymentId,
+      bondOrderId: recordedOrderId || hire.bondOrderId || undefined,
+      bondPaidAt: paidAt,
+      bondManualOverride: manualOverride === true || undefined,
+      bondManualReason: manualOverride === true ? String(manualReason).trim() : undefined,
     })
     notifyBalloonEvent('bond_paid', getById(hire.id)).catch(() => {})
     let contract = null
     try { const r = await sendContractInternal(updated); contract = { sent: true, signingUrl: r.signingUrl } }
     catch (e) { contract = { sent: false, error: e.message } }
-    res.json({ ok: true, orderNumber: hire.orderNumber, bondPaymentId: pid, contract })
+    res.json({
+      ok: true,
+      orderNumber: hire.orderNumber,
+      bondPaymentId: recordedPaymentId,
+      verified: Boolean(verifiedPayment),
+      verifiedPayment: verifiedPayment ? { id: verifiedPayment.id, amountCents: verifiedPayment.amount_money?.amount, status: verifiedPayment.status } : null,
+      contract,
+    })
   } catch (e) {
     res.status(500).json({ error: e.message })
   }
@@ -327,13 +375,46 @@ router.post('/:id/send-confirmation', async (req, res) => {
 router.post('/:id/mark-bond-paid', async (req, res) => {
   const hire = getById(req.params.id)
   if (!hire) return res.status(404).json({ error: 'Hire not found' })
-  const paymentId = req.body.paymentId || 'sq_terminal_' + Date.now().toString(36)
+  if (hire.bondStatus === 'paid') return res.json({ ok: true, alreadyPaid: true, hire })
+
+  const { paymentId, manualOverride, manualReason } = req.body || {}
+  let recordedPaymentId = null
+  let paidAt = new Date().toISOString()
+  let verifiedPayment = null
+
+  if (paymentId) {
+    try {
+      verifiedPayment = await verifyCompletedPayment(paymentId)
+      recordedPaymentId = verifiedPayment.id
+      paidAt = verifiedPayment.created_at || paidAt
+    } catch (e) {
+      return res.status(400).json({ ok: false, error: `Square did not confirm this payment: ${e.message}. For cash/bank transfer resend with { manualOverride:true, manualReason:"..." }.` })
+    }
+  } else if (manualOverride === true) {
+    if (!manualReason || String(manualReason).trim().length < 8) {
+      return res.status(400).json({ ok: false, error: 'manualOverride requires manualReason (min 8 chars).' })
+    }
+    recordedPaymentId = 'manual_' + Date.now().toString(36)
+  } else {
+    return res.status(400).json({
+      ok: false,
+      error: 'paymentId (real Square) OR { manualOverride:true, manualReason } is required. This endpoint no longer auto-generates a placeholder.',
+    })
+  }
+
   const updated = update(hire.id, {
-    status: 'bond_paid', bondStatus: 'paid', bondPaymentId: paymentId, bondPaidAt: new Date().toISOString(),
+    status: 'bond_paid', bondStatus: 'paid', bondPaymentId: recordedPaymentId, bondPaidAt: paidAt,
+    bondManualOverride: manualOverride === true || undefined,
+    bondManualReason: manualOverride === true ? String(manualReason).trim() : undefined,
   })
   notifyBalloonEvent('bond_paid', getById(hire.id)).catch(() => {})
   try { await sendContractInternal(updated) } catch (e) { console.error('[balloons] contract send fail:', e.message) }
-  res.json({ hire: getById(hire.id) })
+  res.json({
+    ok: true,
+    hire: getById(hire.id),
+    verified: Boolean(verifiedPayment),
+    verifiedPayment: verifiedPayment ? { id: verifiedPayment.id, amountCents: verifiedPayment.amount_money?.amount, status: verifiedPayment.status } : null,
+  })
 })
 
 router.post('/:id/send-bond-link', async (req, res) => {

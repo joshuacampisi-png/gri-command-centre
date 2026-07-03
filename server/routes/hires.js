@@ -9,6 +9,7 @@ import { buildSigningUrl, buildBondCheckoutUrl } from '../lib/contract-signing-t
 import { chargeCardOnFile } from '../lib/square-cards.js';
 import { dataFile, dataDir, DATA_ROOT } from '../lib/data-dir.js';
 import { extractPickupKeyFromLineItem } from '../lib/pickup-locations.js';
+import { verifyCompletedPayment, findCompletedPaymentByOrder, isRealSquarePaymentId as isRealSquareId } from '../lib/square-payment-verify.js';
 
 const router = Router();
 
@@ -252,6 +253,100 @@ router.post('/reconcile-payments', async (_req, res) => {
   }
 })
 
+// GET /api/hires/verify-all-bonds — for every hire we believe has a paid bond,
+// look up the stored bondPaymentId in Square's Payments API and report which
+// have no COMPLETED payment on record. This is the audit tool for the
+// "bond marked paid but no money at Square" bug.
+//
+// Query params:
+//   ?fix=1  → for hires whose bondPaymentId is a placeholder (sq_terminal_*,
+//             manual_*) OR whose lookup shows no COMPLETED payment, flip them
+//             back to bondStatus:pending so staff cannot refund money that
+//             was never collected. Records `bondFalsePositiveAt` for audit.
+//
+// Skips explicit manualOverride bonds (staff logged the cash reason on purpose).
+router.get('/verify-all-bonds', async (req, res) => {
+  try {
+    const fix = req.query.fix === '1' || req.query.fix === 'true';
+    const hires = getAll();
+    const paid = hires.filter(h => h.bondStatus === 'paid');
+    const results = [];
+
+    for (const h of paid) {
+      const row = {
+        orderNumber: h.orderNumber,
+        customerName: h.customerName,
+        customerEmail: h.customerEmail,
+        bondPaidAt: h.bondPaidAt,
+        bondPaymentId: h.bondPaymentId,
+        historical: !!h.historical,
+        manualOverride: !!h.bondManualOverride,
+        manualReason: h.bondManualReason || null,
+        squareStatus: null,
+        squareAmountCents: null,
+        moneyOnRecord: null,
+        verdict: null,
+        fixed: false,
+      };
+
+      if (h.historical) { row.verdict = 'HISTORICAL BACKFILL — not audited'; results.push(row); continue; }
+      if (h.bondManualOverride) { row.verdict = `MANUAL OVERRIDE (${h.bondManualReason || 'no reason'})`; results.push(row); continue; }
+
+      if (!isRealSquareId(h.bondPaymentId)) {
+        row.verdict = 'PLACEHOLDER PAYMENT ID — no way to prove money was collected. Likely a stale "mark as paid" click.';
+        row.moneyOnRecord = false;
+        if (fix) {
+          update(h.id, {
+            bondStatus: 'pending',
+            status: 'confirmed',
+            bondFalsePositiveAt: new Date().toISOString(),
+            bondFalsePositiveReason: 'placeholder-payment-id',
+          });
+          row.fixed = true;
+        }
+        results.push(row);
+        continue;
+      }
+
+      try {
+        const p = await verifyCompletedPayment(h.bondPaymentId);
+        row.squareStatus = p.status;
+        row.squareAmountCents = p.amount_money?.amount || 0;
+        row.moneyOnRecord = true;
+        row.verdict = `OK — Square confirms $${(row.squareAmountCents/100).toFixed(2)} COMPLETED`;
+      } catch (e) {
+        row.verdict = `NO SQUARE MATCH — ${e.message}`;
+        row.moneyOnRecord = false;
+        if (fix) {
+          update(h.id, {
+            bondStatus: 'pending',
+            status: 'confirmed',
+            bondFalsePositiveAt: new Date().toISOString(),
+            bondFalsePositiveReason: `square-lookup-failed: ${e.message.slice(0, 120)}`,
+          });
+          row.fixed = true;
+        }
+      }
+
+      results.push(row);
+    }
+
+    const summary = {
+      total: results.length,
+      moneyConfirmed: results.filter(r => r.moneyOnRecord === true).length,
+      noMoney: results.filter(r => r.moneyOnRecord === false).length,
+      historical: results.filter(r => r.historical).length,
+      manualOverride: results.filter(r => r.manualOverride).length,
+      fixedThisRun: results.filter(r => r.fixed).length,
+    };
+
+    res.json({ ok: true, summary, results });
+  } catch (err) {
+    console.error('[hires/verify-all-bonds] error:', err);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // GET /api/hires/refund-audit — for every hire we believe is refunded,
 // reconcile against the Square Refunds API and report the truth. Public so
 // Josh can hit it without auth from anywhere.
@@ -438,30 +533,83 @@ router.post('/:id/send-confirmation', async (req, res) => {
   }
 });
 
-// POST /api/hires/:id/mark-bond-paid — manually mark bond as paid (Square terminal)
+// POST /api/hires/:id/mark-bond-paid — manually mark bond as paid.
+//
+// Body accepts ONE of:
+//   { paymentId: "<real Square payment ID>" }
+//       → we call Square's Payments API to verify status === COMPLETED before
+//         flipping bondStatus.
+//   { manualOverride: true, manualReason: "cash paid at store 2026-07-04" }
+//       → allows non-Square payments (cash, bank transfer). Records the reason
+//         and tags bondPaymentId with a manual_* placeholder. Only use when
+//         staff have physically verified the money.
+//
+// A bare hit with no paymentId + no manualOverride is rejected — the previous
+// behaviour of auto-generating a "sq_terminal_<timestamp>" placeholder caused
+// bonds to be marked paid with no money on record at Square, leading to
+// refunds of payments we never received.
 router.post('/:id/mark-bond-paid', async (req, res) => {
   const hire = getById(req.params.id);
   if (!hire) return res.status(404).json({ error: 'Hire not found' });
+  if (hire.bondStatus === 'paid') {
+    return res.json({ ok: true, alreadyPaid: true, hire });
+  }
 
-  const paymentId = req.body.paymentId || 'sq_terminal_' + Date.now().toString(36);
+  const { paymentId, manualOverride, manualReason } = req.body || {};
+
+  let recordedPaymentId = null;
+  let paidAt = new Date().toISOString();
+  let verifiedPayment = null;
+
+  if (paymentId) {
+    try {
+      verifiedPayment = await verifyCompletedPayment(paymentId);
+      recordedPaymentId = verifiedPayment.id;
+      paidAt = verifiedPayment.created_at || paidAt;
+    } catch (e) {
+      return res.status(400).json({
+        ok: false,
+        error: `Cannot mark bond paid — Square did not confirm this payment: ${e.message}. If this was cash or bank transfer, resend with { manualOverride: true, manualReason: "..." }.`,
+      });
+    }
+  } else if (manualOverride === true) {
+    if (!manualReason || String(manualReason).trim().length < 8) {
+      return res.status(400).json({
+        ok: false,
+        error: 'manualOverride requires manualReason (min 8 chars) — e.g. "cash paid at store 2026-07-04 by NAME".',
+      });
+    }
+    recordedPaymentId = 'manual_' + Date.now().toString(36);
+  } else {
+    return res.status(400).json({
+      ok: false,
+      error: 'paymentId (real Square payment ID) OR { manualOverride: true, manualReason } is required. This endpoint no longer auto-generates a placeholder.',
+    });
+  }
+
   const updated = update(hire.id, {
     status: 'bond_paid',
     bondStatus: 'paid',
-    bondPaymentId: paymentId,
-    bondPaidAt: new Date().toISOString(),
+    bondPaymentId: recordedPaymentId,
+    bondPaidAt: paidAt,
+    bondManualOverride: manualOverride === true || undefined,
+    bondManualReason: manualOverride === true ? String(manualReason).trim() : undefined,
   });
 
-  // Telegram notification — bond paid
   notifyTNTEvent('bond_paid', getById(hire.id)).catch(() => {});
 
-  // Automatically trigger sending the contract when bond is paid
   try {
     await sendContractInternal(updated);
   } catch (contractErr) {
     console.error('[hires] Auto send contract after bond paid failed:', contractErr.message);
   }
 
-  res.json({ hire: getById(hire.id) });
+  res.json({
+    ok: true,
+    hire: getById(hire.id),
+    verified: Boolean(verifiedPayment),
+    verifiedPayment: verifiedPayment ? { id: verifiedPayment.id, amountCents: verifiedPayment.amount_money?.amount, status: verifiedPayment.status } : null,
+  });
 });
 
 /**
@@ -925,11 +1073,17 @@ router.post('/convert-to-historical-by-order', async (req, res) => {
 
 // POST /api/hires/mark-bond-paid-by-order — manually mark bond as paid
 // for a hire matched by order number + auto-send the contract email.
-// Use this when Square webhook didn't fire but you've confirmed payment.
-// Body: { orderNumber, paymentId? }
+//
+// Behaviour matches /:id/mark-bond-paid:
+//   • { orderNumber, paymentId } → verify paymentId in Square, must be COMPLETED
+//   • { orderNumber, autoFindPayment: true } → search Square by order number for
+//     a matching COMPLETED payment (only useful when webhook fired but we didn't
+//     get the paymentId)
+//   • { orderNumber, manualOverride: true, manualReason } → non-Square override
+// A bare hit with only orderNumber is rejected.
 router.post('/mark-bond-paid-by-order', async (req, res) => {
   try {
-    const { orderNumber, paymentId } = req.body || {};
+    const { orderNumber, paymentId, autoFindPayment, manualOverride, manualReason } = req.body || {};
     if (!orderNumber) return res.status(400).json({ error: 'orderNumber required' });
     const normalised = String(orderNumber).replace(/^#/, '');
     const hire = getAll().find(h => h.orderNumber === `#${normalised}` || h.orderNumber === normalised);
@@ -938,12 +1092,51 @@ router.post('/mark-bond-paid-by-order', async (req, res) => {
       return res.json({ ok: true, alreadyPaid: true, orderNumber: hire.orderNumber, bondPaidAt: hire.bondPaidAt });
     }
 
-    const pid = paymentId || 'manual_' + Date.now().toString(36);
+    let recordedPaymentId = null;
+    let recordedOrderId = null;
+    let paidAt = new Date().toISOString();
+    let verifiedPayment = null;
+
+    if (paymentId) {
+      try {
+        verifiedPayment = await verifyCompletedPayment(paymentId);
+        recordedPaymentId = verifiedPayment.id;
+        recordedOrderId = verifiedPayment.order_id;
+        paidAt = verifiedPayment.created_at || paidAt;
+      } catch (e) {
+        return res.status(400).json({ ok: false, error: `Square did not confirm payment ${paymentId}: ${e.message}` });
+      }
+    } else if (autoFindPayment === true) {
+      const tntBase = parseInt(process.env.TNT_BOND_AMOUNT || '200', 10);
+      const expectedCents = tntBase * 100 * (hire.kitQty || 1);
+      const found = await findCompletedPaymentByOrder(hire.orderNumber, expectedCents).catch(e => { throw e });
+      if (!found) {
+        return res.status(404).json({ ok: false, error: `No COMPLETED Square payment found for order ${hire.orderNumber}` });
+      }
+      verifiedPayment = found;
+      recordedPaymentId = found.id;
+      recordedOrderId = found.order_id;
+      paidAt = found.created_at || paidAt;
+    } else if (manualOverride === true) {
+      if (!manualReason || String(manualReason).trim().length < 8) {
+        return res.status(400).json({ ok: false, error: 'manualOverride requires manualReason (min 8 chars).' });
+      }
+      recordedPaymentId = 'manual_' + Date.now().toString(36);
+    } else {
+      return res.status(400).json({
+        ok: false,
+        error: 'One of { paymentId } / { autoFindPayment: true } / { manualOverride: true, manualReason } is required.',
+      });
+    }
+
     const updated = update(hire.id, {
       status: 'bond_paid',
       bondStatus: 'paid',
-      bondPaymentId: pid,
-      bondPaidAt: new Date().toISOString(),
+      bondPaymentId: recordedPaymentId,
+      bondOrderId: recordedOrderId || hire.bondOrderId || undefined,
+      bondPaidAt: paidAt,
+      bondManualOverride: manualOverride === true || undefined,
+      bondManualReason: manualOverride === true ? String(manualReason).trim() : undefined,
     });
 
     notifyTNTEvent('bond_paid', getById(hire.id)).catch(() => {});
@@ -956,7 +1149,14 @@ router.post('/mark-bond-paid-by-order', async (req, res) => {
       contract = { sent: false, error: e.message };
     }
 
-    res.json({ ok: true, orderNumber: hire.orderNumber, bondPaymentId: pid, contract });
+    res.json({
+      ok: true,
+      orderNumber: hire.orderNumber,
+      bondPaymentId: recordedPaymentId,
+      verified: Boolean(verifiedPayment),
+      verifiedPayment: verifiedPayment ? { id: verifiedPayment.id, amountCents: verifiedPayment.amount_money?.amount, status: verifiedPayment.status } : null,
+      contract,
+    });
   } catch (err) {
     console.error('[hires] Mark bond paid by order error:', err);
     res.status(500).json({ error: err.message });

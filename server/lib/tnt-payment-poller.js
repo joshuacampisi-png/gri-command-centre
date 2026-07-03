@@ -2,54 +2,44 @@ import cron from 'node-cron'
 import { getAll, getById, update } from './hire-store.js'
 import { sendHireEmail } from './hire-mailer.js'
 import { notifyTNTEvent } from './tnt-telegram.js'
+import { findCompletedPaymentByOrder } from './square-payment-verify.js'
 
 let cronJob = null
 
+/**
+ * Poll Square PAYMENTS API for pending bonds. This function ONLY flips a hire
+ * to "paid" when a real COMPLETED payment exists in Square whose note contains
+ * the order number AND whose amount matches the expected bond.
+ *
+ * The old implementation queried the Orders API and considered a bond paid if
+ * the order had ANY tender other than NO_SALE — but Square creates a tender the
+ * moment a customer opens the hosted checkout, before any card is charged. That
+ * caused false-positive bond-paid notifications and downstream refunds of money
+ * that had never been collected.
+ */
 async function checkPendingBonds() {
   const hires = getAll()
-  const pending = hires.filter(h => h.bondStatus === 'pending' && h.bondOrderId)
-
+  const pending = hires.filter(h => h.bondStatus === 'pending')
   if (pending.length === 0) return
+
+  const tntBase = parseInt(process.env.TNT_BOND_AMOUNT || '200', 10)
 
   for (const hire of pending) {
     try {
-      // Query Square for the order to check if it has a payment
-      const BASE_URL = process.env.SQUARE_ENVIRONMENT === 'sandbox'
-        ? 'https://connect.squareupsandbox.com'
-        : 'https://connect.squareup.com'
+      const expectedCents = tntBase * 100 * (hire.kitQty || 1)
+      const match = await findCompletedPaymentByOrder(hire.orderNumber, expectedCents)
+      if (!match) continue
 
-      const res = await fetch(`${BASE_URL}/v2/orders/${hire.bondOrderId}`, {
-        headers: {
-          'Authorization': `Bearer ${process.env.SQUARE_ACCESS_TOKEN}`,
-          'Content-Type': 'application/json',
-          'Square-Version': '2024-12-18',
-        }
-      })
-      const data = await res.json()
-      const order = data.order
+      console.log(`[TNT-Poller] Real COMPLETED payment found for ${hire.orderNumber} — payment ${match.id}`)
 
-      if (!order) continue
-
-      // Check if order is paid
-      const isPaid = order.state === 'COMPLETED' ||
-                     (order.tenders && order.tenders.length > 0 && order.tenders[0].type !== 'NO_SALE')
-
-      if (!isPaid) continue
-
-      // Get payment ID from tenders
-      const paymentId = order.tenders?.[0]?.payment_id || null
-
-      console.log(`[TNT-Poller] Bond paid for ${hire.id} (${hire.orderNumber}) — payment: ${paymentId}`)
-
-      // Mark bond as paid
       update(hire.id, {
         bondStatus: 'paid',
-        bondPaymentId: paymentId,
-        bondPaidAt: new Date().toISOString(),
+        bondPaymentId: match.id,
+        bondOrderId: match.order_id,
+        bondPaidAt: match.created_at || new Date().toISOString(),
         status: hire.status === 'confirmed' ? 'bond_paid' : hire.status,
       })
 
-      // Auto-send contract
       const updatedHire = getById(hire.id)
       const { buildSigningUrl } = await import('./contract-signing-token.js')
       const orderNum = (hire.orderNumber || '').replace(/^#/, '')
@@ -67,11 +57,9 @@ async function checkPendingBonds() {
         console.error(`[TNT-Poller] Contract send failed for ${hire.id}:`, e.message)
       }
 
-      // Telegram notification
       notifyTNTEvent('bond_paid', getById(hire.id)).catch(() => {})
-
     } catch (e) {
-      console.error(`[TNT-Poller] Error checking ${hire.id}:`, e.message)
+      console.error(`[TNT-Poller] Error checking ${hire.orderNumber}:`, e.message)
     }
   }
 }
@@ -102,7 +90,7 @@ export function startTNTPaymentPoller() {
     } catch (e) {
       console.error('[TNT-Poller] Boot sync failed:', e.message)
     }
-  }, 15000) // 15s after boot to let server fully start
+  }, 15000)
 }
 
 export function stopTNTPaymentPoller() {
