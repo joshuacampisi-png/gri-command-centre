@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en-AU"><head><meta charset="UTF-8">
+<style>
+  :root{
+    --ink:#0b1437; --navy:#16357e; --blue:#2f6fd0; --mist:#5b6b94; --line:#e6ebf6;
+    --bg:#eef2fb; --grad:linear-gradient(120deg,#6a5cff 0%,#16c2c2 100%);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink)}
+  .sheet{width:960px;background:#fff;margin:0 auto;box-shadow:0 20px 60px rgba(11,20,55,.15)}
+
+  header{background:var(--navy);color:#fff;padding:38px 44px 34px;position:relative;overflow:hidden;
+    background-image:radial-gradient(700px 260px at 88% -30%,rgba(106,92,255,.55),transparent),
+                     radial-gradient(600px 240px at 6% 130%,rgba(22,194,194,.5),transparent)}
+  .brand{display:flex;align-items:center;gap:14px}
+  .mark{width:52px;height:52px}
+  .brand h1{font-size:34px;font-weight:800;letter-spacing:.3px}
+  .brand h1 .p{color:#8fd0ff}
+  .brand .url{font-size:13px;color:#b9c6ee;letter-spacing:2px;text-transform:uppercase;margin-top:3px}
+  .htitle{margin-top:22px;display:flex;align-items:flex-end;justify-content:space-between}
+  .htitle .t{font-size:27px;font-weight:800}
+  .htitle .s{font-size:13px;color:#b9c6ee;margin-top:5px}
+  .htitle .pill{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);border-radius:999px;
+    padding:7px 15px;font-size:12px;font-weight:700;letter-spacing:.5px}
+
+  .body{padding:30px 44px 20px}
+  table{width:100%;border-collapse:collapse}
+  thead th{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--mist);font-weight:800;
+    padding:0 14px 12px;border-bottom:2px solid var(--line)}
+  thead th.r{text-align:right}
+  thead th.kit{color:var(--blue)}
+  tbody td{padding:15px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+  tbody tr:nth-child(even){background:#f8faff}
+  .pname{font-size:19px;font-weight:800;color:var(--ink)}
+  .psub{font-size:12.5px;color:var(--mist);margin-top:2px}
+  .price{text-align:right;font-size:20px;font-weight:800;color:var(--ink);white-space:nowrap}
+  .price.kit{color:var(--blue)}
+  .price .c{font-size:13px;color:var(--mist);font-weight:700}
+  .na{text-align:right;color:#b7c0d8;font-weight:700;font-size:18px}
+
+  .kitbox{margin:22px 44px 0;background:#f4f7ff;border:1px solid var(--line);border-radius:16px;padding:20px 24px}
+  .kitbox h3{font-size:15px;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px}
+  .kititems{display:grid;grid-template-columns:1fr 1fr;gap:10px 26px}
+  .ki{display:flex;align-items:center;gap:10px;font-size:14.5px;color:#26365f;font-weight:600}
+  .ki .dot{width:18px;height:18px;border-radius:50%;background:var(--grad);flex:0 0 auto;display:flex;align-items:center;justify-content:center}
+  .ki .dot svg{width:10px;height:10px}
+
+  footer{margin-top:26px;padding:22px 44px 30px;border-top:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;gap:20px}
+  .foot-l{font-size:13px;color:var(--mist);line-height:1.6}
+  .foot-l b{color:var(--navy)}
+  .ruo{background:var(--navy);color:#fff;border-radius:12px;padding:12px 18px;font-size:12px;font-weight:700;
+    text-align:center;line-height:1.5;max-width:250px}
+</style></head>
+<body>
+  <div class="sheet">
+    <header>
+      <div class="brand">
+        <svg class="mark" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8f7bff"/><stop offset="1" stop-color="#39d6d6"/></linearGradient></defs>
+          <path d="M50 4 L58 38 L92 50 L58 62 L50 96 L42 62 L8 50 L42 38 Z" fill="url(#g)"/>
+          <circle cx="50" cy="50" r="7" fill="#fff"/>
+        </svg>
+        <div>
+          <h1>Nova<span class="p">Peptides</span></h1>
+          <div class="url">NovaPeptides.com.au</div>
+        </div>
+      </div>
+      <div class="htitle">
+        <div>
+          <div class="t">Retail Price List</div>
+          <div class="s">Research-grade peptides &middot; Australia-wide</div>
+        </div>
+        <div class="pill">All prices AUD</div>
+      </div>
+    </header>
+
+    <div class="body">
+      <table>
+        <thead><tr>
+          <th>Product</th>
+          <th class="r">Vial only</th>
+          <th class="r kit">Full kit</th>
+        </tr></thead>
+        <tbody>
+          <tr><td><div class="pname">Retatrutide 60&nbsp;mg</div><div class="psub">RT60 &middot; lyophilised</div></td>
+              <td class="price">$320</td><td class="price kit">$399</td></tr>
+          <tr><td><div class="pname">Retatrutide 30&nbsp;mg</div><div class="psub">RT30 &middot; lyophilised</div></td>
+              <td class="price">$289</td><td class="price kit">$315</td></tr>
+          <tr><td><div class="pname">KLOW 80&nbsp;mg</div><div class="psub">Repair &amp; recovery blend</div></td>
+              <td class="price">$195</td><td class="price kit">$230</td></tr>
+          <tr><td><div class="pname">GLOW 70&nbsp;mg</div><div class="psub">Skin, hair &amp; recovery blend</div></td>
+              <td class="price">$179</td><td class="price kit">$219</td></tr>
+          <tr><td><div class="pname">BPC-157 + TB-500 10&nbsp;mg</div><div class="psub">Recovery &amp; repair</div></td>
+              <td class="price">$120</td><td class="price kit">$170</td></tr>
+          <tr><td><div class="pname">SS-31 10&nbsp;mg</div><div class="psub">Mitochondrial support</div></td>
+              <td class="price">$85</td><td class="price kit">$130</td></tr>
+          <tr><td><div class="pname">Bacteriostatic Water 3&nbsp;mL</div><div class="psub">For reconstitution</div></td>
+              <td class="price">$19.99</td><td class="na">&ndash;</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="kitbox">
+      <h3>Every full kit includes</h3>
+      <div class="kititems">
+        <div class="ki"><span class="dot"><svg viewBox="0 0 12 12"><path d="M2 6.5 L5 9 L10 3" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Your peptide vial</div>
+        <div class="ki"><span class="dot"><svg viewBox="0 0 12 12"><path d="M2 6.5 L5 9 L10 3" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>3&nbsp;mL bacteriostatic water</div>
+        <div class="ki"><span class="dot"><svg viewBox="0 0 12 12"><path d="M2 6.5 L5 9 L10 3" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Reusable dosing pen</div>
+        <div class="ki"><span class="dot"><svg viewBox="0 0 12 12"><path d="M2 6.5 L5 9 L10 3" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>3&nbsp;mL glass cartridge</div>
+        <div class="ki"><span class="dot"><svg viewBox="0 0 12 12"><path d="M2 6.5 L5 9 L10 3" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>5&times; needle heads + syringe</div>
+        <div class="ki"><span class="dot"><svg viewBox="0 0 12 12"><path d="M2 6.5 L5 9 L10 3" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Carry storage case</div>
+      </div>
+    </div>
+
+    <footer>
+      <div class="foot-l">
+        <b>NovaPeptides.com.au</b><br>
+        Prices in AUD and subject to change. Message us to order.
+      </div>
+      <div class="ruo">FOR RESEARCH USE ONLY<br>Not for human or veterinary consumption</div>
+    </footer>
+  </div>
+</body></html>
