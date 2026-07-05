@@ -17,8 +17,9 @@ import IGReplyBotTab from './components/IGReplyBotTab'
 import { AdsFlywheelTab } from './components/AdsFlywheelTab'
 import { GoogleAdsAgentTab } from './components/GoogleAdsAgentTab'
 import { GMBFlywheelTab } from './components/GMBFlywheelTab.jsx'
+import { BioStackAdsTab } from './components/BioStackAdsTab'
 
-const NAV = ['Overview', 'Tasks', 'Completed', 'Keywords', 'Competitors', 'Trends', 'Blog Writer', 'Instagram', 'IG Bot', 'Ads Flywheel', 'Google Ads Agent', 'Ads Testing', 'Ads Performance', 'TNT Hire', 'Balloon Hire', 'Returns', 'GMB Flywheel']
+const NAV = ['Overview', 'Tasks', 'Completed', 'Keywords', 'Competitors', 'Trends', 'Blog Writer', 'Instagram', 'IG Bot', 'Ads Flywheel', 'Google Ads Agent', 'Ads Testing', 'Ads Performance', 'BioStack Ads', 'TNT Hire', 'Balloon Hire', 'Returns', 'GMB Flywheel']
 
 const COMPANIES = {
   GRI:     { name: 'Gender Reveal Ideas', description: 'Gender reveal party supplies',          accent: '#ef4444' },
@@ -3335,7 +3336,7 @@ export default function App() {
   const integ   = data?.integrations || {}
   const profile = COMPANIES[company] || COMPANIES.GRI
 
-  const navIcons = { Overview:'◉', Tasks:'☑', Completed:'✅', Keywords:'📈', Competitors:'⚔', Trends:'📊', 'Blog Writer':'✍', Instagram:'📸', 'IG Bot':'🤖', 'Ads Flywheel':'🔄', 'Google Ads Agent':'🎯', 'Ads Testing':'📅', 'Ads Performance':'📊', 'TNT Hire':'💥', 'Balloon Hire':'🎈', Returns:'↩', 'GMB Flywheel':'📍', Themes:'◈', 'Theme Editor':'✏', Settings:'⚙' }
+  const navIcons = { Overview:'◉', Tasks:'☑', Completed:'✅', Keywords:'📈', Competitors:'⚔', Trends:'📊', 'Blog Writer':'✍', Instagram:'📸', 'IG Bot':'🤖', 'Ads Flywheel':'🔄', 'Google Ads Agent':'🎯', 'Ads Testing':'📅', 'Ads Performance':'📊', 'BioStack Ads':'🧬', 'TNT Hire':'💥', 'Balloon Hire':'🎈', Returns:'↩', 'GMB Flywheel':'📍', Themes:'◈', 'Theme Editor':'✏', Settings:'⚙' }
 
   const goEditor = theme => { setEditorTheme(theme); setActive('Theme Editor') }
 
@@ -3392,6 +3393,7 @@ export default function App() {
             {active==='Ads Flywheel' && <AdsFlywheelTab />}
             {active==='Google Ads Agent' && <GoogleAdsAgentTab />}
             {active==='Ads Performance' && <AdsPerformanceTab />}
+            {active==='BioStack Ads' && <BioStackAdsTab />}
             {active==='TNT Hire'    && <TNTDashboard />}
             {active==='GMB Flywheel' && <GMBFlywheelTab />}
             {active==='Balloon Hire' && <BalloonDashboard />}

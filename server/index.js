@@ -53,6 +53,7 @@ import igReplyBotRoutes from './routes/ig-reply-bot.js'
 import flywheelRoutes from './routes/flywheel.js'
 import { startFlywheelCrons } from './lib/flywheel-cron.js'
 import gadsAgentRoutes from './routes/gads-agent.js'
+import biostackRoutes from './routes/biostack.js'
 import { startGadsAgentCrons } from './lib/gads-agent-cron.js'
 import { startIGReplyBotCron } from './lib/ig-reply-bot/cron.js'
 import { startFatigueAlertCron } from './lib/fatigue-alert-cron.js'
@@ -424,6 +425,7 @@ app.use('/api/meta', metaConnectRoutes)
 app.use('/api/ig-reply-bot', igReplyBotRoutes)
 app.use('/api/flywheel', flywheelRoutes)
 app.use('/api/gads-agent', gadsAgentRoutes)
+app.use('/api/biostack', biostackRoutes)
 
 // ── Admin: disk usage + cleanup ──────────────────────────────────────────────
 import { readdirSync, statSync, unlinkSync as _unlinkSync, readFileSync as _readFileSync } from 'fs'
