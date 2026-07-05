@@ -9,6 +9,7 @@ import { getAll as getAllBalloons, getById as getBalloonById, update as updateBa
 import { sendBalloonEmail } from '../lib/balloon-mailer.js';
 import { notifyBalloonEvent } from '../lib/balloon-telegram.js';
 import { balloonBondCents } from '../lib/balloon-square.js';
+import { notifyStaffBondPaid } from '../lib/staff-notify.js';
 
 const router = Router();
 
@@ -155,6 +156,7 @@ router.post('/', async (req, res) => {
             updateBalloon(updated.id, { contractStatus: 'sent', contractSentAt: new Date().toISOString(), status: 'contract_sent' });
           } catch (e) { console.error('[square-webhook] balloon contract send failed:', e.message); }
           notifyBalloonEvent('bond_paid', getBalloonById(b.id)).catch(() => {});
+          notifyStaffBondPaid('balloon', getBalloonById(b.id), { amountCents, source: 'webhook', paymentId }).catch(() => {});
           return;
         }
         console.log('[square-webhook] Balloon-tagged payment did not match any pending balloon hire — falling through to TNT match');
@@ -216,8 +218,9 @@ router.post('/', async (req, res) => {
         console.error('[square-webhook] Auto-send contract failed:', contractErr.message);
       }
 
-      // Telegram notification — bond paid
+      // Telegram + staff email — bond paid
       notifyTNTEvent('bond_paid', getById(matchedHire.id)).catch(() => {});
+      notifyStaffBondPaid('tnt', getById(matchedHire.id), { amountCents, source: 'webhook', paymentId }).catch(() => {});
     }
   } catch (err) {
     console.error('[square-webhook] Processing error:', err);

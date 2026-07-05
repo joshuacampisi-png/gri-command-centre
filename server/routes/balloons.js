@@ -15,6 +15,7 @@ import { notifyBalloonEvent } from '../lib/balloon-telegram.js'
 import { buildSigningUrl, buildBondCheckoutUrl } from '../lib/contract-signing-token.js'
 import { chargeCardOnFile } from '../lib/square-cards.js'
 import { verifyCompletedPayment, findCompletedPaymentByOrder } from '../lib/square-payment-verify.js'
+import { notifyStaffBondPaid } from '../lib/staff-notify.js'
 
 const router = Router()
 
@@ -155,6 +156,7 @@ router.post('/reconcile-payments', async (_req, res) => {
         })
         try { await sendContractInternal(getById(hire.id)) } catch {}
         notifyBalloonEvent('bond_paid', getById(hire.id)).catch(() => {})
+        notifyStaffBondPaid('balloon', getById(hire.id), { amountCents: match.amount_money?.amount, source: 'reconcile', paymentId: match.id }).catch(() => {})
         reconciled++
       }
     }
@@ -279,6 +281,7 @@ router.post('/mark-bond-paid-by-order', async (req, res) => {
       bondManualReason: manualOverride === true ? String(manualReason).trim() : undefined,
     })
     notifyBalloonEvent('bond_paid', getById(hire.id)).catch(() => {})
+    notifyStaffBondPaid('balloon', getById(hire.id), { amountCents: verifiedPayment?.amount_money?.amount, source: manualOverride === true ? 'manual' : 'manual-verified', paymentId: recordedPaymentId }).catch(() => {})
     let contract = null
     try { const r = await sendContractInternal(updated); contract = { sent: true, signingUrl: r.signingUrl } }
     catch (e) { contract = { sent: false, error: e.message } }

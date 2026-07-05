@@ -23,6 +23,7 @@ import { sendHireEmail } from '../lib/hire-mailer.js'
 import { sendBalloonEmail } from '../lib/balloon-mailer.js'
 import { notifyTNTEvent } from '../lib/tnt-telegram.js'
 import { notifyBalloonEvent } from '../lib/balloon-telegram.js'
+import { notifyStaffBondPaid } from '../lib/staff-notify.js'
 import { buildSigningUrl } from '../lib/contract-signing-token.js'
 import { getGriLogoDataUri } from '../lib/gri-logo-data-uri.js'
 
@@ -185,9 +186,10 @@ router.post('/:type/:orderNumber/:token', async (req, res) => {
       console.error(`[checkout] contract email failed for ${hire.id}:`, e.message)
     }
 
-    // Telegram
+    // Telegram + staff email
     if (type === 'tnt') notifyTNTEvent('bond_paid', getById(hire.id)).catch(() => {})
     else notifyBalloonEvent('bond_paid', getById(hire.id)).catch(() => {})
+    notifyStaffBondPaid(type, getById(hire.id), { amountCents, source: 'checkout', paymentId: charge.paymentId }).catch(() => {})
 
     return res.json({ ok: true, paymentId: charge.paymentId, status: charge.status, last4: card.last4, brand: card.brand })
   } catch (e) {

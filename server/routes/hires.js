@@ -10,6 +10,7 @@ import { chargeCardOnFile } from '../lib/square-cards.js';
 import { dataFile, dataDir, DATA_ROOT } from '../lib/data-dir.js';
 import { extractPickupKeyFromLineItem } from '../lib/pickup-locations.js';
 import { verifyCompletedPayment, findCompletedPaymentByOrder, isRealSquarePaymentId as isRealSquareId } from '../lib/square-payment-verify.js';
+import { notifyStaffBondPaid } from '../lib/staff-notify.js';
 
 const router = Router();
 
@@ -597,6 +598,11 @@ router.post('/:id/mark-bond-paid', async (req, res) => {
   });
 
   notifyTNTEvent('bond_paid', getById(hire.id)).catch(() => {});
+  notifyStaffBondPaid('tnt', getById(hire.id), {
+    amountCents: verifiedPayment?.amount_money?.amount,
+    source: manualOverride === true ? 'manual' : 'manual-verified',
+    paymentId: recordedPaymentId,
+  }).catch(() => {});
 
   try {
     await sendContractInternal(updated);
@@ -1140,6 +1146,11 @@ router.post('/mark-bond-paid-by-order', async (req, res) => {
     });
 
     notifyTNTEvent('bond_paid', getById(hire.id)).catch(() => {});
+    notifyStaffBondPaid('tnt', getById(hire.id), {
+      amountCents: verifiedPayment?.amount_money?.amount,
+      source: manualOverride === true ? 'manual' : (autoFindPayment ? 'manual-autofind' : 'manual-verified'),
+      paymentId: recordedPaymentId,
+    }).catch(() => {});
 
     let contract = null;
     try {

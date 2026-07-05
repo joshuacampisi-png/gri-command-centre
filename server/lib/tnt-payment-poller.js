@@ -2,6 +2,7 @@ import cron from 'node-cron'
 import { getAll, getById, update } from './hire-store.js'
 import { sendHireEmail } from './hire-mailer.js'
 import { notifyTNTEvent } from './tnt-telegram.js'
+import { notifyStaffBondPaid } from './staff-notify.js'
 import { findCompletedPaymentByOrder } from './square-payment-verify.js'
 
 let cronJob = null
@@ -58,6 +59,7 @@ async function checkPendingBonds() {
       }
 
       notifyTNTEvent('bond_paid', getById(hire.id)).catch(() => {})
+      notifyStaffBondPaid('tnt', getById(hire.id), { amountCents: match.amount_money?.amount, source: 'poller', paymentId: match.id }).catch(() => {})
     } catch (e) {
       console.error(`[TNT-Poller] Error checking ${hire.orderNumber}:`, e.message)
     }
