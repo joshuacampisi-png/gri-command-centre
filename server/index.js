@@ -46,6 +46,7 @@ import { seedBaselineIfNeeded } from './lib/daily-revenue.js'
 import { startKeywordScheduler } from './lib/keyword-tracker.js'
 import { getUsageSummary } from './lib/claude-guard.js'
 import instagramSchedulerRoutes from './routes/instagram-scheduler.js'
+import novaSalesRoutes from './routes/nova-sales.js'
 import { startInstagramCron } from './lib/instagram-cron.js'
 import { startCalendarPublisher } from './lib/calendar-publisher.js'
 import metaConnectRoutes, { loadSavedMetaTokens } from './routes/meta-connect.js'
@@ -365,6 +366,8 @@ app.use('/gmb-images', express.static(gmbAiImagesDir))
 // Also serve from public dir as fallback for old uploads
 app.use('/calendar-videos', express.static(join(process.cwd(), 'public/calendar-videos')))
 app.use('/api/calendar', calendarRoutes)
+// NovaPeptides sales log API — gated (NOT in PUBLIC_PREFIXES) so only Josh + wife with the password can read/write
+app.use('/api/nova-sales', novaSalesRoutes)
 // Serve Instagram media uploads
 const instagramMediaDir = _calVidDir('instagram-media')
 app.use('/instagram-media', express.static(instagramMediaDir))
@@ -677,6 +680,11 @@ app.get(['/Nova-Profit-Loss', '/nova-profit-loss', '/novapeptides'], (_req, res)
 })
 app.get('/novapeptides-stocktake.csv', (_req, res) => {
   res.sendFile(join(__dirname, '..', 'docs', 'novapeptides-stocktake.csv'))
+})
+// NovaPeptides live sales log — PRIVATE (behind the password gate, not in PUBLIC_PREFIXES)
+app.get('/nova-sales', (_req, res) => {
+  res.setHeader('Cache-Control', 'no-store')
+  res.sendFile(join(__dirname, '..', 'docs', 'nova-sales.html'))
 })
 
 // SPA fallback — serve index.html for non-API routes (must be AFTER all API routes)

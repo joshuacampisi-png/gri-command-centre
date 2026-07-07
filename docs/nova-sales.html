@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NovaPeptides Sales Log</title>
+<style>
+  :root{
+    --ink:#0b1437; --navy:#16357e; --blue:#2f6fd0; --mist:#5b6b94; --line:#e6ebf6;
+    --bg:#f4f7fd; --card:#fff; --green:#0fae6e; --red:#e2585b;
+    --grad:linear-gradient(120deg,#6a5cff 0%,#16c2c2 100%);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+  .wrap{max-width:760px;margin:0 auto;padding:18px 14px 60px}
+
+  header{background:var(--navy);color:#fff;border-radius:16px;padding:18px 20px;
+    background-image:radial-gradient(700px 240px at 88% -40%,rgba(106,92,255,.55),transparent),
+                     radial-gradient(600px 220px at 4% 140%,rgba(22,194,194,.5),transparent)}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .brand h1{margin:0;font-size:20px;font-weight:800}
+  .brand h1 .p{color:#8fd0ff}
+  .brand .s{font-size:11px;color:#b9c6ee;text-transform:uppercase;letter-spacing:1.5px;margin-top:2px}
+  .live{display:flex;align-items:center;gap:6px;font-size:11.5px;color:#cfe0ff}
+  .dot{width:8px;height:8px;border-radius:50%;background:#3ee08a;box-shadow:0 0 0 0 rgba(62,224,138,.6);animation:pulse 2s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(62,224,138,.5)}70%{box-shadow:0 0 0 7px rgba(62,224,138,0)}100%{box-shadow:0 0 0 0 rgba(62,224,138,0)}}
+  .back{color:#cfe0ff;font-size:12px;text-decoration:none;font-weight:600}
+  .who{display:flex;align-items:center;gap:8px;margin-top:12px}
+  .who label{font-size:11px;color:#b9c6ee;text-transform:uppercase;letter-spacing:.6px;font-weight:700}
+  .who input{border:none;border-radius:8px;padding:6px 10px;font-size:13px;font-weight:700;width:130px}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:12px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:11px 12px}
+  .kpi .l{font-size:10px;color:var(--mist);text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+  .kpi .v{font-size:19px;font-weight:800;margin-top:4px}
+  .kpi.rev .v{color:var(--blue)} .kpi.pro .v{color:var(--green)}
+  @media(max-width:560px){ .kpis{grid-template-columns:repeat(2,1fr)} }
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-top:14px}
+  h2{font-size:15px;margin:0 0 12px;font-weight:800}
+  .form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .f{display:flex;flex-direction:column;gap:4px}
+  .f.full{grid-column:1 / -1}
+  .f label{font-size:10.5px;color:var(--mist);text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+  .f select,.f input{font-size:15px;padding:10px 11px;border:1px solid #cdd6ee;border-radius:10px;background:#fff;color:var(--ink);width:100%}
+  .f select:focus,.f input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(47,111,208,.14)}
+  .profitline{grid-column:1 / -1;display:flex;align-items:center;justify-content:space-between;
+    background:#f4f7ff;border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-weight:700}
+  .profitline .pv{font-size:18px;font-weight:800;color:var(--green)}
+  .addbtn{grid-column:1 / -1;background:var(--grad);color:#fff;border:none;border-radius:12px;padding:14px;
+    font-size:16px;font-weight:800;cursor:pointer;letter-spacing:.3px}
+  .addbtn:active{opacity:.85}
+
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:9px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+  th:first-child,td:first-child{text-align:left;white-space:normal}
+  thead th{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--mist);font-weight:700}
+  .prod{font-weight:700}
+  .subby{font-size:10.5px;color:var(--mist);font-weight:500}
+  .pos{color:var(--green);font-weight:800}
+  .del{background:none;border:none;color:var(--red);font-size:15px;cursor:pointer;padding:2px 6px;font-weight:700}
+  tfoot td{font-weight:800;border-top:2px solid var(--line);background:#f8faff}
+  .empty{color:var(--mist);text-align:center;padding:26px;font-size:13.5px}
+  .msg{font-size:12px;color:var(--mist);margin-top:8px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="top">
+      <div class="brand">
+        <h1>Nova<span class="p">Peptides</span></h1>
+        <div class="s">Sales Log</div>
+      </div>
+      <div style="text-align:right">
+        <div class="live"><span class="dot"></span><span id="liveTxt">Synced live</span></div>
+        <a class="back" href="/novapeptides">&larr; P&amp;L dashboard</a>
+      </div>
+    </div>
+    <div class="who">
+      <label>Logged by</label>
+      <input id="who" placeholder="Your name" maxlength="24">
+    </div>
+    <div class="kpis">
+      <div class="kpi"><div class="l">Orders</div><div class="v" id="kOrders">0</div></div>
+      <div class="kpi"><div class="l">Units</div><div class="v" id="kUnits">0</div></div>
+      <div class="kpi rev"><div class="l">Revenue</div><div class="v" id="kRev">$0</div></div>
+      <div class="kpi pro"><div class="l">Profit</div><div class="v" id="kProfit">$0</div></div>
+    </div>
+  </header>
+
+  <div class="card">
+    <h2>Log a sale</h2>
+    <div class="form">
+      <div class="f full">
+        <label>Product sold</label>
+        <select id="product"></select>
+      </div>
+      <div class="f">
+        <label>Qty</label>
+        <input id="qty" type="number" inputmode="numeric" min="1" step="1" value="1">
+      </div>
+      <div class="f">
+        <label>Sale price (ea)</label>
+        <input id="price" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00">
+      </div>
+      <div class="f full">
+        <label>Cost (ea) &mdash; auto-filled, editable</label>
+        <input id="cost" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00">
+      </div>
+      <div class="f full">
+        <label>Note (optional) &mdash; customer, discount, etc.</label>
+        <input id="note" type="text" maxlength="120" placeholder="e.g. repeat customer">
+      </div>
+      <div class="profitline"><span>Profit on this sale</span><span class="pv" id="rowProfit">$0.00</span></div>
+      <button class="addbtn" id="add">+ Add sale</button>
+    </div>
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <div class="card">
+    <h2>Sales</h2>
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr><th>Product</th><th>Qty</th><th>Price</th><th>Cost</th><th>Profit</th><th></th></tr></thead>
+        <tbody id="rows"></tbody>
+        <tfoot><tr><td>Total</td><td id="tUnits">0</td><td id="tRev">$0</td><td id="tCost">$0</td><td id="tProfit">$0</td><td></td></tr></tfoot>
+      </table>
+    </div>
+    <div class="empty" id="empty" style="display:none">No sales logged yet. Add your first one above.</div>
+  </div>
+</div>
+
+<script>
+  // product => default sale price & landed cost (AUD @ 1.45). Kit cost = vial + $22.95 parts.
+  const PRODUCTS = [
+    {name:'Reta RT60 — Vial',        price:320,  cost:47.34},
+    {name:'Reta RT60 — Full Kit',    price:399,  cost:70.29},
+    {name:'Reta RT30 — Vial',        price:289,  cost:31.31},
+    {name:'Reta RT30 — Full Kit',    price:315,  cost:54.26},
+    {name:'KLOW 80mg — Vial',        price:195,  cost:39.09},
+    {name:'KLOW 80mg — Full Kit',    price:230,  cost:62.04},
+    {name:'GLOW 70mg — Vial',        price:179,  cost:33.13},
+    {name:'GLOW 70mg — Full Kit',    price:219,  cost:56.08},
+    {name:'BPC-157 + TB-500 — Vial', price:120,  cost:17.11},
+    {name:'BPC-157 + TB-500 — Kit',  price:170,  cost:40.06},
+    {name:'SS-31 10mg — Vial',       price:85,   cost:14.96},
+    {name:'SS-31 10mg — Full Kit',   price:130,  cost:37.91},
+    {name:'BAC Water 3ml',           price:19.99,cost:1.12},
+    {name:'Custom / other',          price:'',   cost:''},
+  ]
+  const $ = id => document.getElementById(id)
+  const aud = n => '$' + (Number(n)||0).toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})
+  const aud0 = n => '$' + Math.round(Number(n)||0).toLocaleString('en-AU')
+
+  // build dropdown
+  const sel = $('product')
+  PRODUCTS.forEach((p,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=p.name; sel.appendChild(o) })
+
+  // remember name per phone
+  $('who').value = localStorage.getItem('nova_who') || ''
+  $('who').addEventListener('input', e => localStorage.setItem('nova_who', e.target.value))
+
+  function fillFromProduct(){
+    const p = PRODUCTS[+sel.value]
+    if(p.price!=='') $('price').value = p.price
+    if(p.cost!=='')  $('cost').value  = p.cost
+    if(p.price==='' && p.cost===''){ $('price').value=''; $('cost').value='' }
+    calcRow()
+  }
+  function calcRow(){
+    const q=Math.max(1,parseInt($('qty').value)||1), pr=parseFloat($('price').value)||0, c=parseFloat($('cost').value)||0
+    $('rowProfit').textContent = aud((pr-c)*q)
+  }
+  sel.addEventListener('change', fillFromProduct)
+  ;['qty','price','cost'].forEach(id=>$(id).addEventListener('input', calcRow))
+  fillFromProduct()
+
+  function fmtTime(ts){
+    try { return new Date(ts).toLocaleString('en-AU',{timeZone:'Australia/Brisbane',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) }
+    catch(e){ return '' }
+  }
+
+  function render(data){
+    const {sales=[], totals={}} = data
+    $('kOrders').textContent = totals.orders||0
+    $('kUnits').textContent  = totals.units||0
+    $('kRev').textContent    = aud0(totals.revenue)
+    $('kProfit').textContent = aud0(totals.profit)
+    $('tUnits').textContent  = totals.units||0
+    $('tRev').textContent    = aud0(totals.revenue)
+    $('tCost').textContent   = aud0(totals.cost)
+    $('tProfit').textContent = aud0(totals.profit)
+    $('empty').style.display = sales.length ? 'none' : 'block'
+    $('rows').innerHTML = sales.map(s=>`
+      <tr>
+        <td><div class="prod">${escapeHtml(s.product)}</div>
+            <div class="subby">${fmtTime(s.ts)}${s.by?' · '+escapeHtml(s.by):''}${s.note?' · '+escapeHtml(s.note):''}</div></td>
+        <td>${s.qty||1}</td>
+        <td>${aud(s.price)}</td>
+        <td>${aud(s.cost)}</td>
+        <td class="pos">${aud(s.profit)}</td>
+        <td><button class="del" data-id="${s.id}">✕</button></td>
+      </tr>`).join('')
+    document.querySelectorAll('.del').forEach(b=>b.addEventListener('click',()=>del(b.dataset.id)))
+  }
+  function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+  async function load(){
+    try{
+      const r = await fetch('/api/nova-sales', {cache:'no-store'})
+      if(!r.ok) throw new Error(r.status)
+      render(await r.json())
+      $('liveTxt').textContent='Synced live'
+    }catch(e){ $('liveTxt').textContent='Offline — refresh'; }
+  }
+  async function del(id){
+    if(!confirm('Delete this sale?')) return
+    try{ const r=await fetch('/api/nova-sales/'+id,{method:'DELETE'}); render(await r.json()) }catch(e){}
+  }
+  $('add').addEventListener('click', async ()=>{
+    const product=PRODUCTS[+sel.value].name
+    const price=parseFloat($('price').value)||0
+    const cost=parseFloat($('cost').value)||0
+    const qty=Math.max(1,parseInt($('qty').value)||1)
+    if(price<=0){ $('msg').textContent='Enter a sale price first.'; return }
+    $('add').disabled=true; $('msg').textContent='Saving…'
+    try{
+      const r=await fetch('/api/nova-sales',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({product,price,cost,qty,note:$('note').value,by:$('who').value})})
+      if(!r.ok) throw new Error(r.status)
+      render(await r.json())
+      $('note').value=''; $('qty').value='1'; calcRow()
+      $('msg').textContent='Saved ✓'; setTimeout(()=>$('msg').textContent='',1500)
+    }catch(e){ $('msg').textContent='Could not save — check connection.' }
+    finally{ $('add').disabled=false }
+  })
+
+  load()
+  setInterval(()=>{ if(document.visibilityState==='visible') load() }, 5000)
+  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') load() })
+</script>
+</body>
+</html>
