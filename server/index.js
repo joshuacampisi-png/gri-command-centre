@@ -47,6 +47,7 @@ import { startKeywordScheduler } from './lib/keyword-tracker.js'
 import { getUsageSummary } from './lib/claude-guard.js'
 import instagramSchedulerRoutes from './routes/instagram-scheduler.js'
 import novaSalesRoutes from './routes/nova-sales.js'
+import novaCohortsRoutes from './routes/nova-cohorts.js'
 import { startInstagramCron } from './lib/instagram-cron.js'
 import { startCalendarPublisher } from './lib/calendar-publisher.js'
 import metaConnectRoutes, { loadSavedMetaTokens } from './routes/meta-connect.js'
@@ -368,6 +369,7 @@ app.use('/calendar-videos', express.static(join(process.cwd(), 'public/calendar-
 app.use('/api/calendar', calendarRoutes)
 // NovaPeptides sales log API — gated (NOT in PUBLIC_PREFIXES) so only Josh + wife with the password can read/write
 app.use('/api/nova-sales', novaSalesRoutes)
+app.use('/api/nova-cohorts', novaCohortsRoutes)
 // Serve Instagram media uploads
 const instagramMediaDir = _calVidDir('instagram-media')
 app.use('/instagram-media', express.static(instagramMediaDir))

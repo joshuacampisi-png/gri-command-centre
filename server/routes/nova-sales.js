@@ -11,11 +11,11 @@ router.get('/', (_req, res) => {
 
 // POST /api/nova-sales — add a sale { product, price, cost, qty, note, by }
 router.post('/', (req, res) => {
-  const { product, price, cost, qty, note, by } = req.body || {}
+  const { product, price, cost, qty, note, by, cohort, commission } = req.body || {}
   if (!product || !String(product).trim()) {
     return res.status(400).json({ error: 'product required' })
   }
-  addSale({ product, price, cost, qty, note, by })
+  addSale({ product, price, cost, qty, note, by, cohort, commission })
   const sales = listSales()
   res.json({ ok: true, sales, totals: totals(sales) })
 })
