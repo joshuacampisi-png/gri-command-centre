@@ -57,6 +57,30 @@ export function addSale({ product, price, cost, qty, note, by, cohort, commissio
   return sale
 }
 
+export function updateSale(id, patch = {}) {
+  const sales = read()
+  const i = sales.findIndex(s => s.id === id)
+  if (i < 0) return null
+  const s = sales[i]
+  const price = patch.price != null ? Number(patch.price) || 0 : s.price
+  const cost = patch.cost != null ? Number(patch.cost) || 0 : s.cost
+  const qty = patch.qty != null ? Math.max(1, Math.round(Number(patch.qty) || 1)) : (s.qty || 1)
+  const commission = patch.commission != null ? Math.max(0, Number(patch.commission) || 0) : (Number(s.commission) || 0)
+  const cohort = patch.cohort != null ? String(patch.cohort).slice(0, 40) : (s.cohort || '')
+  const note = patch.note != null ? String(patch.note).slice(0, 120) : (s.note || '')
+  const product = patch.product != null ? String(patch.product).slice(0, 80) : s.product
+  const gross = (price - cost) * qty
+  sales[i] = {
+    ...s, product, qty,
+    price: +price.toFixed(2), cost: +cost.toFixed(2),
+    revenue: +(price * qty).toFixed(2), totalCost: +(cost * qty).toFixed(2),
+    profit: +gross.toFixed(2), cohort, commission: +commission.toFixed(2),
+    net: +(gross - commission).toFixed(2), note
+  }
+  write(sales)
+  return sales[i]
+}
+
 export function deleteSale(id) {
   write(read().filter(s => s.id !== id))
   return true

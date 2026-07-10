@@ -1,5 +1,5 @@
 import express from 'express'
-import { listSales, addSale, deleteSale, totals } from '../lib/nova-sales-store.js'
+import { listSales, addSale, updateSale, deleteSale, totals } from '../lib/nova-sales-store.js'
 
 const router = express.Router()
 
@@ -16,6 +16,14 @@ router.post('/', (req, res) => {
     return res.status(400).json({ error: 'product required' })
   }
   addSale({ product, price, cost, qty, note, by, cohort, commission })
+  const sales = listSales()
+  res.json({ ok: true, sales, totals: totals(sales) })
+})
+
+// PUT /api/nova-sales/:id — edit an existing sale
+router.put('/:id', (req, res) => {
+  const updated = updateSale(req.params.id, req.body || {})
+  if (!updated) return res.status(404).json({ error: 'not found' })
   const sales = listSales()
   res.json({ ok: true, sales, totals: totals(sales) })
 })

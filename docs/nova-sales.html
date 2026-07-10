@@ -77,7 +77,8 @@
   .subby{font-size:10.5px;color:var(--mist);font-weight:500}
   .subby .cm{color:var(--amber);font-weight:700}
   .pos{color:var(--green);font-weight:800}
-  .del{background:none;border:none;color:var(--red);font-size:15px;cursor:pointer;padding:2px 6px;font-weight:700}
+  .del{background:none;border:none;color:var(--red);font-size:15px;cursor:pointer;padding:2px 4px;font-weight:700}
+  .edit{background:none;border:none;color:var(--blue);font-size:15px;cursor:pointer;padding:2px 4px;font-weight:700}
   tfoot td{font-weight:800;border-top:2px solid var(--line);background:#f8faff}
   .empty{color:var(--mist);text-align:center;padding:24px;font-size:13.5px}
 </style>
@@ -162,7 +163,7 @@
   const aud = n => '$' + (Number(n)||0).toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2})
   const aud0 = n => '$' + Math.round(Number(n)||0).toLocaleString('en-AU')
   const escapeHtml = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))
-  let COHORTS = [], commissionTouched = false
+  let COHORTS = [], commissionTouched = false, editingId = null, lastData = null
 
   const sel = $('product')
   PRODUCTS.forEach((p,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=p.name; sel.appendChild(o) })
@@ -215,22 +216,64 @@
     document.querySelectorAll('.cdel').forEach(b=>b.addEventListener('click',()=>delCohort(b.dataset.id)))
   }
 
+  function buildRow(s){
+    if(editingId===s.id) return editForm(s)
+    const comm=Number(s.commission)||0, net=(s.net!=null)?s.net:((s.profit||0)-comm)
+    const bits=[fmtTime(s.ts)]; if(s.by)bits.push(escapeHtml(s.by))
+    if(s.cohort)bits.push(`<span class="cm">${escapeHtml(s.cohort)} ${aud(comm)}</span>`); if(s.note)bits.push(escapeHtml(s.note))
+    return `<tr><td><div class="prod">${escapeHtml(s.product)}</div><div class="subby">${bits.join(' · ')}</div></td>
+      <td>${s.qty||1}</td><td>${aud(s.price)}</td><td class="pos">${aud(net)}</td>
+      <td style="white-space:nowrap"><button class="edit" data-id="${s.id}">✎</button><button class="del" data-id="${s.id}">✕</button></td></tr>`
+  }
+  function editForm(s){
+    const opts='<option value="">None</option>'+COHORTS.map(c=>`<option value="${c.id}" ${c.name===s.cohort?'selected':''}>${escapeHtml(c.name)} (${c.pct}%)</option>`).join('')
+    return `<tr><td colspan="5" style="background:#f4f7ff">
+      <div class="form" style="grid-template-columns:1fr 1fr">
+        <div class="f"><label>Qty</label><input id="e_qty" type="number" inputmode="numeric" min="1" step="1" value="${s.qty||1}"></div>
+        <div class="f"><label>Price (ea)</label><input id="e_price" type="number" inputmode="decimal" step="0.01" value="${s.price}"></div>
+        <div class="f"><label>Cost (ea)</label><input id="e_cost" type="number" inputmode="decimal" step="0.01" value="${s.cost}"></div>
+        <div class="f"><label>Cohort</label><select id="e_cohort">${opts}</select></div>
+        <div class="f full"><label>Commission $ (paid) &mdash; auto-fills from cohort, editable</label><input id="e_commission" type="number" inputmode="decimal" step="0.01" value="${Number(s.commission)||0}"></div>
+        <div class="f full"><label>Note</label><input id="e_note" type="text" maxlength="120" value="${escapeHtml(s.note||'')}"></div>
+        <div style="grid-column:1/-1;display:flex;gap:8px">
+          <button class="addbtn" id="e_save" data-id="${s.id}" style="flex:1">Save changes</button>
+          <button id="e_cancel" style="flex:0 0 auto;padding:12px 20px;border:1px solid var(--line);background:#fff;border-radius:12px;font-weight:800;cursor:pointer">Cancel</button>
+        </div>
+      </div></td></tr>`
+  }
+  function autoEditCommission(){
+    const c=COHORTS.find(x=>x.id===$('e_cohort').value)
+    const q=parseInt($('e_qty').value)||1, pr=parseFloat($('e_price').value)||0
+    if(c) $('e_commission').value=(pr*q*c.pct/100).toFixed(2)
+  }
+  function reRender(){ if(lastData){ const pc=renderSales(lastData); renderCohorts(pc) } }
+  function startEdit(id){ editingId=id; reRender() }
+  function cancelEdit(){ editingId=null; reRender() }
+  async function saveEdit(id){
+    const patch={ qty:parseInt($('e_qty').value)||1, price:parseFloat($('e_price').value)||0,
+      cost:parseFloat($('e_cost').value)||0, commission:parseFloat($('e_commission').value)||0,
+      cohort:(COHORTS.find(c=>c.id===$('e_cohort').value)||{}).name||'', note:$('e_note').value }
+    editingId=null
+    try{ const r=await fetch('/api/nova-sales/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(patch)})
+      if(r.ok){ const d=await r.json(); lastData=d; renderCohorts(renderSales(d)) } else reRender() }catch(e){ reRender() }
+  }
+
   function renderSales(data){
+    lastData=data
     const {sales=[], totals={}} = data
     $('kRev').textContent=aud0(totals.revenue); $('kComm').textContent=aud0(totals.commission)
     $('kNet').textContent=aud0(totals.net); $('kOrders').textContent=totals.orders||0
     $('tUnits').textContent=totals.units||0; $('tRev').textContent=aud0(totals.revenue); $('tNet').textContent=aud0(totals.net)
     $('grossLine').textContent=`Gross profit ${aud0(totals.profit)} − commission ${aud0(totals.commission)} = net ${aud0(totals.net)} (${totals.margin||0}% margin)`
     $('empty').style.display=sales.length?'none':'block'
-    $('rows').innerHTML=sales.map(s=>{
-      const comm=Number(s.commission)||0, net=(s.net!=null)?s.net:(s.profit-comm)
-      const bits=[fmtTime(s.ts)]; if(s.by)bits.push(escapeHtml(s.by))
-      if(s.cohort)bits.push(`<span class="cm">${escapeHtml(s.cohort)} ${aud(comm)}</span>`); if(s.note)bits.push(escapeHtml(s.note))
-      return `<tr><td><div class="prod">${escapeHtml(s.product)}</div><div class="subby">${bits.join(' · ')}</div></td>
-        <td>${s.qty||1}</td><td>${aud(s.price)}</td><td class="pos">${aud(net)}</td>
-        <td><button class="del" data-id="${s.id}">✕</button></td></tr>`
-    }).join('')
+    $('rows').innerHTML=sales.map(buildRow).join('')
     document.querySelectorAll('.del').forEach(b=>b.addEventListener('click',()=>delSale(b.dataset.id)))
+    document.querySelectorAll('.edit').forEach(b=>b.addEventListener('click',()=>startEdit(b.dataset.id)))
+    if(editingId){
+      const cs=$('e_cohort'); if(cs) cs.addEventListener('change',autoEditCommission)
+      const sv=$('e_save'); if(sv) sv.addEventListener('click',()=>saveEdit(sv.dataset.id))
+      const cn=$('e_cancel'); if(cn) cn.addEventListener('click',cancelEdit)
+    }
     return totals.cohorts||[]
   }
 
@@ -274,8 +317,8 @@
   })
 
   fillFromProduct(); load()
-  setInterval(()=>{ if(document.visibilityState==='visible') load() }, 5000)
-  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') load() })
+  setInterval(()=>{ if(document.visibilityState==='visible' && !editingId) load() }, 5000)
+  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible' && !editingId) load() })
 </script>
 </body>
 </html>
