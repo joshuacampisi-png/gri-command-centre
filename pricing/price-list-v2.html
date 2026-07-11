@@ -51,11 +51,14 @@
   .p-green{background:var(--greenB);color:var(--greenT)} .p-teal{background:var(--tealB);color:var(--tealT)}
   .p-ind{background:var(--indB);color:var(--indT)}
   .prices{flex:0 0 auto;display:flex;gap:10px}
-  .pbox{text-align:center;border-radius:13px;padding:10px 16px;min-width:96px;border:1px solid var(--line)}
-  .pbox .lb{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;color:var(--mist)}
-  .pbox .pr{font-size:22px;font-weight:800;margin-top:2px;color:var(--ink)}
+  .pbox{text-align:center;border-radius:13px;padding:14px 16px;width:110px;border:1px solid var(--line)}
+  .pbox .pr{font-size:23px;font-weight:800;color:var(--ink)}
   .pbox.kit2{background:var(--navy);border-color:var(--navy)}
-  .pbox.kit2 .lb{color:#9fb6ef} .pbox.kit2 .pr{color:#fff}
+  .pbox.kit2 .pr{color:#fff}
+  .phead{display:flex;align-items:flex-end;padding:0 4px 8px;margin-bottom:2px;border-bottom:2px solid var(--line)}
+  .phead .sp{flex:1 1 auto}
+  .phead .hc{width:110px;text-align:center;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--mist)}
+  .phead .hc.hk{color:var(--navy)}
 
   .bac{display:flex;align-items:center;justify-content:space-between;margin:6px 44px 0;background:#f6f8ff;border:1px solid var(--line);border-radius:14px;padding:14px 20px}
   .bac .n{font-size:16px;font-weight:800} .bac .n span{font-size:12.5px;color:var(--mist);font-weight:600;margin-left:6px}
@@ -99,45 +102,46 @@
     </div>
 
     <div class="list">
-      <div class="prow"><div class="pinfo"><div class="pname">Retatrutide <span class="mg">60mg &middot; RT60</span></div>
-        <div class="pills"><span class="pill2 p-amber">Fat loss</span><span class="pill2 p-amber">Appetite control</span><span class="pill2 p-amber">Metabolic</span></div></div>
-        <div class="prices"><div class="pbox"><div class="lb">Vial</div><div class="pr">$320</div></div><div class="pbox kit2"><div class="lb">Full kit</div><div class="pr">$399</div></div></div></div>
+      <div class="phead"><span class="sp"></span><div class="prices"><div class="hc">Vial</div><div class="hc hk">Full kit</div></div></div>
+      <div class="prow"><div class="pinfo"><div class="pname">Retatrutide <span class="mg">10mg &middot; RT10</span></div>
+        <div class="pills"><span class="pill2 p-amber">Fat loss</span><span class="pill2 p-amber">Appetite control</span><span class="pill2 p-amber">Beginner dose</span></div></div>
+        <div class="prices"><div class="pbox"><div class="pr">$155</div></div><div class="pbox kit2"><div class="pr">$170</div></div></div></div>
 
       <div class="prow"><div class="pinfo"><div class="pname">Retatrutide <span class="mg">30mg &middot; RT30</span></div>
         <div class="pills"><span class="pill2 p-amber">Fat loss</span><span class="pill2 p-amber">Appetite control</span><span class="pill2 p-amber">Metabolic</span></div></div>
-        <div class="prices"><div class="pbox"><div class="lb">Vial</div><div class="pr">$289</div></div><div class="pbox kit2"><div class="lb">Full kit</div><div class="pr">$315</div></div></div></div>
+        <div class="prices"><div class="pbox"><div class="pr">$289</div></div><div class="pbox kit2"><div class="pr">$315</div></div></div></div>
 
-      <div class="prow"><div class="pinfo"><div class="pname">Retatrutide <span class="mg">10mg &middot; RT10</span></div>
-        <div class="pills"><span class="pill2 p-amber">Fat loss</span><span class="pill2 p-amber">Appetite control</span><span class="pill2 p-amber">Beginner dose</span></div></div>
-        <div class="prices"><div class="pbox"><div class="lb">Vial</div><div class="pr">$155</div></div><div class="pbox kit2"><div class="lb">Full kit</div><div class="pr">$170</div></div></div></div>
+      <div class="prow"><div class="pinfo"><div class="pname">Retatrutide <span class="mg">60mg &middot; RT60</span></div>
+        <div class="pills"><span class="pill2 p-amber">Fat loss</span><span class="pill2 p-amber">Appetite control</span><span class="pill2 p-amber">Metabolic</span></div></div>
+        <div class="prices"><div class="pbox"><div class="pr">$320</div></div><div class="pbox kit2"><div class="pr">$399</div></div></div></div>
 
       <div class="prow"><div class="pinfo"><div class="pname">KLOW <span class="mg">80mg</span></div>
         <div class="pills"><span class="pill2 p-pink">Anti-aging</span><span class="pill2 p-green">Repair</span><span class="pill2 p-pink">Skin</span><span class="pill2 p-green">Gut health</span></div></div>
-        <div class="prices"><div class="pbox"><div class="lb">Vial</div><div class="pr">$195</div></div><div class="pbox kit2"><div class="lb">Full kit</div><div class="pr">$230</div></div></div></div>
+        <div class="prices"><div class="pbox"><div class="pr">$195</div></div><div class="pbox kit2"><div class="pr">$230</div></div></div></div>
 
       <div class="prow"><div class="pinfo"><div class="pname">GLOW <span class="mg">70mg</span></div>
         <div class="pills"><span class="pill2 p-pink">Skin</span><span class="pill2 p-pink">Hair</span><span class="pill2 p-green">Healing</span><span class="pill2 p-pink">Collagen</span></div></div>
-        <div class="prices"><div class="pbox"><div class="lb">Vial</div><div class="pr">$179</div></div><div class="pbox kit2"><div class="lb">Full kit</div><div class="pr">$219</div></div></div></div>
+        <div class="prices"><div class="pbox"><div class="pr">$179</div></div><div class="pbox kit2"><div class="pr">$219</div></div></div></div>
 
       <div class="prow"><div class="pinfo"><div class="pname">SS-31 <span class="mg">10mg</span></div>
         <div class="pills"><span class="pill2 p-teal">Mitochondria</span><span class="pill2 p-teal">Energy</span><span class="pill2 p-teal">Cellular repair</span></div></div>
-        <div class="prices"><div class="pbox"><div class="lb">Vial</div><div class="pr">$85</div></div><div class="pbox kit2"><div class="lb">Full kit</div><div class="pr">$130</div></div></div></div>
+        <div class="prices"><div class="pbox"><div class="pr">$85</div></div><div class="pbox kit2"><div class="pr">$130</div></div></div></div>
 
       <div class="prow"><div class="pinfo"><div class="pname">BPC-157 + TB-500 <span class="mg">10mg</span><span class="nick">AKA the Wolverine Stack</span></div>
         <div class="pills"><span class="pill2 p-green">Recovery</span><span class="pill2 p-green">Injury repair</span><span class="pill2 p-green">Gut health</span><span class="pill2 p-green">Tendon</span></div></div>
-        <div class="prices"><div class="pbox"><div class="lb">Vial</div><div class="pr">$120</div></div><div class="pbox kit2"><div class="lb">Full kit</div><div class="pr">$170</div></div></div></div>
+        <div class="prices"><div class="pbox"><div class="pr">$120</div></div><div class="pbox kit2"><div class="pr">$170</div></div></div></div>
 
       <div class="prow"><div class="pinfo"><div class="pname">Tesamorelin <span class="mg">20mg</span></div>
         <div class="pills"><span class="pill2 p-amber">Fat loss</span><span class="pill2 p-ind">Growth hormone</span><span class="pill2 p-ind">Cognition</span></div></div>
-        <div class="prices"><div class="pbox"><div class="lb">Vial</div><div class="pr">$185</div></div><div class="pbox kit2"><div class="lb">Full kit</div><div class="pr">$230</div></div></div></div>
+        <div class="prices"><div class="pbox"><div class="pr">$185</div></div><div class="pbox kit2"><div class="pr">$230</div></div></div></div>
 
       <div class="prow"><div class="pinfo"><div class="pname">MOTS-C <span class="mg">20mg</span></div>
         <div class="pills"><span class="pill2 p-amber">Metabolic</span><span class="pill2 p-teal">Energy</span><span class="pill2 p-amber">Endurance</span></div></div>
-        <div class="prices"><div class="pbox"><div class="lb">Vial</div><div class="pr">$140</div></div><div class="pbox kit2"><div class="lb">Full kit</div><div class="pr">$170</div></div></div></div>
+        <div class="prices"><div class="pbox"><div class="pr">$140</div></div><div class="pbox kit2"><div class="pr">$170</div></div></div></div>
 
       <div class="prow"><div class="pinfo"><div class="pname">NAD+ <span class="mg">500mg</span></div>
         <div class="pills"><span class="pill2 p-pink">Anti-aging</span><span class="pill2 p-teal">Energy</span><span class="pill2 p-ind">Focus</span></div></div>
-        <div class="prices"><div class="pbox"><div class="lb">Vial</div><div class="pr">$130</div></div><div class="pbox kit2"><div class="lb">Full kit</div><div class="pr">$150</div></div></div></div>
+        <div class="prices"><div class="pbox"><div class="pr">$130</div></div><div class="pbox kit2"><div class="pr">$150</div></div></div></div>
     </div>
 
     <div class="bac"><div class="n">Bacteriostatic Water <span>3ml &middot; for reconstitution</span></div><div class="pr">$19.99</div></div>
