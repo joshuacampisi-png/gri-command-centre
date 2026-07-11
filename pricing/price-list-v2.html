@@ -26,9 +26,8 @@
   .htitle .pill{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:8px 16px;font-size:12.5px;font-weight:700;letter-spacing:.5px}
 
   /* kit hero */
-  .kit{display:flex;align-items:center;gap:26px;margin:0 44px;margin-top:-1px;background:linear-gradient(120deg,#f4f6ff,#eafaff);
-    border:1px solid var(--line);border-bottom:none;border-radius:0 0 20px 20px;padding:22px 26px}
-  .kit .art{flex:0 0 250px}
+  .kit{display:flex;align-items:center;gap:26px;margin:16px 44px 0;background:linear-gradient(120deg,#f4f6ff,#eafaff);
+    border:1px solid var(--line);border-radius:16px;padding:20px 24px}
   .kit .info h3{font-size:19px;font-weight:800;color:var(--navy)}
   .kit .info p{font-size:13px;color:var(--mist);margin:4px 0 12px;line-height:1.5}
   .kit .incl{display:flex;flex-wrap:wrap;gap:8px}
@@ -40,7 +39,12 @@
   .prow:last-child{border-bottom:none}
   .pinfo{flex:1 1 auto;min-width:0}
   .pname{font-size:21px;font-weight:800;color:var(--ink)}
-  .pname .mg{font-size:14px;font-weight:700;color:var(--mist);margin-left:6px}
+  .pname .mg{font-weight:800;color:var(--blue);margin-left:6px}
+  .nick{display:inline-block;font-size:13px;font-weight:800;color:#b5651a;background:#fff2e2;border-radius:999px;padding:3px 11px;margin-left:9px;vertical-align:middle;letter-spacing:.2px}
+  .ship{display:flex;align-items:center;justify-content:center;gap:12px;background:#e4002b;color:#fff;padding:14px 20px;text-align:center}
+  .ship svg{width:28px;height:28px;flex:0 0 auto}
+  .ship .b{font-size:16.5px;font-weight:800;letter-spacing:.4px}
+  .ship .s{font-size:12.5px;font-weight:600;opacity:.95}
   .pills{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
   .pill2{font-size:12px;font-weight:800;padding:5px 11px;border-radius:999px;letter-spacing:.2px}
   .p-amber{background:var(--amberB);color:var(--amberT)} .p-pink{background:var(--pinkB);color:var(--pinkT)}
@@ -78,31 +82,12 @@
       </div>
     </header>
 
+    <div class="ship">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4h13v9H1z"/><path d="M14 7h4l3 3v3h-7z"/><circle cx="5" cy="16.5" r="1.7"/><circle cx="17.5" cy="16.5" r="1.7"/></svg>
+      <div><span class="b">FREE EXPRESS SHIPPING</span> &nbsp;&middot;&nbsp; <span class="s">Australia-wide &mdash; sent with Australia Post Express</span></div>
+    </div>
+
     <div class="kit">
-      <div class="art">
-        <svg viewBox="0 0 250 150" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="glass" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#eaf0ff"/><stop offset=".5" stop-color="#ffffff"/><stop offset="1" stop-color="#dfe8fb"/></linearGradient>
-            <linearGradient id="pen" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b4fb0"/><stop offset="1" stop-color="#16357e"/></linearGradient>
-          </defs>
-          <!-- pen -->
-          <rect x="18" y="66" width="150" height="20" rx="10" fill="url(#pen)"/>
-          <rect x="150" y="69" width="46" height="14" rx="7" fill="#0b2560"/>
-          <circle cx="196" cy="76" r="9" fill="#39d6d6"/>
-          <rect x="40" y="70" width="30" height="12" rx="3" fill="#dfe8fb" opacity="0.9"/>
-          <!-- vial -->
-          <g transform="translate(150,20)">
-            <rect x="18" y="0" width="30" height="12" rx="2" fill="#16357e"/>
-            <rect x="22" y="10" width="22" height="6" fill="#9fb6ef"/>
-            <rect x="14" y="15" width="38" height="86" rx="8" fill="url(#glass)" stroke="#c9d6f2" stroke-width="1.5"/>
-            <rect x="17" y="46" width="32" height="34" rx="3" fill="#ffffff" stroke="#e3e9f7" stroke-width="1"/>
-            <text x="33" y="60" text-anchor="middle" font-family="Arial" font-size="8" font-weight="800" fill="#16357e">Nova</text>
-            <rect x="21" y="64" width="24" height="4" rx="2" fill="#2f6fd0"/>
-            <text x="33" y="76" text-anchor="middle" font-family="Arial" font-size="6" fill="#5b6b94">RT60</text>
-            <rect x="18" y="88" width="30" height="9" rx="4" fill="#1a54c8"/>
-          </g>
-        </svg>
-      </div>
       <div class="info">
         <h3>The NovaPeptides Full Kit</h3>
         <p>Everything you need in one clean, reusable set &mdash; ready to go the moment it arrives.</p>
@@ -138,7 +123,7 @@
         <div class="pills"><span class="pill2 p-teal">Mitochondria</span><span class="pill2 p-teal">Energy</span><span class="pill2 p-teal">Cellular repair</span></div></div>
         <div class="prices"><div class="pbox"><div class="lb">Vial</div><div class="pr">$85</div></div><div class="pbox kit2"><div class="lb">Full kit</div><div class="pr">$130</div></div></div></div>
 
-      <div class="prow"><div class="pinfo"><div class="pname">BPC-157 + TB-500 <span class="mg">10mg</span></div>
+      <div class="prow"><div class="pinfo"><div class="pname">BPC-157 + TB-500 <span class="mg">10mg</span><span class="nick">AKA the Wolverine Stack</span></div>
         <div class="pills"><span class="pill2 p-green">Recovery</span><span class="pill2 p-green">Injury repair</span><span class="pill2 p-green">Gut health</span><span class="pill2 p-green">Tendon</span></div></div>
         <div class="prices"><div class="pbox"><div class="lb">Vial</div><div class="pr">$120</div></div><div class="pbox kit2"><div class="lb">Full kit</div><div class="pr">$170</div></div></div></div>
 
