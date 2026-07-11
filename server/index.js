@@ -48,6 +48,7 @@ import { getUsageSummary } from './lib/claude-guard.js'
 import instagramSchedulerRoutes from './routes/instagram-scheduler.js'
 import novaSalesRoutes from './routes/nova-sales.js'
 import novaCohortsRoutes from './routes/nova-cohorts.js'
+import novaGiveawaysRoutes from './routes/nova-giveaways.js'
 import { startInstagramCron } from './lib/instagram-cron.js'
 import { startCalendarPublisher } from './lib/calendar-publisher.js'
 import metaConnectRoutes, { loadSavedMetaTokens } from './routes/meta-connect.js'
@@ -208,6 +209,7 @@ if (DASHBOARD_PASSWORD && DASHBOARD_PASSWORD !== 'changeme') {
     '/robots.txt',
     '/manifest.json',
     '/novapeptides', '/nova-profit-loss', '/Nova-Profit-Loss',  // NovaPeptides P&L dashboard (public)
+    '/nova-sales',  // Sales-log PAGE shell is public; its data API (/api/nova-*) stays gated below
     '/api/shopify/shipping-costs-diag',
     // ── Static bundle + PWA assets needed by /checkout and /sign HTML shells ──
     // (Vite-built SPA bundle plus the PWA icons referenced from the manifest.)
@@ -370,6 +372,7 @@ app.use('/api/calendar', calendarRoutes)
 // NovaPeptides sales log API — gated (NOT in PUBLIC_PREFIXES) so only Josh + wife with the password can read/write
 app.use('/api/nova-sales', novaSalesRoutes)
 app.use('/api/nova-cohorts', novaCohortsRoutes)
+app.use('/api/nova-giveaways', novaGiveawaysRoutes)
 // Serve Instagram media uploads
 const instagramMediaDir = _calVidDir('instagram-media')
 app.use('/instagram-media', express.static(instagramMediaDir))

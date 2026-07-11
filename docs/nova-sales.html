@@ -84,6 +84,16 @@
 </style>
 </head>
 <body>
+<div id="login" style="display:none;position:fixed;inset:0;background:#0b1437;z-index:1000;align-items:center;justify-content:center;padding:24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif">
+  <div style="background:#fff;border-radius:16px;padding:26px 22px;max-width:340px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)">
+    <div style="font-weight:800;font-size:20px"><span style="color:#16357e">Nova</span><span style="color:#2f6fd0">Peptides</span></div>
+    <div style="color:#5b6b94;font-size:13px;margin:2px 0 18px">Sales Log &mdash; admin login</div>
+    <input id="pw" type="password" autocomplete="current-password" placeholder="Password" style="width:100%;box-sizing:border-box;padding:13px;border:1px solid #cdd6ee;border-radius:10px;font-size:16px;margin-bottom:10px">
+    <button id="loginBtn" style="width:100%;padding:13px;border:none;border-radius:10px;background:linear-gradient(120deg,#6a5cff,#16c2c2);color:#fff;font-weight:800;font-size:16px;cursor:pointer">Log in</button>
+    <div id="loginMsg" style="color:#e2585b;font-size:12.5px;margin-top:10px;min-height:16px"></div>
+    <div style="color:#9aa7c8;font-size:11px;margin-top:8px">Use your Command Centre password</div>
+  </div>
+</div>
 <div class="wrap">
   <header>
     <div class="top">
@@ -91,6 +101,7 @@
       <div style="text-align:right">
         <div class="live"><span class="dot"></span><span id="liveTxt">Synced live</span></div>
         <a class="back" href="/novapeptides">&larr; P&amp;L dashboard</a>
+        &middot; <a class="back" href="#" id="logout">Log out</a>
       </div>
     </div>
     <div class="who"><label>Logged by</label><input id="who" placeholder="Your name" maxlength="24"></div>
@@ -146,6 +157,22 @@
     </div>
     <div class="empty" id="empty" style="display:none">No sales logged yet.</div>
     <div class="msg" id="grossLine"></div>
+  </div>
+
+  <!-- GIVEAWAYS / OFF-STOCK -->
+  <div class="card">
+    <h2>Giveaways / off-stock <span class="hint">vials taken for you or given away</span></h2>
+    <div class="form">
+      <div class="f full"><label>Product taken off stock</label><select id="gProduct"></select></div>
+      <div class="f"><label>Qty</label><input id="gQty" type="number" inputmode="numeric" min="1" step="1" value="1"></div>
+      <div class="f"><label>To whom</label><input id="gTo" type="text" maxlength="40" placeholder="us / friend's name"></div>
+      <div class="f full"><label>Note (optional)</label><input id="gNote" type="text" maxlength="120"></div>
+      <div class="profitline"><div><div>Off-stock impact</div><div class="sub" id="gImpact">cost $0.00 &middot; retail forgone $0.00</div></div></div>
+      <button class="addbtn" id="gAdd" style="background:linear-gradient(120deg,#f0a020,#e2585b)">+ Log giveaway</button>
+    </div>
+    <div class="msg" id="gMsg"></div>
+    <div class="msg" id="gSummary" style="text-align:left;margin-top:10px;line-height:1.7"></div>
+    <div id="gList" style="margin-top:10px;display:flex;flex-direction:column;gap:8px"></div>
   </div>
 </div>
 
@@ -258,7 +285,7 @@
       cost:parseFloat($('e_cost').value)||0, commission:parseFloat($('e_commission').value)||0,
       cohort:(COHORTS.find(c=>c.id===$('e_cohort').value)||{}).name||'', note:$('e_note').value }
     editingId=null
-    try{ const r=await fetch('/api/nova-sales/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(patch)})
+    try{ const r=await api('/api/nova-sales/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(patch)})
       if(r.ok){ const d=await r.json(); lastData=d; renderCohorts(renderSales(d)) } else reRender() }catch(e){ reRender() }
   }
 
@@ -281,26 +308,67 @@
     return totals.cohorts||[]
   }
 
+  // ── admin auth: send the password with every request, so it works on all phones/PWAs ──
+  function authHeader(){ const pw=localStorage.getItem('nova_pw')||''; return pw?{'Authorization':'Basic '+btoa('nova:'+pw)}:{} }
+  async function api(url, opts={}){
+    opts.headers=Object.assign({}, opts.headers||{}, authHeader())
+    if(opts.cache===undefined) opts.cache='no-store'
+    const r=await fetch(url, opts)
+    if(r.status===401){ localStorage.removeItem('nova_pw'); requireLogin('Wrong password — try again'); throw new Error('401') }
+    return r
+  }
+  function requireLogin(msg){ $('loginMsg').textContent=msg||''; $('login').style.display='flex'; setTimeout(()=>$('pw').focus(),50) }
+  function doLogin(){ const pw=$('pw').value; if(!pw){ $('loginMsg').textContent='Enter the password'; return } localStorage.setItem('nova_pw',pw); $('login').style.display='none'; $('pw').value=''; load() }
+
+  // ── giveaways / off-stock ──
+  let lastGive=null
+  const gsel=$('gProduct')
+  PRODUCTS.forEach((p,i)=>{ if(p.price===''&&p.cost==='') return; const o=document.createElement('option'); o.value=i; o.textContent=p.name; gsel.appendChild(o) })
+  function gCalc(){ const p=PRODUCTS[+gsel.value]||{}, q=Math.max(1,parseInt($('gQty').value)||1); $('gImpact').textContent=`cost ${aud((p.cost||0)*q)} · retail forgone ${aud((p.price||0)*q)}` }
+  gsel.addEventListener('change',gCalc); $('gQty').addEventListener('input',gCalc); gCalc()
+  function renderGiveaways(data){
+    lastGive=data
+    const {giveaways=[], totals={}}=data
+    const salesNet=(lastData&&lastData.totals)?lastData.totals.net:0
+    $('gSummary').innerHTML=`<b>${totals.vials||0}</b> vials off-stock &middot; cost <b style="color:#c8791a">${aud0(totals.cost)}</b> (loss) &middot; retail forgone <b>${aud0(totals.retail)}</b><br>Net profit after giveaways <b style="color:#0fae6e">${aud0(salesNet-(totals.cost||0))}</b>`
+    $('gList').innerHTML = giveaways.length ? giveaways.map(g=>`
+      <div class="citem"><span class="cn">${escapeHtml(g.product)}</span>
+        <span class="cmeta">×${g.qty}${g.to?' → '+escapeHtml(g.to):''} &middot; cost ${aud0(g.costTotal)}${g.note?' &middot; '+escapeHtml(g.note):''}</span>
+        <button class="gdel" data-id="${g.id}">✕</button></div>`).join('') : '<div class="cempty">No giveaways logged.</div>'
+    document.querySelectorAll('.gdel').forEach(b=>b.addEventListener('click',()=>delGiveaway(b.dataset.id)))
+  }
+  async function delGiveaway(id){ if(!confirm('Remove this giveaway?')) return
+    try{ const r=await api('/api/nova-giveaways/'+id,{method:'DELETE'}); renderGiveaways(await r.json()) }catch(e){} }
+  $('gAdd').addEventListener('click', async ()=>{
+    const p=PRODUCTS[+gsel.value]; if(!p) return
+    const qty=Math.max(1,parseInt($('gQty').value)||1)
+    $('gAdd').disabled=true; $('gMsg').textContent='Saving…'
+    try{ const r=await api('/api/nova-giveaways',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({product:p.name,qty,to:$('gTo').value,note:$('gNote').value,cost:p.cost||0,retail:p.price||0})})
+      renderGiveaways(await r.json()); $('gTo').value='';$('gNote').value='';$('gQty').value='1';gCalc()
+      $('gMsg').textContent='Logged ✓'; setTimeout(()=>$('gMsg').textContent='',1500)
+    }catch(e){ $('gMsg').textContent='Could not save.' } finally{ $('gAdd').disabled=false }
+  })
+
   async function load(){
     try{
-      const [sr,cr]=await Promise.all([fetch('/api/nova-sales',{cache:'no-store'}),fetch('/api/nova-cohorts',{cache:'no-store'})])
-      if(!sr.ok||!cr.ok) throw new Error('http')
-      const sdata=await sr.json(); COHORTS=(await cr.json()).cohorts||[]
-      const perCohort=renderSales(sdata); renderCohorts(perCohort)
+      const [sr,cr,gr]=await Promise.all([api('/api/nova-sales'),api('/api/nova-cohorts'),api('/api/nova-giveaways')])
+      const sdata=await sr.json(); COHORTS=(await cr.json()).cohorts||[]; const gdata=await gr.json()
+      renderCohorts(renderSales(sdata)); renderGiveaways(gdata)
       $('liveTxt').textContent='Synced live'
-    }catch(e){ $('liveTxt').textContent='Offline — refresh' }
+    }catch(e){ if(e.message!=='401') $('liveTxt').textContent='Offline — refresh' }
   }
 
   $('cAdd').addEventListener('click', async ()=>{
     const name=$('cName').value.trim(), pct=parseFloat($('cPct').value)||0
     if(!name){ return }
-    try{ const r=await fetch('/api/nova-cohorts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,pct})})
+    try{ const r=await api('/api/nova-cohorts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,pct})})
       if(r.ok){ $('cName').value=''; $('cPct').value=''; await load() } }catch(e){}
   })
   async function delCohort(id){ if(!confirm('Remove this cohort? (past sales keep their recorded commission)')) return
-    try{ await fetch('/api/nova-cohorts/'+id,{method:'DELETE'}); await load() }catch(e){} }
+    try{ await api('/api/nova-cohorts/'+id,{method:'DELETE'}); await load() }catch(e){} }
   async function delSale(id){ if(!confirm('Delete this sale?')) return
-    try{ const r=await fetch('/api/nova-sales/'+id,{method:'DELETE'}); renderCohorts(renderSales(await r.json())) }catch(e){} }
+    try{ const r=await api('/api/nova-sales/'+id,{method:'DELETE'}); renderCohorts(renderSales(await r.json())) }catch(e){} }
 
   $('add').addEventListener('click', async ()=>{
     const product=PRODUCTS[+sel.value].name
@@ -310,7 +378,7 @@
     if(price<=0){ $('msg').textContent='Enter a sale price first.'; return }
     $('add').disabled=true; $('msg').textContent='Saving…'
     try{
-      const r=await fetch('/api/nova-sales',{method:'POST',headers:{'Content-Type':'application/json'},
+      const r=await api('/api/nova-sales',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({product,price,cost,qty,commission,cohort:cohortName,note:$('note').value,by:$('who').value})})
       if(!r.ok) throw new Error('http')
       renderCohorts(renderSales(await r.json()))
@@ -320,9 +388,13 @@
     finally{ $('add').disabled=false }
   })
 
-  fillFromProduct(); load()
-  setInterval(()=>{ if(document.visibilityState==='visible' && !editingId) load() }, 5000)
-  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible' && !editingId) load() })
+  $('loginBtn').addEventListener('click', doLogin)
+  $('pw').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin() })
+  $('logout').addEventListener('click', e=>{ e.preventDefault(); localStorage.removeItem('nova_pw'); requireLogin('Logged out') })
+  fillFromProduct()
+  if(localStorage.getItem('nova_pw')) load(); else requireLogin('Enter the admin password')
+  setInterval(()=>{ if(document.visibilityState==='visible' && !editingId && localStorage.getItem('nova_pw')) load() }, 5000)
+  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible' && !editingId && localStorage.getItem('nova_pw')) load() })
 </script>
 </body>
 </html>
