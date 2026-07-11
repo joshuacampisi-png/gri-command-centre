@@ -1,44 +1,52 @@
-NovaPeptides Profit & Loss (AUD),,,,,
-Prepared,2026-06-23,,,,
-All prices AUD. Peptide cost includes shipping. Change the rate cell to update everything.,,,,,
-,,,,,
-USD to AUD rate (edit me),1.45,,,,
-,,,,,
-KIT PIECES PER KIT (landed),,,,,
-Piece,Qty/kit,Landed cost AUD/kit,,,
-BAC water 3ml,1,=0.77*$B$5,,,
-Needle heads,5,=5*(96/1000)*$B$5,,,
-3ml glass cartridge,1,=(13.40/20)*$B$5,,,
-Carry storage bag,1,5.50,,,
-Reusable pen,1,=(109/12)*$B$5,,,
-Syringe,1,1.5,,,
-Kit parts total (excl peptide),,=SUM(C9:C14),,,
-,,,,,
-PER PEPTIDE - vial vs kit,,,,,
-Product,Type,Retail AUD,Cost AUD,Profit AUD,Margin %
-Reta RT60,Vial,320,=32.65*$B$5,=C19-D19,=IF(C19>0,E19/C19,0)
-Reta RT60,Kit,399,=32.65*$B$5+$C$15,=C20-D20,=IF(C20>0,E20/C20,0)
-Reta RT30,Vial,289,=21.59*$B$5,=C21-D21,=IF(C21>0,E21/C21,0)
-Reta RT30,Kit,315,=21.59*$B$5+$C$15,=C22-D22,=IF(C22>0,E22/C22,0)
-GLOW 70mg,Vial,179,=22.85*$B$5,=C23-D23,=IF(C23>0,E23/C23,0)
-GLOW 70mg,Kit,219,=22.85*$B$5+$C$15,=C24-D24,=IF(C24>0,E24/C24,0)
-KLOW 80mg,Vial,195,=26.96*$B$5,=C25-D25,=IF(C25>0,E25/C25,0)
-KLOW 80mg,Kit,230,=26.96*$B$5+$C$15,=C26-D26,=IF(C26>0,E26/C26,0)
-SS-31 10mg,Vial,85,=10.32*$B$5,=C27-D27,=IF(C27>0,E27/C27,0)
-SS-31 10mg,Kit,130,=10.32*$B$5+$C$15,=C28-D28,=IF(C28>0,E28/C28,0)
-BPC-157 + TB-500,Vial,120,=11.80*$B$5,=C29-D29,=IF(C29>0,E29/C29,0)
-BPC-157 + TB-500,Kit,170,=11.80*$B$5+$C$15,=C30-D30,=IF(C30>0,E30/C30,0)
-,,,,,
-TOTALS - whole stock (10 of each peptide),,,,,
-Scenario,Total Retail AUD,Total Profit AUD,,,
-All vials,=10*(C19+C21+C23+C25+C27+C29),=10*(E19+E21+E23+E25+E27+E29),,,
-All kits,=10*(C20+C22+C24+C26+C28+C30),=10*(E20+E22+E24+E26+E28+E30),,,
-,,,,,
-Combined shipping (both orders) AUD,=320*$B$5,,,,
-Peptide stock cost (both orders) AUD,=1331.20*$B$5,,,,
-Each kit without peptide AUD,=$C$15,,,,
-,,,,,
-NOTES,,,,,
-Profit = Retail - Cost. Kit cost = peptide cost (shipping incl) + kit parts total (C15, includes BAC water).,,,,,
-Change rate in B5; everything recalculates. Format Margin column (F) as percentage.,,,,,
-Syringe is AUD 1.50 (flat, no conversion).,,,,,
+NovaPeptides Profit & Loss (AUD),,,,,,
+Prepared,2026-07-11,,,,,
+All prices AUD. Peptide cost includes shipping. Change the rate cell to update everything.,,,,,,
+,,,,,,
+USD to AUD rate (edit me),1.45,,,,,
+,,,,,,
+KIT PIECES PER KIT (landed),,,,,,
+Piece,Qty/kit,Landed cost AUD/kit,,,,
+BAC water 3ml,1,=0.77*$B$5,,,,
+Needle heads,5,=5*(96/1000)*$B$5,,,,
+3ml glass cartridge,1,=(13.40/20)*$B$5,,,,
+Carry storage bag,1,5.50,,,,
+Reusable pen,1,=(109/12)*$B$5,,,,
+Syringe,1,1.5,,,,
+Kit parts total (excl peptide),,=SUM(C9:C14),,,,
+,,,,,,
+PER PRODUCT - vial vs kit,,,,,,
+Product,Type,Qty,Retail AUD,Cost AUD,Profit AUD,Margin %
+Reta RT60,Vial,10,320,=32.65*$B$5,=D19-E19,=IF(D19>0,F19/D19,0)
+Reta RT60,Kit,10,399,=32.65*$B$5+$C$15,=D20-E20,=IF(D20>0,F20/D20,0)
+Reta RT30,Vial,10,289,=21.59*$B$5,=D21-E21,=IF(D21>0,F21/D21,0)
+Reta RT30,Kit,10,315,=21.59*$B$5+$C$15,=D22-E22,=IF(D22>0,F22/D22,0)
+GLOW 70mg,Vial,10,179,=22.85*$B$5,=D23-E23,=IF(D23>0,F23/D23,0)
+GLOW 70mg,Kit,10,219,=22.85*$B$5+$C$15,=D24-E24,=IF(D24>0,F24/D24,0)
+KLOW 80mg,Vial,10,195,=26.96*$B$5,=D25-E25,=IF(D25>0,F25/D25,0)
+KLOW 80mg,Kit,10,230,=26.96*$B$5+$C$15,=D26-E26,=IF(D26>0,F26/D26,0)
+SS-31 10mg,Vial,10,85,=10.32*$B$5,=D27-E27,=IF(D27>0,F27/D27,0)
+SS-31 10mg,Kit,10,130,=10.32*$B$5+$C$15,=D28-E28,=IF(D28>0,F28/D28,0)
+BPC-157 + TB-500,Vial,10,120,=11.80*$B$5,=D29-E29,=IF(D29>0,F29/D29,0)
+BPC-157 + TB-500,Kit,10,170,=11.80*$B$5+$C$15,=D30-E30,=IF(D30>0,F30/D30,0)
+Tesamorelin 20mg,Vial,20,185,=19.2113*$B$5,=D31-E31,=IF(D31>0,F31/D31,0)
+Tesamorelin 20mg,Kit,20,230,=19.2113*$B$5+$C$15,=D32-E32,=IF(D32>0,F32/D32,0)
+Reta RT10,Vial,10,155,=9.2938*$B$5,=D33-E33,=IF(D33>0,F33/D33,0)
+Reta RT10,Kit,10,170,=9.2938*$B$5+$C$15,=D34-E34,=IF(D34>0,F34/D34,0)
+MOTS-C 20mg,Vial,10,140,=15.9678*$B$5,=D35-E35,=IF(D35>0,F35/D35,0)
+MOTS-C 20mg,Kit,10,170,=15.9678*$B$5+$C$15,=D36-E36,=IF(D36>0,F36/D36,0)
+NAD+ 500mg,Vial,20,130,=8.4829*$B$5,=D37-E37,=IF(D37>0,F37/D37,0)
+NAD+ 500mg,Kit,20,150,=8.4829*$B$5+$C$15,=D38-E38,=IF(D38>0,F38/D38,0)
+,,,,,,
+TOTALS - whole stock sold one way,,,,,,
+Scenario,Total Retail AUD,Total Profit AUD,,,,
+All vials,=C19*D19+C21*D21+C23*D23+C25*D25+C27*D27+C29*D29+C31*D31+C33*D33+C35*D35+C37*D37,=C19*F19+C21*F21+C23*F23+C25*F25+C27*F27+C29*F29+C31*F31+C33*F33+C35*F35+C37*F37,,,,
+All kits,=C20*D20+C22*D22+C24*D24+C26*D26+C28*D28+C30*D30+C32*D32+C34*D34+C36*D36+C38*D38,=C20*F20+C22*F22+C24*F24+C26*F26+C28*F28+C30*F30+C32*F32+C34*F34+C36*F36+C38*F38,,,,
+,,,,,,
+Shipping across all orders AUD,=480*$B$5,,,,,
+Total stock cost (all orders) AUD,=2137.70*$B$5,,,,,
+Each kit without peptide AUD,=$C$15,,,,,
+,,,,,,
+NOTES,,,,,,
+Profit = Retail - Cost. Kit cost = peptide cost (shipping incl) + kit parts total (C15, includes BAC water).,,,,,,
+Qty column = vials in stock per product. Totals weight by Qty (all sold as vials OR all as kits).,,,,,,
+Change rate in B5; everything recalculates. Format Margin column (G) as percentage.,,,,,,
