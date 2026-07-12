@@ -615,7 +615,14 @@ button:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2
 
 /* ── Responsive ───────────────────────────────────────────────────────────── */
 @media (max-width: 1200px) { .themes-layout { grid-template-columns: 300px 1fr; } }
-@media (max-width: 900px)  { .app { grid-template-columns: 1fr; } .sidebar { border-right: none; border-bottom: 1px solid #E8ECF4; } .themes-layout { grid-template-columns: 1fr; } .compare-view { grid-template-columns: 1fr; } }
+@media (max-width: 900px)  {
+  .app { grid-template-columns: 1fr; }
+  /* Stacked layout: the sidebar must drop its desktop sticky/100vh rules or
+     it paints over the page content that flows underneath it. */
+  .sidebar { border-right: none; border-bottom: 1px solid #E8ECF4; position: static; height: auto; }
+  .themes-layout { grid-template-columns: 1fr; }
+  .compare-view { grid-template-columns: 1fr; }
+}
 
 /* ── File Editor Layout ───────────────────────────────────────────────────── */
 .file-editor-layout { display: grid; grid-template-columns: 240px 1fr; gap: 0; flex: 1; min-height: 0; height: calc(100vh - 160px); border: 1px solid #E8ECF4; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }

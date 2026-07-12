@@ -1,0 +1,52 @@
+{
+  "fixedCosts": [
+    {
+      "key": "wages-beatriz",
+      "label": "Beatriz wages",
+      "amount": 1700,
+      "cadence": "weekly"
+    },
+    {
+      "key": "wages-josh",
+      "label": "Josh wages",
+      "amount": 1500,
+      "cadence": "weekly"
+    },
+    {
+      "key": "wages-casual",
+      "label": "Casual wages",
+      "amount": 200,
+      "cadence": "weekly"
+    },
+    {
+      "key": "marketing-other",
+      "label": "Marketing (non-ads)",
+      "amount": 220,
+      "cadence": "weekly"
+    },
+    {
+      "key": "accessories",
+      "label": "Everyday accessories",
+      "amount": 150,
+      "cadence": "weekly"
+    },
+    {
+      "key": "rent",
+      "label": "Rent (Bundall HQ)",
+      "amount": 2950,
+      "cadence": "monthly"
+    },
+    {
+      "key": "accountant",
+      "label": "Accountant",
+      "amount": 300,
+      "cadence": "monthly"
+    }
+  ],
+  "taxPct": 0.05,
+  "shopifyCapitalPct": 0.25,
+  "cmTargetMonthly": null,
+  "grossMarginPct": 0.47,
+  "tntFullMargin": true,
+  "updatedAt": "2026-07-12T20:16:00.879Z"
+}

@@ -17,8 +17,9 @@ import IGReplyBotTab from './components/IGReplyBotTab'
 import { AdsFlywheelTab } from './components/AdsFlywheelTab'
 import { GoogleAdsAgentTab } from './components/GoogleAdsAgentTab'
 import { GMBFlywheelTab } from './components/GMBFlywheelTab.jsx'
+import FinanceTab from './components/FinanceTab.jsx'
 
-const NAV = ['Overview', 'Tasks', 'Completed', 'Keywords', 'Competitors', 'Trends', 'Blog Writer', 'Instagram', 'IG Bot', 'Ads Flywheel', 'Google Ads Agent', 'Ads Testing', 'Ads Performance', 'TNT Hire', 'Balloon Hire', 'Returns', 'GMB Flywheel']
+const NAV = ['Overview', 'Finance', 'Tasks', 'Completed', 'Keywords', 'Competitors', 'Trends', 'Blog Writer', 'Instagram', 'IG Bot', 'Ads Flywheel', 'Google Ads Agent', 'Ads Testing', 'Ads Performance', 'TNT Hire', 'Balloon Hire', 'Returns', 'GMB Flywheel']
 
 const COMPANIES = {
   GRI:     { name: 'Gender Reveal Ideas', description: 'Gender reveal party supplies',          accent: '#ef4444' },
@@ -3335,7 +3336,7 @@ export default function App() {
   const integ   = data?.integrations || {}
   const profile = COMPANIES[company] || COMPANIES.GRI
 
-  const navIcons = { Overview:'◉', Tasks:'☑', Completed:'✅', Keywords:'📈', Competitors:'⚔', Trends:'📊', 'Blog Writer':'✍', Instagram:'📸', 'IG Bot':'🤖', 'Ads Flywheel':'🔄', 'Google Ads Agent':'🎯', 'Ads Testing':'📅', 'Ads Performance':'📊', 'TNT Hire':'💥', 'Balloon Hire':'🎈', Returns:'↩', 'GMB Flywheel':'📍', Themes:'◈', 'Theme Editor':'✏', Settings:'⚙' }
+  const navIcons = { Overview:'◉', Finance:'💰', Tasks:'☑', Completed:'✅', Keywords:'📈', Competitors:'⚔', Trends:'📊', 'Blog Writer':'✍', Instagram:'📸', 'IG Bot':'🤖', 'Ads Flywheel':'🔄', 'Google Ads Agent':'🎯', 'Ads Testing':'📅', 'Ads Performance':'📊', 'TNT Hire':'💥', 'Balloon Hire':'🎈', Returns:'↩', 'GMB Flywheel':'📍', Themes:'◈', 'Theme Editor':'✏', Settings:'⚙' }
 
   const goEditor = theme => { setEditorTheme(theme); setActive('Theme Editor') }
 
@@ -3380,6 +3381,7 @@ export default function App() {
         {!loading && !error && (
           <>
             {active==='Overview'     && <OverviewPage    data={data} company={company} />}
+            {active==='Finance'      && <FinanceTab />}
             {active==='Tasks'        && <TasksPage       data={data} />}
             {active==='Completed'    && <CompletedPage   data={data} />}
             {active==='Keywords'     && <KeywordTrackerPage />}

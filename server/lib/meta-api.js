@@ -16,8 +16,9 @@ const HARDCODED_CAMPAIGN_IDS = [
 ]
 
 export function metaToken() {
-  // Hardcoded token takes priority — env var is a fallback only
-  return HARDCODED_META_TOKEN || process.env.META_ACCESS_TOKEN
+  // Env var takes priority — it's the one rotated when Meta invalidates
+  // sessions. The hardcoded token is only a last-resort fallback.
+  return process.env.META_ACCESS_TOKEN || HARDCODED_META_TOKEN
 }
 
 function metaAccountId() {
@@ -242,6 +243,23 @@ export async function fetchAdInsightsByDay(adId, days = 7) {
     time_increment: '1'
   })
   return (data.data || []).map(parseInsights)
+}
+
+// ── Account-level DAILY spend for an arbitrary date range ────────────────
+// Used by the Finance tab. Returns [{ date: 'YYYY-MM-DD', spend: Number }].
+// Meta allows time_range spans up to 37 months back.
+export async function fetchAccountSpendByDay(since, until) {
+  const accountId = metaAccountId()
+  const data = await metaGet(`/${accountId}/insights`, {
+    fields: 'spend',
+    time_range: JSON.stringify({ since, until }),
+    time_increment: '1',
+    limit: 500,
+  })
+  return (data.data || []).map(d => ({
+    date: d.date_start,
+    spend: parseFloat(d.spend || 0),
+  }))
 }
 
 // ── Lightweight account-level insights (single API call) ────────────────

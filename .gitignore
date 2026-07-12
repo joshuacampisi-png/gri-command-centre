@@ -21,3 +21,4 @@ logs/
 data/gmb-auth.json
 data/gmb-posted.json.bak
 data/gmb-failure-*.png
+data/finance/

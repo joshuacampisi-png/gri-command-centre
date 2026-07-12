@@ -58,6 +58,7 @@ const SEED_WHITELIST = [
   'gads-agent/grace-period.json',
   'gmb-config.json',
   'gmb-descriptions.json',
+  'finance-config.json',
 ]
 
 export function seedVolumeFromRepo() {

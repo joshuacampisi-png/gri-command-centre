@@ -19,6 +19,7 @@ import publishRoutes from './routes/publish.js'
 import hiresRoutes from './routes/hires.js'
 import gmbAdminRoutes from './routes/gmb-admin.js'
 import balloonsRoutes from './routes/balloons.js'
+import financeRoutes from './routes/finance.js'
 import balloonContractRoutes from './routes/balloon-contract.js'
 import checkoutRoutes from './routes/checkout.js'
 import returnsRoutes from './routes/returns.js'
@@ -143,7 +144,9 @@ app.use((req, res, next) => {
   const proto = (req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http')).toString().split(',')[0].trim()
   if (proto === 'http' && req.method === 'GET' && !req.path.startsWith('/api/')) {
     const host = req.headers.host
-    if (host) return res.redirect(301, `https://${host}${req.originalUrl}`)
+    // Local dev has no TLS — redirecting localhost to https just breaks it
+    const isLocal = /^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(host || '')
+    if (host && !isLocal) return res.redirect(301, `https://${host}${req.originalUrl}`)
   }
   next()
 })
@@ -421,6 +424,7 @@ app.use('/api/balloons', balloonsRoutes)
 app.use('/api/balloon-contract', balloonContractRoutes)
 app.use('/checkout', checkoutRoutes)
 app.use('/api/returns', returnsRoutes)
+app.use('/api/finance', financeRoutes)
 app.use('/api/contract', contractRoutes)
 app.use('/api/blog-writer', blogWriterRoutes)
 app.use('/api/ads/strategist', adsStrategistRoutes)

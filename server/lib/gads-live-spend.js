@@ -44,6 +44,43 @@ function dateWindow(preset) {
 }
 
 /**
+ * Account-level DAILY spend for an arbitrary date range (YYYY-MM-DD strings).
+ * Used by the Finance tab. Returns { ok, days: [{ date, spend }], error? }.
+ */
+export async function fetchGoogleSpendByDayRange(since, until) {
+  if (!isGadsConfigured()) {
+    return { ok: false, days: [], error: 'Google Ads API not configured' }
+  }
+  const cacheKey = `daily:${since}:${until}`
+  const cached = CACHE.get(cacheKey)
+  if (cached && Date.now() - cached.t < TTL_MS) return cached.v
+
+  try {
+    const customer = getGadsCustomer()
+    const rows = await customer.query(`
+      SELECT metrics.cost_micros, segments.date
+      FROM customer
+      WHERE segments.date BETWEEN '${since}' AND '${until}'
+    `)
+    const byDate = new Map()
+    for (const r of rows) {
+      const d = r.segments?.date
+      if (!d) continue
+      byDate.set(d, (byDate.get(d) || 0) + microsToDollars(BigInt(r.metrics?.cost_micros || 0)))
+    }
+    const days = [...byDate.entries()]
+      .map(([date, spend]) => ({ date, spend: Math.round(spend * 100) / 100 }))
+      .sort((a, b) => a.date.localeCompare(b.date))
+    const out = { ok: true, days, since, until, fetchedAt: new Date().toISOString() }
+    CACHE.set(cacheKey, { t: Date.now(), v: out })
+    return out
+  } catch (err) {
+    const msg = err?.errors?.[0]?.message || err?.message || String(err)
+    return { ok: false, days: [], error: msg, since, until }
+  }
+}
+
+/**
  * Pull account-level totals for the given date preset.
  * Returns { ok, spend, clicks, impressions, conversions, conversionValue,
  *           since, until, fetchedAt, error? }
