@@ -854,3 +854,8 @@
   font-size: 11px; line-height: 1.5; color: var(--fin-muted, #8b95a5);
   flex-basis: 100%;
 }
+.fin-cashview-after {
+  font-size: 13px; font-weight: 600;
+  font-family: var(--fin-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+  color: var(--fin-green, #22c55e);
+}

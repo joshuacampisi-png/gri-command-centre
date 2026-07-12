@@ -298,9 +298,22 @@ function VerdictBanner({ verdict, cashView }) {
           <span className={`fin-cashview-amt fin-status-${cashView.status || 'amber'}`}>
             {cashView.projectedEom >= 0 ? '+' : ''}{fmtCompact(cashView.projectedEom)}/mo
           </span>
+          {cashView.afterLoanProjected != null && cashView.loan?.remaining > 0 && (
+            <span className="fin-cashview-after">
+              → {cashView.afterLoanProjected >= 0 ? '+' : '−'}{fmtCompact(cashView.afterLoanProjected)}/mo once loan clears
+            </span>
+          )}
           <span className="fin-cashview-note">
-            bank-account reality while loan-funded stock lasts — no COGS, {fmtFracPct(cashView.loanPct)} Shopify remittance counted. Flatters long term: stock must eventually be re-bought with cash.
+            Bank-account reality — stock already paid for (no COGS), {fmtFracPct(cashView.loanPct)} Shopify remittance counted while the loan runs.
           </span>
+          {cashView.loan?.remaining > 0 && (
+            <span className="fin-cashview-note">
+              Loan: {fmtAUD(cashView.loan.remaining)} left · {fmtAUD(cashView.loan.monthlyRemittance)}/mo remittance · clears in ~{cashView.loan.monthsToPayoff} months.
+              {cashView.stock?.retailValue > 0 && (
+                <> Stock on hand: {fmtCompact(cashView.stock.retailValue)} retail ≈ {cashView.stock.runwayMonths} months of sales, already paid for.</>
+              )}
+            </span>
+          )}
         </div>
       )}
     </section>

@@ -423,10 +423,16 @@ async function _buildFinanceSummary() {
   const prevMtdOrders = ordersByMonth[prevYm].filter(o => o.d <= prevMtdCutoff)
   const prevMtdRev = prevMtdOrders.reduce((s, o) => s + o.t, 0)
   const prevSpendMap = adspendByMonth[prevYm]
+  // Counted spend (P&L: Meta only unless configured otherwise)
   const prevMtdSpend = [
     ...Object.entries(prevSpendMap.meta),
     ...(config.includeGoogleSpend ? Object.entries(prevSpendMap.google) : []),
   ].filter(([d]) => d <= prevMtdCutoff).reduce((s, [, v]) => s + v, 0)
+  // Acquisition spend (customer metrics: ALWAYS Meta + Google — Google is
+  // paid externally but still buys customers, so CAC family counts it)
+  const prevMtdSpendAcq = [...Object.entries(prevSpendMap.meta), ...Object.entries(prevSpendMap.google)]
+    .filter(([d]) => d <= prevMtdCutoff).reduce((s, [, v]) => s + v, 0)
+  const curSpendAcq = cur.metaSpend + cur.googleSpend
   const prevMtdCod = costOfDelivery(prevMtdOrders, config,
     Math.min(dayOfMonth, daysInMonth(prevYm)) / daysInMonth(prevYm))
   const prevMtdCm = calculateCM(prevMtdRev, prevMtdCod, prevMtdSpend)
@@ -438,23 +444,27 @@ async function _buildFinanceSummary() {
   const custNow = customerStatsForRange(byCustomer, mtdFrom, todayStr)
   const custPrev = customerStatsForRange(byCustomer, `${prevYm}-01`, prevMtdCutoff)
 
-  const ncacNow = custNow.newCustomers > 0 ? cur.adSpend / custNow.newCustomers : 0
-  const ncacPrev = custPrev.newCustomers > 0 ? prevMtdSpend / custPrev.newCustomers : 0
+  // All CAC-family metrics use COMBINED Meta + Google acquisition spend
+  // (Josh 2026-07-13): Google is paid by another business so it stays out
+  // of the P&L, but it still buys customers — hiding it from CAC would
+  // flatter acquisition efficiency.
+  const ncacNow = custNow.newCustomers > 0 ? curSpendAcq / custNow.newCustomers : 0
+  const ncacPrev = custPrev.newCustomers > 0 ? prevMtdSpendAcq / custPrev.newCustomers : 0
 
-  const deltaSpend = cur.adSpend - prevMtdSpend
+  const deltaSpend = curSpendAcq - prevMtdSpendAcq
   const deltaCust = custNow.newCustomers - custPrev.newCustomers
   const incrementalCac = deltaCust > 0 ? r2(deltaSpend / deltaCust) : null
 
   const acquiredNow = custNow.newCustomers + custNow.reactivated
   const acquiredPrev = custPrev.newCustomers + custPrev.reactivated
-  const adjCacNow = acquiredNow > 0 ? cur.adSpend / acquiredNow : 0
-  const adjCacPrev = acquiredPrev > 0 ? prevMtdSpend / acquiredPrev : 0
+  const adjCacNow = acquiredNow > 0 ? curSpendAcq / acquiredNow : 0
+  const adjCacPrev = acquiredPrev > 0 ? prevMtdSpendAcq / acquiredPrev : 0
 
   const fovNow = calculateFOVCAC(custNow.firstOrderAov, config.grossMarginPct, ncacNow)
   const fovPrev = calculateFOVCAC(custPrev.firstOrderAov, config.grossMarginPct, ncacPrev)
 
-  const amerNow = calculateAcquisitionMER(custNow.newCustomerRevenue, cur.adSpend)
-  const amerPrev = calculateAcquisitionMER(custPrev.newCustomerRevenue, prevMtdSpend)
+  const amerNow = calculateAcquisitionMER(custNow.newCustomerRevenue, curSpendAcq)
+  const amerPrev = calculateAcquisitionMER(custPrev.newCustomerRevenue, prevMtdSpendAcq)
 
   const ltgp = ltgpWindows(byCustomer, config, ncacNow, todayStr)
 
@@ -528,12 +538,35 @@ async function _buildFinanceSummary() {
     - (dayOfMonth ? (cur.adSpend / dayOfMonth) * dim : 0)
     - projRevenue * config.taxPct
     - fixedTotal
+  // Once the loan clears, the remittance disappears from the cash view
+  const cashAfterLoan = cashProjected + projRevenue * loanPct
+
+  // Loan payoff countdown + stock runway (Josh 2026-07-13: $30k loan left,
+  // ~$1.5M retail stock on hand, all already paid for)
+  const monthlyRemittance = projRevenue * loanPct
+  const loanRemaining = config.loanRemaining || 0
+  const monthsToPayoff = loanRemaining > 0 && monthlyRemittance > 0
+    ? loanRemaining / monthlyRemittance : 0
+  const stockRetail = config.stockRetailValue || 0
+  const stockRunwayMonths = stockRetail > 0 && projRevenue > 0
+    ? stockRetail / projRevenue : 0
+
   const cashView = {
     loanPct,
     mtd: r0(cashMtd),
     projectedEom: r0(cashProjected),
+    afterLoanProjected: r0(cashAfterLoan),
     status: cashProjected > 0 ? 'green' : cashProjected > -2000 ? 'amber' : 'red',
-    note: 'No COGS while loan-funded stock lasts; 25% remittance counted. Flatters long-term — stock must eventually be re-bought with cash.',
+    note: 'No COGS while paid-for stock lasts; loan remittance counted while it runs.',
+    loan: {
+      remaining: r0(loanRemaining),
+      monthlyRemittance: r0(monthlyRemittance),
+      monthsToPayoff: Math.round(monthsToPayoff * 10) / 10,
+    },
+    stock: {
+      retailValue: r0(stockRetail),
+      runwayMonths: Math.round(stockRunwayMonths),
+    },
   }
 
   const summary = {
@@ -591,16 +624,18 @@ async function _buildFinanceSummary() {
     kpis: {
       revenue: { value: r0(cur.revenue), deltaPct: pctDelta(cur.revenue, prevMtdRev) },
       spend: {
-        value: r0(cur.adSpend), deltaPct: pctDelta(cur.adSpend, prevMtdSpend),
+        // Headline = combined Meta + Google (the full marketing machine);
+        // only Meta hits the P&L (Google is paid by another business).
+        value: r0(curSpendAcq), deltaPct: pctDelta(curSpendAcq, prevMtdSpendAcq),
         meta: r0(cur.metaSpend), google: r0(cur.googleSpend),
-        // Google spend is external (paid by another business) unless the
-        // config flag counts it — the UI labels it accordingly.
+        countedInOutgoings: r0(cur.adSpend),
         googleCounted: Boolean(config.includeGoogleSpend),
       },
       mer: {
-        value: cur.adSpend > 0 ? r2(cur.revenue / cur.adSpend) : null,
-        deltaPct: (cur.adSpend > 0 && prevMtdSpend > 0 && prevMtdRev > 0)
-          ? pctDelta(cur.revenue / cur.adSpend, prevMtdRev / prevMtdSpend) : null,
+        // Marketing efficiency across the whole machine: Meta + Google
+        value: curSpendAcq > 0 ? r2(cur.revenue / curSpendAcq) : null,
+        deltaPct: (curSpendAcq > 0 && prevMtdSpendAcq > 0 && prevMtdRev > 0)
+          ? pctDelta(cur.revenue / curSpendAcq, prevMtdRev / prevMtdSpendAcq) : null,
       },
       aov: { value: r0(cur.aov), deltaPct: pctDelta(cur.aov, prevMtdAov) },
     },

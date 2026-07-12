@@ -43,10 +43,17 @@ export const DEFAULT_CONFIG = {
   includeGoogleSpend: false,
   // null = auto: trailing-3-full-month average CM × 1.1 stretch.
   cmTargetMonthly: null,
-  // Blended gross margin for non-hire products. Josh 2026-07-13: "margins
-  // on each product are over 50%" — set at the 50% floor of that claim.
-  // Each +1pt of margin ≈ +$500/mo net at current volume.
-  grossMarginPct: 0.50,
+  // Blended gross margin for non-hire products. Josh 2026-07-13: "we buy
+  // $4 and sell for $32 — this is the LOWEST product margin we have" =
+  // 87.5% floor; everything else is higher. Set at that floor.
+  grossMarginPct: 0.875,
+  // Shopify Capital loan balance remaining (Josh 2026-07-13: $30k left).
+  // Update as it pays down; set 0 when cleared.
+  loanRemaining: 30000,
+  // Stock on hand at RETAIL value (Josh 2026-07-13: ~$1.5M) — all paid for
+  // via the loan. Gives the months-of-runway figure: no cash needed for
+  // inventory until this sells through.
+  stockRetailValue: 1500000,
   // TNT hire revenue carries no COGS — contributes at 100% margin.
   tntFullMargin: true,
   updatedAt: null,
@@ -104,6 +111,11 @@ export function saveFinanceConfig(patch) {
   }
   if (typeof next.includeGoogleSpend !== 'boolean') {
     next.includeGoogleSpend = Boolean(next.includeGoogleSpend)
+  }
+  for (const f of ['loanRemaining', 'stockRetailValue']) {
+    if (next[f] != null && (typeof next[f] !== 'number' || next[f] < 0)) {
+      throw new Error(`${f} must be a number ≥ 0`)
+    }
   }
 
   const tmp = CONFIG_FILE + '.tmp'
