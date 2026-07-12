@@ -28,13 +28,25 @@ export const DEFAULT_CONFIG = {
   auspostWeekly: 1400,
   // Tax provision as a share of revenue (Josh: 5%).
   taxPct: 0.05,
-  // Shopify Capital repayment — Shopify withholds this share of revenue
-  // weekly until the loan is cleared. Set to 0 once repaid.
-  shopifyCapitalPct: 0.25,
+  // Shopify Capital in the MODEL view. Josh 2026-07-13: the loan bought the
+  // inventory currently being sold, so counting full COGS AND the repayment
+  // would double-count product costs. Model view = COGS only (this stays 0).
+  shopifyCapitalPct: 0,
+  // The REAL remittance rate Shopify withholds while the loan runs — used
+  // by the CASH view (no COGS while prepaid stock lasts, remittance counted).
+  // Set to 0 when the loan actually clears.
+  capitalLoanActualPct: 0.25,
+  // Google Ads spend is paid by a DIFFERENT business (Josh 2026-07-13), so
+  // it does not count as a GRI outgoing and does not reduce CM. Google-
+  // driven sales still land in revenue; the spend is shown as external
+  // info only. Set true to count it again.
+  includeGoogleSpend: false,
   // null = auto: trailing-3-full-month average CM × 1.1 stretch.
   cmTargetMonthly: null,
-  // Blended gross margin for non-TNT products (Josh-confirmed 2026-04-05).
-  grossMarginPct: 0.47,
+  // Blended gross margin for non-hire products. Josh 2026-07-13: "margins
+  // on each product are over 50%" — set at the 50% floor of that claim.
+  // Each +1pt of margin ≈ +$500/mo net at current volume.
+  grossMarginPct: 0.50,
   // TNT hire revenue carries no COGS — contributes at 100% margin.
   tntFullMargin: true,
   updatedAt: null,
@@ -89,6 +101,9 @@ export function saveFinanceConfig(patch) {
   }
   if (typeof next.auspostWeekly !== 'number' || next.auspostWeekly < 0) {
     throw new Error('auspostWeekly must be a number ≥ 0')
+  }
+  if (typeof next.includeGoogleSpend !== 'boolean') {
+    next.includeGoogleSpend = Boolean(next.includeGoogleSpend)
   }
 
   const tmp = CONFIG_FILE + '.tmp'

@@ -196,12 +196,34 @@ function costOfDelivery(orders, config, fractionOfMonth = 1) {
   return cogs + fees + ship
 }
 
-function rollupMonth(ym, orders, adspend, config, fractionOfMonth = 1) {
+function rollupMonth(ym, orders, adspend, config, fractionOfMonth = 1, fixedTotal = 0) {
   const revenue = orders.reduce((s, o) => s + o.t, 0)
   const hireRevenue = orders.reduce((s, o) => s + o.h, 0)
-  const spend = sumSpend(adspend.meta) + sumSpend(adspend.google)
+  // Counted ad spend: Google is paid by a different business (config flag),
+  // so by default only Meta reduces CM. Google spend is still reported
+  // separately as external info.
+  const spend = sumSpend(adspend.meta)
+    + (config.includeGoogleSpend ? sumSpend(adspend.google) : 0)
   const cod = costOfDelivery(orders, config, fractionOfMonth)
   const cm = calculateCM(revenue, cod, spend)
+
+  // Data completeness — without the read_all_orders scope Shopify only
+  // serves ~60 days of history, which leaves older months empty and the
+  // boundary month PARTIAL (orders start mid-month). A month only counts
+  // as complete when its orders actually start near the 1st. Incomplete
+  // months are excluded from every average, target and YoY comparison.
+  const earliestDay = orders.length
+    ? Math.min(...orders.map(o => Number(o.d.slice(8, 10))))
+    : null
+  const isCurrent = fractionOfMonth < 1
+  const complete = isCurrent ? false : orders.length > 0 && earliestDay <= 3
+
+  // Full P&L for the month: what actually lands after everything
+  const capitalWithheld = revenue * config.shopifyCapitalPct
+  const tax = revenue * config.taxPct
+  const fixed = fixedTotal * fractionOfMonth
+  const net = cm - capitalWithheld - tax - fixed
+
   return {
     month: ym,
     revenue: r2(revenue),
@@ -213,6 +235,12 @@ function rollupMonth(ym, orders, adspend, config, fractionOfMonth = 1) {
     costOfDelivery: r2(cod),
     cm: r2(cm),
     aov: orders.length ? r2(revenue / orders.length) : 0,
+    complete,
+    current: isCurrent,
+    capitalWithheld: r2(capitalWithheld),
+    tax: r2(tax),
+    fixed: r2(fixed),
+    net: r2(net),
   }
 }
 
@@ -337,9 +365,10 @@ async function _buildFinanceSummary() {
     adspendByMonth[ym] = await getMonthAdSpend(ym, currentYm)
   }
 
+  const fixedTotalForRollup = fixedTotalMonthly(config)
   const monthlySeries = seriesMonths.map(ym =>
     rollupMonth(ym, ordersByMonth[ym], adspendByMonth[ym], config,
-      ym === currentYm ? dayOfMonth / dim : 1))
+      ym === currentYm ? dayOfMonth / dim : 1, fixedTotalForRollup))
 
   const cur = monthlySeries[monthlySeries.length - 1]      // current month MTD
   const prev = monthlySeries[monthlySeries.length - 2]     // last full month
@@ -359,7 +388,8 @@ async function _buildFinanceSummary() {
     const dayOrders = ordersByDay.get(date) || []
     const dayRev = dayOrders.reduce((s, o) => s + o.t, 0)
     const dayCod = costOfDelivery(dayOrders, config, 1 / dim)
-    const daySpend = (curSpend.meta[date] || 0) + (curSpend.google[date] || 0)
+    const daySpend = (curSpend.meta[date] || 0)
+      + (config.includeGoogleSpend ? (curSpend.google[date] || 0) : 0)
     dailySeries.push({ date, cm: r2(calculateCM(dayRev, dayCod, daySpend)) })
   }
 
@@ -367,10 +397,11 @@ async function _buildFinanceSummary() {
   const dailyAvg = dayOfMonth ? cmMtd / dayOfMonth : 0
   const projectedEom = r0(dailyAvg * dim)
 
-  // Target: manual override, else trailing-3-full-month avg × 1.1 stretch.
-  // Only months with revenue count — a month with $0 orders is a data gap
-  // (missing read_all_orders scope), not a real trading month.
-  const closedMonths = monthlySeries.slice(-4, -1).filter(m => m.revenue > 0)
+  // Target: manual override, else trailing-3-COMPLETE-month avg × 1.1
+  // stretch. Partial months (data gaps from the missing read_all_orders
+  // scope, or the boundary month where orders start mid-month) would skew
+  // the average, so only complete months count.
+  const closedMonths = monthlySeries.slice(0, -1).filter(m => m.complete).slice(-3)
   const trailing3Avg = closedMonths.length
     ? closedMonths.reduce((s, m) => s + m.cm, 0) / closedMonths.length
     : 0
@@ -380,10 +411,11 @@ async function _buildFinanceSummary() {
 
   const annualised = r0(trailing3Avg * 12)
   const cmPctOfRevenue = cur.revenue > 0 ? r2((cmMtd / cur.revenue) * 100) : 0
-  const last6Closed = monthlySeries.slice(-7, -1)
+  // 6-month CM% average — complete months only, so data gaps don't drag it
+  const last6Closed = monthlySeries.slice(0, -1).filter(m => m.complete && m.revenue > 0).slice(-6)
   const cmPct6moAvg = last6Closed.length
-    ? r2(last6Closed.reduce((s, m) => s + (m.revenue > 0 ? (m.cm / m.revenue) * 100 : 0), 0) / last6Closed.length)
-    : 0
+    ? r2(last6Closed.reduce((s, m) => s + (m.cm / m.revenue) * 100, 0) / last6Closed.length)
+    : null
 
   // ── MTD vs prior-month same-day-count comparisons ────────────────────────
   const prevYm = seriesMonths[seriesMonths.length - 2]
@@ -391,8 +423,10 @@ async function _buildFinanceSummary() {
   const prevMtdOrders = ordersByMonth[prevYm].filter(o => o.d <= prevMtdCutoff)
   const prevMtdRev = prevMtdOrders.reduce((s, o) => s + o.t, 0)
   const prevSpendMap = adspendByMonth[prevYm]
-  const prevMtdSpend = [...Object.entries(prevSpendMap.meta), ...Object.entries(prevSpendMap.google)]
-    .filter(([d]) => d <= prevMtdCutoff).reduce((s, [, v]) => s + v, 0)
+  const prevMtdSpend = [
+    ...Object.entries(prevSpendMap.meta),
+    ...(config.includeGoogleSpend ? Object.entries(prevSpendMap.google) : []),
+  ].filter(([d]) => d <= prevMtdCutoff).reduce((s, [, v]) => s + v, 0)
   const prevMtdCod = costOfDelivery(prevMtdOrders, config,
     Math.min(dayOfMonth, daysInMonth(prevYm)) / daysInMonth(prevYm))
   const prevMtdCm = calculateCM(prevMtdRev, prevMtdCod, prevMtdSpend)
@@ -439,6 +473,69 @@ async function _buildFinanceSummary() {
 
   const netStatus = netProjected > 0 ? 'green' : netProjected > -2000 ? 'amber' : 'red'
 
+  // ── The verdict: are we actually making money? ───────────────────────────
+  const lastComplete = [...monthlySeries].reverse().find(m => m.complete) || null
+  const projCapital = projRevenue * config.shopifyCapitalPct
+  const projTax = projRevenue * config.taxPct
+  const fmtK = n => `$${(Math.abs(n) / 1000).toFixed(1)}k`
+  const costParts = [`${fmtK(fixedTotal)} fixed costs`]
+  if (projCapital > 0) costParts.push(`${fmtK(projCapital)} Shopify Capital withholding`)
+  costParts.push(`${fmtK(projTax)} tax`)
+  const costList = costParts.length > 1
+    ? costParts.slice(0, -1).join(', ') + ' and ' + costParts[costParts.length - 1]
+    : costParts[0]
+  const verdictSentence = netProjected > 0
+    ? `Yes — at this run rate the business banks ${fmtK(netProjected)} this month after every cost: CM ${fmtK(projectedEom)} covers ${costList}.`
+    : `No — at this run rate the business loses ${fmtK(netProjected)} this month: CM ${fmtK(projectedEom)} does not cover ${costList}.`
+
+  const verdict = {
+    makingMoney: netProjected > 0,
+    netMtd: r0(netMtd),
+    netProjectedEom: r0(netProjected),
+    status: netStatus,
+    sentence: verdictSentence,
+    lastCompleteMonth: lastComplete ? {
+      month: lastComplete.month,
+      revenue: r0(lastComplete.revenue),
+      cm: r0(lastComplete.cm),
+      net: r0(lastComplete.net),
+      makingMoney: lastComplete.net > 0,
+    } : null,
+  }
+
+  // ── CASH view — the bank account, not the business model ─────────────────
+  // The Shopify Capital loan bought the inventory currently being sold
+  // (Josh 2026-07-13), so while that stock lasts COGS costs nothing in cash
+  // terms; the 25% remittance is the real cash out. This view therefore
+  // counts the remittance and skips COGS. It flatters long-term (stock will
+  // eventually be re-bought with cash) — the model view predicts the future,
+  // the cash view explains this month's bank balance.
+  const loanPct = config.capitalLoanActualPct ?? 0
+  const feesMtd = cur.revenue * GRI_ADS.paymentProcessingRate + cur.orders * GRI_ADS.paymentProcessingFixed
+  const auspostMtdCash = auspostMonthly(config) * (dayOfMonth / dim)
+  const cashMtd = cur.revenue
+    - cur.revenue * loanPct
+    - auspostMtdCash
+    - feesMtd
+    - cur.adSpend
+    - taxMtd
+    - fixedMtd
+  const projOrders = dayOfMonth ? (cur.orders / dayOfMonth) * dim : 0
+  const cashProjected = projRevenue
+    - projRevenue * loanPct
+    - auspostMonthly(config)
+    - (projRevenue * GRI_ADS.paymentProcessingRate + projOrders * GRI_ADS.paymentProcessingFixed)
+    - (dayOfMonth ? (cur.adSpend / dayOfMonth) * dim : 0)
+    - projRevenue * config.taxPct
+    - fixedTotal
+  const cashView = {
+    loanPct,
+    mtd: r0(cashMtd),
+    projectedEom: r0(cashProjected),
+    status: cashProjected > 0 ? 'green' : cashProjected > -2000 ? 'amber' : 'red',
+    note: 'No COGS while loan-funded stock lasts; 25% remittance counted. Flatters long-term — stock must eventually be re-bought with cash.',
+  }
+
   const summary = {
     ok: true,
     dataFetchedAt: new Date().toISOString(),
@@ -450,6 +547,8 @@ async function _buildFinanceSummary() {
     month: currentYm,
     daysInMonth: dim,
     dayOfMonth,
+    verdict,
+    cashView,
     cm: {
       mtd: r0(cmMtd),
       dailyAvg: r0(dailyAvg),
@@ -463,7 +562,9 @@ async function _buildFinanceSummary() {
       cmPctOfRevenue,
       cmPct6moAvg,
       vsPriorMonthPct: pctDelta(cmMtd, prevMtdCm),
-      vsSameMonthLastYearPct: lastYear ? pctDelta(cmMtd, lastYear.cm * (dayOfMonth / dim)) : null,
+      // Only compare against last year when that month's data is complete —
+      // comparing against a data gap produces nonsense percentages.
+      vsSameMonthLastYearPct: lastYear?.complete ? pctDelta(cmMtd, lastYear.cm * (dayOfMonth / dim)) : null,
       formula: {
         netSales: r0(cur.revenue),
         costOfDelivery: r0(cur.costOfDelivery),
@@ -476,7 +577,7 @@ async function _buildFinanceSummary() {
         ordersPct: pctDelta(cur.orders, prevMtdOrders.length),
         adSpendPct: pctDelta(cur.adSpend, prevMtdSpend),
       },
-      vsLastYear: lastYear ? {
+      vsLastYear: lastYear?.complete ? {
         revenuePct: pctDelta(cur.revenue, lastYear.revenue * (dayOfMonth / dim)),
         revenueNow: r0(cur.revenue), revenueThen: r0(lastYear.revenue),
         ordersPct: pctDelta(cur.orders, lastYear.orders * (dayOfMonth / dim)),
@@ -492,6 +593,9 @@ async function _buildFinanceSummary() {
       spend: {
         value: r0(cur.adSpend), deltaPct: pctDelta(cur.adSpend, prevMtdSpend),
         meta: r0(cur.metaSpend), google: r0(cur.googleSpend),
+        // Google spend is external (paid by another business) unless the
+        // config flag counts it — the UI labels it accordingly.
+        googleCounted: Boolean(config.includeGoogleSpend),
       },
       mer: {
         value: cur.adSpend > 0 ? r2(cur.revenue / cur.adSpend) : null,

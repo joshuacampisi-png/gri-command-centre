@@ -45,9 +45,11 @@
   ],
   "auspostWeekly": 1400,
   "taxPct": 0.05,
-  "shopifyCapitalPct": 0.25,
+  "shopifyCapitalPct": 0,
+  "capitalLoanActualPct": 0.25,
+  "includeGoogleSpend": false,
   "cmTargetMonthly": null,
-  "grossMarginPct": 0.47,
+  "grossMarginPct": 0.5,
   "tntFullMargin": true,
-  "updatedAt": "2026-07-12T20:44:47.176Z"
+  "updatedAt": "2026-07-12T21:02:38.388Z"
 }

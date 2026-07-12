@@ -38,6 +38,18 @@ function signedInt(n) {
   return (n >= 0 ? '+' : '−') + Math.abs(Math.round(n)).toLocaleString('en-AU')
 }
 
+// Compact absolute dollars for headlines: 32800 → "$32.8k"
+function fmtCompact(n) {
+  if (n == null || isNaN(n)) return '—'
+  const abs = Math.abs(n)
+  if (abs >= 1000) {
+    const k = abs / 1000
+    const s = k >= 100 ? Math.round(k).toLocaleString('en-AU') : k.toFixed(1).replace(/\.0$/, '')
+    return '$' + s + 'k'
+  }
+  return '$' + Math.round(abs).toLocaleString('en-AU')
+}
+
 function fmtPct(n) {
   if (n == null || isNaN(n)) return '—'
   return Number(n).toFixed(1) + '%'
@@ -99,6 +111,12 @@ function monthLong(m) {
   const [y, mo] = m.split('-')
   const idx = parseInt(mo, 10) - 1
   return `${MONTHS_LONG[idx] || ''} ${y}`
+}
+
+function monthNameOnly(m) {
+  if (!m || typeof m !== 'string') return ''
+  const idx = parseInt(m.split('-')[1], 10) - 1
+  return MONTHS_LONG[idx] || ''
 }
 
 // ── Small building blocks ────────────────────────────────────────────────────
@@ -178,19 +196,25 @@ function MonthlyBars({ series }) {
   const [hover, setHover] = useState(null)
   if (!Array.isArray(series) || series.length === 0) return null
 
-  const W = 720
-  const H = 150
+  const W = 760
+  const H = 170
   const padT = 10
   const padB = 20
+  const padL = 44
+  const padR = 6
   const n = series.length
   const vals = series.map(m => (m && m.cm != null && !isNaN(m.cm) ? m.cm : 0))
   const maxV = Math.max(...vals, 1)
   const minV = Math.min(...vals, 0)
   const span = maxV - minV || 1
   const chartH = H - padT - padB
-  const zeroY = padT + (maxV / span) * chartH
-  const slot = W / n
-  const barW = Math.min(36, slot * 0.56)
+  const chartW = W - padL - padR
+  const yOf = v => padT + ((maxV - v) / span) * chartH
+  const zeroY = yOf(0)
+  const slot = chartW / n
+  const barW = Math.min(52, slot * 0.62)
+  const ticks = [0, 25000, 50000, 100000].filter(t => t === 0 || t <= maxV)
+  const isCurrent = (m, i) => (m && m.current != null ? !!m.current : i === n - 1)
   const hovered = hover != null ? series[hover] : null
 
   return (
@@ -198,7 +222,7 @@ function MonthlyBars({ series }) {
       {hovered && (
         <div
           className="fin-bar-tip"
-          style={{ left: `${Math.min(88, Math.max(12, ((hover + 0.5) / n) * 100))}%` }}
+          style={{ left: `${Math.min(88, Math.max(12, ((padL + (hover + 0.5) * slot) / W) * 100))}%` }}
         >
           <div className="fin-bar-tip-month">{monthLabel(hovered.month)}</div>
           <div className="fin-bar-tip-row"><span>Revenue</span><strong>{fmtAUD(hovered.revenue)}</strong></div>
@@ -208,34 +232,237 @@ function MonthlyBars({ series }) {
         </div>
       )}
       <svg className="fin-bars" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Monthly contribution margin, last 13 months">
+        {ticks.map(t => (
+          <g key={t}>
+            <line className="fin-gridline" x1={padL} x2={W - padR} y1={yOf(t)} y2={yOf(t)} />
+            <text className="fin-axis-label" x={padL - 8} y={yOf(t) + 3} textAnchor="end">
+              ${Math.round(t / 1000)}k
+            </text>
+          </g>
+        ))}
         {series.map((m, i) => {
           const v = vals[i]
           const h = Math.max(2, (Math.abs(v) / span) * chartH)
-          const bx = i * slot + (slot - barW) / 2
+          const bx = padL + i * slot + (slot - barW) / 2
           const by = v >= 0 ? zeroY - h : zeroY
           const cls = [
             'fin-bar',
             v < 0 ? 'fin-bar-neg' : '',
-            i === n - 1 ? 'fin-bar-current' : '',
+            isCurrent(m, i) ? 'fin-bar-current' : '',
             hover === i ? 'fin-bar-hover' : '',
           ].join(' ')
           return (
             <g key={m.month || i}>
               <rect
                 className="fin-bar-hit"
-                x={i * slot} y={0} width={slot} height={H}
+                x={padL + i * slot} y={0} width={slot} height={H}
                 onMouseEnter={() => setHover(i)}
               />
               <rect className={cls} x={bx} y={by} width={barW} height={h} rx="3" onMouseEnter={() => setHover(i)} />
-              <text className="fin-bar-label" x={i * slot + slot / 2} y={H - 5} textAnchor="middle">
+              <text className="fin-bar-label" x={padL + i * slot + slot / 2} y={H - 5} textAnchor="middle">
                 {monthShort(m.month)}
               </text>
             </g>
           )
         })}
-        <line className="fin-bar-zero" x1="0" x2={W} y1={zeroY} y2={zeroY} />
+        <line className="fin-bar-zero" x1={padL} x2={W - padR} y1={zeroY} y2={zeroY} />
       </svg>
     </div>
+  )
+}
+
+// ── Verdict banner ───────────────────────────────────────────────────────────
+
+function VerdictBanner({ verdict, cashView }) {
+  if (!verdict) return null
+  const status = verdict.status || (verdict.makingMoney ? 'green' : 'red')
+  const net = verdict.netProjectedEom
+  const hasNet = net != null && !isNaN(net)
+  const headline = verdict.makingMoney
+    ? `YES — banking ${hasNet ? `${fmtCompact(net)}/mo` : 'money'}`
+    : `NO — losing ${hasNet ? `${fmtCompact(net)}/mo` : 'money'} at current pace`
+  const last = verdict.lastCompleteMonth
+  return (
+    <section className={`fin-card fin-verdict fin-verdict-${status}`}>
+      <div className="fin-section-label">Are We Making Money? (business model)</div>
+      <div className={`fin-verdict-answer fin-status-${status}`}>{headline}</div>
+      {verdict.sentence && <div className="fin-verdict-sentence">{verdict.sentence}</div>}
+      {last && (
+        <div className="fin-verdict-last">
+          {monthNameOnly(last.month)} (last complete month): revenue {fmtAUD(last.revenue)} · CM {fmtAUD(last.cm)} · net {fmtAUD(last.net)}
+        </div>
+      )}
+      {cashView && cashView.projectedEom != null && (
+        <div className={`fin-cashview fin-cashview-${cashView.status || 'amber'}`}>
+          <span className="fin-cashview-label">CASH VIEW</span>
+          <span className={`fin-cashview-amt fin-status-${cashView.status || 'amber'}`}>
+            {cashView.projectedEom >= 0 ? '+' : ''}{fmtCompact(cashView.projectedEom)}/mo
+          </span>
+          <span className="fin-cashview-note">
+            bank-account reality while loan-funded stock lasts — no COGS, {fmtFracPct(cashView.loanPct)} Shopify remittance counted. Flatters long term: stock must eventually be re-bought with cash.
+          </span>
+        </div>
+      )}
+    </section>
+  )
+}
+
+// ── Spend vs Revenue grouped bars ────────────────────────────────────────────
+
+function monthOutgoings(m) {
+  return (m.adSpend || 0) + (m.capitalWithheld || 0) + (m.tax || 0) + (m.fixed || 0)
+}
+
+function SpendVsRevenue({ series }) {
+  const [hover, setHover] = useState(null)
+  const months = Array.isArray(series) ? series.filter(m => m && (m.complete || m.current)) : []
+  if (months.length === 0) return null
+
+  const W = 760
+  const H = 200
+  const padT = 12
+  const padB = 20
+  const padL = 44
+  const padR = 6
+  const n = months.length
+  const maxV = Math.max(...months.map(m => Math.max(m.revenue || 0, monthOutgoings(m))), 1)
+  const chartH = H - padT - padB
+  const chartW = W - padL - padR
+  const slot = chartW / n
+  const groupW = Math.min(48, slot * 0.64)
+  const barW = Math.max(4, groupW / 2 - 1.5)
+  const yOf = v => padT + chartH - (Math.max(0, v) / maxV) * chartH
+  const baseY = padT + chartH
+  const ticks = [0, 25000, 50000, 100000].filter(t => t === 0 || t <= maxV)
+  const lastComplete = [...months].reverse().find(m => m.complete)
+  const hovered = hover != null ? months[hover] : null
+
+  return (
+    <section className="fin-card fin-svr">
+      <div className="fin-svr-head">
+        <span className="fin-section-label">Spend vs Revenue</span>
+        <div className="fin-legend">
+          <span className="fin-legend-item"><span className="fin-swatch fin-swatch-green" />Revenue</span>
+          <span className="fin-legend-item"><span className="fin-swatch fin-swatch-red" />Total outgoings</span>
+        </div>
+      </div>
+      <div className="fin-bars-wrap" onMouseLeave={() => setHover(null)}>
+        {hovered && (
+          <div
+            className="fin-bar-tip"
+            style={{ left: `${Math.min(88, Math.max(12, ((padL + (hover + 0.5) * slot) / W) * 100))}%` }}
+          >
+            <div className="fin-bar-tip-month">{monthLabel(hovered.month)}{hovered.current ? ' · MTD' : ''}</div>
+            <div className="fin-bar-tip-row"><span>Revenue</span><strong>{fmtAUD(hovered.revenue)}</strong></div>
+            <div className="fin-bar-tip-row"><span>Ad spend</span><strong>{fmtAUD(hovered.adSpend)}</strong></div>
+            <div className="fin-bar-tip-row"><span>Capital</span><strong>{fmtAUD(hovered.capitalWithheld)}</strong></div>
+            <div className="fin-bar-tip-row"><span>Tax</span><strong>{fmtAUD(hovered.tax)}</strong></div>
+            <div className="fin-bar-tip-row"><span>Fixed</span><strong>{fmtAUD(hovered.fixed)}</strong></div>
+            <div className="fin-bar-tip-row">
+              <span>Net</span>
+              <strong className={(hovered.net ?? 0) >= 0 ? 'fin-val-green' : 'fin-val-red'}>{fmtAUD(hovered.net)}</strong>
+            </div>
+          </div>
+        )}
+        <svg className="fin-bars" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Monthly revenue vs total outgoings">
+          {ticks.map(t => (
+            <g key={t}>
+              <line className="fin-gridline" x1={padL} x2={W - padR} y1={yOf(t)} y2={yOf(t)} />
+              <text className="fin-axis-label" x={padL - 8} y={yOf(t) + 3} textAnchor="end">
+                ${Math.round(t / 1000)}k
+              </text>
+            </g>
+          ))}
+          {months.map((m, i) => {
+            const rev = m.revenue || 0
+            const out = monthOutgoings(m)
+            const gx = padL + i * slot + (slot - groupW) / 2
+            const revH = Math.max(2, (rev / maxV) * chartH)
+            const outH = Math.max(2, (out / maxV) * chartH)
+            return (
+              <g key={m.month || i}>
+                <rect
+                  className="fin-bar-hit"
+                  x={padL + i * slot} y={0} width={slot} height={H}
+                  onMouseEnter={() => setHover(i)}
+                />
+                <rect
+                  className={`fin-svr-bar-rev ${m.current ? 'fin-svr-bar-current' : ''} ${hover === i ? 'fin-bar-hover' : ''}`}
+                  x={gx} y={baseY - revH} width={barW} height={revH} rx="2"
+                  onMouseEnter={() => setHover(i)}
+                />
+                <rect
+                  className={`fin-svr-bar-out ${hover === i ? 'fin-bar-hover' : ''}`}
+                  x={gx + barW + 3} y={baseY - outH} width={barW} height={outH} rx="2"
+                  onMouseEnter={() => setHover(i)}
+                />
+                <text className="fin-bar-label" x={padL + i * slot + slot / 2} y={H - 5} textAnchor="middle">
+                  {monthShort(m.month)}
+                </text>
+              </g>
+            )
+          })}
+          <line className="fin-bar-zero" x1={padL} x2={W - padR} y1={baseY} y2={baseY} />
+        </svg>
+      </div>
+      {lastComplete && (
+        <div className="fin-svr-summary">
+          Last complete month: revenue {fmtAUD(lastComplete.revenue)} vs total outgoings {fmtAUD(monthOutgoings(lastComplete))} → net{' '}
+          <span className={(lastComplete.net ?? 0) >= 0 ? 'fin-val-green' : 'fin-val-red'}>{fmtAUD(lastComplete.net)}</span>
+        </div>
+      )}
+    </section>
+  )
+}
+
+// ── Monthly P&L table ────────────────────────────────────────────────────────
+
+function PnlTable({ series }) {
+  const months = Array.isArray(series) ? series.filter(m => m && (m.complete || m.current)) : []
+  if (months.length === 0) return null
+  const rows = [...months].reverse()
+  return (
+    <section className="fin-card fin-pnl">
+      <div className="fin-section-label fin-pnl-title">Monthly P&amp;L</div>
+      <div className="fin-pnl-scroll">
+        <table className="fin-table fin-pnl-table">
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th>Revenue</th>
+              <th>Ad spend</th>
+              <th>CM</th>
+              <th>Capital 25%</th>
+              <th>Tax 5%</th>
+              <th>Fixed</th>
+              <th>NET</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(m => (
+              <tr key={m.month}>
+                <td className="fin-pnl-month">
+                  {monthLabel(m.month)}
+                  {m.current && <span className="fin-tag-mtd">MTD</span>}
+                </td>
+                <td className="fin-td-num">{fmtAUD(m.revenue)}</td>
+                <td className="fin-td-num">{fmtAUD(m.adSpend)}</td>
+                <td className="fin-td-num">{fmtAUD(m.cm)}</td>
+                <td className="fin-td-num">{fmtAUD(m.capitalWithheld)}</td>
+                <td className="fin-td-num">{fmtAUD(m.tax)}</td>
+                <td className="fin-td-num">{fmtAUD(m.fixed)}</td>
+                <td className={`fin-td-num fin-pnl-net ${(m.net ?? 0) >= 0 ? 'fin-val-green' : 'fin-val-red'}`}>
+                  {fmtAUD(m.net)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="fin-note">
+        Months before the Shopify read_all_orders scope was granted have no order history and are hidden.
+      </p>
+    </section>
   )
 }
 
@@ -623,6 +850,9 @@ export default function FinanceTab() {
         </div>
       )}
 
+      {/* ── 0. VERDICT BANNER ── */}
+      <VerdictBanner verdict={summary?.verdict} cashView={summary?.cashView} />
+
       {/* ── 1. HERO — Contribution Margin ── */}
       <section className="fin-card fin-hero">
         <div className="fin-hero-top">
@@ -644,15 +874,15 @@ export default function FinanceTab() {
           </div>
           <div className="fin-hero-side">
             <div className="fin-hero-side-row">
-              <span className="fin-hero-side-label">Projected EOM</span>
-              <span className="fin-hero-side-value">
-                {fmtAUD(cm.projectedEom)} <span className="fin-hero-side-target">/ {fmtAUD(cm.monthlyTarget)}</span>
+              <span className="fin-hero-side-line">
+                Projected EOM: <span className="fin-eom-value">{fmtAUD(cm.projectedEom)}</span>
+                {' '}<span className="fin-hero-side-target">/ {fmtAUD(cm.monthlyTarget)}</span>
               </span>
             </div>
             <div className="fin-hero-side-row">
-              <span className="fin-hero-side-label">Annualised</span>
-              <span className="fin-hero-side-value">{fmtAUD(cm.annualised)}</span>
-              <span className="fin-hero-side-note">rolling 3-month avg × 12</span>
+              <span className="fin-hero-side-line fin-hero-side-sub">
+                Annualised: {fmtAUD(cm.annualised)} <span className="fin-hero-side-note">(rolling 3-month avg × 12)</span>
+              </span>
             </div>
           </div>
         </div>
@@ -660,7 +890,7 @@ export default function FinanceTab() {
         <div className="fin-pace">
           <div className="fin-pace-labels">
             <span className="fin-pace-mtd">
-              {fmtAUD(cm.mtd)} <span className="fin-muted">/ {fmtAUD(cm.mtdTargetPace)} MTD target pace</span>
+              MTD Pace: {pace != null && !isNaN(pace) ? `${Math.round(pace)}% of target` : '—'}
             </span>
             <span className="fin-muted">Day {summary?.dayOfMonth ?? '—'} of {summary?.daysInMonth ?? '—'}</span>
           </div>
@@ -669,6 +899,10 @@ export default function FinanceTab() {
               className={`fin-pace-fill ${paceGood ? 'fin-pace-green' : 'fin-pace-amber'}`}
               style={{ width: `${paceWidth}%` }}
             />
+          </div>
+          <div className="fin-pace-dollars">
+            <span>{fmtAUD(cm.mtd)}</span>
+            <span>{fmtAUD(cm.mtdTargetPace)}</span>
           </div>
         </div>
 
@@ -679,7 +913,8 @@ export default function FinanceTab() {
           <TrendChip pct={cm.vsSameMonthLastYearPct} label="vs same month last year" />
           {cm.cmPctOfRevenue != null && (
             <span className="fin-chip fin-chip-neutral">
-              CM {fmtPct(cm.cmPctOfRevenue)} of revenue (6-month avg: {fmtPct(cm.cmPct6moAvg)})
+              CM {fmtPct(cm.cmPctOfRevenue)} of revenue
+              {cm.cmPct6moAvg != null && !isNaN(cm.cmPct6moAvg) ? ` (6-month avg: ${fmtPct(cm.cmPct6moAvg)})` : ''}
             </span>
           )}
           {tnt.revenueMtd != null && (
@@ -723,7 +958,9 @@ export default function FinanceTab() {
             label="Spend"
             value={fmtAUD(kpis.spend?.value)}
             delta={<Delta pct={kpis.spend?.deltaPct} invert />}
-            caption={`Meta ${fmtAUD(kpis.spend?.meta)} · Google ${fmtAUD(kpis.spend?.google)}`}
+            caption={kpis.spend?.googleCounted
+              ? `Meta ${fmtAUD(kpis.spend?.meta)} · Google ${fmtAUD(kpis.spend?.google)}`
+              : `Meta ${fmtAUD(kpis.spend?.meta)} · Google ${fmtAUD(kpis.spend?.google)} (external — not counted)`}
           />
           <MetricCard
             label="MER"
@@ -738,9 +975,15 @@ export default function FinanceTab() {
         </div>
       </section>
 
+      {/* ── 2b. SPEND VS REVENUE ── */}
+      <SpendVsRevenue series={summary?.monthlySeries} />
+
+      {/* ── 2c. MONTHLY P&L ── */}
+      <PnlTable series={summary?.monthlySeries} />
+
       {/* ── 3. CUSTOMER METRICS ── */}
       <section>
-        <div className="fin-section-heading">Customer Metrics</div>
+        <div className="fin-section-heading fin-heading-purple">Customer Metrics</div>
         <div className="fin-grid fin-grid-customer">
           <MetricCard
             label="nCAC"
@@ -799,10 +1042,12 @@ export default function FinanceTab() {
                 <span>Contribution Margin</span>
                 <span className="fin-wf-amt">{fmtAUD(cm.mtd)}</span>
               </li>
-              <li>
-                <span>less Shopify Capital withheld from payouts ({fmtFracPct(out.shopifyCapitalPct)} of revenue)</span>
-                <span className="fin-wf-amt fin-wf-neg">{negAUD(out.shopifyCapitalMtd)}</span>
-              </li>
+              {out.shopifyCapitalPct > 0 && (
+                <li>
+                  <span>less Shopify Capital withheld from payouts ({fmtFracPct(out.shopifyCapitalPct)} of revenue)</span>
+                  <span className="fin-wf-amt fin-wf-neg">{negAUD(out.shopifyCapitalMtd)}</span>
+                </li>
+              )}
               <li>
                 <span>less Tax provision ({fmtFracPct(out.taxPct)})</span>
                 <span className="fin-wf-amt fin-wf-neg">{negAUD(out.taxMtd)}</span>
@@ -837,7 +1082,7 @@ export default function FinanceTab() {
                   <td className="fin-td-num">{fmtAUD(out.fixedTotal)}</td>
                 </tr>
                 <tr>
-                  <td>Ad spend (Meta + Google)</td>
+                  <td>Ad spend (Meta — Google paid externally)</td>
                   <td className="fin-td-muted">MTD</td>
                   <td className="fin-td-num">{fmtAUD(out.adSpendMtd)}</td>
                 </tr>
@@ -861,16 +1106,18 @@ export default function FinanceTab() {
                   <td />
                   <td className="fin-td-num">{fmtAUD(out.totalMonthlyProjected)}</td>
                 </tr>
-                <tr>
-                  <td colSpan={2} className="fin-td-muted">
-                    Withheld from income — Shopify Capital ({fmtFracPct(out.shopifyCapitalPct)} of revenue, taken before payout)
-                  </td>
-                  <td className="fin-td-num fin-td-muted">{fmtAUD(out.shopifyCapitalMtd)} MTD</td>
-                </tr>
+                {out.shopifyCapitalPct > 0 && (
+                  <tr>
+                    <td colSpan={2} className="fin-td-muted">
+                      Withheld from income — Shopify Capital ({fmtFracPct(out.shopifyCapitalPct)} of revenue, taken before payout)
+                    </td>
+                    <td className="fin-td-num fin-td-muted">{fmtAUD(out.shopifyCapitalMtd)} MTD</td>
+                  </tr>
+                )}
               </tbody>
             </table>
             <p className="fin-note">
-              AusPost is counted inside Cost of Delivery (already reflected in the contribution margin), so it is listed here for visibility but not added to the totals twice. Shopify Capital is withheld from payouts before the money reaches the bank, so it reduces income rather than counting as an outgoing.
+              AusPost is counted inside Cost of Delivery (already reflected in the contribution margin), so it is listed here for visibility but not added to the totals twice. Shopify Capital is excluded from this model view — the loan bought the stock being sold, so product COGS already covers it (see the cash view up top for the bank-account reality while the loan runs).
             </p>
           </div>
         </div>
