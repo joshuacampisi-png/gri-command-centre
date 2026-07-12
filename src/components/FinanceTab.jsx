@@ -282,6 +282,7 @@ function OutgoingsEditor({ config, configError, onRetryConfig, onSaved }) {
   const [capPct, setCapPct] = useState('')
   const [cmTarget, setCmTarget] = useState('')
   const [gmPct, setGmPct] = useState('')
+  const [auspostWk, setAuspostWk] = useState('')
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(null)
 
@@ -298,6 +299,7 @@ function OutgoingsEditor({ config, configError, onRetryConfig, onSaved }) {
     setCapPct(config.shopifyCapitalPct != null ? String(+(config.shopifyCapitalPct * 100).toFixed(2)) : '')
     setCmTarget(config.cmTargetMonthly != null ? String(config.cmTargetMonthly) : '')
     setGmPct(config.grossMarginPct != null ? String(+(config.grossMarginPct * 100).toFixed(2)) : '')
+    setAuspostWk(config.auspostWeekly != null ? String(config.auspostWeekly) : '')
   }, [config])
 
   const updateRow = (i, patch) => setRows(rs => rs.map((r, j) => (j === i ? { ...r, ...patch } : r)))
@@ -322,6 +324,7 @@ function OutgoingsEditor({ config, configError, onRetryConfig, onSaved }) {
         shopifyCapitalPct: (parseFloat(capPct) || 0) / 100,
         cmTargetMonthly: String(cmTarget).trim() === '' ? null : Number(cmTarget),
         grossMarginPct: (parseFloat(gmPct) || 0) / 100,
+        auspostWeekly: parseFloat(auspostWk) || 0,
         tntFullMargin: config?.tntFullMargin,
       }
       const res = await fetch(`${API}/config`, {
@@ -425,6 +428,10 @@ function OutgoingsEditor({ config, configError, onRetryConfig, onSaved }) {
               <label className="fin-field">
                 <span>Gross margin (%)</span>
                 <input className="fin-input" type="number" min="0" step="0.1" value={gmPct} onChange={e => setGmPct(e.target.value)} />
+              </label>
+              <label className="fin-field">
+                <span>AusPost shipping ($/week)</span>
+                <input className="fin-input" type="number" min="0" step="10" value={auspostWk} onChange={e => setAuspostWk(e.target.value)} />
               </label>
             </div>
 
@@ -793,7 +800,7 @@ export default function FinanceTab() {
                 <span className="fin-wf-amt">{fmtAUD(cm.mtd)}</span>
               </li>
               <li>
-                <span>less Shopify Capital repayment ({fmtFracPct(out.shopifyCapitalPct)} of revenue)</span>
+                <span>less Shopify Capital withheld from payouts ({fmtFracPct(out.shopifyCapitalPct)} of revenue)</span>
                 <span className="fin-wf-amt fin-wf-neg">{negAUD(out.shopifyCapitalMtd)}</span>
               </li>
               <li>
@@ -818,7 +825,9 @@ export default function FinanceTab() {
                 {(out.fixed || []).map(f => (
                   <tr key={f.key || f.label}>
                     <td>{f.label}</td>
-                    <td className="fin-td-muted">{f.cadence}</td>
+                    <td className="fin-td-muted">
+                      {f.cadence === 'weekly' ? `${fmtAUD(f.amount)}/wk` : 'Monthly'}
+                    </td>
                     <td className="fin-td-num">{fmtAUD(f.amountMonthly)}</td>
                   </tr>
                 ))}
@@ -833,17 +842,17 @@ export default function FinanceTab() {
                   <td className="fin-td-num">{fmtAUD(out.adSpendMtd)}</td>
                 </tr>
                 <tr>
-                  <td>Shopify Capital ({fmtFracPct(out.shopifyCapitalPct)} of revenue)</td>
-                  <td className="fin-td-muted">MTD</td>
-                  <td className="fin-td-num">{fmtAUD(out.shopifyCapitalMtd)}</td>
-                </tr>
-                <tr>
                   <td>Tax provision ({fmtFracPct(out.taxPct)})</td>
                   <td className="fin-td-muted">MTD</td>
                   <td className="fin-td-num">{fmtAUD(out.taxMtd)}</td>
                 </tr>
+                <tr>
+                  <td>AusPost shipping <span className="fin-tag-incm">in CM</span></td>
+                  <td className="fin-td-muted">{fmtAUD(out.auspostWeekly)}/wk</td>
+                  <td className="fin-td-num">{fmtAUD(out.auspostMonthly)}</td>
+                </tr>
                 <tr className="fin-row-subtotal">
-                  <td>Total</td>
+                  <td>Total outgoings</td>
                   <td className="fin-td-muted">MTD</td>
                   <td className="fin-td-num">{fmtAUD(out.totalMtd)}</td>
                 </tr>
@@ -852,8 +861,17 @@ export default function FinanceTab() {
                   <td />
                   <td className="fin-td-num">{fmtAUD(out.totalMonthlyProjected)}</td>
                 </tr>
+                <tr>
+                  <td colSpan={2} className="fin-td-muted">
+                    Withheld from income — Shopify Capital ({fmtFracPct(out.shopifyCapitalPct)} of revenue, taken before payout)
+                  </td>
+                  <td className="fin-td-num fin-td-muted">{fmtAUD(out.shopifyCapitalMtd)} MTD</td>
+                </tr>
               </tbody>
             </table>
+            <p className="fin-note">
+              AusPost is counted inside Cost of Delivery (already reflected in the contribution margin), so it is listed here for visibility but not added to the totals twice. Shopify Capital is withheld from payouts before the money reaches the bank, so it reduces income rather than counting as an outgoing.
+            </p>
           </div>
         </div>
       </section>

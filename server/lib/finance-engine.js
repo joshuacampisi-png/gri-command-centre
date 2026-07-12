@@ -171,30 +171,36 @@ function sumSpend(spendMap) {
   return Object.values(spendMap || {}).reduce((s, v) => s + v, 0)
 }
 
+/** Real AusPost shipping bill, converted to a monthly figure. */
+function auspostMonthly(config) {
+  return ((config.auspostWeekly || 0) * 52) / 12
+}
+
 /**
  * Cost of Delivery with the hire-at-100%-margin rule:
  *   COGS           = productRevenue × (1 − grossMarginPct)   (hire rev: $0 COGS)
  *   payment fees   = 2.6% × all revenue + $0.30 × orders
- *   shipping cost  = $4.50 × orders that shipped product
+ *   shipping       = real AusPost bill ($1,400/wk, Josh 2026-07-13),
+ *                    prorated by fractionOfMonth — replaces the old
+ *                    $4.50/order estimate which undercounted ~3×.
  */
-function costOfDelivery(orders, config) {
-  let productRev = 0, allRev = 0, shippedOrders = 0
+function costOfDelivery(orders, config, fractionOfMonth = 1) {
+  let productRev = 0, allRev = 0
   for (const o of orders) {
     allRev += o.t
     productRev += o.p
-    if (o.p > 0) shippedOrders++
   }
   const cogs = productRev * (1 - config.grossMarginPct)
   const fees = allRev * GRI_ADS.paymentProcessingRate + orders.length * GRI_ADS.paymentProcessingFixed
-  const ship = shippedOrders * GRI_ADS.shippingCostPerOrder
+  const ship = auspostMonthly(config) * fractionOfMonth
   return cogs + fees + ship
 }
 
-function rollupMonth(ym, orders, adspend, config) {
+function rollupMonth(ym, orders, adspend, config, fractionOfMonth = 1) {
   const revenue = orders.reduce((s, o) => s + o.t, 0)
   const hireRevenue = orders.reduce((s, o) => s + o.h, 0)
   const spend = sumSpend(adspend.meta) + sumSpend(adspend.google)
-  const cod = costOfDelivery(orders, config)
+  const cod = costOfDelivery(orders, config, fractionOfMonth)
   const cm = calculateCM(revenue, cod, spend)
   return {
     month: ym,
@@ -293,11 +299,22 @@ function ltgpWindows(byCustomer, config, ncac, asOfDate) {
 
 // ── Main summary builder ────────────────────────────────────────────────────
 
+// Single-flight: concurrent callers (staff dashboards + 5-min polls) share
+// one in-progress build instead of each hammering the Shopify/Meta/Google
+// APIs — parallel builds trip Shopify's 2-calls/sec limit.
+let _inFlight = null
+
 export async function buildFinanceSummary({ force = false } = {}) {
   if (!force && _summaryCache && Date.now() - _summaryCache.t < TTL_MS) {
     return _summaryCache.v
   }
+  if (_inFlight) return _inFlight
+  _inFlight = _buildFinanceSummary()
+    .finally(() => { _inFlight = null })
+  return _inFlight
+}
 
+async function _buildFinanceSummary() {
   const config = getFinanceConfig()
   const now = brisbaneNow()
   const todayStr = now.toISOString().slice(0, 10)
@@ -321,7 +338,8 @@ export async function buildFinanceSummary({ force = false } = {}) {
   }
 
   const monthlySeries = seriesMonths.map(ym =>
-    rollupMonth(ym, ordersByMonth[ym], adspendByMonth[ym], config))
+    rollupMonth(ym, ordersByMonth[ym], adspendByMonth[ym], config,
+      ym === currentYm ? dayOfMonth / dim : 1))
 
   const cur = monthlySeries[monthlySeries.length - 1]      // current month MTD
   const prev = monthlySeries[monthlySeries.length - 2]     // last full month
@@ -340,7 +358,7 @@ export async function buildFinanceSummary({ force = false } = {}) {
     const date = `${currentYm}-${String(day).padStart(2, '0')}`
     const dayOrders = ordersByDay.get(date) || []
     const dayRev = dayOrders.reduce((s, o) => s + o.t, 0)
-    const dayCod = costOfDelivery(dayOrders, config)
+    const dayCod = costOfDelivery(dayOrders, config, 1 / dim)
     const daySpend = (curSpend.meta[date] || 0) + (curSpend.google[date] || 0)
     dailySeries.push({ date, cm: r2(calculateCM(dayRev, dayCod, daySpend)) })
   }
@@ -375,7 +393,8 @@ export async function buildFinanceSummary({ force = false } = {}) {
   const prevSpendMap = adspendByMonth[prevYm]
   const prevMtdSpend = [...Object.entries(prevSpendMap.meta), ...Object.entries(prevSpendMap.google)]
     .filter(([d]) => d <= prevMtdCutoff).reduce((s, [, v]) => s + v, 0)
-  const prevMtdCod = costOfDelivery(prevMtdOrders, config)
+  const prevMtdCod = costOfDelivery(prevMtdOrders, config,
+    Math.min(dayOfMonth, daysInMonth(prevYm)) / daysInMonth(prevYm))
   const prevMtdCm = calculateCM(prevMtdRev, prevMtdCod, prevMtdSpend)
   const prevMtdAov = prevMtdOrders.length ? prevMtdRev / prevMtdOrders.length : 0
 
@@ -503,13 +522,22 @@ export async function buildFinanceSummary({ force = false } = {}) {
       fixedTotal: r0(fixedTotal),
       fixedMtd: r0(fixedMtd),
       adSpendMtd: r0(cur.adSpend),
+      // Real AusPost bill — counted inside Cost of Delivery (so inside CM);
+      // listed for visibility, NOT added to the outgoings total again.
+      auspostWeekly: config.auspostWeekly || 0,
+      auspostMonthly: r0(auspostMonthly(config)),
+      auspostMtd: r0(auspostMonthly(config) * (dayOfMonth / dim)),
       taxPct: config.taxPct,
       taxMtd: r0(taxMtd),
+      // Shopify Capital is NOT an outgoing — Shopify withholds it from
+      // payouts before the money reaches the bank (income-side deduction).
+      // Reported separately; excluded from the outgoings totals.
       shopifyCapitalPct: config.shopifyCapitalPct,
       shopifyCapitalMtd: r0(capitalMtd),
-      totalMtd: r0(fixedMtd + cur.adSpend + taxMtd + capitalMtd),
+      shopifyCapitalMonthlyProjected: r0(projRevenue * config.shopifyCapitalPct),
+      totalMtd: r0(fixedMtd + cur.adSpend + taxMtd),
       totalMonthlyProjected: r0(fixedTotal + (dayOfMonth ? (cur.adSpend / dayOfMonth) * dim : 0)
-        + projRevenue * config.taxPct + projRevenue * config.shopifyCapitalPct),
+        + projRevenue * config.taxPct),
     },
     netPosition: {
       mtd: r0(netMtd),

@@ -43,10 +43,11 @@
       "cadence": "monthly"
     }
   ],
+  "auspostWeekly": 1400,
   "taxPct": 0.05,
   "shopifyCapitalPct": 0.25,
   "cmTargetMonthly": null,
   "grossMarginPct": 0.47,
   "tntFullMargin": true,
-  "updatedAt": "2026-07-12T20:16:00.879Z"
+  "updatedAt": "2026-07-12T20:44:47.176Z"
 }

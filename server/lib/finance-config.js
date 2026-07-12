@@ -22,6 +22,10 @@ export const DEFAULT_CONFIG = {
     { key: 'rent', label: 'Rent (Bundall HQ)', amount: 2950, cadence: 'monthly' },
     { key: 'accountant', label: 'Accountant', amount: 300, cadence: 'monthly' },
   ],
+  // AusPost shipping — real weekly bill (Josh 2026-07-13: $1,400/wk).
+  // Counted INSIDE Cost of Delivery (so inside CM), prorated across the
+  // period. Replaces the old $4.50/order estimate.
+  auspostWeekly: 1400,
   // Tax provision as a share of revenue (Josh: 5%).
   taxPct: 0.05,
   // Shopify Capital repayment — Shopify withholds this share of revenue
@@ -82,6 +86,9 @@ export function saveFinanceConfig(patch) {
   }
   if (next.cmTargetMonthly !== null && (typeof next.cmTargetMonthly !== 'number' || next.cmTargetMonthly < 0)) {
     throw new Error('cmTargetMonthly must be null (auto) or a positive number')
+  }
+  if (typeof next.auspostWeekly !== 'number' || next.auspostWeekly < 0) {
+    throw new Error('auspostWeekly must be a number ≥ 0')
   }
 
   const tmp = CONFIG_FILE + '.tmp'
