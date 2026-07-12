@@ -932,7 +932,7 @@ export default function FinanceTab() {
           )}
           {tnt.revenueMtd != null && (
             <span className="fin-chip fin-chip-muted">
-              TNT: {fmtAUD(tnt.revenueMtd)} MTD ({fmtPct(tnt.pctOfRevenue)} of revenue) @ 100% margin
+              Hires (TNT + balloons): {fmtAUD(tnt.revenueMtd)} MTD ({fmtPct(tnt.pctOfRevenue)} of revenue) @ 100% pure profit
             </span>
           )}
         </div>

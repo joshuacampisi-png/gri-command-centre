@@ -39,15 +39,29 @@ router.put('/config', (req, res) => {
 })
 
 // POST /api/finance/rebuild-history — wipe order caches + refetch full
-// history. Run once after granting the read_all_orders Shopify scope.
-router.post('/rebuild-history', async (_req, res) => {
-  try {
-    const result = await rebuildFinanceHistory()
-    res.json(result)
-  } catch (err) {
-    console.error('[finance] rebuild-history error:', err)
-    res.status(500).json({ ok: false, error: err.message })
+// history. Runs ASYNC: the pull takes several minutes (25 months of
+// paginated Shopify calls) which outlives Railway's edge-proxy timeout,
+// so the request returns immediately and progress is polled via GET.
+let _rebuild = { running: false, startedAt: null, finishedAt: null, result: null, error: null }
+
+router.post('/rebuild-history', (_req, res) => {
+  if (_rebuild.running) {
+    return res.json({ ok: true, alreadyRunning: true, startedAt: _rebuild.startedAt })
   }
+  _rebuild = { running: true, startedAt: new Date().toISOString(), finishedAt: null, result: null, error: null }
+  rebuildFinanceHistory()
+    .then(result => { _rebuild = { ..._rebuild, running: false, finishedAt: new Date().toISOString(), result } })
+    .catch(err => {
+      console.error('[finance] rebuild-history error:', err)
+      _rebuild = { ..._rebuild, running: false, finishedAt: new Date().toISOString(), error: err.message }
+    })
+  res.json({ ok: true, started: true, startedAt: _rebuild.startedAt })
+})
+
+// GET /api/finance/rebuild-history/status — poll the async rebuild
+router.get('/rebuild-history/status', (_req, res) => {
+  res.set('Cache-Control', 'no-store')
+  res.json({ ok: true, ..._rebuild })
 })
 
 export default router
