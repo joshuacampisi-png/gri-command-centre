@@ -43,9 +43,9 @@
   "capitalLoanActualPct": 0.25,
   "includeGoogleSpend": false,
   "cmTargetMonthly": null,
-  "grossMarginPct": 0.875,
+  "grossMarginPct": 0.79,
   "loanRemaining": 30000,
   "stockRetailValue": 1500000,
   "tntFullMargin": true,
-  "updatedAt": "2026-07-12T22:32:11.518Z"
+  "updatedAt": "2026-07-12T23:43:38.649Z"
 }
