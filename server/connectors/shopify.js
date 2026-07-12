@@ -47,21 +47,32 @@ export async function shopifyFetch(path, options = {}) {
 async function shopifyFetchWithHeaders(pathOrUrl, options = {}) {
   const token = await effectiveAdminToken()
   const url = pathOrUrl.startsWith('http') ? pathOrUrl : adminUrl(pathOrUrl)
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Shopify-Access-Token': token,
-      ...(options.headers || {})
+  // Shopify REST allows ~2 calls/sec per app+store. Long paginated pulls
+  // (finance history rebuild) race other server traffic, so honour 429s
+  // with Retry-After backoff instead of dying mid-rebuild.
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Shopify-Access-Token': token,
+        ...(options.headers || {})
+      }
+    })
+    if (response.status === 429) {
+      const wait = Math.min(10, parseFloat(response.headers.get('retry-after') || '2') || 2)
+      await new Promise(r => setTimeout(r, (wait + 0.5) * 1000))
+      continue
     }
-  })
-  const text = await response.text()
-  let data = null
-  try { data = JSON.parse(text) } catch { data = { raw: text } }
-  if (!response.ok) {
-    throw new Error(data?.errors ? JSON.stringify(data.errors) : `Shopify API error ${response.status}`)
+    const text = await response.text()
+    let data = null
+    try { data = JSON.parse(text) } catch { data = { raw: text } }
+    if (!response.ok) {
+      throw new Error(data?.errors ? JSON.stringify(data.errors) : `Shopify API error ${response.status}`)
+    }
+    return { data, headers: response.headers }
   }
-  return { data, headers: response.headers }
+  throw new Error('Shopify API rate limited after 6 retries')
 }
 
 export async function getShopifyShop() {
