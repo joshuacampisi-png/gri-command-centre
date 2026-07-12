@@ -19,12 +19,6 @@
       "cadence": "weekly"
     },
     {
-      "key": "marketing-other",
-      "label": "Marketing (non-ads)",
-      "amount": 220,
-      "cadence": "weekly"
-    },
-    {
       "key": "accessories",
       "label": "Everyday accessories",
       "amount": 150,
@@ -53,5 +47,5 @@
   "loanRemaining": 30000,
   "stockRetailValue": 1500000,
   "tntFullMargin": true,
-  "updatedAt": "2026-07-12T21:10:59.018Z"
+  "updatedAt": "2026-07-12T22:32:11.518Z"
 }
