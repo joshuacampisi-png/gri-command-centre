@@ -194,6 +194,7 @@ if (DASHBOARD_PASSWORD && DASHBOARD_PASSWORD !== 'changeme') {
     '/api/hires/reset-contract',
     '/api/hires/refund-audit',
     '/api/hires/verify-all-bonds',
+    '/api/finance/rebuild-history',
     '/api/flywheel/attribution-diag',
     // ── Balloon-box hire ──
     '/api/balloons/sync',

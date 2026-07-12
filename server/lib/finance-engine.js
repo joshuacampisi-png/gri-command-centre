@@ -98,7 +98,9 @@ function loadJson(path) {
 }
 
 function saveJson(path, data) {
-  const tmp = path + '.tmp'
+  // Unique tmp per process+call — a shared '.tmp' suffix races when the dev
+  // server and a CLI rebuild write the same month concurrently.
+  const tmp = `${path}.${process.pid}.${Math.random().toString(36).slice(2, 8)}.tmp`
   writeFileSync(tmp, JSON.stringify(data))
   renameSync(tmp, path)
 }
