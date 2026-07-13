@@ -3,6 +3,7 @@
  * Meta Marketing API v20.0 wrapper for GRI ad account.
  */
 import { env } from './env.js'
+import { getAdsToken } from './meta-ads-token-store.js'
 
 const BASE = 'https://graph.facebook.com/v20.0'
 
@@ -16,9 +17,11 @@ const HARDCODED_CAMPAIGN_IDS = [
 ]
 
 export function metaToken() {
-  // Env var takes priority — it's the one rotated when Meta invalidates
-  // sessions. The hardcoded token is only a last-resort fallback.
-  return process.env.META_ACCESS_TOKEN || HARDCODED_META_TOKEN
+  // Priority: volume token store (survives deploys, set via
+  // POST /api/meta/ads-token) → env var → hardcoded last resort.
+  // The store exists because local .env and Railway env kept drifting
+  // after Meta token rotations.
+  return getAdsToken() || process.env.META_ACCESS_TOKEN || HARDCODED_META_TOKEN
 }
 
 function metaAccountId() {

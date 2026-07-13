@@ -123,6 +123,34 @@ router.get('/test', async (_req, res) => {
   }
 })
 
+// ── Marketing API (ads) token — volume store, survives deploys ────────────
+// POST /api/meta/ads-token { token } — validated against the GRI ad account
+// before saving, so only a token that can actually read act_1519116685663528
+// is accepted (safe to expose publicly).
+router.post('/ads-token', async (req, res) => {
+  try {
+    const token = (req.body?.token || '').trim()
+    if (!token) return res.status(400).json({ ok: false, error: 'token required' })
+    const { setAdsToken } = await import('../lib/meta-ads-token-store.js')
+    const check = await setAdsToken(token)
+    const { invalidateFinanceCache } = await import('../lib/finance-engine.js')
+    invalidateFinanceCache()
+    res.json({ ok: true, accountName: check.accountName, tokenTail: token.slice(-4) })
+  } catch (err) {
+    res.status(400).json({ ok: false, error: err.message })
+  }
+})
+
+// GET /api/meta/ads-token/status — which token is active and does it work
+router.get('/ads-token/status', async (_req, res) => {
+  try {
+    const { adsTokenStatus } = await import('../lib/meta-ads-token-store.js')
+    res.json({ ok: true, ...(await adsTokenStatus()) })
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
 export default router
 
 // Boot helper: load saved tokens into process.env on server start

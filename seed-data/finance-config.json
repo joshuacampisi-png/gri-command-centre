@@ -47,5 +47,6 @@
   "loanRemaining": 30000,
   "stockRetailValue": 1500000,
   "tntFullMargin": true,
-  "updatedAt": "2026-07-12T23:43:38.649Z"
+  "updatedAt": "2026-07-13T10:10:32.120Z",
+  "configNote": "Baseline 2026-07-13: margin 0.79 derived from Shopify cost-per-item (revenue-weighted, 90d); marketing 220/wk removed (cancelled); auspost 1400/wk in CoD; capital model 0 / actual 0.25. This note also pads the file so the volume-seed size rule applies the update on deploy."
 }

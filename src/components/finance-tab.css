@@ -871,3 +871,12 @@
   background: rgba(239, 68, 68, 0.08);
   border-color: rgba(239, 68, 68, 0.25);
 }
+
+/* Loud alert when a spend source fails — numbers are wrong until fixed */
+.fin-source-alert {
+  padding: 12px 16px; border-radius: 10px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid var(--fin-red, #ef4444);
+  color: var(--fin-red, #ef4444);
+  font-size: 13px; font-weight: 600; line-height: 1.5;
+}

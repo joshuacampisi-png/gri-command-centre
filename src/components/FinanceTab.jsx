@@ -897,6 +897,11 @@ export default function FinanceTab() {
       )}
 
       {/* ── 0. VERDICT BANNER ── */}
+      {summary?.dataSources && Object.entries(summary.dataSources).some(([, v]) => v === 'FAILED') && (
+        <div className="fin-source-alert">
+          ⚠ DATA SOURCE DOWN: {Object.entries(summary.dataSources).filter(([, v]) => v === 'FAILED').map(([k]) => k.toUpperCase()).join(' + ')} spend is NOT being fetched — every number on this page is computed as if that spend is $0. CM and profit are overstated until the token is fixed.
+        </div>
+      )}
       <VerdictBanner verdict={summary?.verdict} cashView={summary?.cashView} />
 
       {/* ── 1. HERO — Contribution Margin ── */}
