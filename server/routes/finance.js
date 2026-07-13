@@ -5,6 +5,7 @@
 import { Router } from 'express'
 import { buildFinanceSummary, invalidateFinanceCache, rebuildFinanceHistory } from '../lib/finance-engine.js'
 import { getFinanceConfig, saveFinanceConfig } from '../lib/finance-config.js'
+import { deriveBlendedMargin } from '../lib/margin-deriver.js'
 
 const router = Router()
 
@@ -62,6 +63,29 @@ router.post('/rebuild-history', (_req, res) => {
 router.get('/rebuild-history/status', (_req, res) => {
   res.set('Cache-Control', 'no-store')
   res.json({ ok: true, ..._rebuild })
+})
+
+// POST /api/finance/derive-margin — recompute the TRUE blended gross margin
+// from Shopify cost-per-item over the last 90 days of sales.
+// Body: { apply: true } also writes it to the finance config so the whole
+// dashboard recalibrates. Run this whenever the team updates landed costs.
+router.post('/derive-margin', async (req, res) => {
+  try {
+    const result = await deriveBlendedMargin({ days: Number(req.body?.days) || 90 })
+    if (!result.ok) {
+      return res.status(422).json({ ...result, error: 'No products with cost data found — enter Cost per item in Shopify first' })
+    }
+    let applied = false
+    if (req.body?.apply === true) {
+      saveFinanceConfig({ grossMarginPct: result.blendedMargin })
+      invalidateFinanceCache()
+      applied = true
+    }
+    res.json({ ...result, applied })
+  } catch (err) {
+    console.error('[finance] derive-margin error:', err)
+    res.status(500).json({ ok: false, error: err.message })
+  }
 })
 
 export default router

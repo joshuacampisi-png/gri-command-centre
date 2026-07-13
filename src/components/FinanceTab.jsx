@@ -525,6 +525,27 @@ function OutgoingsEditor({ config, configError, onRetryConfig, onSaved }) {
   const [auspostWk, setAuspostWk] = useState('')
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(null)
+  const [deriving, setDeriving] = useState(false)
+  const [deriveResult, setDeriveResult] = useState(null)
+
+  const deriveMargin = async () => {
+    setDeriving(true)
+    setDeriveResult(null)
+    try {
+      const res = await fetch(`${API}/derive-margin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apply: true }),
+      })
+      const json = await res.json()
+      if (!res.ok || json.ok === false) throw new Error(json.error || `Derive failed (${res.status})`)
+      setDeriveResult(json)
+      if (json.applied) onSaved(null) // refetch config + summary
+    } catch (err) {
+      setDeriveResult({ error: err.message || 'Derive failed' })
+    }
+    setDeriving(false)
+  }
 
   // Hydrate the draft whenever a fresh config lands (mount + after save).
   useEffect(() => {
@@ -681,7 +702,17 @@ function OutgoingsEditor({ config, configError, onRetryConfig, onSaved }) {
               <button type="button" onClick={save} disabled={saving}>
                 {saving ? 'Saving…' : 'Save changes'}
               </button>
+              <button type="button" className="fin-btn-ghost" onClick={deriveMargin} disabled={deriving}>
+                {deriving ? 'Deriving from Shopify…' : 'Derive margin from Shopify costs'}
+              </button>
             </div>
+            {deriveResult && (
+              <div className={`fin-derive-result ${deriveResult.error ? 'fin-derive-err' : ''}`}>
+                {deriveResult.error
+                  ? deriveResult.error
+                  : `True blended margin: ${deriveResult.blendedMarginPct}% (covers ${deriveResult.coveragePct}% of ${fmtAUD(deriveResult.productRevenue)} product revenue, ${deriveResult.days} days). ${deriveResult.applied ? 'Applied — dashboard recalibrated.' : ''}${deriveResult.missingCosts?.length ? ` Missing costs on ${deriveResult.missingCosts.length} product(s): ${deriveResult.missingCosts.slice(0, 3).map(m => m.title.split(' — ')[0]).join(', ')}…` : ' All sold products have costs.'}`}
+              </div>
+            )}
           </div>
         )
       )}
@@ -784,9 +815,11 @@ export default function FinanceTab() {
   }, [fetchSummary, fetchConfig])
 
   const handleConfigSaved = useCallback((newConfig) => {
-    setConfig(newConfig)
+    // null = config changed server-side (e.g. derive-margin applied) — refetch it
+    if (newConfig) setConfig(newConfig)
+    else fetchConfig()
     fetchSummary(true)
-  }, [fetchSummary])
+  }, [fetchSummary, fetchConfig])
 
   const cm = summary?.cm || {}
   const formula = cm.formula || {}
