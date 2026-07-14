@@ -245,6 +245,54 @@ if (DASHBOARD_PASSWORD && DASHBOARD_PASSWORD !== 'changeme') {
   // Matches are hostname prefixes.
   const NO_AUTH_HOSTS = ['contracts.', 'sign.', 'signing.']
 
+  // ── Cookie session (for PWA / Add-to-Home-Screen) ─────────────────────
+  // iOS standalone web apps CANNOT display the Basic-Auth prompt — the app
+  // just renders the manifest background (black) on a 401. So alongside
+  // Basic auth we support a long-lived HttpOnly session cookie set by a
+  // real login page, which standalone mode CAN render.
+  const { createHmac: _hmac } = await import('crypto')
+  const SESSION_COOKIE = 'gri_dash_session'
+  const sessionToken = () =>
+    _hmac('sha256', DASHBOARD_PASSWORD).update('gri-dash-session-v1').digest('hex')
+  const hasValidSessionCookie = (req) => {
+    const raw = req.headers.cookie || ''
+    const m = raw.match(new RegExp(`(?:^|;\\s*)${SESSION_COOKIE}=([^;]+)`))
+    return Boolean(m && m[1] === sessionToken())
+  }
+
+  const LOGIN_PAGE = `<!doctype html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Command Centre — Sign in</title>
+<style>
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0a0c10;color:#f2f5f9;display:flex;align-items:center;justify-content:center;min-height:100vh}
+  .card{width:min(340px,88vw);background:#11151c;border:1px solid #1f2630;border-radius:16px;padding:32px 28px;text-align:center}
+  h1{font-size:18px;margin:0 0 6px}
+  p{font-size:13px;color:#8b95a5;margin:0 0 20px}
+  input{width:100%;box-sizing:border-box;padding:13px 14px;font-size:16px;border-radius:10px;border:1px solid #1f2630;background:#0a0c10;color:#f2f5f9;margin-bottom:12px;outline:none}
+  input:focus{border-color:#22c55e}
+  button{width:100%;padding:13px;font-size:15px;font-weight:700;border:none;border-radius:10px;background:#22c55e;color:#04140a;cursor:pointer}
+  .err{color:#ef4444;font-size:13px;min-height:18px;margin-top:10px}
+</style></head><body><div class="card">
+<h1>Command Centre</h1><p>Gender Reveal Ideas</p>
+<form method="POST" action="/dash-login">
+  <input type="password" name="password" placeholder="Dashboard password" autofocus autocomplete="current-password">
+  <button type="submit">Sign in</button>
+  <div class="err">__ERR__</div>
+</form></div></body></html>`
+
+  app.get('/dash-login', (_req, res) => {
+    res.type('html').send(LOGIN_PAGE.replace('__ERR__', ''))
+  })
+  app.post('/dash-login', express.urlencoded({ extended: false }), (req, res) => {
+    if ((req.body?.password || '') !== DASHBOARD_PASSWORD) {
+      return res.status(401).type('html').send(LOGIN_PAGE.replace('__ERR__', 'Wrong password, try again'))
+    }
+    // 1-year HttpOnly cookie — survives PWA relaunches
+    res.setHeader('Set-Cookie',
+      `${SESSION_COOKIE}=${sessionToken()}; Path=/; Max-Age=31536000; HttpOnly; Secure; SameSite=Lax`)
+    res.redirect('/')
+  })
+
   app.use((req, res, next) => {
     // 1. Customer-facing hostnames bypass auth entirely
     const host = (req.headers.host || '').toLowerCase()
@@ -253,9 +301,16 @@ if (DASHBOARD_PASSWORD && DASHBOARD_PASSWORD !== 'changeme') {
       return next()
     }
     // 2. Public paths bypass auth
-    if (isPublicPath(req.path)) return next()
+    if (isPublicPath(req.path) || req.path === '/dash-login') return next()
+    // 3. Valid session cookie (PWA / login-page flow)
+    if (hasValidSessionCookie(req)) return next()
     const auth = req.headers.authorization
     if (!auth || !auth.startsWith('Basic ')) {
+      // Browsers/PWAs asking for PAGES get the login page (standalone-safe);
+      // API/tool clients still get the Basic challenge.
+      const wantsHtml = req.method === 'GET' && !req.path.startsWith('/api/')
+        && (req.headers.accept || '').includes('text/html')
+      if (wantsHtml) return res.redirect('/dash-login')
       res.setHeader('WWW-Authenticate', 'Basic realm="Command Centre"')
       return res.status(401).send('Authentication required')
     }
@@ -737,56 +792,71 @@ const server = app.listen(env.port, '0.0.0.0', () => {
   console.log(`   Company:   GRI only (Lionzen/GBU paused)`)
   console.log(`   Schedule:  SEO crawl @ 2am AEST | Morning brief @ 5am AEST\n`)
 
-  // Telegram: using WEBHOOK mode (not polling — polling causes 409 conflicts)
-  // Webhook registered at /api/telegram-bot/webhook
-  // startTelegramPollingBot() — DISABLED, webhook is better
-  startNotionPoller()
-  // Flywheel: ENABLED with deduplication (checks Rejected status too)
-  startFlywheel()
-  
-  // Executor: ENABLED - auto-fix SEO tasks
-  startExecutor()
-  
-  // Background data jobs (NO Telegram messages)
-  seedBaselineIfNeeded()
-  startRevenueBaselineCron()
-
-  // DISABLED — all auto Telegram messages killed per Josh's request
-  startMorningWakeUp()
-  // startSEOLearningCrons()
-  // scheduleCompetitorIntelCron()
-  // startKeywordScheduler()
-  // startTrendsScheduler()
-  // startAdsSnapshotCron()
-
-  // Meta Ads daily + weekly Telegram reports via Pablo
-  startAdsReportCrons()
-
   // Load saved Meta/Instagram tokens from data/meta-connect.json into process.env
   loadSavedMetaTokens()
 
-  // Instagram auto-scheduler (checks every minute for due posts)
-  startInstagramCron()
-  startCalendarPublisher()
+  // ── SIDE-EFFECTING JOBS: PRODUCTION ONLY ─────────────────────────────
+  // Local dev boots must NEVER email customers, mutate ads, publish posts
+  // or double-process orders alongside the Railway instance. On 14 Jul a
+  // local test boot's hires/sync emailed 4 real customers duplicate bond
+  // links — this guard makes that structurally impossible.
+  // Railway is detected via RAILWAY_VOLUME_MOUNT_PATH; set
+  // ENABLE_LOCAL_CRONS=1 to deliberately run jobs on a dev machine.
+  const IS_PROD = Boolean(process.env.RAILWAY_VOLUME_MOUNT_PATH)
+  const RUN_JOBS = IS_PROD || process.env.ENABLE_LOCAL_CRONS === '1'
 
-  // Instagram Auto Reply Bot (tone refresh cron + startup check)
-  startIGReplyBotCron()
+  if (RUN_JOBS) {
+    // Telegram: using WEBHOOK mode (not polling — polling causes 409 conflicts)
+    // startTelegramPollingBot() — DISABLED, webhook is better
+    startNotionPoller()
+    // Flywheel: ENABLED with deduplication (checks Rejected status too)
+    startFlywheel()
 
-  // TNT Hire: poll Square every 5 min for pending bond payments
-  startTNTPaymentPoller()
+    // Executor: ENABLED - auto-fix SEO tasks
+    startExecutor()
 
-  // Ads Intelligence Flywheel — Meta sync, kill/scale rules, AOV, AI briefs
-  startFlywheelCrons()
+    // Background data jobs (NO Telegram messages)
+    seedBaselineIfNeeded()
+    startRevenueBaselineCron()
 
-  // Google Ads Agent — smart cadence scans, daily briefing, auto-revert
-  startGadsAgentCrons()
+    // DISABLED — all auto Telegram messages killed per Josh's request
+    startMorningWakeUp()
+    // startSEOLearningCrons()
+    // scheduleCompetitorIntelCron()
+    // startKeywordScheduler()
+    // startTrendsScheduler()
+    // startAdsSnapshotCron()
 
-  // Ad fatigue alerts — checks every 4 hours, pings Telegram on transitions
-  startFatigueAlertCron()
+    // Meta Ads daily + weekly Telegram reports via Pablo
+    startAdsReportCrons()
 
-  // Blog autopublish — generates and publishes 1 blog per day at 6am AEST
-  startBlogAutopublishCron()
+    // Instagram auto-scheduler (checks every minute for due posts)
+    startInstagramCron()
+    startCalendarPublisher()
 
-  console.log('✅ Server running — auto Telegram messages: DISABLED')
+    // Instagram Auto Reply Bot (tone refresh cron + startup check)
+    startIGReplyBotCron()
+
+    // TNT Hire: poll Square every 5 min for pending bond payments
+    // (includes the boot-time hires/sync that creates + emails new hires)
+    startTNTPaymentPoller()
+
+    // Ads Intelligence Flywheel — Meta sync, kill/scale rules, AOV, AI briefs
+    startFlywheelCrons()
+
+    // Google Ads Agent — smart cadence scans, daily briefing, auto-revert
+    startGadsAgentCrons()
+
+    // Ad fatigue alerts — checks every 4 hours, pings Telegram on transitions
+    startFatigueAlertCron()
+
+    // Blog autopublish — generates and publishes 1 blog per day at 6am AEST
+    startBlogAutopublishCron()
+
+    console.log('✅ Server running — jobs ACTIVE (production)')
+  } else {
+    console.log('🧪 LOCAL DEV — all side-effecting jobs DISABLED (crons, pollers, boot sync, auto-emails). Set ENABLE_LOCAL_CRONS=1 to override.')
+  }
+
   console.log('🔒 Crash recovery: ACTIVE')
 })
