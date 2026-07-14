@@ -468,7 +468,96 @@ async function _buildFinanceSummary() {
   const amerNow = calculateAcquisitionMER(custNow.newCustomerRevenue, curSpendAcq)
   const amerPrev = calculateAcquisitionMER(custPrev.newCustomerRevenue, prevMtdSpendAcq)
 
-  const ltgp = ltgpWindows(byCustomer, config, ncacNow, todayStr)
+  // ── Rolling-window live reads (7/30/60/90d) ─────────────────────────────
+  // KPIs + customer metrics over rolling windows ending today, each with a
+  // delta vs the preceding window of equal length. The CM hero stays
+  // calendar-month — these exist because MTD averages "don't move" day to
+  // day and Josh wants live 30d reads by default.
+  const dayMs = 86400000
+  const dstr = (t) => new Date(t).toISOString().slice(0, 10)
+  const allOrders = months.flatMap(ym => ordersByMonth[ym])
+
+  function spendInRange(from, to, which) {
+    let total = 0
+    for (const ym of seriesMonths) {
+      const maps = adspendByMonth[ym]
+      if (!maps) continue
+      for (const src of which) {
+        for (const [d, v] of Object.entries(maps[src] || {})) {
+          if (d >= from && d <= to) total += v
+        }
+      }
+    }
+    return total
+  }
+
+  function windowStats(from, to) {
+    let revenue = 0, orders = 0
+    for (const o of allOrders) {
+      if (o.d < from || o.d > to) continue
+      revenue += o.t
+      orders++
+    }
+    const metaSp = spendInRange(from, to, ['meta'])
+    const googleSp = spendInRange(from, to, ['google'])
+    const counted = metaSp + (config.includeGoogleSpend ? googleSp : 0)
+    const acq = metaSp + googleSp
+    const cust = customerStatsForRange(byCustomer, from, to)
+    return {
+      revenue, orders, aov: orders ? revenue / orders : 0,
+      metaSp, googleSp, counted, acq,
+      cust,
+      ncac: cust.newCustomers > 0 ? acq / cust.newCustomers : 0,
+      adjCac: (cust.newCustomers + cust.reactivated) > 0 ? acq / (cust.newCustomers + cust.reactivated) : 0,
+      fov: calculateFOVCAC(cust.firstOrderAov, config.grossMarginPct,
+        cust.newCustomers > 0 ? acq / cust.newCustomers : 0),
+      amer: calculateAcquisitionMER(cust.newCustomerRevenue, acq),
+      mer: acq > 0 ? revenue / acq : null,
+    }
+  }
+
+  const nowMs = new Date(todayStr).getTime()
+  const liveWindows = {}
+  for (const n of [7, 30, 60, 90]) {
+    const from = dstr(nowMs - (n - 1) * dayMs)
+    const prevTo = dstr(nowMs - n * dayMs)
+    const prevFrom = dstr(nowMs - (2 * n - 1) * dayMs)
+    const w = windowStats(from, todayStr)
+    const p = windowStats(prevFrom, prevTo)
+    const dSpend = w.acq - p.acq
+    const dCust = w.cust.newCustomers - p.cust.newCustomers
+    liveWindows[String(n)] = {
+      from, to: todayStr,
+      kpis: {
+        revenue: { value: r0(w.revenue), deltaPct: pctDelta(w.revenue, p.revenue) },
+        spend: {
+          value: r0(w.acq), deltaPct: pctDelta(w.acq, p.acq),
+          meta: r0(w.metaSp), google: r0(w.googleSp),
+          countedInOutgoings: r0(w.counted),
+          googleCounted: Boolean(config.includeGoogleSpend),
+        },
+        mer: {
+          value: w.mer != null ? r2(w.mer) : null,
+          deltaPct: (w.mer != null && p.mer != null) ? pctDelta(w.mer, p.mer) : null,
+        },
+        aov: { value: r0(w.aov), deltaPct: pctDelta(w.aov, p.aov) },
+      },
+      customer: {
+        ncac: { value: r0(w.ncac), deltaPct: pctDelta(w.ncac, p.ncac) },
+        incrementalCac: { value: dCust > 0 ? r2(dSpend / dCust) : null, deltaSpend: r0(dSpend), deltaCustomers: dCust },
+        adjustedCac: { value: r0(w.adjCac), deltaPct: pctDelta(w.adjCac, p.adjCac) },
+        fovCac: { value: r2(w.fov), deltaPct: pctDelta(w.fov, p.fov) },
+        newCustomers: { value: w.cust.newCustomers, deltaPct: pctDelta(w.cust.newCustomers, p.cust.newCustomers) },
+        repeatRate: { value: w.cust.repeatRate, deltaPct: pctDelta(w.cust.repeatRate, p.cust.repeatRate) },
+        amer: { value: r2(w.amer), deltaPct: pctDelta(w.amer, p.amer) },
+      },
+    }
+  }
+
+  // LTGP:nCAC cohort ratios use the displayed (30d rolling) nCAC so the two
+  // cards on the dashboard agree with each other
+  const ncac30 = liveWindows['30']?.customer?.ncac?.value || ncacNow
+  const ltgp = ltgpWindows(byCustomer, config, ncac30, todayStr)
 
   // ── Outgoings + net position ─────────────────────────────────────────────
   const fixedTotal = fixedTotalMonthly(config)
@@ -623,34 +712,11 @@ async function _buildFinanceSummary() {
         aovNow: r0(cur.aov), aovThen: r0(lastYear.aov),
       } : null,
     },
-    kpis: {
-      revenue: { value: r0(cur.revenue), deltaPct: pctDelta(cur.revenue, prevMtdRev) },
-      spend: {
-        // Headline = combined Meta + Google (the full marketing machine);
-        // only Meta hits the P&L (Google is paid by another business).
-        value: r0(curSpendAcq), deltaPct: pctDelta(curSpendAcq, prevMtdSpendAcq),
-        meta: r0(cur.metaSpend), google: r0(cur.googleSpend),
-        countedInOutgoings: r0(cur.adSpend),
-        googleCounted: Boolean(config.includeGoogleSpend),
-      },
-      mer: {
-        // Marketing efficiency across the whole machine: Meta + Google
-        value: curSpendAcq > 0 ? r2(cur.revenue / curSpendAcq) : null,
-        deltaPct: (curSpendAcq > 0 && prevMtdSpendAcq > 0 && prevMtdRev > 0)
-          ? pctDelta(cur.revenue / curSpendAcq, prevMtdRev / prevMtdSpendAcq) : null,
-      },
-      aov: { value: r0(cur.aov), deltaPct: pctDelta(cur.aov, prevMtdAov) },
-    },
-    customer: {
-      ncac: { value: r0(ncacNow), deltaPct: pctDelta(ncacNow, ncacPrev) },
-      incrementalCac: { value: incrementalCac, deltaSpend: r0(deltaSpend), deltaCustomers: deltaCust },
-      adjustedCac: { value: r0(adjCacNow), deltaPct: pctDelta(adjCacNow, adjCacPrev) },
-      fovCac: { value: r2(fovNow), deltaPct: pctDelta(fovNow, fovPrev) },
-      ltgpNcac: ltgp,
-      newCustomers: { value: custNow.newCustomers, deltaPct: pctDelta(custNow.newCustomers, custPrev.newCustomers) },
-      repeatRate: { value: custNow.repeatRate, deltaPct: pctDelta(custNow.repeatRate, custPrev.repeatRate) },
-      amer: { value: r2(amerNow), deltaPct: pctDelta(amerNow, amerPrev) },
-    },
+    // Live reads default to the ROLLING 30-DAY window (Josh 2026-07-15:
+    // MTD averages felt frozen). All windows exposed for the UI selector.
+    kpis: liveWindows['30'].kpis,
+    customer: { ...liveWindows['30'].customer, ltgpNcac: ltgp },
+    liveWindows,
     tnt: {
       revenueMtd: r0(cur.hireRevenue),
       pctOfRevenue: cur.revenue > 0 ? r2((cur.hireRevenue / cur.revenue) * 100) : 0,

@@ -767,6 +767,7 @@ export default function FinanceTab() {
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState(null)
   const [config, setConfig] = useState(null)
+  const [liveWin, setLiveWin] = useState('30')
   const [configError, setConfigError] = useState(null)
   const [, setTick] = useState(0) // keeps the relative timestamp fresh
 
@@ -823,8 +824,13 @@ export default function FinanceTab() {
 
   const cm = summary?.cm || {}
   const formula = cm.formula || {}
-  const kpis = summary?.kpis || {}
-  const cust = summary?.customer || {}
+  // Live reads: rolling window selected by the pills (default 30d).
+  // Falls back to the payload defaults (= 30d) on older payloads.
+  const win = summary?.liveWindows?.[liveWin]
+  const kpis = win?.kpis || summary?.kpis || {}
+  const cust = win
+    ? { ...win.customer, ltgpNcac: summary?.customer?.ltgpNcac }
+    : (summary?.customer || {})
   const out = summary?.outgoings || {}
   const np = summary?.netPosition || {}
   const lm = summary?.comparisons?.vsLastMonth
@@ -998,7 +1004,24 @@ export default function FinanceTab() {
 
       {/* ── 2. KPI ROW ── */}
       <section>
-        <div className="fin-section-heading">Business</div>
+        <div className="fin-section-heading fin-live-head">
+          Business
+          {summary?.liveWindows && (
+            <span className="fin-live-pills">
+              {['7', '30', '60', '90'].map(k => (
+                <button
+                  key={k}
+                  type="button"
+                  className={`fin-pill ${liveWin === k ? 'fin-pill-active' : ''}`}
+                  onClick={() => setLiveWin(k)}
+                >
+                  {k}d
+                </button>
+              ))}
+              <span className="fin-live-note">rolling · vs prior {liveWin}d</span>
+            </span>
+          )}
+        </div>
         <div className="fin-grid fin-grid-kpi">
           <MetricCard
             label="Revenue"
@@ -1034,7 +1057,10 @@ export default function FinanceTab() {
 
       {/* ── 3. CUSTOMER METRICS ── */}
       <section>
-        <div className="fin-section-heading fin-heading-purple">Customer Metrics</div>
+        <div className="fin-section-heading fin-heading-purple">
+          Customer Metrics
+          {summary?.liveWindows && <span className="fin-live-note"> · rolling {liveWin}d</span>}
+        </div>
         <div className="fin-grid fin-grid-customer">
           <MetricCard
             label="nCAC"
