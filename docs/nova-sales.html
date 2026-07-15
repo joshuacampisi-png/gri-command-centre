@@ -81,6 +81,8 @@
   .edit{background:none;border:none;color:var(--blue);font-size:15px;cursor:pointer;padding:2px 4px;font-weight:700}
   tfoot td{font-weight:800;border-top:2px solid var(--line);background:#f8faff}
   .empty{color:var(--mist);text-align:center;padding:24px;font-size:13.5px}
+  tr.ohdr td{background:#eef2ff;color:var(--navy);font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:.4px;padding:7px 8px}
+  tr.oitem td:first-child{padding-left:16px}
 </style>
 </head>
 <body>
@@ -125,22 +127,35 @@
     <div class="cempty" id="cEmpty">No cohorts yet. Add a name and their % above.</div>
   </div>
 
-  <!-- LOG A SALE -->
+  <!-- LOG AN ORDER -->
   <div class="card">
-    <h2>Log a sale</h2>
+    <h2>Log an order <span class="hint">one order can hold several peptides</span></h2>
     <div class="form">
-      <div class="f full"><label>Product sold</label><select id="product"></select></div>
+      <div class="f full"><label>Peptide</label><select id="product"></select></div>
       <div class="f"><label>Qty</label><input id="qty" type="number" inputmode="numeric" min="1" step="1" value="1"></div>
       <div class="f"><label>Sale price (ea)</label><input id="price" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00"></div>
       <div class="f full"><label>Cost (ea) &mdash; auto, editable</label><input id="cost" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00"></div>
       <div class="f"><label>Cohort</label><select id="cohort"><option value="">None</option></select></div>
       <div class="f"><label>Commission $ (paid)</label><input id="commission" type="number" inputmode="decimal" min="0" step="0.01" value="0"></div>
-      <div class="f full"><label>Note (optional)</label><input id="note" type="text" maxlength="120" placeholder="e.g. repeat customer"></div>
       <div class="profitline">
-        <div><div>Net profit on this sale</div><div class="sub" id="rowSub">gross $0.00 &minus; commission $0.00</div></div>
+        <div><div>This peptide</div><div class="sub" id="rowSub">gross $0.00 &minus; commission $0.00</div></div>
         <span class="pv" id="rowNet">$0.00</span>
       </div>
-      <button class="addbtn" id="add">+ Add sale</button>
+      <button class="addbtn" id="addLine" style="background:#eef2ff;color:#2f6fd0;border:1px solid #cdd6ee">+ Add another peptide to this order</button>
+    </div>
+
+    <div id="basketWrap" style="display:none;margin-top:12px">
+      <div style="font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--mist);font-weight:700;margin-bottom:6px">Peptides in this order</div>
+      <div id="basket" style="display:flex;flex-direction:column;gap:8px"></div>
+      <div class="profitline" style="margin-top:10px">
+        <div><div>Order total</div><div class="sub" id="orderSub"></div></div>
+        <span class="pv" id="orderNet">$0.00</span>
+      </div>
+    </div>
+
+    <div class="form" style="margin-top:12px">
+      <div class="f full"><label>Order note (optional)</label><input id="note" type="text" maxlength="120" placeholder="e.g. repeat customer"></div>
+      <button class="addbtn" id="add">Save order</button>
     </div>
     <div class="msg" id="msg"></div>
   </div>
@@ -185,9 +200,14 @@
     {name:'BPC-157 + TB-500 — Vial',price:120,cost:17.11},{name:'BPC-157 + TB-500 — Kit',price:170,cost:40.06},
     {name:'SS-31 10mg — Vial',price:85,cost:14.96},{name:'SS-31 10mg — Full Kit',price:130,cost:37.91},
     {name:'Tesamorelin 20mg — Vial',price:185,cost:27.86},{name:'Tesamorelin 20mg — Kit',price:230,cost:50.81},
-    {name:'Reta RT10 — Vial',price:155,cost:13.48},{name:'Reta RT10 — Kit',price:170,cost:36.43},
+    {name:'Reta RT10 — Vial',price:155,cost:14.25},{name:'Reta RT10 — Kit',price:170,cost:37.20},
     {name:'MOTS-C 20mg — Vial',price:140,cost:23.15},{name:'MOTS-C 20mg — Kit',price:170,cost:46.10},
     {name:'NAD+ 500mg — Vial',price:130,cost:12.30},{name:'NAD+ 500mg — Kit',price:150,cost:35.25},
+    {name:'GHK-Cu 100mg — Vial',price:150,cost:9.48},{name:'GHK-Cu 100mg — Kit',price:185,cost:32.43},
+    {name:'TB-500 10mg — Vial',price:90,cost:18.26},{name:'TB-500 10mg — Kit',price:120,cost:41.21},
+    {name:'CJC-1295 DAC 5mg — Vial',price:130,cost:24.66},{name:'CJC-1295 DAC 5mg — Kit',price:160,cost:47.61},
+    {name:'PT-141 10mg — Vial',price:50,cost:11.78},{name:'PT-141 10mg — Kit',price:80,cost:34.73},
+    {name:'BPC-157 5mg — Vial',price:60,cost:20.06},{name:'BPC-157 5mg — Kit',price:85,cost:43.01},
     {name:'BAC Water 3ml',price:19.99,cost:1.12},{name:'Custom / other',price:'',cost:''},
   ]
   const $ = id => document.getElementById(id)
@@ -247,14 +267,24 @@
     document.querySelectorAll('.cdel').forEach(b=>b.addEventListener('click',()=>delCohort(b.dataset.id)))
   }
 
-  function buildRow(s){
+  function lineNet(s){ const comm=Number(s.commission)||0; return (s.net!=null)?s.net:((s.profit||0)-comm) }
+  function buildRow(s, grouped){
     if(editingId===s.id) return editForm(s)
-    const comm=Number(s.commission)||0, net=(s.net!=null)?s.net:((s.profit||0)-comm)
-    const bits=[fmtTime(s.ts)]; if(s.by)bits.push(escapeHtml(s.by))
+    const comm=Number(s.commission)||0, net=lineNet(s)
+    const bits=[]; if(!grouped){ bits.push(fmtTime(s.ts)); if(s.by)bits.push(escapeHtml(s.by)) }
     if(s.cohort)bits.push(`<span class="cm">${escapeHtml(s.cohort)} ${aud(comm)}</span>`); if(s.note)bits.push(escapeHtml(s.note))
-    return `<tr><td><div class="prod">${escapeHtml(s.product)}</div><div class="subby">${bits.join(' · ')}</div></td>
+    const sub=bits.length?`<div class="subby">${bits.join(' · ')}</div>`:''
+    return `<tr${grouped?' class="oitem"':''}><td><div class="prod">${escapeHtml(s.product)}</div>${sub}</td>
       <td>${s.qty||1}</td><td>${aud(s.price)}</td><td class="pos">${aud(net)}</td>
       <td style="white-space:nowrap"><button class="edit" data-id="${s.id}">✎</button><button class="del" data-id="${s.id}">✕</button></td></tr>`
+  }
+  // group line items into their customer orders, preserving newest-first order
+  function groupOrders(sales){
+    const groups=[], idx={}
+    for(const s of sales){ const k=s.orderId||s.id
+      if(idx[k]==null){ idx[k]=groups.length; groups.push({key:k, items:[]}) }
+      groups[idx[k]].items.push(s) }
+    return groups
   }
   function editForm(s){
     const opts='<option value="">None</option>'+COHORTS.map(c=>`<option value="${c.id}" ${c.name===s.cohort?'selected':''}>${escapeHtml(c.name)} (${c.pct}%)</option>`).join('')
@@ -297,7 +327,14 @@
     $('tUnits').textContent=totals.units||0; $('tRev').textContent=aud0(totals.revenue); $('tNet').textContent=aud0(totals.net)
     $('grossLine').textContent=`Gross profit ${aud0(totals.profit)} − commission ${aud0(totals.commission)} = net ${aud0(totals.net)} (${totals.margin||0}% margin)`
     $('empty').style.display=sales.length?'none':'block'
-    $('rows').innerHTML=sales.map(buildRow).join('')
+    $('rows').innerHTML=groupOrders(sales).map(g=>{
+      if(g.items.length===1) return buildRow(g.items[0])
+      const first=g.items[0]
+      const net=g.items.reduce((a,s)=>a+lineNet(s),0)
+      const hb=[fmtTime(first.ts)]; if(first.by)hb.push(escapeHtml(first.by))
+      const hdr=`<tr class="ohdr"><td colspan="3">Order · ${g.items.length} peptides · ${hb.join(' · ')}</td><td class="pos">${aud(net)}</td><td></td></tr>`
+      return hdr + g.items.map(s=>buildRow(s,true)).join('')
+    }).join('')
     document.querySelectorAll('.del').forEach(b=>b.addEventListener('click',()=>delSale(b.dataset.id)))
     document.querySelectorAll('.edit').forEach(b=>b.addEventListener('click',()=>startEdit(b.dataset.id)))
     if(editingId){
@@ -370,20 +407,50 @@
   async function delSale(id){ if(!confirm('Delete this sale?')) return
     try{ const r=await api('/api/nova-sales/'+id,{method:'DELETE'}); renderCohorts(renderSales(await r.json())) }catch(e){} }
 
+  // ── order basket: build one order out of one or more peptide line items ──
+  let basket=[]
+  function readBuilderLine(){
+    const p=PRODUCTS[+sel.value]; if(!p) return null
+    const price=parseFloat($('price').value)||0
+    if(price<=0) return null
+    const cost=parseFloat($('cost').value)||0
+    const qty=Math.max(1,parseInt($('qty').value)||1)
+    const commission=parseFloat($('commission').value)||0
+    const cohort=(COHORTS.find(c=>c.id===$('cohort').value)||{}).name||''
+    return {product:p.name, price, cost, qty, commission, cohort, net:(price-cost)*qty-commission}
+  }
+  function resetBuilder(){ sel.selectedIndex=0; $('qty').value='1'; commissionTouched=false; fillFromProduct() }
+  function renderBasket(){
+    const wrap=$('basketWrap')
+    if(!basket.length){ wrap.style.display='none'; $('basket').innerHTML=''; return }
+    wrap.style.display='block'
+    $('basket').innerHTML=basket.map((b,i)=>`
+      <div class="citem"><span class="cn">${escapeHtml(b.product)}</span>
+        <span class="cmeta">×${b.qty} @ ${aud(b.price)}${b.cohort?' · '+escapeHtml(b.cohort):''} · net ${aud(b.net)}</span>
+        <button class="bdel" data-i="${i}">✕</button></div>`).join('')
+    document.querySelectorAll('#basket .bdel').forEach(btn=>btn.addEventListener('click',()=>{ basket.splice(+btn.dataset.i,1); renderBasket() }))
+    const net=basket.reduce((a,b)=>a+b.net,0), rev=basket.reduce((a,b)=>a+b.price*b.qty,0)
+    $('orderNet').textContent=aud(net)
+    $('orderSub').textContent=`${basket.length} peptide${basket.length===1?'':'s'} · revenue ${aud(rev)}`
+  }
+  $('addLine').addEventListener('click', ()=>{
+    const line=readBuilderLine()
+    if(!line){ $('msg').textContent='Enter a sale price for this peptide first.'; return }
+    basket.push(line); renderBasket(); resetBuilder(); $('msg').textContent=''
+  })
   $('add').addEventListener('click', async ()=>{
-    const product=PRODUCTS[+sel.value].name
-    const price=parseFloat($('price').value)||0, cost=parseFloat($('cost').value)||0
-    const qty=Math.max(1,parseInt($('qty').value)||1), commission=parseFloat($('commission').value)||0
-    const cohortName=(COHORTS.find(c=>c.id===$('cohort').value)||{}).name||''
-    if(price<=0){ $('msg').textContent='Enter a sale price first.'; return }
+    const items=[...basket]
+    const cur=readBuilderLine(); if(cur) items.push(cur)
+    if(!items.length){ $('msg').textContent='Add at least one peptide with a sale price.'; return }
     $('add').disabled=true; $('msg').textContent='Saving…'
     try{
-      const r=await api('/api/nova-sales',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({product,price,cost,qty,commission,cohort:cohortName,note:$('note').value,by:$('who').value})})
+      const payload={ items:items.map(({net,...it})=>it), note:$('note').value, by:$('who').value }
+      const r=await api('/api/nova-sales/order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
       if(!r.ok) throw new Error('http')
       renderCohorts(renderSales(await r.json()))
-      $('note').value=''; $('qty').value='1'; commissionTouched=false; $('commission').value=autoCommission(); calcRow()
-      $('msg').textContent='Saved ✓'; setTimeout(()=>$('msg').textContent='',1500)
+      basket=[]; renderBasket(); $('note').value=''; resetBuilder()
+      const n=items.length
+      $('msg').textContent=`Saved ✓ — order with ${n} peptide${n===1?'':'s'}`; setTimeout(()=>$('msg').textContent='',2000)
     }catch(e){ $('msg').textContent='Could not save — check connection.' }
     finally{ $('add').disabled=false }
   })

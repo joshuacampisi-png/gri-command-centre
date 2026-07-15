@@ -29,15 +29,17 @@ export function listSales() {
   return read().sort((a, b) => (b.ts || 0) - (a.ts || 0))
 }
 
-export function addSale({ product, price, cost, qty, note, by, cohort, commission }) {
-  const sales = read()
+// Build a single line-item record. `orderId` groups line items belonging to
+// the same customer order (an order can hold several peptides).
+function buildLine({ product, price, cost, qty, note, by, cohort, commission }, orderId, seq = 0) {
   const p = Number(price) || 0
   const c = Number(cost) || 0
   const q = Math.max(1, Math.round(Number(qty) || 1))
   const comm = Math.max(0, Number(commission) || 0)
   const gross = (p - c) * q
-  const sale = {
-    id: 's_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+  return {
+    id: 's_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6) + seq,
+    orderId,
     ts: Date.now(),
     product: String(product || '').slice(0, 80),
     qty: q,
@@ -52,9 +54,28 @@ export function addSale({ product, price, cost, qty, note, by, cohort, commissio
     note: String(note || '').slice(0, 120),
     by: String(by || '').slice(0, 24)
   }
+}
+
+export function addSale(input) {
+  const sales = read()
+  const orderId = 'o_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+  const sale = buildLine(input, orderId)
   sales.push(sale)
   write(sales)
   return sale
+}
+
+// Add one customer order made up of one or more peptide line items.
+// All items share a single orderId so the order counts once.
+export function addOrder({ items = [], note, by }) {
+  const list = Array.isArray(items) ? items.filter(it => it && Number(it.price) > 0) : []
+  if (!list.length) return []
+  const sales = read()
+  const orderId = 'o_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+  const created = list.map((it, i) => buildLine({ ...it, note: it.note != null ? it.note : note, by }, orderId, i))
+  created.forEach(s => sales.push(s))
+  write(sales)
+  return created
 }
 
 export function updateSale(id, patch = {}) {
@@ -95,7 +116,10 @@ export function totals(sales) {
     a.commission += Number(s.commission) || 0
     return a
   }, { units: 0, revenue: 0, cost: 0, profit: 0, commission: 0 })
-  t.orders = sales.length
+  // Count distinct customer orders. Legacy rows without orderId each count as
+  // their own order (fall back to the line id) so the tally stays correct.
+  t.orders = new Set(sales.map(s => s.orderId || s.id)).size
+  t.lineItems = sales.length
   t.revenue = +t.revenue.toFixed(2)
   t.cost = +t.cost.toFixed(2)
   t.profit = +t.profit.toFixed(2)          // gross profit
