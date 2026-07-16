@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-label="Vials with dangerously low purity">
+  <defs>
+    <linearGradient id="bp" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2a0d10"/><stop offset="1" stop-color="#5a1418"/></linearGradient>
+  </defs>
+  <rect width="640" height="360" fill="url(#bp)"/>
+  <text x="40" y="64" fill="#ffb4b6" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="2">LAB FINDINGS</text>
+  <text x="40" y="104" fill="#fff" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="800">1&#8211;15% purity.</text>
+  <text x="40" y="140" fill="#fff" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="800">Not what the label says.</text>
+  <!-- vials -->
+  <g transform="translate(70,190)">
+    <g transform="translate(0,0)">
+      <rect x="0" y="10" width="42" height="120" rx="8" fill="#fff" opacity=".12"/>
+      <rect x="0" y="96" width="42" height="34" rx="8" fill="#E5484D"/>
+      <rect x="8" y="0" width="26" height="16" rx="4" fill="#ffb4b6"/>
+      <text x="21" y="150" text-anchor="middle" fill="#ffb4b6" font-family="Inter, Arial" font-size="13" font-weight="800">4%</text>
+    </g>
+    <g transform="translate(90,0)">
+      <rect x="0" y="10" width="42" height="120" rx="8" fill="#fff" opacity=".12"/>
+      <rect x="0" y="86" width="42" height="44" rx="8" fill="#E5484D"/>
+      <rect x="8" y="0" width="26" height="16" rx="4" fill="#ffb4b6"/>
+      <text x="21" y="150" text-anchor="middle" fill="#ffb4b6" font-family="Inter, Arial" font-size="13" font-weight="800">11%</text>
+    </g>
+    <g transform="translate(180,0)">
+      <rect x="0" y="10" width="42" height="120" rx="8" fill="#fff" opacity=".12"/>
+      <rect x="0" y="112" width="42" height="18" rx="8" fill="#E5484D"/>
+      <rect x="8" y="0" width="26" height="16" rx="4" fill="#ffb4b6"/>
+      <text x="21" y="150" text-anchor="middle" fill="#ffb4b6" font-family="Inter, Arial" font-size="13" font-weight="800">2%</text>
+    </g>
+    <!-- reference: what it should be -->
+    <g transform="translate(330,0)">
+      <rect x="0" y="10" width="42" height="120" rx="8" fill="#fff" opacity=".12"/>
+      <rect x="0" y="24" width="42" height="106" rx="8" fill="#16A34A"/>
+      <rect x="8" y="0" width="26" height="16" rx="4" fill="#6EE7D6"/>
+      <text x="21" y="150" text-anchor="middle" fill="#6EE7D6" font-family="Inter, Arial" font-size="13" font-weight="800">99%</text>
+    </g>
+    <text x="330" y="-8" fill="#6EE7D6" font-family="Inter, Arial" font-size="11" font-weight="700">TESTED</text>
+  </g>
+</svg>
