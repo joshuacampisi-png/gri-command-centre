@@ -645,10 +645,52 @@ async function _buildFinanceSummary() {
   // Once the loan clears, the remittance disappears from the cash view
   const cashAfterLoan = cashProjected + projRevenue * loanPct
 
-  // Loan payoff countdown + stock runway (Josh 2026-07-13: $30k loan left,
-  // ~$1.5M retail stock on hand, all already paid for)
+  // ── Shopify Capital LIVE payoff tracker ─────────────────────────────────
+  // Anchor balance (config, from Shopify's own figure) minus 25% of every
+  // day's revenue since the anchor date = live remaining. Self-updates as
+  // orders land; re-anchor in config whenever Shopify is checked.
+  const anchorAmount = config.loanAnchorAmount ?? config.loanRemaining ?? 0
+  const anchorDate = config.loanAnchorDate || todayStr
+  // Balance math is gated by the anchor date; the daily payout figures are
+  // NOT (Shopify withholds 25% every day regardless — days before the
+  // anchor are already baked into the anchored balance).
+  let revenueSinceAnchor = 0
+  const dailyRev = {}
+  const yesterdayStr = dstr(nowMs - dayMs)
+  const rev14From = dstr(nowMs - 14 * dayMs)
+  let rev14 = 0
+  for (const o of allOrders) {
+    if (o.d >= anchorDate) revenueSinceAnchor += o.t
+    if (o.d >= rev14From) {
+      dailyRev[o.d] = (dailyRev[o.d] || 0) + o.t
+      if (o.d <= yesterdayStr) rev14 += o.t
+    }
+  }
+  const loanPctTrack = config.capitalLoanActualPct ?? 0.25
+  const paidSinceAnchor = Math.min(anchorAmount, revenueSinceAnchor * loanPctTrack)
+  const loanRemainingLive = Math.max(0, anchorAmount - paidSinceAnchor)
+  const avgDailyPayout = (rev14 / 14) * loanPctTrack
+  const estDaysLeft = avgDailyPayout > 0 ? Math.ceil(loanRemainingLive / avgDailyPayout) : null
+  const estClearDate = estDaysLeft != null ? dstr(nowMs + estDaysLeft * dayMs) : null
+  const loanTracker = {
+    anchorAmount: r0(anchorAmount),
+    anchorDate,
+    pct: loanPctTrack,
+    remaining: r0(loanRemainingLive),
+    paidSinceAnchor: r0(paidSinceAnchor),
+    progressPct: anchorAmount > 0 ? r2((paidSinceAnchor / anchorAmount) * 100) : 0,
+    todayRevenue: r0(dailyRev[todayStr] || 0),
+    todayPayout: r0((dailyRev[todayStr] || 0) * loanPctTrack),
+    yesterdayRevenue: r0(dailyRev[yesterdayStr] || 0),
+    yesterdayPayout: r0((dailyRev[yesterdayStr] || 0) * loanPctTrack),
+    avgDailyPayout: r0(avgDailyPayout),
+    estDaysLeft,
+    estClearDate,
+  }
+
+  // Loan payoff countdown + stock runway
   const monthlyRemittance = projRevenue * loanPct
-  const loanRemaining = config.loanRemaining || 0
+  const loanRemaining = loanRemainingLive
   const monthsToPayoff = loanRemaining > 0 && monthlyRemittance > 0
     ? loanRemaining / monthlyRemittance : 0
   const stockRetail = config.stockRetailValue || 0
@@ -686,6 +728,7 @@ async function _buildFinanceSummary() {
     dayOfMonth,
     verdict,
     cashView,
+    loanTracker,
     cm: {
       mtd: r0(cmMtd),
       dailyAvg: r0(dailyAvg),

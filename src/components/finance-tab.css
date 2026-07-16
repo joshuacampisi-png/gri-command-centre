@@ -888,3 +888,54 @@
   font-size: 11px; font-weight: 500; letter-spacing: 0.02em;
   color: var(--fin-muted, #8b95a5); text-transform: none; margin-left: 6px;
 }
+
+/* ── Shopify Capital repayment tracker ── */
+.fin-loan-card { margin-bottom: 16px; }
+.fin-loan-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+}
+.fin-loan-pcttag {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
+  color: var(--fin-purple); background: var(--fin-purple-bg);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  padding: 3px 10px; border-radius: 999px; white-space: nowrap;
+}
+.fin-loan-hero { display: flex; align-items: baseline; gap: 10px; margin: 10px 0 14px; }
+.fin-loan-remaining {
+  font-family: var(--fin-mono); font-size: 34px; font-weight: 700;
+  color: var(--fin-text); letter-spacing: -0.02em;
+}
+.fin-loan-remaining-label { font-size: 13px; color: var(--fin-muted); }
+.fin-loan-bar {
+  height: 14px; border-radius: 999px; overflow: hidden;
+  background: var(--fin-subtle); border: 1px solid var(--fin-border-strong);
+}
+.fin-loan-bar-fill {
+  height: 100%; border-radius: 999px; min-width: 4px;
+  background: linear-gradient(90deg, var(--fin-green-bar), var(--fin-green));
+  transition: width 0.6s ease;
+}
+.fin-loan-bar-caption {
+  display: flex; justify-content: space-between; gap: 12px;
+  margin-top: 8px; font-size: 12px; color: var(--fin-muted);
+}
+.fin-loan-bar-caption span:last-child { font-family: var(--fin-mono); }
+.fin-loan-stats {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px; margin-top: 16px;
+}
+.fin-loan-stat {
+  display: flex; flex-direction: column; gap: 3px;
+  background: var(--fin-card-raised); border: 1px solid var(--fin-border);
+  border-radius: var(--fin-radius-sm); padding: 10px 12px;
+}
+.fin-loan-stat-label {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--fin-faint);
+}
+.fin-loan-stat-value { font-family: var(--fin-mono); font-size: 18px; font-weight: 700; color: var(--fin-text); }
+.fin-loan-stat-sub { font-size: 11px; color: var(--fin-muted); }
+@media (max-width: 900px) {
+  .fin-loan-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

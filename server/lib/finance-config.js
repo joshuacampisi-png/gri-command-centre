@@ -50,8 +50,14 @@ export const DEFAULT_CONFIG = {
   // $4 and sell for $32 — this is the LOWEST product margin we have" =
   // 87.5% floor; everything else is higher. Set at that floor.
   grossMarginPct: 0.875,
-  // Shopify Capital loan balance remaining (Josh 2026-07-13: $30k left).
-  // Update as it pays down; set 0 when cleared.
+  // Shopify Capital loan — LIVE payoff tracking. Josh 2026-07-16: $27,126
+  // owing as of the anchor date. The engine subtracts 25% of every day's
+  // Shopify revenue from the anchor automatically, so the remaining
+  // balance self-updates daily. Re-anchor whenever Shopify's own figure
+  // is checked (update both amount and date).
+  loanAnchorAmount: 27126,
+  loanAnchorDate: '2026-07-16',
+  // Legacy static figure (superseded by the anchor fields)
   loanRemaining: 30000,
   // Stock on hand at RETAIL value (Josh 2026-07-13: ~$1.5M) — all paid for
   // via the loan. Gives the months-of-runway figure: no cash needed for
@@ -118,10 +124,13 @@ export function saveFinanceConfig(patch) {
   if (typeof next.includeGoogleSpend !== 'boolean') {
     next.includeGoogleSpend = Boolean(next.includeGoogleSpend)
   }
-  for (const f of ['loanRemaining', 'stockRetailValue']) {
+  for (const f of ['loanRemaining', 'loanAnchorAmount', 'stockRetailValue']) {
     if (next[f] != null && (typeof next[f] !== 'number' || next[f] < 0)) {
       throw new Error(`${f} must be a number ≥ 0`)
     }
+  }
+  if (next.loanAnchorDate != null && !/^\d{4}-\d{2}-\d{2}$/.test(next.loanAnchorDate)) {
+    throw new Error('loanAnchorDate must be YYYY-MM-DD')
   }
 
   const tmp = CONFIG_FILE + '.tmp'

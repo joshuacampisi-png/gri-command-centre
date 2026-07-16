@@ -273,6 +273,63 @@ function MonthlyBars({ series }) {
 
 // ── Verdict banner ───────────────────────────────────────────────────────────
 
+function fmtDayMonth(iso) {
+  if (!iso) return '—'
+  const [y, m, d] = iso.split('-').map(Number)
+  return `${d} ${MONTHS_SHORT[m - 1]}${y !== new Date().getFullYear() ? ' ' + y : ''}`
+}
+
+// Shopify Capital repayment — anchored balance minus 25% of every day's
+// takings since the anchor, so the bar ticks down on its own as orders land.
+function LoanTrackerCard({ lt }) {
+  if (!lt || !lt.anchorAmount) return null
+  const cleared = lt.remaining <= 0
+  const pct = Math.min(100, Math.max(0, lt.progressPct || 0))
+  return (
+    <div className="fin-card fin-loan-card">
+      <div className="fin-loan-head">
+        <h3 className="fin-card-title">Shopify Capital Repayment</h3>
+        <span className="fin-loan-pcttag">{fmtFracPct(lt.pct)} of every day's sales</span>
+      </div>
+      <div className="fin-loan-hero">
+        <span className={`fin-loan-remaining ${cleared ? 'fin-status-green' : ''}`}>
+          {cleared ? 'PAID OFF' : fmtAUD(lt.remaining)}
+        </span>
+        {!cleared && <span className="fin-loan-remaining-label">left to repay</span>}
+      </div>
+      <div className="fin-loan-bar">
+        <div className="fin-loan-bar-fill" style={{ width: pct + '%' }} />
+      </div>
+      <div className="fin-loan-bar-caption">
+        <span>{fmtAUD(lt.paidSinceAnchor)} paid since {fmtDayMonth(lt.anchorDate)}</span>
+        <span>{fmtPct(pct)} of {fmtCompact(lt.anchorAmount)}</span>
+      </div>
+      <div className="fin-loan-stats">
+        <div className="fin-loan-stat">
+          <span className="fin-loan-stat-label">Today's payout</span>
+          <span className="fin-loan-stat-value">{fmtAUD(lt.todayPayout)}</span>
+          <span className="fin-loan-stat-sub">{fmtFracPct(lt.pct)} of {fmtAUD(lt.todayRevenue)} taken today</span>
+        </div>
+        <div className="fin-loan-stat">
+          <span className="fin-loan-stat-label">Yesterday's payout</span>
+          <span className="fin-loan-stat-value">{fmtAUD(lt.yesterdayPayout)}</span>
+          <span className="fin-loan-stat-sub">{fmtFracPct(lt.pct)} of {fmtAUD(lt.yesterdayRevenue)}</span>
+        </div>
+        <div className="fin-loan-stat">
+          <span className="fin-loan-stat-label">Avg daily payout</span>
+          <span className="fin-loan-stat-value">{fmtAUD(lt.avgDailyPayout)}</span>
+          <span className="fin-loan-stat-sub">last 14 days of sales</span>
+        </div>
+        <div className="fin-loan-stat">
+          <span className="fin-loan-stat-label">Est. paid off</span>
+          <span className="fin-loan-stat-value">{cleared ? 'Done' : fmtDayMonth(lt.estClearDate)}</span>
+          <span className="fin-loan-stat-sub">{cleared ? '' : `~${lt.estDaysLeft} days at current pace`}</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function VerdictBanner({ verdict, cashView }) {
   if (!verdict) return null
   const status = verdict.status || (verdict.makingMoney ? 'green' : 'red')
@@ -1110,6 +1167,7 @@ export default function FinanceTab() {
       {/* ── 4. BUSINESS HEALTH / NET POSITION ── */}
       <section>
         <div className="fin-section-heading">Business Health</div>
+        <LoanTrackerCard lt={summary?.loanTracker} />
         <div className="fin-two-col">
           <div className="fin-card">
             <h3 className="fin-card-title">Net Position (after all outgoings)</h3>
