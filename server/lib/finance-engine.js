@@ -173,8 +173,10 @@ function sumSpend(spendMap) {
   return Object.values(spendMap || {}).reduce((s, v) => s + v, 0)
 }
 
-/** Real AusPost shipping bill, converted to a monthly figure. */
+/** Real AusPost shipping bill as a monthly figure. Prefers the monthly
+ *  average (Josh 2026-07-16: $1,364.06/mo); legacy weekly configs convert. */
 function auspostMonthly(config) {
+  if (config.auspostMonthly != null) return config.auspostMonthly
   return ((config.auspostWeekly || 0) * 52) / 12
 }
 
@@ -731,7 +733,6 @@ async function _buildFinanceSummary() {
       adSpendMtd: r0(cur.adSpend),
       // Real AusPost bill — counted inside Cost of Delivery (so inside CM);
       // listed for visibility, NOT added to the outgoings total again.
-      auspostWeekly: config.auspostWeekly || 0,
       auspostMonthly: r0(auspostMonthly(config)),
       auspostMtd: r0(auspostMonthly(config) * (dayOfMonth / dim)),
       taxPct: config.taxPct,

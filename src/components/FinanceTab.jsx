@@ -560,7 +560,7 @@ function OutgoingsEditor({ config, configError, onRetryConfig, onSaved }) {
     setCapPct(config.shopifyCapitalPct != null ? String(+(config.shopifyCapitalPct * 100).toFixed(2)) : '')
     setCmTarget(config.cmTargetMonthly != null ? String(config.cmTargetMonthly) : '')
     setGmPct(config.grossMarginPct != null ? String(+(config.grossMarginPct * 100).toFixed(2)) : '')
-    setAuspostWk(config.auspostWeekly != null ? String(config.auspostWeekly) : '')
+    setAuspostWk(config.auspostMonthly != null ? String(config.auspostMonthly) : (config.auspostWeekly != null ? String(+(config.auspostWeekly * 52 / 12).toFixed(2)) : ''))
   }, [config])
 
   const updateRow = (i, patch) => setRows(rs => rs.map((r, j) => (j === i ? { ...r, ...patch } : r)))
@@ -585,7 +585,8 @@ function OutgoingsEditor({ config, configError, onRetryConfig, onSaved }) {
         shopifyCapitalPct: (parseFloat(capPct) || 0) / 100,
         cmTargetMonthly: String(cmTarget).trim() === '' ? null : Number(cmTarget),
         grossMarginPct: (parseFloat(gmPct) || 0) / 100,
-        auspostWeekly: parseFloat(auspostWk) || 0,
+        auspostMonthly: parseFloat(auspostWk) || 0,
+        auspostWeekly: null,
         tntFullMargin: config?.tntFullMargin,
       }
       const res = await fetch(`${API}/config`, {
@@ -691,7 +692,7 @@ function OutgoingsEditor({ config, configError, onRetryConfig, onSaved }) {
                 <input className="fin-input" type="number" min="0" step="0.1" value={gmPct} onChange={e => setGmPct(e.target.value)} />
               </label>
               <label className="fin-field">
-                <span>AusPost shipping ($/week)</span>
+                <span>AusPost shipping ($/month)</span>
                 <input className="fin-input" type="number" min="0" step="10" value={auspostWk} onChange={e => setAuspostWk(e.target.value)} />
               </label>
             </div>
@@ -1170,7 +1171,7 @@ export default function FinanceTab() {
                 </tr>
                 <tr>
                   <td>AusPost shipping <span className="fin-tag-incm">in CM</span></td>
-                  <td className="fin-td-muted">{fmtAUD(out.auspostWeekly)}/wk</td>
+                  <td className="fin-td-muted">Monthly avg</td>
                   <td className="fin-td-num">{fmtAUD(out.auspostMonthly)}</td>
                 </tr>
                 <tr className="fin-row-subtotal">

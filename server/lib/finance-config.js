@@ -22,10 +22,13 @@ export const DEFAULT_CONFIG = {
     { key: 'rent', label: 'Rent (Bundall HQ)', amount: 2950, cadence: 'monthly' },
     { key: 'accountant', label: 'Accountant', amount: 300, cadence: 'monthly' },
   ],
-  // AusPost shipping — real weekly bill (Josh 2026-07-13: $1,400/wk).
-  // Counted INSIDE Cost of Delivery (so inside CM), prorated across the
-  // period. Replaces the old $4.50/order estimate.
-  auspostWeekly: 1400,
+  // AusPost shipping — real MONTHLY average (Josh 2026-07-16: $1,364.06/mo,
+  // replacing the earlier $1,400/wk figure). Counted INSIDE Cost of
+  // Delivery (so inside CM), prorated across the period.
+  // auspostMonthly takes precedence; auspostWeekly kept only as a legacy
+  // fallback for configs saved before this field existed.
+  auspostMonthly: 1364.06,
+  auspostWeekly: null,
   // Tax provision as a share of revenue (Josh: 5%).
   taxPct: 0.05,
   // Shopify Capital in the MODEL view. Josh 2026-07-13: the loan bought the
@@ -106,7 +109,10 @@ export function saveFinanceConfig(patch) {
   if (next.cmTargetMonthly !== null && (typeof next.cmTargetMonthly !== 'number' || next.cmTargetMonthly < 0)) {
     throw new Error('cmTargetMonthly must be null (auto) or a positive number')
   }
-  if (typeof next.auspostWeekly !== 'number' || next.auspostWeekly < 0) {
+  if (next.auspostMonthly != null && (typeof next.auspostMonthly !== 'number' || next.auspostMonthly < 0)) {
+    throw new Error('auspostMonthly must be a number ≥ 0')
+  }
+  if (next.auspostWeekly != null && (typeof next.auspostWeekly !== 'number' || next.auspostWeekly < 0)) {
     throw new Error('auspostWeekly must be a number ≥ 0')
   }
   if (typeof next.includeGoogleSpend !== 'boolean') {

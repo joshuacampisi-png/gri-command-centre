@@ -260,7 +260,12 @@ export async function getShopifyOrdersRange(fromDate, toDate, { includeOrderDeta
       let hireRev = 0, productRev = 0
       for (const li of items) {
         const lineTotal = parseFloat(li.price || 0) * (li.quantity || 1)
-        if (HIRE_PRODUCT_IDS.includes(li.product_id)) hireRev += lineTotal
+        // Hire = listed product IDs, plus TNT-named custom line items
+        // (e.g. "TNT DROP OFF SUNDAY FEE" is added manually to orders with
+        // no product_id — it's a pure service fee, 100% margin like hires).
+        const isHire = HIRE_PRODUCT_IDS.includes(li.product_id)
+          || /\bTNT\b/i.test(li.title || '')
+        if (isHire) hireRev += lineTotal
         else productRev += lineTotal
       }
       return {
