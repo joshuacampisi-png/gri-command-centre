@@ -504,9 +504,11 @@ function LtgpCard({ data }) {
       </div>
       <div className="fin-metric-value">{fmtXTrim(val)}</div>
       <div className="fin-metric-caption">
-        {data?.gpPerCustomer90d != null && !isNaN(data.gpPerCustomer90d)
-          ? `${fmtAUD(data.gpPerCustomer90d)}/customer at 90d`
-          : '—'}
+        {data?.gpPerWindow?.[win] != null
+          ? `${fmtAUD(data.gpPerWindow[win])}/customer at ${win}d`
+          : (data?.gpPerCustomer90d != null && !isNaN(data.gpPerCustomer90d)
+            ? `${fmtAUD(data.gpPerCustomer90d)}/customer at 90d`
+            : '—')}
       </div>
       <div className="fin-metric-helper">Gross profit ÷ nCAC within window. Above 5x = strong</div>
     </div>
@@ -522,7 +524,7 @@ function OutgoingsEditor({ config, configError, onRetryConfig, onSaved }) {
   const [capPct, setCapPct] = useState('')
   const [cmTarget, setCmTarget] = useState('')
   const [gmPct, setGmPct] = useState('')
-  const [auspostWk, setAuspostWk] = useState('')
+  const [auspostMonthlyDraft, setAuspostWk] = useState('')
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(null)
   const [deriving, setDeriving] = useState(false)
@@ -585,7 +587,7 @@ function OutgoingsEditor({ config, configError, onRetryConfig, onSaved }) {
         shopifyCapitalPct: (parseFloat(capPct) || 0) / 100,
         cmTargetMonthly: String(cmTarget).trim() === '' ? null : Number(cmTarget),
         grossMarginPct: (parseFloat(gmPct) || 0) / 100,
-        auspostMonthly: parseFloat(auspostWk) || 0,
+        auspostMonthly: parseFloat(auspostMonthlyDraft) || 0,
         auspostWeekly: null,
         tntFullMargin: config?.tntFullMargin,
       }
@@ -693,7 +695,7 @@ function OutgoingsEditor({ config, configError, onRetryConfig, onSaved }) {
               </label>
               <label className="fin-field">
                 <span>AusPost shipping ($/month)</span>
-                <input className="fin-input" type="number" min="0" step="10" value={auspostWk} onChange={e => setAuspostWk(e.target.value)} />
+                <input className="fin-input" type="number" min="0" step="10" value={auspostMonthlyDraft} onChange={e => setAuspostWk(e.target.value)} />
               </label>
             </div>
 
@@ -990,7 +992,7 @@ export default function FinanceTab() {
           )}
           {ly && (
             <p className="fin-compare-line">
-              vs last year: Revenue {upDown(ly.revenuePct)} {absPct(ly.revenuePct)} ({fmtAUD(ly.revenueNow)} vs {fmtAUD(ly.revenueThen)}).
+              vs same days last year: Revenue {upDown(ly.revenuePct)} {absPct(ly.revenuePct)} ({fmtAUD(ly.revenueNow)} vs {fmtAUD(ly.revenueThen)}).
               {' '}Orders {upDown(ly.ordersPct)} {absPct(ly.ordersPct)} ({fmtInt(ly.ordersNow)} vs {fmtInt(ly.ordersThen)}).
               {' '}Ad spend {upDown(ly.adSpendPct)} {absPct(ly.adSpendPct)} ({fmtAUD(ly.adSpendNow)} vs {fmtAUD(ly.adSpendThen)}).
               {' '}AOV {upDown(ly.aovPct)} {absPct(ly.aovPct)} ({fmtMoney(ly.aovNow)} vs {fmtMoney(ly.aovThen)}).

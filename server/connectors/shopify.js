@@ -258,8 +258,16 @@ export async function getShopifyOrdersRange(fromDate, toDate, { includeOrderDeta
     result.orderDetails = validOrders.map(o => {
       const items = o.line_items || []
       let hireRev = 0, productRev = 0
+      // Refund-netted order total — matches the aggregate 'revenue' above and
+      // Shopify's Total Sales, so window revenue/AOV never overstate.
+      const orderRefunded = (o.refunds || []).reduce((sum, r) =>
+        sum + (r.transactions || []).reduce((ts, t) => ts + parseFloat(t.amount || 0), 0), 0)
+      const netOrderTotal = (parseFloat(o.total_price) || 0) - orderRefunded
       for (const li of items) {
+        // Post-discount line amount — pre-discount prices inflated the COGS
+        // base on discounted orders (audit 2026-07-16, ~$950/mo CM understated)
         const lineTotal = parseFloat(li.price || 0) * (li.quantity || 1)
+          - parseFloat(li.total_discount || 0)
         // Hire = listed product IDs, plus TNT-named custom line items
         // (e.g. "TNT DROP OFF SUNDAY FEE" is added manually to orders with
         // no product_id — it's a pure service fee, 100% margin like hires).
@@ -271,7 +279,7 @@ export async function getShopifyOrdersRange(fromDate, toDate, { includeOrderDeta
       return {
         id: o.id,
         email: (o.contact_email || o.email || '').toLowerCase().trim(),
-        aov: parseFloat(o.total_price) || 0,
+        aov: netOrderTotal,
         total_price: o.total_price,
         createdAt: o.created_at,
         created_at: o.created_at,

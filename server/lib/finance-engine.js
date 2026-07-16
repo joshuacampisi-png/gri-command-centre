@@ -120,7 +120,9 @@ async function getMonthOrders(ym, currentYm) {
   if (!res.ok) throw new Error(`Shopify orders fetch failed for ${ym}: ${res.error}`)
   const compact = (res.orderDetails || []).map(o => ({
     d: brisDate(o.createdAt),
-    e: hashEmail(o.email),
+    // Empty email → '' so the !o.e guard works; hashing '' collapsed every
+    // no-email order into one giant pseudo-customer (inflated repeat rate)
+    e: (o.email || '').trim() ? hashEmail(o.email) : '',
     t: r2(o.aov),
     h: o.hireRevenue,
     p: o.productRevenue,
@@ -184,9 +186,9 @@ function auspostMonthly(config) {
  * Cost of Delivery with the hire-at-100%-margin rule:
  *   COGS           = productRevenue × (1 − grossMarginPct)   (hire rev: $0 COGS)
  *   payment fees   = 2.6% × all revenue + $0.30 × orders
- *   shipping       = real AusPost bill ($1,400/wk, Josh 2026-07-13),
- *                    prorated by fractionOfMonth — replaces the old
- *                    $4.50/order estimate which undercounted ~3×.
+ *   shipping       = flat monthly AusPost total ($1,364.06/mo average,
+ *                    Josh 2026-07-16), prorated by fractionOfMonth.
+ *                    NEVER per-parcel — it's the real total monthly spend.
  */
 function costOfDelivery(orders, config, fractionOfMonth = 1) {
   let productRev = 0, allRev = 0
@@ -268,9 +270,9 @@ function buildCustomerTimeline(allOrdersByMonth) {
   return byCustomer
 }
 
-function customerStatsForRange(byCustomer, fromDate, toDate) {
+function customerStatsForRange(byCustomer, fromDate, toDate, marginPct = 0.79) {
   let newCustomers = 0, reactivated = 0, returningOrders = 0, totalOrders = 0
-  let newCustomerRevenue = 0, firstOrderSum = 0
+  let newCustomerRevenue = 0, firstOrderSum = 0, firstOrderGp = 0
   for (const arr of byCustomer.values()) {
     for (let i = 0; i < arr.length; i++) {
       const o = arr[i]
@@ -280,6 +282,7 @@ function customerStatsForRange(byCustomer, fromDate, toDate) {
         newCustomers++
         newCustomerRevenue += o.t
         firstOrderSum += o.t
+        firstOrderGp += o.h + o.p * marginPct
       } else {
         returningOrders++
         const gapDays = (new Date(o.d) - new Date(arr[i - 1].d)) / 86400000
@@ -291,6 +294,8 @@ function customerStatsForRange(byCustomer, fromDate, toDate) {
     newCustomers, reactivated, returningOrders, totalOrders,
     newCustomerRevenue: r2(newCustomerRevenue),
     firstOrderAov: newCustomers ? r2(firstOrderSum / newCustomers) : 0,
+    // Hire-aware gross profit per first order (hire @100%, product @margin)
+    firstOrderGp: newCustomers ? r2(firstOrderGp / newCustomers) : 0,
     repeatRate: totalOrders ? r2((returningOrders / totalOrders) * 100) : 0,
   }
 }
@@ -304,6 +309,7 @@ function customerStatsForRange(byCustomer, fromDate, toDate) {
 function ltgpWindows(byCustomer, config, ncac, asOfDate) {
   const windows = [30, 60, 90, 180, 365]
   const out = {}
+  const gpPerWindow = {}
   let gp90 = 0
   const asOf = new Date(asOfDate)
   for (const w of windows) {
@@ -324,9 +330,10 @@ function ltgpWindows(byCustomer, config, ncac, asOfDate) {
     }
     const gpPerCustomer = cohort ? gpSum / cohort : 0
     out[String(w)] = ncac > 0 && cohort > 0 ? r2(gpPerCustomer / ncac) : null
+    gpPerWindow[String(w)] = r0(gpPerCustomer)
     if (w === 90) gp90 = r0(gpPerCustomer)
   }
-  return { windows: out, gpPerCustomer90d: gp90 }
+  return { windows: out, gpPerCustomer90d: gp90, gpPerWindow }
 }
 
 // ── Main summary builder ────────────────────────────────────────────────────
@@ -504,15 +511,18 @@ async function _buildFinanceSummary() {
     const googleSp = spendInRange(from, to, ['google'])
     const counted = metaSp + (config.includeGoogleSpend ? googleSp : 0)
     const acq = metaSp + googleSp
-    const cust = customerStatsForRange(byCustomer, from, to)
+    const cust = customerStatsForRange(byCustomer, from, to, config.grossMarginPct)
+    const ncacRaw = cust.newCustomers > 0 ? acq / cust.newCustomers : 0
     return {
       revenue, orders, aov: orders ? revenue / orders : 0,
       metaSp, googleSp, counted, acq,
       cust,
-      ncac: cust.newCustomers > 0 ? acq / cust.newCustomers : 0,
+      ncac: ncacRaw,
       adjCac: (cust.newCustomers + cust.reactivated) > 0 ? acq / (cust.newCustomers + cust.reactivated) : 0,
-      fov: calculateFOVCAC(cust.firstOrderAov, config.grossMarginPct,
-        cust.newCustomers > 0 ? acq / cust.newCustomers : 0),
+      // Hire-aware FOV/CAC: first-order gross profit (hire @100%, product
+      // @margin) over nCAC — the blended-margin shortcut understated FOV
+      // on hire-heavy first orders (audit 2026-07-16)
+      fov: ncacRaw > 0 ? cust.firstOrderGp / ncacRaw : 0,
       amer: calculateAcquisitionMER(cust.newCustomerRevenue, acq),
       mer: acq > 0 ? revenue / acq : null,
     }
@@ -520,12 +530,14 @@ async function _buildFinanceSummary() {
 
   const nowMs = new Date(todayStr).getTime()
   const liveWindows = {}
+  let ncac30Raw = 0
   for (const n of [7, 30, 60, 90]) {
     const from = dstr(nowMs - (n - 1) * dayMs)
     const prevTo = dstr(nowMs - n * dayMs)
     const prevFrom = dstr(nowMs - (2 * n - 1) * dayMs)
     const w = windowStats(from, todayStr)
     const p = windowStats(prevFrom, prevTo)
+    if (n === 30) ncac30Raw = w.ncac
     const dSpend = w.acq - p.acq
     const dCust = w.cust.newCustomers - p.cust.newCustomers
     liveWindows[String(n)] = {
@@ -558,8 +570,7 @@ async function _buildFinanceSummary() {
 
   // LTGP:nCAC cohort ratios use the displayed (30d rolling) nCAC so the two
   // cards on the dashboard agree with each other
-  const ncac30 = liveWindows['30']?.customer?.ncac?.value || ncacNow
-  const ltgp = ltgpWindows(byCustomer, config, ncac30, todayStr)
+  const ltgp = ltgpWindows(byCustomer, config, ncac30Raw || ncacNow, todayStr)
 
   // ── Outgoings + net position ─────────────────────────────────────────────
   const fixedTotal = fixedTotalMonthly(config)
@@ -703,13 +714,17 @@ async function _buildFinanceSummary() {
         ordersPct: pctDelta(cur.orders, prevMtdOrders.length),
         adSpendPct: pctDelta(cur.adSpend, prevMtdSpend),
       },
+      // 'then' figures are PRO-RATED to the same day count as the current
+      // MTD so the bracketed dollars reconcile with the percentages
+      // (audit 2026-07-16: full-month 'then' vs pro-rated pct read as a
+      // contradiction on the dashboard)
       vsLastYear: lastYear?.complete ? {
         revenuePct: pctDelta(cur.revenue, lastYear.revenue * (dayOfMonth / dim)),
-        revenueNow: r0(cur.revenue), revenueThen: r0(lastYear.revenue),
+        revenueNow: r0(cur.revenue), revenueThen: r0(lastYear.revenue * (dayOfMonth / dim)),
         ordersPct: pctDelta(cur.orders, lastYear.orders * (dayOfMonth / dim)),
-        ordersNow: cur.orders, ordersThen: lastYear.orders,
+        ordersNow: cur.orders, ordersThen: r0(lastYear.orders * (dayOfMonth / dim)),
         adSpendPct: pctDelta(cur.adSpend, lastYear.adSpend * (dayOfMonth / dim)),
-        adSpendNow: r0(cur.adSpend), adSpendThen: r0(lastYear.adSpend),
+        adSpendNow: r0(cur.adSpend), adSpendThen: r0(lastYear.adSpend * (dayOfMonth / dim)),
         aovPct: pctDelta(cur.aov, lastYear.aov),
         aovNow: r0(cur.aov), aovThen: r0(lastYear.aov),
       } : null,
@@ -733,7 +748,7 @@ async function _buildFinanceSummary() {
       adSpendMtd: r0(cur.adSpend),
       // Real AusPost bill — counted inside Cost of Delivery (so inside CM);
       // listed for visibility, NOT added to the outgoings total again.
-      auspostMonthly: r0(auspostMonthly(config)),
+      auspostMonthly: r2(auspostMonthly(config)),
       auspostMtd: r0(auspostMonthly(config) * (dayOfMonth / dim)),
       taxPct: config.taxPct,
       taxMtd: r0(taxMtd),
