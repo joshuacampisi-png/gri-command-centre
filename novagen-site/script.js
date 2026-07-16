@@ -1,4 +1,4 @@
-/* Peptide Tests Australia — front-end interactions
+/* Novagen Australia — front-end interactions
    Static/placeholder build: no backend calls. Booking produces a local
    reference and confirmation. Wire the form POST to a real endpoint later. */
 (function () {
@@ -88,7 +88,7 @@
     var yy = String(d.getFullYear()).slice(-2);
     var mm = String(d.getMonth() + 1).padStart(2, "0");
     var rand = Math.floor(1000 + Math.random() * 9000);
-    return "PTA-" + yy + mm + "-" + rand;
+    return "NGA-" + yy + mm + "-" + rand;
   }
 
   if (form) {

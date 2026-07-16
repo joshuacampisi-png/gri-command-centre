@@ -1,13 +1,16 @@
-# Peptide Tests Australia (PTA) — one-page site
+# Novagen Australia — one-page site
 
-A self-contained, static one-page website for **Peptide Tests Australia (PTA)** — an
+A self-contained, static one-page website for **Novagen Australia** — an
 independent peptide purity-testing service (front-of-house; testing is subcontracted to
 a verified TGA-approved partner lab).
+
+**Live domain:** novagenaustralia.com.au — see [`DEPLOY.md`](./DEPLOY.md) for hosting
+(GitHub Pages or Railway) and the exact DNS records. The `CNAME` file pins the domain.
 
 ## What's here
 
 ```
-pta-site/
+novagen-site/
 ├── index.html          One-page site: hero, pain points, how-it-works, pricing,
 │                        COA/trust, live booking flow, blog cards, FAQ, footer
 ├── styles.css          Design system (medical/pharma palette + 2026 brand accent)
@@ -29,7 +32,7 @@ No build step, no dependencies, no external requests — open `index.html` in a 
 or serve the folder statically:
 
 ```bash
-cd pta-site && python3 -m http.server 8080   # then visit http://localhost:8080
+cd novagen-site && python3 -m http.server 8080   # then visit http://localhost:8080
 ```
 
 ## Pricing logic (stacking 15% discount)
@@ -45,23 +48,23 @@ Base rate **$350/vial**. Each batch tier stacks another **15%** off the per-vial
 | 10    | $214.94   | $2,149.44| ~39%     |
 
 Logic lives in `script.js` (`price()` / `updateSummary()`) and drives the live order
-summary. Change `BASE_PER_VIAL` or `STEP` there to retune.
+summary. Change `BASE_PER_VIAL` or the `FACTORS` array there to retune.
 
 ## Placeholders to finalise before going live
 
-- **Brand name** — "Peptide Tests Australia / PTA" is a working name.
+- **Brand name** — "Novagen Australia" is the brand (originally placeholder "PTA").
 - **Images** — all graphics are generated SVG placeholders; swap for real lab photography.
 - **Lab postage address** — placeholder PO Box in the booking confirmation.
 - **Legal** — Terms & Privacy contain `placeholder`-highlighted gaps (ABN, lab
   accreditation numbers, refund policy, payment provider) for legal review.
 - **Booking backend** — the form is front-end only. It validates, generates a local
-  reference (`PTA-YYMM-XXXX`) and shows a confirmation. Wire the submit handler in
+  reference (`NGA-YYMM-XXXX`) and shows a confirmation. Wire the submit handler in
   `script.js` to a real booking/payment endpoint before launch (marked with a comment).
 - **Stats** — "15,000+ Aussies" and "6 years" are the requested marketing figures;
   confirm/qualify before publishing.
 
 ## Notes
 
-- Copy is Australian English, pain-point led, and frames PTA as independent testing only
+- Copy is Australian English, pain-point led, and frames Novagen Australia as independent testing only
   (not a peptide seller) — see the disclaimer in the footer and legal pages.
 - This site is standalone and does **not** touch the existing Command Centre app.
