@@ -1,6 +1,6 @@
 NovaPeptides Profit & Loss (AUD),,,,,,
-Prepared,2026-07-15,,,,,
-All prices AUD. Peptide cost includes shipping. Change the rate cell to update everything.,,,,,,
+Prepared,2026-07-17,,,,,
+All prices AUD. Peptide cost is current supplier pricing (AUD, shipping incl). Change the rate cell for kit parts.,,,,,,
 ,,,,,,
 USD to AUD rate (edit me),1.45,,,,,
 ,,,,,,
@@ -16,50 +16,47 @@ Kit parts total (excl peptide),,=SUM(C9:C14),,,,
 ,,,,,,
 PER PRODUCT - vial vs kit,,,,,,
 Product,Type,Qty,Retail AUD,Cost AUD,Profit AUD,Margin %
-Reta RT60,Vial,10,320,=32.65*$B$5,=D19-E19,=IF(D19>0,F19/D19,0)
-Reta RT60,Kit,10,399,=32.65*$B$5+$C$15,=D20-E20,=IF(D20>0,F20/D20,0)
-Reta RT30,Vial,10,289,=21.59*$B$5,=D21-E21,=IF(D21>0,F21/D21,0)
-Reta RT30,Kit,10,315,=21.59*$B$5+$C$15,=D22-E22,=IF(D22>0,F22/D22,0)
-GLOW 70mg,Vial,10,179,=22.85*$B$5,=D23-E23,=IF(D23>0,F23/D23,0)
-GLOW 70mg,Kit,10,219,=22.85*$B$5+$C$15,=D24-E24,=IF(D24>0,F24/D24,0)
-KLOW 80mg,Vial,10,195,=26.96*$B$5,=D25-E25,=IF(D25>0,F25/D25,0)
-KLOW 80mg,Kit,10,230,=26.96*$B$5+$C$15,=D26-E26,=IF(D26>0,F26/D26,0)
-SS-31 10mg,Vial,10,85,=10.32*$B$5,=D27-E27,=IF(D27>0,F27/D27,0)
-SS-31 10mg,Kit,10,130,=10.32*$B$5+$C$15,=D28-E28,=IF(D28>0,F28/D28,0)
-BPC-157 + TB-500,Vial,10,120,=11.80*$B$5,=D29-E29,=IF(D29>0,F29/D29,0)
-BPC-157 + TB-500,Kit,10,170,=11.80*$B$5+$C$15,=D30-E30,=IF(D30>0,F30/D30,0)
-Tesamorelin 20mg,Vial,20,185,=19.2113*$B$5,=D31-E31,=IF(D31>0,F31/D31,0)
-Tesamorelin 20mg,Kit,20,230,=19.2113*$B$5+$C$15,=D32-E32,=IF(D32>0,F32/D32,0)
-Reta RT10,Vial,20,155,=9.8262*$B$5,=D33-E33,=IF(D33>0,F33/D33,0)
-Reta RT10,Kit,20,170,=9.8262*$B$5+$C$15,=D34-E34,=IF(D34>0,F34/D34,0)
-MOTS-C 20mg,Vial,10,140,=15.9678*$B$5,=D35-E35,=IF(D35>0,F35/D35,0)
-MOTS-C 20mg,Kit,10,170,=15.9678*$B$5+$C$15,=D36-E36,=IF(D36>0,F36/D36,0)
-NAD+ 500mg,Vial,20,130,=8.4829*$B$5,=D37-E37,=IF(D37>0,F37/D37,0)
-NAD+ 500mg,Kit,20,150,=8.4829*$B$5+$C$15,=D38-E38,=IF(D38>0,F38/D38,0)
-GHK-Cu 100mg,Vial,20,150,=6.5379*$B$5,=D39-E39,=IF(D39>0,F39/D39,0)
-GHK-Cu 100mg,Kit,20,185,=6.5379*$B$5+$C$15,=D40-E40,=IF(D40>0,F40/D40,0)
-TB-500 10mg,Vial,10,90,=12.5931*$B$5,=D41-E41,=IF(D41>0,F41/D41,0)
-TB-500 10mg,Kit,10,120,=12.5931*$B$5+$C$15,=D42-E42,=IF(D42>0,F42/D42,0)
-CJC-1295 DAC 5mg,Vial,10,130,=17.0069*$B$5,=D43-E43,=IF(D43>0,F43/D43,0)
-CJC-1295 DAC 5mg,Kit,10,160,=17.0069*$B$5+$C$15,=D44-E44,=IF(D44>0,F44/D44,0)
-PT-141 10mg,Vial,10,50,=8.1241*$B$5,=D45-E45,=IF(D45>0,F45/D45,0)
-PT-141 10mg,Kit,10,80,=8.1241*$B$5+$C$15,=D46-E46,=IF(D46>0,F46/D46,0)
-BPC-157 5mg,Vial,10,60,=13.8345*$B$5,=D47-E47,=IF(D47>0,F47/D47,0)
-BPC-157 5mg,Kit,10,85,=13.8345*$B$5+$C$15,=D48-E48,=IF(D48>0,F48/D48,0)
+Reta RT30,Vial,10,289,45.00,=D19-E19,=IF(D19>0,F19/D19,0)
+Reta RT30,Kit,10,315,=E19+$C$15,=D20-E20,=IF(D20>0,F20/D20,0)
+Reta RT20,Vial,10,165,25.00,=D21-E21,=IF(D21>0,F21/D21,0)
+Reta RT20,Kit,10,180,=E21+$C$15,=D22-E22,=IF(D22>0,F22/D22,0)
+Reta RT10,Vial,20,155,14.25,=D23-E23,=IF(D23>0,F23/D23,0)
+Reta RT10,Kit,20,170,=E23+$C$15,=D24-E24,=IF(D24>0,F24/D24,0)
+KLOW 80mg,Vial,10,195,40.00,=D25-E25,=IF(D25>0,F25/D25,0)
+KLOW 80mg,Kit,10,230,=E25+$C$15,=D26-E26,=IF(D26>0,F26/D26,0)
+GLOW 70mg,Vial,10,179,35.00,=D27-E27,=IF(D27>0,F27/D27,0)
+GLOW 70mg,Kit,10,219,=E27+$C$15,=D28-E28,=IF(D28>0,F28/D28,0)
+Tesamorelin 20mg,Vial,20,195,55.00,=D29-E29,=IF(D29>0,F29/D29,0)
+Tesamorelin 20mg,Kit,20,240,=E29+$C$15,=D30-E30,=IF(D30>0,F30/D30,0)
+Wolverine+ 20mg,Vial,10,170,45.00,=D31-E31,=IF(D31>0,F31/D31,0)
+Wolverine+ 20mg,Kit,10,200,=E31+$C$15,=D32-E32,=IF(D32>0,F32/D32,0)
+GHK-Cu 100mg,Vial,20,150,26.00,=D33-E33,=IF(D33>0,F33/D33,0)
+GHK-Cu 100mg,Kit,20,185,=E33+$C$15,=D34-E34,=IF(D34>0,F34/D34,0)
+MOTS-C 10mg,Vial,10,140,24.00,=D35-E35,=IF(D35>0,F35/D35,0)
+MOTS-C 10mg,Kit,10,170,=E35+$C$15,=D36-E36,=IF(D36>0,F36/D36,0)
+NAD+ 500mg,Vial,20,130,22.50,=D37-E37,=IF(D37>0,F37/D37,0)
+NAD+ 500mg,Kit,20,150,=E37+$C$15,=D38-E38,=IF(D38>0,F38/D38,0)
+CJC-1295 DAC 5mg,Vial,10,130,24.66,=D39-E39,=IF(D39>0,F39/D39,0)
+CJC-1295 DAC 5mg,Kit,10,160,=E39+$C$15,=D40-E40,=IF(D40>0,F40/D40,0)
+SS-31 10mg,Vial,10,85,37.00,=D41-E41,=IF(D41>0,F41/D41,0)
+SS-31 10mg,Kit,10,130,=E41+$C$15,=D42-E42,=IF(D42>0,F42/D42,0)
+BPC-157 10mg,Vial,10,60,18.00,=D43-E43,=IF(D43>0,F43/D43,0)
+BPC-157 10mg,Kit,10,85,=E43+$C$15,=D44-E44,=IF(D44>0,F44/D44,0)
 ,,,,,,
 TOTALS - whole stock sold one way,,,,,,
 Scenario,Total Retail AUD,Total Profit AUD,,,,
-All vials,=C19*D19+C21*D21+C23*D23+C25*D25+C27*D27+C29*D29+C31*D31+C33*D33+C35*D35+C37*D37+C39*D39+C41*D41+C43*D43+C45*D45+C47*D47,=C19*F19+C21*F21+C23*F23+C25*F25+C27*F27+C29*F29+C31*F31+C33*F33+C35*F35+C37*F37+C39*F39+C41*F41+C43*F43+C45*F45+C47*F47,,,,
-All kits,=C20*D20+C22*D22+C24*D24+C26*D26+C28*D28+C30*D30+C32*D32+C34*D34+C36*D36+C38*D38+C40*D40+C42*D42+C44*D44+C46*D46+C48*D48,=C20*F20+C22*F22+C24*F24+C26*F26+C28*F28+C30*F30+C32*F32+C34*F34+C36*F36+C38*F38+C40*F40+C42*F42+C44*F44+C46*F46+C48*F48,,,,
+All vials,=C19*D19+C21*D21+C23*D23+C25*D25+C27*D27+C29*D29+C31*D31+C33*D33+C35*D35+C37*D37+C39*D39+C41*D41+C43*D43,=C19*F19+C21*F21+C23*F23+C25*F25+C27*F27+C29*F29+C31*F31+C33*F33+C35*F35+C37*F37+C39*F39+C41*F41+C43*F43,,,,
+All kits,=C20*D20+C22*D22+C24*D24+C26*D26+C28*D28+C30*D30+C32*D32+C34*D34+C36*D36+C38*D38+C40*D40+C42*D42+C44*D44,=C20*F20+C22*F22+C24*F24+C26*F26+C28*F28+C30*F30+C32*F32+C34*F34+C36*F36+C38*F38+C40*F40+C42*F42+C44*F44,,,,
 ,,,,,,
 SPEND BUCKETS,,,,,,
-Freight paid (all 4 orders) AUD,=720*$B$5,,720 USD,,,
-Cost of goods (stock landed) AUD,=C19*E19+C21*E21+C23*E23+C25*E25+C27*E27+C29*E29+C31*E31+C33*E33+C35*E35+C37*E37+C39*E39+C41*E41+C43*E43+C45*E45+C47*E47,,,,
-Total spent (incl shipping) AUD,=3011.40*$B$5,,3011.40 USD,,,
+Cost of goods at current pricing AUD,=C19*E19+C21*E21+C23*E23+C25*E25+C27*E27+C29*E29+C31*E31+C33*E33+C35*E35+C37*E37+C39*E39+C41*E41+C43*E43,,,,
+Freight paid to date (4 orders) AUD,=720*$B$5,,720 USD,,,
+Batch testing AUD,1400,,,,
+Total spent to date (incl shipping) AUD,=3011.40*$B$5+1400,,stock 3011.40 USD + batch testing,,,
 Each kit without peptide AUD,=$C$15,,,,,
 ,,,,,,
 NOTES,,,,,,
 Profit = Retail - Cost. Kit cost = peptide cost (shipping incl) + kit parts total (C15, includes BAC water).,,,,,,
-Qty column = vials in stock per product. Totals weight by Qty (all sold as vials OR all as kits).,,,,,,
-Freight is already baked into each vial's landed cost; it is not added again on kits. Freight paid row is informational.,,,,,,
-Change rate in B5; everything recalculates. Format Margin column (G) as percentage.,,,,,,
+Peptide costs are current supplier pricing in AUD (freight already included). Retail unchanged from prior list.,,,,,,
+Removed: Reta 60mg RT60, PT-141, standalone TB-500. Added: Reta 20mg RT20. Wolverine+ is BPC-157 + TB-500 at 20mg.,,,,,,
+Total spent to date is actual cash out (historical); cost of goods reflects current supplier pricing.,,,,,,
