@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NovaPeptides — Peptide Catalogue</title>
+<meta name="description" content="NovaPeptides — Gold Coast based, Australian-tested pure research peptides. Browse our full catalogue and message us to order. Free express shipping Australia-wide.">
+<style>
+  :root{
+    --ink:#0b1437; --navy:#16357e; --blue:#2f6fd0; --mist:#5b6b94; --line:#e6ebf6;
+    --bg:#f4f7fd; --card:#fff; --green:#0fae6e; --amber:#c8791a; --red:#e4002b;
+    --grad:linear-gradient(120deg,#6a5cff 0%,#16c2c2 100%);
+    --amberB:#fff2e2;--amberT:#b5651a;--pinkB:#ffe7f0;--pinkT:#c02a6b;
+    --greenB:#e2f6ea;--greenT:#178a4e;--tealB:#dff4f4;--tealT:#0f8a8a;--indB:#ece9ff;--indT:#5847e0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{overflow-x:hidden;max-width:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+  .wrap{width:100%;max-width:960px;margin:0 auto;padding:0 0 60px}
+  a{color:inherit}
+
+  /* hero */
+  header{background:var(--navy);color:#fff;padding:26px 22px 30px;position:relative;overflow:hidden;
+    background-image:radial-gradient(760px 300px at 90% -40%,rgba(106,92,255,.6),transparent),
+                     radial-gradient(620px 260px at 0% 130%,rgba(22,194,194,.5),transparent)}
+  .brand{display:flex;align-items:center;gap:13px}
+  .mark{width:48px;height:48px;flex:0 0 auto}
+  .brand h1{font-size:29px;font-weight:800;letter-spacing:.2px}
+  .brand h1 .p{color:#8fd0ff}
+  .brand .url{font-size:11.5px;color:#b9c6ee;letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+  .tagline{margin-top:16px;font-size:20px;font-weight:800;line-height:1.32;max-width:640px}
+  .tagline .hl{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{margin-top:9px;font-size:14px;color:#cdd6f5;line-height:1.6;max-width:640px}
+  .badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+  .badge{font-size:12px;font-weight:700;color:#eaf0ff;background:rgba(255,255,255,.10);
+    border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:7px 13px;display:flex;align-items:center;gap:7px}
+  .badge::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--grad)}
+  .cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+  .cta a{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:15px;text-decoration:none;
+    border-radius:12px;padding:13px 20px}
+  .cta .primary{background:var(--grad);color:#fff}
+  .cta .ghost{background:rgba(255,255,255,.10);color:#fff;border:1px solid rgba(255,255,255,.28)}
+
+  .ship{display:flex;align-items:center;justify-content:center;gap:12px;background:var(--red);color:#fff;padding:12px 18px;text-align:center}
+  .ship svg{width:24px;height:24px;flex:0 0 auto}
+  .ship b{font-size:14.5px;font-weight:800;letter-spacing:.3px}
+  .ship span{font-size:12.5px;opacity:.95}
+
+  .sec{padding:26px 20px 4px}
+  .sechead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+  .sec h2{font-size:19px;font-weight:800}
+  .sec .hint{font-size:12.5px;color:var(--mist);font-weight:600}
+  .sec .lead{font-size:13.5px;color:var(--mist);margin:2px 0 14px;line-height:1.55}
+
+  /* marquee */
+  .scroller{display:flex;gap:13px;overflow-x:auto;padding:4px 20px 16px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+  .scroller::-webkit-scrollbar{height:7px}
+  .scroller::-webkit-scrollbar-thumb{background:#cfd8ee;border-radius:99px}
+  .fcard{scroll-snap-align:start;flex:0 0 232px;background:var(--card);border:1px solid var(--line);
+    border-radius:16px;padding:15px 16px;display:flex;flex-direction:column}
+  .fcard .fn{font-size:16.5px;font-weight:800}
+  .fcard .fmg{font-size:12px;color:var(--blue);font-weight:800;margin-top:1px}
+  .ftags{display:flex;flex-wrap:wrap;gap:5px;margin:9px 0 12px}
+  .ftag{font-size:10.5px;font-weight:800;padding:3px 8px;border-radius:999px}
+  .fprice{margin-top:auto;display:flex;gap:8px}
+  .pb{flex:1;text-align:center;border:1px solid var(--line);border-radius:11px;padding:9px 6px}
+  .pb .l{font-size:9.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--mist);font-weight:800}
+  .pb .v{font-size:17px;font-weight:800;margin-top:2px}
+  .pb.kit{background:var(--navy);border-color:var(--navy)} .pb.kit .l{color:#aec4f5} .pb.kit .v{color:#fff}
+
+  .kitstrip{margin:2px 20px 0;background:linear-gradient(120deg,#f4f6ff,#eafaff);border:1px solid var(--line);
+    border-radius:15px;padding:14px 17px}
+  .kitstrip b{color:var(--navy)}
+  .kitstrip .incl{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+  .kitstrip .incl span{font-size:11.5px;font-weight:700;color:#26365f;background:#fff;border:1px solid var(--line);
+    border-radius:999px;padding:5px 11px;display:flex;align-items:center;gap:6px}
+  .kitstrip .incl span::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--grad)}
+
+  /* catalogue */
+  .search{margin:0 20px 6px;position:relative}
+  .search input{width:100%;font-size:16px;padding:14px 15px 14px 44px;border:1px solid #cdd6ee;border-radius:13px;background:#fff;color:var(--ink)}
+  .search input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(47,111,208,.14)}
+  .search svg{position:absolute;left:15px;top:50%;transform:translateY(-50%);width:19px;height:19px;stroke:var(--mist)}
+  .filters{display:flex;flex-wrap:wrap;gap:7px;padding:10px 20px 4px}
+  .chip{font-size:12.5px;font-weight:800;padding:8px 13px;border-radius:999px;border:1px solid var(--line);
+    background:#fff;color:var(--ink2,#1b2a5b);cursor:pointer}
+  .chip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .count{font-size:12px;color:var(--mist);padding:6px 22px 2px;font-weight:600}
+
+  .list{padding:6px 20px 0;display:flex;flex-direction:column;gap:9px}
+  .item{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .item .row{display:flex;align-items:center;gap:11px;padding:14px 15px;cursor:pointer}
+  .item .nm{font-size:15.5px;font-weight:800}
+  .item .aka{font-size:11.5px;color:var(--mist);font-weight:600;margin-top:1px}
+  .item .rt{margin-left:auto;display:flex;align-items:center;gap:9px}
+  .stock{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;padding:4px 9px;border-radius:999px;white-space:nowrap}
+  .stock.in{background:var(--greenB);color:var(--greenT)}
+  .stock.ask{background:#eef2ff;color:var(--indT)}
+  .caret{width:11px;height:11px;border-right:2.4px solid var(--mist);border-bottom:2.4px solid var(--mist);transform:rotate(45deg);transition:transform .18s;flex:0 0 auto;margin-top:-4px}
+  .item.open .caret{transform:rotate(-135deg);margin-top:2px}
+  .body{display:none;padding:0 15px 15px;border-top:1px solid var(--line)}
+  .item.open .body{display:block}
+  .body p{font-size:13.5px;color:#33436b;line-height:1.6;margin:12px 0 0}
+  .btags{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px}
+  .btag{font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px}
+  .priceline{margin-top:12px;font-size:13px;font-weight:700;color:var(--navy);background:#f4f7ff;border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+  .priceline.ask{color:var(--indT)}
+  .p-amber{background:var(--amberB);color:var(--amberT)}.p-pink{background:var(--pinkB);color:var(--pinkT)}
+  .p-green{background:var(--greenB);color:var(--greenT)}.p-teal{background:var(--tealB);color:var(--tealT)}
+  .p-ind{background:var(--indB);color:var(--indT)}.p-blue{background:#e9f0ff;color:#2f6fd0}
+  .empty{text-align:center;color:var(--mist);font-size:14px;padding:26px}
+
+  /* contact */
+  .contact{margin:26px 20px 0;background:var(--navy);color:#fff;border-radius:18px;padding:24px 22px;
+    background-image:radial-gradient(600px 240px at 100% -30%,rgba(106,92,255,.5),transparent)}
+  .contact h2{font-size:20px;font-weight:800}
+  .contact p{font-size:13.5px;color:#cdd6f5;margin-top:7px;line-height:1.6}
+  .cbtns{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+  .cbtns a{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:14.5px;text-decoration:none;border-radius:12px;padding:12px 18px}
+  .cbtns .g{background:var(--grad);color:#fff}
+  .cbtns .o{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.28)}
+
+  footer{text-align:center;color:var(--mist);font-size:12px;margin-top:24px;padding:0 20px}
+  .ruo{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-weight:700;color:var(--navy);font-size:11.5px;line-height:1.5}
+  footer .nova{font-weight:800;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8f7bff"/><stop offset="1" stop-color="#39d6d6"/></linearGradient></defs>
+        <path d="M50 3 L59 37 L93 50 L59 63 L50 97 L41 63 L7 50 L41 37 Z" fill="url(#g)"/><circle cx="50" cy="50" r="7.5" fill="#fff"/>
+      </svg>
+      <div><h1>Nova<span class="p">Peptides</span></h1><div class="url">NovaPeptides.com.au</div></div>
+    </div>
+    <div class="tagline">Gold Coast based. <span class="hl">Australian-tested</span> pure research peptides.</div>
+    <div class="sub">Every compound is independently lab-tested in Australia for purity, then shipped fast and discreet Australia-wide. Not sure what you need? Message us — if you can name it, chances are we've got it or can source it.</div>
+    <div class="badges">
+      <span class="badge">Australian tested</span>
+      <span class="badge">Gold Coast based</span>
+      <span class="badge">Verified purity</span>
+      <span class="badge">Discreet delivery</span>
+    </div>
+    <div class="cta">
+      <a class="primary" href="#contact">Ask us what we've got &rarr;</a>
+      <a class="ghost" href="#catalogue">Browse the catalogue</a>
+    </div>
+  </header>
+
+  <div class="ship">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4h13v9H1z"/><path d="M14 7h4l3 3v3h-7z"/><circle cx="5" cy="16.5" r="1.7"/><circle cx="17.5" cy="16.5" r="1.7"/></svg>
+    <div><b>FREE EXPRESS SHIPPING</b> &nbsp;&middot;&nbsp; <span>Australia-wide, sent with Australia Post Express</span></div>
+  </div>
+
+  <!-- FEATURED / IN STOCK MARQUEE -->
+  <div class="sec">
+    <div class="sechead"><h2>In stock now</h2><span class="hint">&larr; swipe &middot; vial or full kit</span></div>
+    <div class="lead">Our current range — every one available as a single vial or as a complete ready-to-use kit.</div>
+  </div>
+  <div class="scroller" id="featured"></div>
+  <div class="kitstrip">
+    <b>Every kit comes complete</b> &mdash; ready to go the moment it lands.
+    <div class="incl"><span>Reusable dosing pen</span><span>Peptide vial</span><span>3ml bac water</span><span>Glass cartridge</span><span>5&times; needles + syringe</span><span>Carry case</span></div>
+  </div>
+
+  <!-- FULL CATALOGUE -->
+  <div class="sec" id="catalogue">
+    <div class="sechead"><h2>What do we sell?</h2></div>
+    <div class="lead">Search any peptide below. <b>In stock</b> ships now; anything marked <b>Ask us</b> we can usually source &mdash; just message us.</div>
+  </div>
+  <div class="search">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <input id="q" type="search" placeholder="Search a peptide… e.g. BPC-157, Reta, Ipamorelin" autocomplete="off">
+  </div>
+  <div class="filters" id="filters"></div>
+  <div class="count" id="count"></div>
+  <div class="list" id="list"></div>
+  <div class="empty" id="empty" style="display:none">No match. Message us and ask — we can often source it.</div>
+
+  <!-- CONTACT -->
+  <div class="contact" id="contact">
+    <h2>How to order</h2>
+    <p>Message us with what you're after and we'll confirm price, availability and shipping. Ordering is quick, delivery is fast and discreet, and shipping is always free Australia-wide.</p>
+    <div class="cbtns">
+      <a class="g" href="https://novapeptides.com.au" target="_blank" rel="noopener">Order at NovaPeptides.com.au</a>
+      <a class="o" id="dm" href="#">DM us on Instagram</a>
+    </div>
+  </div>
+
+  <footer>
+    <p style="margin:18px 0 12px"><span class="ruo">FOR RESEARCH USE ONLY &middot; Not for human or veterinary consumption</span></p>
+    <span class="nova">Nova</span>Peptides &middot; Gold Coast, Australia &middot; Australian-tested pure peptides
+  </footer>
+</div>
+
+<script>
+  // In-stock featured range (order = display order)
+  const FEATURED = [
+    {n:'Retatrutide',mg:'10 / 20 / 30mg',tags:[['Fat loss','p-amber'],['Appetite','p-amber'],['Metabolic','p-amber']],vial:'from $155',kit:'from $170'},
+    {n:'Tesamorelin',mg:'20mg',tags:[['Fat loss','p-amber'],['Growth hormone','p-ind'],['Cognition','p-ind']],vial:'$195',kit:'$240'},
+    {n:'Wolverine+',mg:'20mg · BPC+TB',tags:[['Recovery','p-green'],['Injury repair','p-green'],['Tendon','p-green']],vial:'$170',kit:'$200'},
+    {n:'GHK-Cu',mg:'100mg',tags:[['Skin','p-pink'],['Anti-aging','p-pink'],['Healing','p-green']],vial:'$150',kit:'$185'},
+    {n:'KLOW',mg:'80mg blend',tags:[['Anti-aging','p-pink'],['Repair','p-green'],['Gut health','p-green']],vial:'$195',kit:'$230'},
+    {n:'GLOW',mg:'70mg blend',tags:[['Skin','p-pink'],['Hair','p-pink'],['Collagen','p-pink']],vial:'$179',kit:'$219'},
+    {n:'MOTS-C',mg:'10mg',tags:[['Metabolic','p-amber'],['Energy','p-teal'],['Endurance','p-amber']],vial:'$140',kit:'$170'},
+    {n:'CJC-1295 DAC',mg:'5mg',tags:[['Growth hormone','p-ind'],['Muscle','p-green'],['Sleep','p-ind']],vial:'$130',kit:'$160'},
+    {n:'NAD+',mg:'500mg',tags:[['Anti-aging','p-pink'],['Energy','p-teal'],['Focus','p-ind']],vial:'$130',kit:'$150'},
+    {n:'SS-31',mg:'10mg',tags:[['Mitochondria','p-teal'],['Energy','p-teal'],['Cellular repair','p-teal']],vial:'$105',kit:'$150'},
+    {n:'BPC-157',mg:'10mg',tags:[['Recovery','p-green'],['Gut health','p-green'],['Injury repair','p-green']],vial:'$60',kit:'$85'},
+  ]
+
+  // Full catalogue. stock:'in' shows a price; stock:'ask' = we can source.
+  const CAT = [
+    {n:'Retatrutide',aka:'RT10 / RT20 / RT30 · GLP-1/GIP/glucagon',cat:'Weight & metabolic',stock:'in',price:'Vial from $155 · Kit from $170',
+      info:'Triple-receptor agonist researched for strong appetite suppression, fat loss and metabolic control — the current standout in the weight category.',tags:[['Fat loss','p-amber'],['Appetite','p-amber'],['Metabolic','p-amber']]},
+    {n:'Tesamorelin',aka:'GHRH analogue',cat:'Growth hormone',stock:'in',price:'Vial $195 · Kit $240',
+      info:'A growth-hormone releasing hormone studied for reducing visceral (belly) fat, plus cognition and body-composition support.',tags:[['Fat loss','p-amber'],['Growth hormone','p-ind'],['Cognition','p-ind']]},
+    {n:'Wolverine+',aka:'BPC-157 + TB-500 stack · 20mg',cat:'Recovery & healing',stock:'in',price:'Vial $170 · Kit $200',
+      info:'Our combined recovery stack — BPC-157 and TB-500 together, researched for accelerated soft-tissue, tendon and gut healing.',tags:[['Recovery','p-green'],['Injury repair','p-green'],['Tendon','p-green'],['Gut','p-green']]},
+    {n:'BPC-157',aka:'Body Protection Compound',cat:'Recovery & healing',stock:'in',price:'Vial $60 · Kit $85',
+      info:'One of the most popular healing peptides — researched for gut repair, tendon and ligament recovery and reduced inflammation.',tags:[['Recovery','p-green'],['Gut health','p-green'],['Injury repair','p-green']]},
+    {n:'TB-500',aka:'Thymosin Beta-4 fragment',cat:'Recovery & healing',stock:'ask',price:'Available inside the Wolverine+ stack — ask for standalone',
+      info:'Works alongside BPC-157 for recovery — researched for flexibility, wound healing and reduced injury downtime.',tags:[['Recovery','p-green'],['Injury repair','p-green'],['Flexibility','p-green']]},
+    {n:'GHK-Cu',aka:'Copper peptide',cat:'Skin & anti-aging',stock:'in',price:'Vial $150 · Kit $185',
+      info:'Copper peptide prized in skin and anti-aging research — collagen support, hair, wound healing and a smoother complexion.',tags:[['Skin','p-pink'],['Anti-aging','p-pink'],['Hair','p-pink'],['Healing','p-green']]},
+    {n:'KLOW',aka:'GHK-Cu · KPV · BPC · TB blend',cat:'Skin & anti-aging',stock:'in',price:'Vial $195 · Kit $230',
+      info:'A premium multi-peptide blend for anti-aging, skin, repair and gut health in a single vial.',tags:[['Anti-aging','p-pink'],['Repair','p-green'],['Skin','p-pink'],['Gut health','p-green']]},
+    {n:'GLOW',aka:'GHK-Cu · BPC · TB blend',cat:'Skin & anti-aging',stock:'in',price:'Vial $179 · Kit $219',
+      info:'The beauty blend — researched for skin, hair, collagen and healing.',tags:[['Skin','p-pink'],['Hair','p-pink'],['Healing','p-green'],['Collagen','p-pink']]},
+    {n:'MOTS-C',aka:'Mitochondrial peptide',cat:'Weight & metabolic',stock:'in',price:'Vial $140 · Kit $170',
+      info:'A mitochondrial-derived peptide researched for metabolism, energy, insulin sensitivity and endurance.',tags:[['Metabolic','p-amber'],['Energy','p-teal'],['Endurance','p-amber']]},
+    {n:'SS-31',aka:'Elamipretide',cat:'Longevity & cellular',stock:'in',price:'Vial $105 · Kit $150',
+      info:'Targets the mitochondria — researched for cellular energy, oxidative-stress protection and recovery.',tags:[['Mitochondria','p-teal'],['Energy','p-teal'],['Cellular repair','p-teal']]},
+    {n:'NAD+',aka:'Nicotinamide adenine dinucleotide',cat:'Longevity & cellular',stock:'in',price:'Vial $130 · Kit $150',
+      info:'A key cellular coenzyme researched for energy, DNA repair, focus and healthy aging.',tags:[['Anti-aging','p-pink'],['Energy','p-teal'],['Focus','p-ind']]},
+    {n:'CJC-1295 DAC',aka:'GHRH analogue',cat:'Growth hormone',stock:'in',price:'Vial $130 · Kit $160',
+      info:'A long-acting growth-hormone releasing peptide researched for muscle, recovery, fat loss and sleep — great paired with Ipamorelin.',tags:[['Growth hormone','p-ind'],['Muscle','p-green'],['Recovery','p-green'],['Sleep','p-ind']]},
+
+    {n:'Tirzepatide',aka:'Mounjaro · GLP-1/GIP',cat:'Weight & metabolic',stock:'ask',
+      info:'Dual GLP-1/GIP agonist widely researched for weight loss and blood-sugar control.',tags:[['Fat loss','p-amber'],['Appetite','p-amber']]},
+    {n:'Semaglutide',aka:'Ozempic · Wegovy · GLP-1',cat:'Weight & metabolic',stock:'ask',
+      info:'The well-known GLP-1 agonist researched for appetite suppression and steady weight loss.',tags:[['Fat loss','p-amber'],['Appetite','p-amber']]},
+    {n:'Cagrilintide',aka:'Amylin analogue',cat:'Weight & metabolic',stock:'ask',
+      info:'An amylin analogue researched for appetite and satiety, often stacked with GLP-1 compounds.',tags:[['Appetite','p-amber'],['Fat loss','p-amber']]},
+    {n:'AOD-9604',aka:'HGH fragment 176-191',cat:'Weight & metabolic',stock:'ask',
+      info:'A growth-hormone fragment researched for fat metabolism without affecting blood sugar.',tags:[['Fat loss','p-amber'],['Metabolic','p-amber']]},
+    {n:'5-Amino-1MQ',aka:'NNMT inhibitor',cat:'Weight & metabolic',stock:'ask',
+      info:'A small molecule researched for fat metabolism, energy and lean-mass support.',tags:[['Fat loss','p-amber'],['Metabolic','p-amber']]},
+    {n:'Ipamorelin',aka:'GH secretagogue',cat:'Growth hormone',stock:'ask',
+      info:'A gentle, selective GH-releasing peptide researched for recovery, sleep and lean muscle — pairs with CJC-1295.',tags:[['Growth hormone','p-ind'],['Sleep','p-ind'],['Recovery','p-green']]},
+    {n:'Sermorelin',aka:'GHRH 1-29',cat:'Growth hormone',stock:'ask',
+      info:'A classic GH-releasing hormone researched for anti-aging, sleep and recovery.',tags:[['Growth hormone','p-ind'],['Anti-aging','p-pink']]},
+    {n:'Hexarelin',aka:'GH secretagogue',cat:'Growth hormone',stock:'ask',
+      info:'A potent GH secretagogue researched for strength, recovery and GH output.',tags:[['Growth hormone','p-ind'],['Muscle','p-green']]},
+    {n:'GHRP-2',aka:'GH-releasing peptide',cat:'Growth hormone',stock:'ask',
+      info:'Researched for GH release, appetite and recovery.',tags:[['Growth hormone','p-ind'],['Appetite','p-amber']]},
+    {n:'GHRP-6',aka:'GH-releasing peptide',cat:'Growth hormone',stock:'ask',
+      info:'Researched for strong GH release and appetite stimulation.',tags:[['Growth hormone','p-ind'],['Appetite','p-amber']]},
+    {n:'MK-677',aka:'Ibutamoren (oral)',cat:'Growth hormone',stock:'ask',
+      info:'An orally-active GH secretagogue researched for muscle, sleep, appetite and recovery.',tags:[['Growth hormone','p-ind'],['Muscle','p-green'],['Sleep','p-ind']]},
+    {n:'IGF-1 LR3',aka:'Insulin-like growth factor',cat:'Growth hormone',stock:'ask',
+      info:'A long-acting IGF-1 researched for muscle growth, recovery and nutrient partitioning.',tags:[['Muscle','p-green'],['Recovery','p-green']]},
+    {n:'Epithalon',aka:'Epitalon',cat:'Longevity & cellular',stock:'ask',
+      info:'A longevity peptide researched for telomere and sleep-cycle support.',tags:[['Longevity','p-ind'],['Sleep','p-ind']]},
+    {n:'Thymosin Alpha-1',aka:'Immune peptide',cat:'Immune',stock:'ask',
+      info:'Researched for immune modulation and resilience.',tags:[['Immune','p-blue']]},
+    {n:'LL-37',aka:'Antimicrobial peptide',cat:'Immune',stock:'ask',
+      info:'A host-defence peptide researched for antimicrobial and gut-immune support.',tags:[['Immune','p-blue'],['Gut','p-green']]},
+    {n:'KPV',aka:'Anti-inflammatory tripeptide',cat:'Recovery & healing',stock:'ask',
+      info:'An α-MSH fragment researched for anti-inflammatory and gut-healing effects.',tags:[['Anti-inflammatory','p-green'],['Gut health','p-green']]},
+    {n:'PT-141',aka:'Bremelanotide',cat:'Sexual health',stock:'ask',
+      info:'A melanocortin peptide researched for libido and arousal in both men and women.',tags:[['Libido','p-pink'],['Arousal','p-pink']]},
+    {n:'Melanotan II',aka:'MT-2',cat:'Skin & anti-aging',stock:'ask',
+      info:'Researched for tanning, with secondary libido effects.',tags:[['Tanning','p-amber'],['Libido','p-pink']]},
+    {n:'Kisspeptin-10',aka:'Hormonal peptide',cat:'Sexual health',stock:'ask',
+      info:'Researched for reproductive-hormone signalling and libido.',tags:[['Hormonal','p-ind'],['Libido','p-pink']]},
+    {n:'Gonadorelin',aka:'GnRH',cat:'Sexual health',stock:'ask',
+      info:'Researched for natural hormone and fertility support.',tags:[['Hormonal','p-ind']]},
+    {n:'Selank',aka:'Anxiolytic nootropic',cat:'Cognitive & mood',stock:'ask',
+      info:'Researched for anxiety reduction, focus and calm without sedation.',tags:[['Anxiety','p-teal'],['Focus','p-ind']]},
+    {n:'Semax',aka:'Nootropic peptide',cat:'Cognitive & mood',stock:'ask',
+      info:'Researched for focus, memory and neuroprotection.',tags:[['Focus','p-ind'],['Memory','p-ind']]},
+    {n:'DSIP',aka:'Delta sleep-inducing peptide',cat:'Cognitive & mood',stock:'ask',
+      info:'Researched for deeper sleep and stress regulation.',tags:[['Sleep','p-ind'],['Stress','p-teal']]},
+    {n:'Follistatin',aka:'Myostatin inhibitor',cat:'Growth hormone',stock:'ask',
+      info:'Researched for muscle growth via myostatin inhibition.',tags:[['Muscle','p-green']]},
+  ]
+
+  const CATS = ['All','Weight & metabolic','Recovery & healing','Skin & anti-aging','Growth hormone','Longevity & cellular','Cognitive & mood','Sexual health','Immune']
+  const $ = id => document.getElementById(id)
+  const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))
+  let activeCat='All', query=''
+
+  // featured marquee
+  $('featured').innerHTML = FEATURED.map(f=>`
+    <div class="fcard">
+      <div class="fn">${esc(f.n)}</div><div class="fmg">${esc(f.mg)}</div>
+      <div class="ftags">${f.tags.map(t=>`<span class="ftag ${t[1]}">${esc(t[0])}</span>`).join('')}</div>
+      <div class="fprice">
+        <div class="pb"><div class="l">Vial</div><div class="v">${esc(f.vial)}</div></div>
+        <div class="pb kit"><div class="l">Full kit</div><div class="v">${esc(f.kit)}</div></div>
+      </div>
+    </div>`).join('')
+
+  // filters
+  $('filters').innerHTML = CATS.map(c=>`<button class="chip${c==='All'?' on':''}" data-cat="${esc(c)}">${esc(c)}</button>`).join('')
+  $('filters').querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>{
+    activeCat=b.dataset.cat
+    $('filters').querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===b))
+    render()
+  }))
+
+  function render(){
+    const q=query.trim().toLowerCase()
+    const rows=CAT.filter(p=>{
+      const catOk = activeCat==='All' || p.cat===activeCat
+      const qOk = !q || (p.n+' '+(p.aka||'')+' '+p.tags.map(t=>t[0]).join(' ')).toLowerCase().includes(q)
+      return catOk && qOk
+    })
+    const inN=rows.filter(p=>p.stock==='in').length
+    $('count').textContent = rows.length? `${rows.length} peptides${activeCat==='All'?'':' in '+activeCat} · ${inN} in stock now` : ''
+    $('empty').style.display = rows.length? 'none':'block'
+    $('list').innerHTML = rows.map((p,i)=>`
+      <div class="item" data-i="${i}">
+        <div class="row">
+          <div><div class="nm">${esc(p.n)}</div>${p.aka?`<div class="aka">${esc(p.aka)}</div>`:''}</div>
+          <div class="rt"><span class="stock ${p.stock==='in'?'in':'ask'}">${p.stock==='in'?'In stock':'Ask us'}</span><span class="caret"></span></div>
+        </div>
+        <div class="body">
+          <p>${esc(p.info)}</p>
+          <div class="btags">${p.tags.map(t=>`<span class="btag ${t[1]}">${esc(t[0])}</span>`).join('')}</div>
+          <div class="priceline ${p.stock==='in'?'':'ask'}">${p.stock==='in'?esc(p.price):(p.price?esc(p.price):'Not stocked right now — message us, we can usually source it.')}</div>
+        </div>
+      </div>`).join('')
+    $('list').querySelectorAll('.item').forEach(el=>el.querySelector('.row').addEventListener('click',()=>el.classList.toggle('open')))
+  }
+  $('q').addEventListener('input',e=>{ query=e.target.value; render() })
+  render()
+
+  // Instagram DM placeholder — replace @novapeptides with the real handle
+  $('dm').setAttribute('href','https://instagram.com/novapeptides')
+</script>
+</body>
+</html>
