@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en-AU"><head><meta charset="UTF-8">
+<style>
+  :root{
+    --ink:#080b18; --ivory:#f4efe4; --soft:#b9b19c; --muted:#8b846f;
+    --gold1:#f6e0a8; --gold2:#cda85e; --line:rgba(214,178,108,.26);
+    --goldgrad:linear-gradient(120deg,#f6e2ad 0%,#d8b26a 45%,#b5893f 100%);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Georgia,'Times New Roman',serif;background:#05070f;color:#f4efe4}
+  .sheet{width:1000px;margin:0 auto;position:relative;overflow:hidden;
+    background:
+      radial-gradient(900px 420px at 50% -8%,rgba(214,178,108,.14),transparent 60%),
+      radial-gradient(700px 500px at 100% 100%,rgba(60,80,150,.16),transparent 60%),
+      linear-gradient(180deg,#0a0e1e 0%,#080b16 55%,#0a0d1a 100%)}
+  .pad{padding:52px 60px 46px}
+
+  /* ornamental frame */
+  .frame{position:absolute;inset:18px;border:1px solid rgba(214,178,108,.28);pointer-events:none}
+  .frame::before{content:"";position:absolute;inset:6px;border:1px solid rgba(214,178,108,.12)}
+
+  /* header */
+  .head{text-align:center;position:relative}
+  .mark{width:66px;height:66px;margin:0 auto 14px;display:block}
+  .word{font-size:46px;letter-spacing:.5px;font-weight:400}
+  .word .n{background:linear-gradient(120deg,#f6e2ad,#d8b26a 55%,#b5893f);-webkit-background-clip:text;background-clip:text;color:transparent;font-style:italic}
+  .word .p{color:#f4efe4}
+  .kicker{margin-top:12px;font-family:Arial,Helvetica,sans-serif;font-size:11.5px;letter-spacing:4.5px;
+    text-transform:uppercase;color:#cbb489;font-weight:700}
+  .rule{display:flex;align-items:center;justify-content:center;gap:16px;margin:20px auto 6px;max-width:420px}
+  .rule .ln{flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(214,178,108,.55),transparent)}
+  .rule .dot{width:6px;height:6px;transform:rotate(45deg);background:linear-gradient(120deg,#f6e2ad,#b5893f)}
+  .lede{text-align:center;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.7;color:#c9c2af;
+    max-width:640px;margin:14px auto 0}
+  .lede b{color:#e9dcbd;font-weight:700}
+
+  /* trust row */
+  .trust{display:flex;justify-content:center;gap:0;margin:22px auto 4px;max-width:720px}
+  .trust .t{flex:1;text-align:center;font-family:Arial,Helvetica,sans-serif;font-size:10.5px;letter-spacing:2px;
+    text-transform:uppercase;color:#b6a984;font-weight:700;padding:0 8px}
+  .trust .t + .t{border-left:1px solid rgba(214,178,108,.22)}
+
+  /* column header */
+  .colh{display:flex;align-items:flex-end;margin:30px 4px 4px;padding-bottom:12px;border-bottom:1px solid rgba(214,178,108,.4)}
+  .colh .sp{flex:1}
+  .colh .c{width:132px;text-align:center;font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:2.5px;
+    text-transform:uppercase;color:#cbb489;font-weight:700}
+  .colh .c.kit{color:#f0dca8}
+
+  /* product rows */
+  .row{display:flex;align-items:center;gap:20px;padding:17px 4px;border-bottom:1px solid rgba(214,178,108,.14)}
+  .row:last-of-type{border-bottom:none}
+  .info{flex:1;min-width:0}
+  .pname{font-size:23px;font-weight:400;color:#f6f1e6;letter-spacing:.2px}
+  .pname .mg{font-style:italic;color:#d8b26a;font-size:18px;margin-left:8px}
+  .pben{font-family:Arial,Helvetica,sans-serif;font-size:11.5px;letter-spacing:.6px;color:#9a927c;margin-top:6px;text-transform:uppercase}
+  .prices{display:flex;gap:12px;flex:0 0 auto}
+  .pcell{width:132px;text-align:center}
+  .pcell .lab{display:none}
+  .pcell .amt{font-size:27px;color:#f4efe4;letter-spacing:.5px}
+  .pcell.kit{position:relative;border:1px solid rgba(214,178,108,.5);border-radius:4px;padding:11px 0;
+    background:linear-gradient(180deg,rgba(214,178,108,.10),rgba(214,178,108,.02))}
+  .pcell.kit .amt{background:linear-gradient(120deg,#f6e2ad,#d8b26a 60%,#c49a4f);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .pcell.vial{padding:11px 0}
+
+  /* bac */
+  .bac{display:flex;align-items:center;justify-content:space-between;margin-top:20px;padding:16px 20px;
+    border:1px solid rgba(214,178,108,.22);border-radius:5px;background:rgba(255,255,255,.015)}
+  .bac .n{font-size:18px;color:#eee6d3}
+  .bac .n i{font-style:italic;color:#d8b26a;font-size:14px;font-family:Arial,Helvetica,sans-serif;letter-spacing:1px;margin-left:8px}
+  .bac .amt{font-size:22px;color:#f4efe4}
+
+  /* footer */
+  .foot{margin-top:34px;text-align:center}
+  .foot .ln{height:1px;background:linear-gradient(90deg,transparent,rgba(214,178,108,.4),transparent);margin-bottom:22px}
+  .foot .site{font-size:20px;letter-spacing:.5px;color:#f0e9d7}
+  .foot .site .n{color:#d8b26a;font-style:italic}
+  .foot .meta{font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-top:9px;color:#a99e7f}
+  .foot .ruo{font-family:Arial,Helvetica,sans-serif;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#6f6a58;margin-top:14px}
+</style></head>
+<body>
+  <div class="sheet">
+    <div class="frame"></div>
+    <div class="pad">
+
+      <div class="head">
+        <svg class="mark" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs><linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#f6e2ad"/><stop offset=".55" stop-color="#d8b26a"/><stop offset="1" stop-color="#b5893f"/>
+          </linearGradient></defs>
+          <path d="M50 3 L59 37 L93 50 L59 63 L50 97 L41 63 L7 50 L41 37 Z" fill="url(#gold)"/>
+          <circle cx="50" cy="50" r="7" fill="#0a0e1e"/>
+        </svg>
+        <div class="word"><span class="n">Nova</span><span class="p">Peptides</span></div>
+        <div class="kicker">Gold Coast &middot; Australian-Tested Pure Peptides</div>
+
+        <div class="rule"><span class="ln"></span><span class="dot"></span><span class="ln"></span></div>
+
+        <div class="lede">Every compound is <b>independently laboratory-tested in Australia</b> for verified purity,
+        then delivered fast and discreet. <b>Complimentary express shipping</b>, Australia-wide.</div>
+
+        <div class="trust">
+          <div class="t">Australian Tested</div>
+          <div class="t">Verified Purity</div>
+          <div class="t">Free Express Shipping</div>
+          <div class="t">Discreet Delivery</div>
+        </div>
+      </div>
+
+      <div class="colh"><span class="sp"></span><div class="c">Vial</div><div class="c kit">Full Kit</div></div>
+
+      <div class="list">
+        <div class="row"><div class="info"><div class="pname">Retatrutide <span class="mg">10mg &middot; RT10</span></div><div class="pben">Appetite control &middot; fat loss &middot; metabolic</div></div>
+          <div class="prices"><div class="pcell vial"><div class="amt">$155</div></div><div class="pcell kit"><div class="amt">$170</div></div></div></div>
+
+        <div class="row"><div class="info"><div class="pname">Retatrutide <span class="mg">20mg &middot; RT20</span></div><div class="pben">Appetite control &middot; fat loss &middot; metabolic</div></div>
+          <div class="prices"><div class="pcell vial"><div class="amt">$165</div></div><div class="pcell kit"><div class="amt">$180</div></div></div></div>
+
+        <div class="row"><div class="info"><div class="pname">Retatrutide <span class="mg">30mg &middot; RT30</span></div><div class="pben">Appetite control &middot; fat loss &middot; metabolic</div></div>
+          <div class="prices"><div class="pcell vial"><div class="amt">$289</div></div><div class="pcell kit"><div class="amt">$315</div></div></div></div>
+
+        <div class="row"><div class="info"><div class="pname">KLOW <span class="mg">80mg</span></div><div class="pben">Anti-aging &middot; repair &middot; skin &middot; gut</div></div>
+          <div class="prices"><div class="pcell vial"><div class="amt">$200</div></div><div class="pcell kit"><div class="amt">$245</div></div></div></div>
+
+        <div class="row"><div class="info"><div class="pname">GLOW <span class="mg">70mg</span></div><div class="pben">Skin &middot; hair &middot; collagen &middot; healing</div></div>
+          <div class="prices"><div class="pcell vial"><div class="amt">$179</div></div><div class="pcell kit"><div class="amt">$219</div></div></div></div>
+
+        <div class="row"><div class="info"><div class="pname">SS-31 <span class="mg">10mg</span></div><div class="pben">Mitochondria &middot; energy &middot; cellular repair</div></div>
+          <div class="prices"><div class="pcell vial"><div class="amt">$115</div></div><div class="pcell kit"><div class="amt">$135</div></div></div></div>
+
+        <div class="row"><div class="info"><div class="pname">Wolverine+ <span class="mg">20mg</span></div><div class="pben">BPC-157 + TB-500 &middot; recovery &middot; tendon &middot; gut</div></div>
+          <div class="prices"><div class="pcell vial"><div class="amt">$170</div></div><div class="pcell kit"><div class="amt">$200</div></div></div></div>
+
+        <div class="row"><div class="info"><div class="pname">Tesamorelin <span class="mg">20mg</span></div><div class="pben">Fat loss &middot; growth hormone &middot; cognition</div></div>
+          <div class="prices"><div class="pcell vial"><div class="amt">$195</div></div><div class="pcell kit"><div class="amt">$240</div></div></div></div>
+
+        <div class="row"><div class="info"><div class="pname">MOTS-C <span class="mg">10mg</span></div><div class="pben">Metabolic &middot; energy &middot; endurance</div></div>
+          <div class="prices"><div class="pcell vial"><div class="amt">$140</div></div><div class="pcell kit"><div class="amt">$170</div></div></div></div>
+
+        <div class="row"><div class="info"><div class="pname">GHK-Cu <span class="mg">100mg</span></div><div class="pben">Skin &middot; anti-aging &middot; hair &middot; healing</div></div>
+          <div class="prices"><div class="pcell vial"><div class="amt">$150</div></div><div class="pcell kit"><div class="amt">$185</div></div></div></div>
+
+        <div class="row"><div class="info"><div class="pname">NAD+ <span class="mg">500mg</span></div><div class="pben">Anti-aging &middot; energy &middot; focus</div></div>
+          <div class="prices"><div class="pcell vial"><div class="amt">$130</div></div><div class="pcell kit"><div class="amt">$150</div></div></div></div>
+
+        <div class="row"><div class="info"><div class="pname">CJC-1295 DAC <span class="mg">5mg</span></div><div class="pben">Growth hormone &middot; muscle &middot; recovery &middot; sleep</div></div>
+          <div class="prices"><div class="pcell vial"><div class="amt">$130</div></div><div class="pcell kit"><div class="amt">$160</div></div></div></div>
+
+        <div class="row"><div class="info"><div class="pname">BPC-157 <span class="mg">10mg</span></div><div class="pben">Recovery &middot; gut health &middot; injury repair</div></div>
+          <div class="prices"><div class="pcell vial"><div class="amt">$60</div></div><div class="pcell kit"><div class="amt">$85</div></div></div></div>
+      </div>
+
+      <div class="bac"><div class="n">Bacteriostatic Water <i>3ml &middot; for reconstitution</i></div><div class="amt">$19.99</div></div>
+
+      <div class="foot">
+        <div class="ln"></div>
+        <div class="site"><span class="n">Nova</span>Peptides.com.au</div>
+        <div class="meta">Gold Coast, Australia &middot; All prices AUD</div>
+        <div class="ruo">For research use only &middot; Not for human or veterinary consumption</div>
+      </div>
+
+    </div>
+  </div>
+</body></html>
