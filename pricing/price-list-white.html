@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en-AU"><head><meta charset="UTF-8">
+<style>
+  :root{
+    --ink:#0e1836; --navy:#16357e; --blue:#2f6fd0; --mist:#6b779b; --line:#e9edf7;
+    --bg:#eef2fb; --grad:linear-gradient(120deg,#6a5cff 0%,#16c2c2 100%);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#dfe6f4;color:var(--ink)}
+  .sheet{width:1000px;margin:0 auto;background:#fff}
+
+  /* header */
+  header{padding:40px 54px 26px;text-align:center;border-bottom:1px solid var(--line)}
+  .brand{display:inline-flex;align-items:center;gap:14px}
+  .mark{width:56px;height:56px}
+  .wm{font-size:42px;font-weight:800;letter-spacing:.2px;line-height:1}
+  .wm .n{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .wm .p{color:var(--ink)}
+  .kick{margin-top:12px;font-size:13px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--blue)}
+  .pl{margin-top:20px;display:inline-flex;align-items:center;gap:14px}
+  .pl .ln{width:46px;height:2px;background:var(--grad)}
+  .pl .t{font-size:20px;font-weight:800;letter-spacing:5px;text-transform:uppercase;color:var(--ink)}
+
+  /* ship strip */
+  .ship{padding:15px 20px;text-align:center;background:linear-gradient(120deg,#101a3c,#1b2c63);color:#fff}
+  .ship .a{font-size:15px;font-weight:800;letter-spacing:.4px}
+  .ship .a .g{background:linear-gradient(120deg,#9b8dff,#4fe0e0);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .ship .b{font-size:12.5px;color:#c7d2f0;margin-top:3px;font-weight:600}
+
+  /* column head */
+  .list{padding:14px 54px 6px}
+  .colh{display:flex;align-items:flex-end;padding:8px 2px 12px;border-bottom:2px solid var(--line)}
+  .colh .sp{flex:1}
+  .colh .c{width:128px;text-align:center;font-size:13px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:var(--mist)}
+  .colh .c.k{color:var(--navy)}
+
+  .row{display:flex;align-items:center;gap:18px;padding:16px 2px;border-bottom:1px solid var(--line)}
+  .row:last-child{border-bottom:none}
+  .info{flex:1;min-width:0}
+  .nm{font-size:23px;font-weight:800;color:var(--ink);line-height:1.15}
+  .nm .mg{font-size:16px;font-weight:800;color:var(--blue);margin-left:7px}
+  .ben{font-size:13px;color:var(--mist);margin-top:5px;font-weight:600}
+  .prices{display:flex;gap:12px;flex:0 0 auto}
+  .cell{width:128px;text-align:center}
+  .cell .v{font-size:27px;font-weight:800;color:var(--ink)}
+  .cell.kit{background:var(--navy);border-radius:12px;padding:12px 0}
+  .cell.kit .v{color:#fff}
+  .cell.vial{padding:12px 0}
+
+  .bac{display:flex;align-items:center;justify-content:space-between;margin:12px 54px 0;background:#f5f8ff;
+    border:1px solid var(--line);border-radius:14px;padding:15px 22px}
+  .bac .n{font-size:17px;font-weight:800} .bac .n span{font-size:12.5px;color:var(--mist);font-weight:600;margin-left:6px}
+  .bac .v{font-size:20px;font-weight:800;color:var(--blue)}
+
+  footer{margin-top:20px;padding:22px 54px 34px;border-top:1px solid var(--line);text-align:center}
+  .foot-badges{display:flex;justify-content:center;flex-wrap:wrap;gap:9px;margin-bottom:16px}
+  .fb{font-size:12px;font-weight:800;letter-spacing:.4px;color:var(--navy);background:#eef2ff;border:1px solid #dde6fb;border-radius:999px;padding:8px 15px}
+  .site{font-size:19px;font-weight:800}
+  .site .n{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .meta{font-size:12px;color:var(--mist);margin-top:7px;font-weight:600}
+  .ruo{font-size:10.5px;color:#a2acc6;margin-top:12px;letter-spacing:1px;text-transform:uppercase;font-weight:700}
+</style></head>
+<body>
+  <div class="sheet">
+    <header>
+      <div class="brand">
+        <svg class="mark" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6a5cff"/><stop offset="1" stop-color="#16c2c2"/></linearGradient></defs>
+          <path d="M50 3 L59 37 L93 50 L59 63 L50 97 L41 63 L7 50 L41 37 Z" fill="url(#g)"/><circle cx="50" cy="50" r="7.5" fill="#fff"/>
+        </svg>
+        <div class="wm"><span class="n">Nova</span><span class="p">Peptides</span></div>
+      </div>
+      <div class="kick">Gold Coast &middot; Australian-Tested Pure Peptides</div>
+      <div class="pl"><span class="ln"></span><span class="t">Price List</span><span class="ln"></span></div>
+    </header>
+
+    <div class="ship">
+      <div class="a"><span class="g">FREE SHIPPING ON ALL ORDERS</span> &middot; SAME-DAY GOLD COAST DISPATCH BEFORE 10AM</div>
+      <div class="b">Shipped from the Gold Coast &middot; delivered 1&ndash;4 days Australia-wide &middot; all prices AUD</div>
+    </div>
+
+    <div class="list">
+      <div class="colh"><span class="sp"></span><div class="c">Vial</div><div class="c k">Full Kit</div></div>
+
+      <div class="row"><div class="info"><div class="nm">Retatrutide <span class="mg">10mg &middot; RT10</span></div><div class="ben">Appetite control &middot; fat loss &middot; metabolic</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$170</div></div><div class="cell kit"><div class="v">$220</div></div></div></div>
+
+      <div class="row"><div class="info"><div class="nm">Retatrutide <span class="mg">20mg &middot; RT20</span></div><div class="ben">Appetite control &middot; fat loss &middot; metabolic</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$200</div></div><div class="cell kit"><div class="v">$250</div></div></div></div>
+
+      <div class="row"><div class="info"><div class="nm">Retatrutide <span class="mg">30mg &middot; RT30</span></div><div class="ben">Appetite control &middot; fat loss &middot; metabolic</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$290</div></div><div class="cell kit"><div class="v">$330</div></div></div></div>
+
+      <div class="row"><div class="info"><div class="nm">KLOW <span class="mg">80mg</span></div><div class="ben">Anti-aging &middot; repair &middot; skin &middot; gut</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$160</div></div><div class="cell kit"><div class="v">$230</div></div></div></div>
+
+      <div class="row"><div class="info"><div class="nm">GLOW <span class="mg">70mg</span></div><div class="ben">Skin &middot; hair &middot; collagen &middot; healing</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$149</div></div><div class="cell kit"><div class="v">$210</div></div></div></div>
+
+      <div class="row"><div class="info"><div class="nm">GHK-Cu <span class="mg">100mg</span></div><div class="ben">Skin &middot; anti-aging &middot; hair &middot; healing</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$95</div></div><div class="cell kit"><div class="v">$135</div></div></div></div>
+
+      <div class="row"><div class="info"><div class="nm">BPC-157 <span class="mg">10mg</span></div><div class="ben">Recovery &middot; gut health &middot; injury repair</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$95</div></div><div class="cell kit"><div class="v">$160</div></div></div></div>
+
+      <div class="row"><div class="info"><div class="nm">KPV <span class="mg">10mg</span></div><div class="ben">Anti-inflammatory &middot; gut healing &middot; immune &middot; skin</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$95</div></div><div class="cell kit"><div class="v">$160</div></div></div></div>
+
+      <div class="row"><div class="info"><div class="nm">Wolverine+ <span class="mg">20mg</span></div><div class="ben">BPC-157 + TB-500 &middot; recovery &middot; tendon &middot; gut</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$170</div></div><div class="cell kit"><div class="v">$235</div></div></div></div>
+
+      <div class="row"><div class="info"><div class="nm">Tesamorelin <span class="mg">20mg</span></div><div class="ben">Fat loss &middot; growth hormone &middot; cognition</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$195</div></div><div class="cell kit"><div class="v">$240</div></div></div></div>
+
+      <div class="row"><div class="info"><div class="nm">CJC-1295 DAC <span class="mg">5mg</span></div><div class="ben">Growth hormone &middot; muscle &middot; recovery &middot; sleep</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$95</div></div><div class="cell kit"><div class="v">$130</div></div></div></div>
+
+      <div class="row"><div class="info"><div class="nm">HGH <span class="mg">24iu</span></div><div class="ben">Recovery &middot; anti-aging &middot; lean muscle &middot; vitality</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$120</div></div><div class="cell kit"><div class="v">$160</div></div></div></div>
+
+      <div class="row"><div class="info"><div class="nm">MOTS-C <span class="mg">10mg</span></div><div class="ben">Metabolic &middot; energy &middot; endurance</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$95</div></div><div class="cell kit"><div class="v">$130</div></div></div></div>
+
+      <div class="row"><div class="info"><div class="nm">SS-31 <span class="mg">10mg</span></div><div class="ben">Mitochondria &middot; energy &middot; cellular repair</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$95</div></div><div class="cell kit"><div class="v">$130</div></div></div></div>
+
+      <div class="row"><div class="info"><div class="nm">NAD+ <span class="mg">500mg</span></div><div class="ben">Anti-aging &middot; energy &middot; focus</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$110</div></div><div class="cell kit"><div class="v">$150</div></div></div></div>
+    </div>
+
+    <div class="bac"><div class="n">Bacteriostatic Water <span>3ml &middot; for reconstitution</span></div><div class="v">$19.99</div></div>
+
+    <footer>
+      <div class="foot-badges">
+        <span class="fb">Australian Tested</span><span class="fb">Verified Purity</span>
+        <span class="fb">Free Shipping</span><span class="fb">COAs On Request</span>
+      </div>
+      <div class="site"><span class="n">Nova</span>Peptides.com.au</div>
+      <div class="meta">Gold Coast, Australia &middot; Certificates of Analysis available on request &middot; Message us to order</div>
+      <div class="ruo">For research use only &middot; Not for human or veterinary consumption</div>
+    </footer>
+  </div>
+</body></html>
