@@ -15,6 +15,8 @@ novagen-site/
 │                        COA/trust, live booking flow, blog cards, FAQ, footer
 ├── styles.css          Design system (medical/pharma palette + 2026 brand accent)
 ├── script.js           Live pricing calculator, booking flow, FAQ, nav, scroll reveals
+├── verify.html         COA verification portal (enter key -> registered/verified + details)
+├── coa-registry.js     Registered COA data (source of truth for verification lookups)
 ├── terms.html          Terms & Conditions (placeholder copy)
 ├── privacy.html        Privacy Policy (placeholder copy)
 ├── blog/

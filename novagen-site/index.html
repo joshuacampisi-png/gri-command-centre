@@ -28,6 +28,7 @@
       <a href="#how">How it works</a>
       <a href="#pricing">Pricing</a>
       <a href="#coa">Your COA</a>
+      <a href="verify.html">Verify a COA</a>
       <a href="#blog">Insights</a>
       <a href="#faq">FAQ</a>
     </nav>
@@ -61,10 +62,10 @@
       </div>
     </div>
     <div class="hero-visual">
-      <div class="coa-card"><img src="assets/coa.svg" alt="Sample Certificate of Analysis showing 99.2% verified purity" width="620" height="800" loading="eager"></div>
+      <a class="coa-card" href="verify.html?key=NGL-2026-KG24RP" style="display:block" title="Verify this COA"><img src="assets/coa-NGL-2026-KG24RP.png" alt="Certificate of Analysis NGL-2026-KG24RP — Retatrutide, 98.28% purity, verified" width="1024" height="1536" loading="eager"></a>
       <div class="hero-badge">
-        <div class="big">99.2%</div>
-        <div><div style="font-weight:750;color:var(--navy)">Verified purity</div><div class="lbl">on your named COA</div></div>
+        <div class="big">98.28%</div>
+        <div><div style="font-weight:750;color:var(--navy)">Verified purity</div><div class="lbl">COA NGL-2026-KG24RP</div></div>
       </div>
     </div>
   </div>
@@ -229,16 +230,34 @@
         </li>
         <li>
           <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg></div>
-          <div><h4>Verifiable &amp; named</h4><p>Every COA carries a unique reference and scan-to-verify code, issued under a TGA-approved lab. Yours to keep, share or resell with.</p></div>
+          <div><h4>Verifiable &amp; named</h4><p>Every COA carries a unique verification key. Anyone can confirm it at <strong>novagenlaboratories.com</strong> and see the client, manufacturer and full results &mdash; total transparency.</p></div>
         </li>
         <li>
           <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
           <div><h4>Back in 72 hours</h4><p>From the moment your vial reaches the lab, you'll have your certificate within three days &mdash; not weeks.</p></div>
         </li>
       </ul>
-      <a href="#book" class="btn btn-primary btn-lg" style="margin-top:26px">Get my COA</a>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:26px">
+        <a href="#book" class="btn btn-primary btn-lg">Get my COA</a>
+        <a href="verify.html" class="btn btn-ghost btn-lg">Verify a COA</a>
+      </div>
     </div>
-    <div class="coa-visual"><img src="assets/coa.svg" alt="Full sample Certificate of Analysis with HPLC chromatogram, 99.2% purity and PASS result" width="620" height="800" loading="lazy"></div>
+    <div class="coa-visual"><a href="verify.html?key=NGL-2026-KG24RP" title="Verify this COA"><img src="assets/coa-NGL-2026-KG24RP.png" alt="Certificate of Analysis NGL-2026-KG24RP — Retatrutide, 98.28% purity, client NovaPeptides Australia" width="1024" height="1536" loading="lazy"></a></div>
+  </div>
+</section>
+
+<!-- ============ VERIFY STRIP ============ -->
+<section class="section-tight" style="background:var(--navy);background-image:radial-gradient(700px 300px at 80% -30%, rgba(110,231,214,.2), transparent 70%)">
+  <div class="container" style="display:flex;flex-wrap:wrap;gap:24px;align-items:center;justify-content:space-between">
+    <div style="max-width:520px">
+      <span class="kicker" style="background:rgba(110,231,214,.15);color:var(--mint)">Certificate verification</span>
+      <h2 style="color:#fff;margin-bottom:8px">Got a COA? Check it's real in seconds.</h2>
+      <p style="color:#b9cbe0;margin:0">Enter the verification key from any Novagen certificate to confirm it's registered and see the client, manufacturer and results.</p>
+    </div>
+    <form action="verify.html" method="get" style="display:flex;gap:10px;flex-wrap:wrap;flex:1;min-width:280px;max-width:460px">
+      <input name="key" placeholder="NGL-2026-KG24RP" aria-label="COA verification key" style="flex:1;min-width:180px;font-family:ui-monospace,monospace;text-transform:uppercase;letter-spacing:.03em;padding:14px 15px;border:1px solid rgba(255,255,255,.2);border-radius:11px;background:rgba(255,255,255,.08);color:#fff">
+      <button type="submit" class="btn btn-primary">Verify</button>
+    </form>
   </div>
 </section>
 
@@ -434,6 +453,7 @@
         <a href="#how">How it works</a>
         <a href="#pricing">Pricing</a>
         <a href="#coa">Your COA</a>
+        <a href="verify.html">Verify a COA</a>
         <a href="#book">Book a test</a>
       </div>
       <div>

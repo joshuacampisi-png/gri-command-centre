@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verify a COA — Novagen Australia</title>
+<meta name="description" content="Verify the authenticity of a Novagen Certificate of Analysis. Enter the verification key printed on your COA to confirm it is registered, and see the client, manufacturer and full test results.">
+<meta name="theme-color" content="#0A1E3F">
+<meta name="robots" content="index,follow">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 46 46'%3E%3Crect width='46' height='46' rx='11' fill='%230BB4A6'/%3E%3Cpath d='M13 32 L20 18 L26 30 L33 12' fill='none' stroke='white' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .verify-wrap { max-width: 820px; margin: 0 auto; padding: 56px 24px 40px; }
+  .verify-hero { text-align: center; margin-bottom: 30px; }
+  .verify-box { background: #fff; border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 30px; box-shadow: var(--shadow); }
+  .verify-form { display: flex; gap: 12px; flex-wrap: wrap; }
+  .verify-form input { flex: 1; min-width: 220px; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 1.1rem; letter-spacing: .04em; text-transform: uppercase; padding: 15px 16px; border: 1.5px solid var(--line-2); border-radius: 12px; }
+  .verify-form input:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 4px rgba(11,180,166,.14); }
+  .verify-hint { font-size: .86rem; color: var(--muted); margin-top: 12px; }
+  .result { margin-top: 26px; display: none; }
+  .result.show { display: block; }
+  .banner { display: flex; align-items: center; gap: 16px; padding: 22px 24px; border-radius: 16px; margin-bottom: 22px; }
+  .banner .ic { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; flex: none; }
+  .banner h2 { margin: 0; font-size: 1.4rem; }
+  .banner p { margin: 2px 0 0; font-size: .95rem; }
+  .banner.ok { background: #eafaf0; border: 1px solid #bfe9cd; }
+  .banner.ok .ic { background: var(--success); color: #fff; }
+  .banner.ok h2 { color: #0f7a37; }
+  .banner.ok p { color: #2f7a4f; }
+  .banner.bad { background: var(--danger-soft); border: 1px solid #f6cfd0; }
+  .banner.bad .ic { background: var(--danger); color: #fff; }
+  .banner.bad h2 { color: var(--danger); }
+  .banner.bad p { color: #a23; }
+  .parties { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 22px; }
+  .party { border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; background: var(--bg); }
+  .party .lbl { font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--teal-700); margin-bottom: 6px; }
+  .party .val { font-size: 1.05rem; font-weight: 700; color: var(--navy); }
+  .party .sub { font-size: .82rem; color: var(--muted); margin-top: 3px; }
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 30px; border-top: 1px solid var(--line); }
+  .drow { display: flex; justify-content: space-between; gap: 14px; padding: 11px 0; border-bottom: 1px solid var(--line); font-size: .95rem; }
+  .drow .k { color: var(--slate); }
+  .drow .v { color: var(--navy); font-weight: 650; text-align: right; }
+  .results-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: .92rem; }
+  .results-table th { text-align: left; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 8px 10px; border-bottom: 2px solid var(--line); }
+  .results-table td { padding: 10px; border-bottom: 1px solid var(--line); color: var(--slate); }
+  .results-table .pass { color: var(--success); font-weight: 700; }
+  .badge-pass { display: inline-flex; align-items: center; gap: 5px; background: #eafaf0; color: #0f7a37; font-size: .78rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; align-items: center; }
+  .stamp { font-family: ui-monospace, monospace; font-size: .8rem; color: var(--muted); }
+  .coa-thumb { margin-top: 22px; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-sm); }
+  @media (max-width: 620px){ .parties, .detail-grid { grid-template-columns: 1fr; } .results-table { display: block; overflow-x: auto; } }
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="container nav">
+    <a class="brand" href="index.html">
+      <svg class="logo" viewBox="0 0 46 46" aria-hidden="true"><rect width="46" height="46" rx="11" fill="#0BB4A6"/><path d="M13 32 L20 18 L26 30 L33 12" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Novagen Australia<small>Independent Peptide Testing</small></span>
+    </a>
+    <div class="nav-cta"><a href="index.html#book" class="btn btn-primary">Book a test</a></div>
+  </div>
+</header>
+
+<div class="verify-wrap">
+  <div class="verify-hero">
+    <span class="kicker">Certificate verification</span>
+    <h1>Verify a Certificate of Analysis</h1>
+    <p class="lead" style="margin:0 auto">Enter the verification key printed on your COA to confirm it was issued by our lab and see the client, manufacturer and full test results. Full transparency between customer, website and lab.</p>
+  </div>
+
+  <div class="verify-box">
+    <form class="verify-form" id="verifyForm" novalidate>
+      <input type="text" id="keyInput" placeholder="e.g. NGL-2026-KG24RP" autocomplete="off" spellcheck="false" aria-label="COA verification key">
+      <button type="submit" class="btn btn-primary btn-lg">Verify</button>
+    </form>
+    <p class="verify-hint">The key looks like <strong>NGL-2026-XXXXXX</strong> and is printed in the header of your certificate, next to “Verify at novagenlaboratories.com”. You can also verify by case number.</p>
+
+    <div class="result" id="result" aria-live="polite"></div>
+  </div>
+
+  <p class="center" style="margin-top:26px"><a class="back-link" href="index.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M19 12H5M11 6l-6 6 6 6"/></svg> Back to home</a></p>
+</div>
+
+<footer class="site-footer">
+  <div class="container">
+    <p class="footer-disc"><strong style="color:#9fb6cf">Important:</strong> This portal confirms whether a Certificate of Analysis is registered with Novagen and reflects the details recorded for that key. Results describe the sample submitted at the time of testing. Testing is performed via a verified TGA-approved partner laboratory. For laboratory research use only.</p>
+    <div class="footer-bottom"><span>&copy; 2020&ndash;2026 Novagen Australia.</span><span><a href="terms.html">Terms</a> &#183; <a href="privacy.html">Privacy</a> &#183; <a href="index.html">Home</a></span></div>
+  </div>
+</footer>
+
+<script src="coa-registry.js"></script>
+<script>
+(function(){
+  "use strict";
+  var registry = window.COA_REGISTRY || {};
+  // Build a case-number index for alternate lookups
+  var byCase = {};
+  Object.keys(registry).forEach(function(k){ if(registry[k].caseNumber) byCase[String(registry[k].caseNumber).toUpperCase()] = registry[k]; });
+
+  function normalise(s){
+    return (s||"").toString().trim().toUpperCase()
+      .replace(/[‒–—−]/g, "-")   // en/em/figure dashes -> hyphen
+      .replace(/\s+/g, "");
+  }
+  function esc(s){ return (s==null?"":String(s)).replace(/[&<>"]/g, function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];}); }
+
+  function lookup(raw){
+    var key = normalise(raw);
+    if(!key) return null;
+    return registry[key] || byCase[key] || null;
+  }
+
+  function renderPass(){
+    return '<span class="badge-pass"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>Pass</span>';
+  }
+
+  function render(c, raw){
+    var el = document.getElementById("result");
+    if(!c){
+      el.innerHTML =
+        '<div class="banner bad"><div class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6L6 18M6 6l12 12"/></svg></div>'+
+        '<div><h2>No registered COA found</h2><p>We couldn’t find a certificate for “'+esc(raw)+'”. Check the key exactly as printed and try again, or contact us.</p></div></div>';
+      el.classList.add("show"); return;
+    }
+    var rows = c.results.map(function(r){
+      return '<tr><td>'+esc(r.item)+'</td><td>'+esc(r.spec)+'</td><td class="pass">'+esc(r.result)+'</td><td>'+esc(r.method)+'</td><td>'+(r.pass?renderPass():"")+'</td></tr>';
+    }).join("");
+
+    el.innerHTML =
+      '<div class="banner ok"><div class="ic"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M20 6L9 17l-5-5"/></svg></div>'+
+      '<div><h2>YES — this is a registered, verified COA</h2><p>Key <strong>'+esc(c.verificationKey)+'</strong> · Case #'+esc(c.caseNumber)+' · issued by '+esc(c.lab)+'.</p></div></div>'+
+
+      '<div class="parties">'+
+        '<div class="party"><div class="lbl">Client</div><div class="val">'+esc(c.client)+'</div><div class="sub">Certificate holder</div></div>'+
+        '<div class="party"><div class="lbl">Manufacturer</div><div class="val">'+esc(c.manufacturer)+'</div><div class="sub">Product source</div></div>'+
+        '<div class="party"><div class="lbl">Testing lab</div><div class="val">'+esc(c.lab)+'</div><div class="sub">'+esc(c.labAddress)+'</div></div>'+
+      '</div>'+
+
+      '<div class="detail-grid">'+
+        drow("Peptide / Compound", c.compound)+
+        drow("CAS Number", c.cas)+
+        drow("Batch / Lot", c.batch)+
+        drow("Purity (HPLC)", c.purity)+
+        drow("Manufacturing date", c.manufacturingDate)+
+        drow("Retest / expiry", c.expiryDate)+
+        drow("Net content", c.netContent)+
+        drow("Molecular formula / MW", c.molecularFormula)+
+        drow("Tested by", c.tester)+
+        drow("Test date", c.testDate)+
+      '</div>'+
+
+      '<table class="results-table"><thead><tr><th>Test item</th><th>Specification</th><th>Result</th><th>Method</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>'+
+
+      (c.image ? '<div class="coa-thumb"><a href="'+esc(c.image)+'" target="_blank" rel="noopener"><img src="'+esc(c.image)+'" alt="Full Certificate of Analysis '+esc(c.verificationKey)+'" loading="lazy"></a></div>' : '')+
+
+      '<div class="cta-row"><a class="btn btn-ghost" href="'+esc(c.image||'#')+'" target="_blank" rel="noopener">View full certificate</a>'+
+      '<span class="stamp">Status: '+esc(c.status)+' · verified at novagenlaboratories.com</span></div>'+
+      '<p class="verify-hint" style="margin-top:16px">'+esc(c.note)+'</p>';
+
+    el.classList.add("show");
+  }
+
+  function drow(k,v){ return '<div class="drow"><span class="k">'+k+'</span><span class="v">'+ (v==null?'&mdash;':String(v).replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];})) +'</span></div>'; }
+
+  var form = document.getElementById("verifyForm");
+  var input = document.getElementById("keyInput");
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    render(lookup(input.value), input.value);
+    document.getElementById("result").scrollIntoView({behavior:"smooth", block:"nearest"});
+  });
+
+  // Deep-link support: verify.html?key=NGL-2026-KG24RP (used by the QR / scan-to-verify)
+  try {
+    var qp = new URLSearchParams(location.search);
+    var k = qp.get("key") || qp.get("k");
+    if(k){ input.value = k; render(lookup(k), k); }
+  } catch(_){}
+})();
+</script>
+</body>
+</html>
