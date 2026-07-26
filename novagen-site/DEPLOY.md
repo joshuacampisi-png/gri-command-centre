@@ -1,7 +1,7 @@
-# Deploying Novagen Australia to novagenaustralia.com.au
+# Deploying Novagen Australia to novagenlaboratories.com
 
 The site in this folder is a self-contained static site (no build step). Below are
-two ways to serve it at **novagenaustralia.com.au**. Pick one.
+two ways to serve it at **novagenlaboratories.com**. Pick one.
 
 > The final DNS record change happens in **your** domain registrar / DNS host — it
 > can't be done from inside this repo. Everything else is already prepared here:
@@ -23,7 +23,7 @@ and deploys it; the `CNAME` file sets the custom domain automatically.
 
 **3. Point DNS** at your registrar (for `.com.au` this is where you manage the zone):
 
-Apex domain `novagenaustralia.com.au` → four A records + four AAAA records:
+Apex domain `novagenlaboratories.com` → four A records + four AAAA records:
 
 ```
 A     @   185.199.108.153
@@ -59,7 +59,7 @@ service rather than mixing it into the app:
 1. Create a new Railway **static site** service (or a tiny static file server)
    whose root/publish directory is `novagen-site/`.
 2. In that service → **Settings → Networking → Custom Domain**, add
-   `novagenaustralia.com.au`. Railway will show a target hostname.
+   `novagenlaboratories.com`. Railway will show a target hostname.
 3. At your registrar, add the DNS record Railway gives you:
    - `www` → **CNAME** to the Railway-provided target, and
    - apex `@` → **ALIAS/ANAME** to the same target (or Railway's A record if shown).
@@ -72,7 +72,7 @@ GitHub Pages directive and is ignored (harmless) elsewhere.
 
 ## After it's live — checklist
 
-- [ ] DNS resolves: `dig novagenaustralia.com.au +short`
+- [ ] DNS resolves: `dig novagenlaboratories.com +short`
 - [ ] HTTPS padlock valid (certificate issued)
 - [ ] Home, blog articles, `terms.html`, `privacy.html` all load
 - [ ] Booking form still front-end only — wire it to a real endpoint before taking

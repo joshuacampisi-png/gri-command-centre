@@ -8,7 +8,9 @@ name: Deploy Novagen site to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    # Deploys from this feature branch too, so you don't have to merge to main
+    # (merging main would also trigger the Command Centre's Railway deploy).
+    branches: [main, claude/peptide-tests-australia-site-2gz0a4]
     paths:
       - "novagen-site/**"
       - ".github/workflows/deploy-novagen-site.yml"
