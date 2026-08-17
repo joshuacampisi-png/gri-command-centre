@@ -1,2 +1,5 @@
 node_modules/
 .qa/
+
+# standalone preview bundles (regenerate with npm run preview)
+*.html
