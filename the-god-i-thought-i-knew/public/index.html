@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>The God I Thought I Knew — a memoir by Moses Campisi</title>
+<meta name="description" content="Some men inherit land. Moses Campisi inherited a faith — carried across four generations and four countries, from a hillside church in Calabria, through the coal mines of Belgium, to the Gold Coast of Australia.">
+<meta name="author" content="Moses Campisi">
+<meta name="theme-color" content="#14120f">
+<link rel="icon" href="favicon.png">
+<link rel="apple-touch-icon" href="images/icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+
+<meta property="og:type" content="book">
+<meta property="og:title" content="The God I Thought I Knew">
+<meta property="og:description" content="Some men inherit land. Moses Campisi inherited a faith — carried across four generations and four countries, from a hillside church in Calabria, through the coal mines of Belgium, to the Gold Coast of Australia.">
+<meta property="og:image" content="images/social-card.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:site_name" content="The God I Thought I Knew">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The God I Thought I Knew">
+<meta name="twitter:description" content="A memoir by Moses Campisi — four generations, four countries, and the God who kept showing up.">
+<meta name="twitter:image" content="images/social-card.jpg">
+
+<link rel="preload" href="fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/cormorant.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="content/book.json" as="fetch" crossorigin>
+<link rel="stylesheet" href="assets/reader.css">
+</head>
+<body data-theme="night">
+
+<div id="stage">
+  <div id="bookwrap"><div id="book"></div></div>
+</div>
+
+<!-- Chrome -->
+<header id="topbar" class="chrome">
+  <button id="btn-contents" class="iconbtn" aria-label="Contents" title="Contents">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+  </button>
+  <div class="runninghead"><span id="rh-text">The God I Thought I Knew</span></div>
+  <div class="topbar-right">
+    <button id="btn-type" class="iconbtn" aria-label="Text settings" title="Text settings">
+      <span class="aa">Aa</span>
+    </button>
+    <button id="btn-share" class="iconbtn" aria-label="Share this book" title="Share">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M12 15V3"/><path d="M8 7l4-4 4 4"/></svg>
+    </button>
+  </div>
+</header>
+
+<nav id="pager" class="chrome">
+  <button id="btn-prev" class="navbtn" aria-label="Previous page">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+  </button>
+  <div class="progress">
+    <div class="track"><div id="fill" class="fill"></div></div>
+    <div class="plabel" id="plabel">Cover</div>
+  </div>
+  <button id="btn-next" class="navbtn" aria-label="Next page">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+  </button>
+</nav>
+
+<!-- Contents drawer -->
+<div id="scrim" hidden></div>
+<aside id="contents" hidden aria-label="Table of contents">
+  <div class="drawer-head">
+    <div>
+      <div class="drawer-title">Contents</div>
+      <div class="drawer-sub">The God I Thought I Knew</div>
+    </div>
+    <button id="btn-close-contents" class="iconbtn" aria-label="Close contents">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <ol id="toc"></ol>
+</aside>
+
+<!-- Type settings -->
+<div id="typepanel" hidden>
+  <div class="row">
+    <span class="row-label">Text size</span>
+    <div class="stepper">
+      <button id="btn-smaller" aria-label="Smaller text"><span class="s">A</span></button>
+      <span id="sizeval">100%</span>
+      <button id="btn-bigger" aria-label="Larger text"><span class="l">A</span></button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="row-label">Page</span>
+    <div class="themes" role="radiogroup" aria-label="Page theme">
+      <button class="sw sw-day"   data-theme="day"   role="radio" aria-label="Day"><span>Day</span></button>
+      <button class="sw sw-sepia" data-theme="sepia" role="radio" aria-label="Sepia"><span>Sepia</span></button>
+      <button class="sw sw-night" data-theme="night" role="radio" aria-label="Night"><span>Night</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- Resume toast -->
+<div id="resume" hidden>
+  <span id="resume-text"></span>
+  <button id="resume-go">Continue</button>
+  <button id="resume-dismiss" aria-label="Dismiss">&times;</button>
+</div>
+
+<!-- Boot / pagination screen -->
+<div id="boot">
+  <div class="boot-inner">
+    <div class="boot-rule"></div>
+    <h1 class="boot-title">The God<br>I Thought I Knew</h1>
+    <div class="boot-author">Moses Campisi</div>
+    <div class="boot-rule"></div>
+    <div class="boot-bar"><div id="boot-fill"></div></div>
+    <div class="boot-note" id="boot-note">Setting the type&hellip;</div>
+  </div>
+</div>
+
+<div id="measure" aria-hidden="true"></div>
+<div id="toast" hidden></div>
+
+<script src="vendor/page-flip.browser.js"></script>
+<script src="assets/reader.js"></script>
+</body>
+</html>
