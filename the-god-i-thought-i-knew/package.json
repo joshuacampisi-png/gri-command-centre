@@ -1,10 +1,10 @@
 {
-  "name": "the-god-i-thought-i-knew",
+  "name": "mosescampisi",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "node scripts/build-assets.js && node scripts/build-content.js",
+    "qa": "node scripts/qa-reader.js && node scripts/qa-site.js"
   },
   "keywords": [],
   "author": "",
@@ -15,5 +15,6 @@
   },
   "devDependencies": {
     "playwright": "^1.62.1"
-  }
+  },
+  "private": true
 }

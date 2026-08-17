@@ -2,125 +2,252 @@
 <html lang="en-AU">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
-<title>The God I Thought I Knew — a memoir by Moses Campisi</title>
-<meta name="description" content="Some men inherit land. Moses Campisi inherited a faith — carried across four generations and four countries, from a hillside church in Calabria, through the coal mines of Belgium, to the Gold Coast of Australia.">
-<meta name="author" content="Moses Campisi">
-<meta name="theme-color" content="#14120f">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Moses Campisi — The God I Thought I Knew</title>
+<meta name="description" content="The memoir of Moses Campisi. Four generations, four countries, and a faith carried from a hillside church in Calabria to the Gold Coast of Australia. Available now for $12.95.">
+<link rel="canonical" href="https://mosescampisi.com/">
+<meta name="theme-color" content="#0d0b09">
 <link rel="icon" href="favicon.png">
-<link rel="apple-touch-icon" href="images/icon-180.png">
-<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="media/icon-180.png">
 
 <meta property="og:type" content="book">
-<meta property="og:title" content="The God I Thought I Knew">
-<meta property="og:description" content="Some men inherit land. Moses Campisi inherited a faith — carried across four generations and four countries, from a hillside church in Calabria, through the coal mines of Belgium, to the Gold Coast of Australia.">
-<meta property="og:image" content="images/social-card.jpg">
+<meta property="og:url" content="https://mosescampisi.com/">
+<meta property="og:title" content="The God I Thought I Knew — Moses Campisi">
+<meta property="og:description" content="His grandfather carried a gun. His father built a church that seated seven hundred. His mother walked out of a convent with a hidden Bible. Moses Campisi grew up inside all of it.">
+<meta property="og:image" content="https://mosescampisi.com/media/social-card.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:site_name" content="The God I Thought I Knew">
+<meta property="og:site_name" content="Moses Campisi">
+<meta property="og:locale" content="en_AU">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="The God I Thought I Knew">
-<meta name="twitter:description" content="A memoir by Moses Campisi — four generations, four countries, and the God who kept showing up.">
-<meta name="twitter:image" content="images/social-card.jpg">
+<meta name="twitter:title" content="The God I Thought I Knew — Moses Campisi">
+<meta name="twitter:description" content="Four generations, four countries, and the God who kept showing up. A memoir by Moses Campisi.">
+<meta name="twitter:image" content="https://mosescampisi.com/media/social-card.jpg">
 
-<link rel="preload" href="fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/cormorant.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="content/book.json" as="fetch" crossorigin>
-<link rel="stylesheet" href="assets/reader.css">
+<link rel="preload" href="fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="site/site.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Book",
+  "name": "The God I Thought I Knew",
+  "author": { "@type": "Person", "name": "Moses Campisi" },
+  "inLanguage": "en-AU",
+  "bookFormat": "https://schema.org/EBook",
+  "description": "The memoir of Moses Campisi. Four generations, four countries, and a faith carried from a hillside church in Calabria, through the coal mines of Belgium, to the Gold Coast of Australia.",
+  "image": "https://mosescampisi.com/media/social-card.jpg",
+  "offers": {
+    "@type": "Offer",
+    "price": "12.95",
+    "priceCurrency": "AUD",
+    "availability": "https://schema.org/InStock",
+    "url": "https://mosescampisi.com/"
+  }
+}
+</script>
 </head>
-<body data-theme="night">
+<body>
+<a class="skip" href="#story">Skip to the story</a>
 
-<div id="stage">
-  <div id="bookwrap"><div id="book"></div></div>
-</div>
-
-<!-- Chrome -->
-<header id="topbar" class="chrome">
-  <button id="btn-contents" class="iconbtn" aria-label="Contents" title="Contents">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
-  </button>
-  <div class="runninghead"><span id="rh-text">The God I Thought I Knew</span></div>
-  <div class="topbar-right">
-    <button id="btn-type" class="iconbtn" aria-label="Text settings" title="Text settings">
-      <span class="aa">Aa</span>
-    </button>
-    <button id="btn-share" class="iconbtn" aria-label="Share this book" title="Share">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M12 15V3"/><path d="M8 7l4-4 4 4"/></svg>
-    </button>
-  </div>
+<header id="nav">
+  <a class="brand" href="#top">Moses Campisi</a>
+  <nav aria-label="Primary">
+    <a href="#story">The Story</a>
+    <a href="#moses">Moses</a>
+    <a href="#book">The Book</a>
+  </nav>
+  <button class="btn btn-sm js-buy" type="button">Get the Book</button>
 </header>
 
-<nav id="pager" class="chrome">
-  <button id="btn-prev" class="navbtn" aria-label="Previous page">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
-  </button>
-  <div class="progress">
-    <div class="track"><div id="fill" class="fill"></div></div>
-    <div class="plabel" id="plabel">Cover</div>
+<!-- 01 — hero -->
+<section id="top" class="hero">
+  <div class="hero-media">
+    <!-- Swap src to media/moses-hero.jpg once the high-resolution photograph of
+         Moses is in place; nothing else needs to change. -->
+    <img id="hero-img" src="media/cover-art.webp" alt="A figure on a hillside path at sunset, the cover artwork for The God I Thought I Knew" fetchpriority="high" decoding="async">
   </div>
-  <button id="btn-next" class="navbtn" aria-label="Next page">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
-  </button>
-</nav>
+  <div class="hero-scrim" aria-hidden="true"></div>
+  <div class="hero-inner">
+    <p class="kicker rise">A memoir</p>
+    <h1 class="rise d1">The God<br><span class="thin">I Thought I Knew</span></h1>
+    <p class="hero-sub rise d2">Four generations. Four countries.<br>One God who kept showing up.</p>
+    <div class="hero-cta rise d3">
+      <button class="btn js-buy" type="button">Get the Book <span class="price">$12.95</span></button>
+      <a class="ghost" href="#story">Begin the story</a>
+    </div>
+  </div>
+  <div class="scrollcue" aria-hidden="true"><span></span></div>
+</section>
 
-<!-- Contents drawer -->
-<div id="scrim" hidden></div>
-<aside id="contents" hidden aria-label="Table of contents">
-  <div class="drawer-head">
-    <div>
-      <div class="drawer-title">Contents</div>
-      <div class="drawer-sub">The God I Thought I Knew</div>
-    </div>
-    <button id="btn-close-contents" class="iconbtn" aria-label="Close contents">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
-    </button>
-  </div>
-  <ol id="toc"></ol>
-</aside>
+<!-- 02 — the hook -->
+<section id="story" class="hook">
+  <p class="lede reveal">
+    His grandfather carried a gun. His father built a church that seated seven hundred.
+    His mother walked out of a convent with a hidden Bible, and a name pressed between its
+    pages that would wait sixteen years to be given.
+  </p>
+  <p class="lede-strong reveal">
+    Moses Campisi grew up inside all of it. He still had to come to the end of the God he thought he knew.
+  </p>
+</section>
 
-<!-- Type settings -->
-<div id="typepanel" hidden>
-  <div class="row">
-    <span class="row-label">Text size</span>
-    <div class="stepper">
-      <button id="btn-smaller" aria-label="Smaller text"><span class="s">A</span></button>
-      <span id="sizeval">100%</span>
-      <button id="btn-bigger" aria-label="Larger text"><span class="l">A</span></button>
+<!-- 03 — a life begins -->
+<section class="plate">
+  <figure class="plate-fig reveal">
+    <img src="media/calabria_field.webp" alt="The members and family of Domenico Campisi's home church in Calabria" loading="lazy" decoding="async" width="1400" height="750">
+    <figcaption>Calabria. My grandfather Domenico&rsquo;s home church.</figcaption>
+  </figure>
+  <blockquote class="pull reveal">
+    <p>My mother nearly did not live to be my mother.</p>
+    <cite>Chapter One</cite>
+  </blockquote>
+</section>
+
+<!-- 04 — the journey -->
+<section class="journey">
+  <div class="beat reveal">
+    <figure>
+      <img src="media/french_congregation.webp" alt="The Italian congregation gathered at the Belgian church" loading="lazy" decoding="async" width="1400" height="465">
+      <figcaption>Belgium. A borrowed building, and the Italian meetings begin.</figcaption>
+    </figure>
+    <p>A kilometre of dark, a roof of rock, and the weight of the whole world pressing down on it. That is what the family came to. It is not what they stayed in.</p>
+  </div>
+
+  <div class="beat beat-alt reveal">
+    <figure>
+      <img src="media/bus_dedication.webp" alt="The inauguration of the church bus, 20 February 1966" loading="lazy" decoding="async" width="1400" height="992">
+      <figcaption>20 February 1966. The church bus is dedicated.</figcaption>
+    </figure>
+    <p>A believer came to my father with something on his heart. He felt God had asked him to buy the Italian church a bus.</p>
+  </div>
+
+  <div class="beat reveal">
+    <figure>
+      <img src="media/openair_market.webp" alt="An open-air meeting in the town square" loading="lazy" decoding="async" width="1400" height="964">
+      <figcaption>The town square, on market day.</figcaption>
+    </figure>
+    <p>They would park the bus among the stalls and draw the power straight from the battery, and the music and the crowd would draw people in off the market to hear the gospel.</p>
+  </div>
+
+  <div class="beat beat-alt reveal">
+    <figure>
+      <img src="media/ribbon_cutting.webp" alt="The opening of the new church, ribbon cutting" loading="lazy" decoding="async" width="1400" height="1375">
+      <figcaption>The opening of the new church.</figcaption>
+    </figure>
+    <p>My mother and father stood together and cut the ribbon, and I looked up at my mother&rsquo;s face and saw it streaming with tears, and I did not understand why a person would cry at the happiest moment imaginable.</p>
+  </div>
+
+  <div class="beat reveal">
+    <figure>
+      <img src="media/choir.webp" alt="The choir singing in the new church" loading="lazy" decoding="async" width="1400" height="915">
+      <figcaption>The choir, singing &ldquo;A Pentecoste&rdquo;.</figcaption>
+    </figure>
+    <p>The band kept playing, the choir kept singing, the children kept bouncing. Those were the hours of my childhood I wished would never end.</p>
+  </div>
+</section>
+
+<!-- 05 — the turn -->
+<section class="turn">
+  <blockquote class="reveal">
+    <p>The last day I had my daughter began like any other.</p>
+    <cite>Part Three &middot; That Friday</cite>
+  </blockquote>
+</section>
+
+<!-- 06 — moses -->
+<section id="moses" class="moses">
+  <div class="moses-grid">
+    <figure class="moses-portrait reveal">
+      <img src="media/author.webp" alt="Moses Campisi" loading="lazy" decoding="async" width="408" height="612">
+    </figure>
+    <div class="moses-copy reveal">
+      <p class="eyebrow">The man who wrote it</p>
+      <h2>Moses Campisi</h2>
+      <p>Born in Belgium in 1963, the son of an Italian pastor, and a Gold Coast man for most of his life since. He is a husband to Dina, a father, and a grandfather five times over.</p>
+      <p>He began this book many years ago and kept adding to it, never quite able to call it finished. It took his son telling him it was time to lay down the pen.</p>
+      <p class="quiet">&ldquo;I did not want any of it to be lost.&rdquo;</p>
     </div>
   </div>
-  <div class="row">
-    <span class="row-label">Page</span>
-    <div class="themes" role="radiogroup" aria-label="Page theme">
-      <button class="sw sw-day"   data-theme="day"   role="radio" aria-label="Day"><span>Day</span></button>
-      <button class="sw sw-sepia" data-theme="sepia" role="radio" aria-label="Sepia"><span>Sepia</span></button>
-      <button class="sw sw-night" data-theme="night" role="radio" aria-label="Night"><span>Night</span></button>
+</section>
+
+<!-- 07 — the book -->
+<section id="book" class="reveal-section">
+  <div class="book-grid">
+    <div class="book-object reveal">
+      <div class="book3d">
+        <div class="book-face">
+          <div class="bc-art" aria-hidden="true"></div>
+          <div class="bc-type">
+            <span class="bc-the">The</span>
+            <span class="bc-god">God</span>
+            <span class="bc-rest">I Thought<br>I Knew</span>
+            <span class="bc-div"></span>
+            <span class="bc-sub">A journey from religion<br>to real relationship</span>
+          </div>
+          <span class="bc-author">Moses Campisi</span>
+        </div>
+        <div class="book-spine" aria-hidden="true"></div>
+        <div class="book-edge" aria-hidden="true"></div>
+      </div>
     </div>
+    <div class="book-copy reveal">
+      <p class="eyebrow">The book</p>
+      <h2>The God I Thought I Knew</h2>
+      <p class="book-lede">Some men inherit land.</p>
+      <p>Moses Campisi inherited a faith, carried across four generations and four countries, from a hillside church in Calabria, through the coal mines of Belgium, to the Gold Coast of Australia and the mountains of Sicily.</p>
+      <p>It is the story of the God who kept showing up. It is also the story of a harder discovery: that a man can grow up inside the church, know all the words, carry the name, and still have to come to the end of the God he thought he knew, before he could meet the God who was really there.</p>
+      <ul class="specs">
+        <li>29 chapters, three parts</li>
+        <li>Family photographs from Calabria, Belgium and Australia</li>
+        <li>Read on any phone, tablet or computer</li>
+      </ul>
+      <div class="buybar">
+        <button class="btn btn-lg js-buy" type="button">Get the Book <span class="price">$12.95</span></button>
+        <p class="reassure">Secure checkout. Yours to keep.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 08 — why it matters -->
+<section class="closing">
+  <p class="closing-line reveal">He wrote this story, not with ink, but with real people and real events across four generations.</p>
+  <p class="closing-attr reveal">I only took a pen and wrote down on paper what He has done.</p>
+</section>
+
+<!-- 09 — final cta -->
+<section class="final">
+  <div class="final-inner reveal">
+    <h2>Read it while the people in it are still here to ask about it.</h2>
+    <button class="btn btn-lg js-buy" type="button">Get the Book <span class="price">$12.95</span></button>
+  </div>
+</section>
+
+<footer>
+  <p>&copy; <span id="year">2026</span> Moses Campisi. All rights reserved.</p>
+  <p class="footer-sub">The God I Thought I Knew &middot; A memoir</p>
+</footer>
+
+<!-- checkout placeholder -->
+<div id="checkout" class="modal" hidden>
+  <div class="modal-scrim" data-close></div>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="checkout-title">
+    <button class="modal-x" type="button" data-close aria-label="Close">&times;</button>
+    <p class="eyebrow">The God I Thought I Knew</p>
+    <h3 id="checkout-title">Secure checkout is being connected</h3>
+    <p>Payment for the book is being set up now. Leave your email and you will get the link the moment it opens.</p>
+    <form id="notify" novalidate>
+      <label class="sr-only" for="email">Email address</label>
+      <input id="email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" required>
+      <button class="btn" type="submit">Notify me</button>
+    </form>
+    <p class="modal-note" id="notify-note">$12.95 &middot; one-off payment</p>
   </div>
 </div>
 
-<!-- Resume toast -->
-<div id="resume" hidden>
-  <span id="resume-text"></span>
-  <button id="resume-go">Continue</button>
-  <button id="resume-dismiss" aria-label="Dismiss">&times;</button>
-</div>
-
-<!-- Boot / pagination screen -->
-<div id="boot">
-  <div class="boot-inner">
-    <div class="boot-rule"></div>
-    <h1 class="boot-title">The God<br>I Thought I Knew</h1>
-    <div class="boot-author">Moses Campisi</div>
-    <div class="boot-rule"></div>
-    <div class="boot-bar"><div id="boot-fill"></div></div>
-    <div class="boot-note" id="boot-note">Setting the type&hellip;</div>
-  </div>
-</div>
-
-<div id="measure" aria-hidden="true"></div>
-<div id="toast" hidden></div>
-
-<script src="vendor/page-flip.browser.js"></script>
-<script src="assets/reader.js"></script>
+<div class="grain" aria-hidden="true"></div>
+<script src="site/site.js"></script>
 </body>
 </html>

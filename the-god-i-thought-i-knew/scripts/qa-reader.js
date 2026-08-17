@@ -58,7 +58,7 @@ const VIEWPORTS = [
     page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
     page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
 
-    await page.goto(`http://localhost:${PORT}/`, { waitUntil: 'load' });
+    await page.goto(`http://localhost:${PORT}/read/`, { waitUntil: 'load' });
     await page.waitForFunction('window.__pageCount > 0', { timeout: 60000 });
 
     const stats = await page.evaluate(() => ({

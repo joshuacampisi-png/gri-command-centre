@@ -439,7 +439,7 @@
       '<div class="bc-rule"></div>' +
       '<div class="about">' +
       '<div><h4>About the author</h4><p>Moses Campisi was born in Belgium in 1963, the son of an Italian pastor, and has spent his life on the Gold Coast of Australia. This is his story, and the story of the family whose faith he carries, written for his children and for the children who will come after them.</p></div>' +
-      '<div class="portrait"><img src="images/author.webp" alt="Moses Campisi"><span>Moses Campisi</span></div>' +
+      '<div class="portrait"><img src="../media/author.webp" alt="Moses Campisi"><span>Moses Campisi</span></div>' +
       '</div>' +
       '<div class="tagline">Faith. Questions. Truth. Grace.<b>A God worth knowing.</b></div>' +
       '</div></div>'
@@ -799,7 +799,7 @@
     $('#sizeval').textContent = Math.round(SCALES[state.scaleIdx] * 100) + '%';
 
     $('#boot-note').textContent = 'Fetching the manuscript…';
-    var res = await fetch('content/book.json');
+    var res = await fetch('../content/book.json');
     state.book = await res.json();
 
     if (document.fonts && document.fonts.ready) {

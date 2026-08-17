@@ -187,7 +187,7 @@ function attachPlates(blocks) {
     if (blocks[at] && blocks[at].t === 'scene') at++;
     blocks.splice(at, 0, {
       t: 'plate',
-      src: `images/${plate.file}.webp`,
+      src: `../media/${plate.file}.webp`,
       caption: plate.caption,
       w: dim.width,
       h: dim.height,

@@ -14,7 +14,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
-const IMG = path.join(ROOT, 'public', 'images');
+const IMG = path.join(ROOT, 'public', 'media');
 const SRC = path.join(ROOT, 'scripts', 'source-images');
 
 const PHOTOS = [
