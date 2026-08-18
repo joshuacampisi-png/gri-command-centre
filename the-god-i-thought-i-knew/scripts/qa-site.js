@@ -22,8 +22,11 @@ const MIME = {
 function serve(root) {
   return http.createServer((req, res) => {
     let p = decodeURIComponent(req.url.split('?')[0]);
-    if (p === '/') p = '/index.html';
-    const file = path.join(root, p);
+    let file = path.join(root, p);
+    // Serve a directory's index.html, the way a real static host does.
+    if (p.endsWith('/') || (fs.existsSync(file) && fs.statSync(file).isDirectory())) {
+      file = path.join(file, 'index.html');
+    }
     if (!file.startsWith(root) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) {
       res.writeHead(404); return res.end('not found');
     }
