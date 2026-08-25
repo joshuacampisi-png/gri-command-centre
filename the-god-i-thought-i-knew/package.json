@@ -5,7 +5,8 @@
   "scripts": {
     "build": "node scripts/build-assets.js && node scripts/build-content.js",
     "preview": "node scripts/build-content.js && node scripts/build-preview.js && node scripts/build-preview-reader.js && node scripts/build-manuscript-view.js",
-    "qa": "node scripts/qa-reader.js && node scripts/qa-site.js"
+    "qa": "node scripts/qa-reader.js && node scripts/qa-site.js && node scripts/qa-editor.js",
+    "editor": "node scripts/build-editor.js"
   },
   "keywords": [],
   "author": "",
