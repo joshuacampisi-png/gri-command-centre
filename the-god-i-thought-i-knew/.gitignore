@@ -1,5 +1,6 @@
 node_modules/
 .qa/
 
-# standalone preview bundles (regenerate with npm run preview)
-*.html
+# standalone preview bundles at the project root (regenerate with npm run preview).
+# Scoped to the root so pages under public/ are never silently ignored.
+/*.html
