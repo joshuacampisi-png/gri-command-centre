@@ -31,9 +31,9 @@ Growing fastest. These carry the new catalogue. Deepest stock, produce first.
 3. Pentadeca Arginate (PDA) 10mg — NEW
 4. Wolverine+ 30mg (BPC-157 + TB-500) — NEW
 5. Wolverine+ 40mg (BPC-157 + TB-500) — NEW
-6. KPV 10mg
+6. KPV 10mg — NEW
 7. KPV 20mg — NEW
-8. HGH 24iu
+8. HGH 24iu — NEW
 9. HGH 36iu — NEW
 
 TIER 2 — STRONG DEMAND
@@ -68,7 +68,7 @@ Trial quantities only. Do not overstock — we will reorder if they move.
 28. GHRP-2 10mg — NEW
 29. GHRP-6 10mg — NEW
 30. Snap-8 10mg — NEW
-31. TB-500 10mg standalone
+31. TB-500 10mg standalone — REINTRODUCTION, previously discontinued
 
 ---
 
@@ -130,7 +130,14 @@ Open items to confirm before sending:
 - GHRP-2 and GHRP-6 had no strength specified. 10mg assumed as the standard vial.
 - Wolverine+ 30mg and 40mg are new strengths of the same BPC-157 + TB-500 blend.
   If the ratio changes at higher strengths, specify it before sending.
-- KPV 10mg, KLOW 80mg, HGH 24iu and Retatrutide are reorders, not NEW — they are
-  already in the catalogue and priced.
+- NEW is set against the P&L stocktake (actual purchased stock), not the price list.
+  KPV and HGH appear on the white price list but were never ordered — the price list
+  was built forward-looking and the catalogue page has KPV as enquiry-only. Both are
+  genuinely NEW and need pricing and MOQ.
+- Genuine reorders, already stocked and priced: Retatrutide RT10/RT20/RT30, KLOW 80mg,
+  GLOW 70mg, GHK-Cu 100mg, BPC-157 10mg, Wolverine+ 20mg, Tesamorelin 20mg,
+  CJC-1295 DAC 5mg, NAD+ 500mg, MOTS-C 10mg, SS-31 10mg.
+- TB-500 standalone was stocked previously then discontinued, so it is a
+  reintroduction rather than a new line — the manufacturer has run it for us before.
 - Price lists and the catalogue page in this repo are still branded NovaPeptides /
   NovaPeptidesAustralia.com. They need a rebrand pass to Valar Peptides.
