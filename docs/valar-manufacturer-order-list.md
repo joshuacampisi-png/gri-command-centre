@@ -1,6 +1,6 @@
 # Valar Peptides — New Catalogue Manufacturing Brief
 
-Prepared 2026-08-28. Ranked 1-35 in order of importance.
+Prepared 2026-08-28. Every line ranked 1-56 in one list. Nothing sits outside it.
 NEW = first-time order, pricing and MOQ required.
 
 Ranking basis: internal Peptide Demand 2026 market brief (2026-08-27), cross-checked
@@ -8,7 +8,7 @@ against the repo catalogue and P&L stocktake. See provenance notes at the bottom
 
 ---
 
-## Copy-paste message — tiers only
+## Copy-paste message — the ranked tier list
 
 Valar Peptides — full catalogue order, ranked in order of importance.
 Work down the list in this exact sequence. Items marked NEW are first-time orders.
@@ -27,50 +27,68 @@ Fastest-growing lines. Increase volume against our last order. Produce these fir
  9. KPV 10mg — NEW
 10. KPV 20mg — NEW
 11. MOTS-C 10mg
-12. Semax 10mg — NEW
+12. Cagrilintide 10mg — NEW
+13. Semax 10mg — NEW
 
 TIER 2 — STRONG DEMAND
 Proven, consistent high sellers. Keep deep stock. These must never run dry.
 
-13. BPC-157 10mg
-14. Semaglutide 10mg — NEW
-15. Semaglutide 5mg — NEW
-16. Wolverine 20mg (BPC-157 + TB-500)
-17. GLOW 70mg (GHK-Cu + BPC-157 + TB-500)
-18. TB-500 10mg standalone
-19. Selank 10mg — NEW
-20. Semax + Selank blend 10mg — NEW
-21. Semax + Selank blend 20mg — NEW
-22. CJC-1295 DAC 5mg
+14. BPC-157 10mg
+15. Semaglutide 10mg — NEW
+16. Semaglutide 5mg — NEW
+17. Wolverine 20mg (BPC-157 + TB-500)
+18. GLOW 70mg (GHK-Cu + BPC-157 + TB-500)
+19. TB-500 10mg standalone
+20. CJC-1295 DAC 5mg
+21. Ipamorelin 10mg — NEW
+22. Selank 10mg — NEW
+23. Semax + Selank blend 10mg — NEW
+24. Semax + Selank blend 20mg — NEW
 
 TIER 3 — MEDIUM DEMAND
 Steady sellers and range extensions. Moderate quantities.
 
-23. Tesamorelin 20mg
-24. NAD+ 500mg
-25. Thymosin Alpha-1 10mg — NEW
-26. HGH 24iu — NEW
-27. HGH 36iu — NEW
-28. Wolverine 30mg (BPC-157 + TB-500) — NEW
-29. Wolverine 40mg (BPC-157 + TB-500) — NEW
+25. Tesamorelin 20mg
+26. NAD+ 500mg
+27. Thymosin Alpha-1 10mg — NEW
+28. HGH 24iu — NEW
+29. HGH 36iu — NEW
+30. Melanotan II 10mg — NEW
+31. PT-141 10mg — REINTRODUCTION, previously discontinued
+32. MK-677 25mg (oral) — NEW
+33. Wolverine 30mg (BPC-157 + TB-500) — NEW
+34. Wolverine 40mg (BPC-157 + TB-500) — NEW
 
 TIER 4 — ESSENTIALS
-Standing order, ships with every shipment. Not optional — an order that arrives
-without these is unsellable. Quantities matched to the peptide volume shipped.
+Standing order. These ship with every shipment regardless of what else is on it,
+in quantities matched to the peptide volume. An order without them is unsellable.
 
-- Bacteriostatic water 3ml
-- B12 10mg — NEW
-- Kit parts: reusable pen, 3ml glass cartridge, 5x needle heads, syringe, carry case
+35. Bacteriostatic water 3ml
+36. B12 10mg — NEW
+37. Reusable dosing pen
+38. 3ml glass cartridge
+39. Needle heads (5 per kit)
+40. Syringe
+41. Carry case
 
 TIER 5 — LOW DEMAND
 Trial quantities only. Do not overstock — we will reorder if they move.
 
-30. Pentadeca Arginate (PDA) 10mg — NEW
-31. DSIP 10mg — NEW
-32. Kisspeptin-10 10mg — NEW
-33. GHRP-2 10mg — NEW
-34. GHRP-6 10mg — NEW
-35. Snap-8 10mg — NEW
+42. Pentadeca Arginate (PDA) 10mg — NEW
+43. Sermorelin 5mg — NEW
+44. Epitalon 10mg — NEW
+45. DSIP 10mg — NEW
+46. Kisspeptin-10 10mg — NEW
+47. GHRP-2 10mg — NEW
+48. GHRP-6 10mg — NEW
+49. Hexarelin 10mg — NEW
+50. IGF-1 LR3 1mg — NEW
+51. AOD-9604 5mg — NEW
+52. LL-37 5mg — NEW
+53. Gonadorelin 10mg — NEW
+54. 5-Amino-1MQ 50mg (oral) — NEW
+55. Follistatin 1mg — NEW
+56. Snap-8 10mg — NEW
 
 ---
 
@@ -162,7 +180,32 @@ Other moves:
   manufacturer actually runs before ordering. Two strengths each deliberately, to
   cap first-order risk on two untested products.
 
-### Still on a separate quote — worth asking for even though the message is tiers only
+### Everything is now ranked in one list — nothing sits outside it
+
+Previously-parked lines folded into the ranks:
+- Cagrilintide -> 12 (Tier 1). #14 and rising steadily, Retatrutide's default
+  companion with a forming "RetaCagri" blend culture. It attaches onto our own
+  number 1, which is why it sits in Tier 1 rather than mid-list.
+- Ipamorelin -> 21 (Tier 2), placed directly after CJC-1295 DAC. The two form the
+  default beginner stack and are never discussed separately, so they should be
+  ordered and stocked as a pair.
+- Melanotan II -> 30, PT-141 -> 31, MK-677 -> 32 (all Tier 3). Top-20 and stable.
+  PT-141 was previously stocked and discontinued, so it is a reintroduction.
+- Essentials -> 35-41, now numbered. Numbering them technically places them after
+  Tier 3 under a strict work-down instruction, so the tier header states explicitly
+  that they ship with every shipment regardless of position.
+
+Enquiry-only lines from the catalogue page, previously never ordered, now ranked in
+Tier 5 at trial quantities: Sermorelin 43, Epitalon 44, Hexarelin 49, IGF-1 LR3 50,
+AOD-9604 51, LL-37 52, Gonadorelin 53, 5-Amino-1MQ 54, Follistatin 55. None appear in
+the brief's top 20, up-and-coming tier or watchlist. Epitalon has a PCAC tailwind but
+the thinnest chatter in the top tier; 5-Amino-1MQ is vendor-listed with thin organic
+demand. Trial only, and safe to delete if the range is too wide for a first order.
+
+Strengths for all of the above are standard vial sizes, not Valar decisions — confirm
+against what the manufacturer runs.
+
+### Original separate-quote rationale, retained
 
 - Cagrilintide (#14). Retatrutide's default companion with 10 months of sustained
   growth and a forming "RetaCagri" blend culture. This is the attachment sell onto our
