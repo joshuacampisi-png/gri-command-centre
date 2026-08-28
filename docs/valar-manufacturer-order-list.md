@@ -106,7 +106,31 @@ Valar Peptides
 
 ## Notes (internal — do not send)
 
-Ranking logic, so it can be defended or changed:
+### Provenance of the ranking — read before trusting it
+
+The 1-31 ranking is NOT derived from sales data. It comes from the repo catalogue
+and stocktake plus general market knowledge, sanity-checked against web search in
+August 2026. Treat it as a starting proposal, not evidence.
+
+The authoritative source is `nova-sales.json` on the Railway volume — the line-item
+sales log written by `server/lib/nova-sales-store.js`, which holds product, qty,
+price, cost and margin per order. Rank on units sold and margin contribution from
+that file before committing to a large order.
+
+Open challenges to the current ranking, from the August 2026 search pass:
+- BPC-157 is the highest-demand research peptide by search volume, well ahead of
+  the rest of the recovery category. It currently sits at 13, likely too low.
+- PDA shares the identical 15-amino-acid sequence as BPC-157, differing only in
+  salt counterion (arginine vs acetate), and has no peer-reviewed study as a
+  distinct molecule. At rank 3 it outranks the BPC-157 it substitutes for, so it
+  may cannibalise an existing seller rather than add demand.
+- Tirzepatide and semaglutide are the highest-demand peptides overall and are on
+  the catalogue page as enquiry-only. Neither is on this order. Decide deliberately
+  whether that is a gap or a considered exclusion.
+- Search volume is category demand, not Valar demand, and several sources are
+  vendor SEO pages with a commercial interest. Weak evidence, use accordingly.
+
+### Original ranking logic, so it can be defended or changed:
 
 - Retatrutide is the revenue pillar. RT20 leads Tier 1 as the mid-dose most buyers
   land on; RT30 and RT10 sit in Tier 2 because they are proven but flank the middle.
