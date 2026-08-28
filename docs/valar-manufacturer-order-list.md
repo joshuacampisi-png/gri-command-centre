@@ -24,6 +24,7 @@ RISING DEMAND — increase volume, growing fastest
 - KPV 20mg — NEW
 - Wolverine+ 30mg (BPC-157 + TB-500) — NEW
 - Wolverine+ 40mg (BPC-157 + TB-500) — NEW
+- Pentadeca Arginate (PDA) 10mg — NEW
 - HGH 24iu
 - HGH 36iu — NEW
 - KLOW 80mg
@@ -53,6 +54,7 @@ MEDIUM DEMAND — steady, moderate quantities
 - Semax + Selank blend 10mg — NEW
 - Semax + Selank blend 20mg — NEW
 - DSIP 10mg — NEW
+- Thymosin Alpha-1 10mg — NEW
 
 ---
 
@@ -96,6 +98,13 @@ Valar Peptides
   same BPC-157 + TB-500 blend.
 - GHRP-2 and GHRP-6 had no strength specified. 10mg assumed as it is the standard
   vial size — confirm before sending.
+- Pentadeca Arginate (PDA) is placed in Rising Demand: it is the stable BPC-157
+  analogue and the fastest-growing line in the recovery category, with a direct
+  upgrade path from BPC-157 and Wolverine+, both of which already sell well.
+- Thymosin Alpha-1 was already on the catalogue page as an enquiry-only ("ask")
+  item, so there is proven enquiry demand without proven sales. Medium tier until
+  it converts. Vial size assumed 10mg to match the range — 5mg is also standard,
+  confirm before sending.
 - Snap-8 is a cosmetic/topical peptide and sits outside the current injectable range.
   Trial quantity only until it proves out.
 - Brand on the existing price lists is still NovaPeptides / NovaPeptidesAustralia.com.
