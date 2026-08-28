@@ -1,28 +1,17 @@
 # Valar Peptides — New Catalogue Manufacturing Brief
 
-Prepared 2026-08-28. Full range for the new Valar Peptides catalogue, ranked 1-31 in
-order of importance. NEW = first-time order, pricing and MOQ required.
+Prepared 2026-08-28. Ranked 1-35 in order of importance.
+NEW = first-time order, pricing and MOQ required.
 
-Ranking basis: internal Peptide Demand 2026 market brief (prepared 2026-08-27,
-Reddit-first community research plus wholesale vendor lane and adversarial
-verification pass), cross-checked against the repo catalogue and P&L stocktake.
-See provenance notes at the bottom.
+Ranking basis: internal Peptide Demand 2026 market brief (2026-08-27), cross-checked
+against the repo catalogue and P&L stocktake. See provenance notes at the bottom.
 
 ---
 
-## Copy-paste message
+## Copy-paste message — tiers only
 
-Hi team,
-
-We are building out the new Valar Peptides catalogue (valarpeptides.com, Australia)
-and this is the full range we need from you.
-
-The list is ranked 1 to 31 in order of importance to us. Number 1 matters most. If
-you cannot produce or ship the whole order at once, work down the list in this exact
-sequence — do not substitute or reorder. Items marked NEW are first-time orders and
-we need pricing and MOQ on each.
-
----
+Valar Peptides — full catalogue order, ranked in order of importance.
+Work down the list in this exact sequence. Items marked NEW are first-time orders.
 
 TIER 1 — RISING DEMAND
 Fastest-growing lines. Increase volume against our last order. Produce these first.
@@ -30,96 +19,58 @@ Fastest-growing lines. Increase volume against our last order. Produce these fir
  1. Retatrutide 20mg (RT20)
  2. Retatrutide 30mg (RT30)
  3. Retatrutide 10mg (RT10)
- 4. KLOW 80mg (GHK-Cu + BPC-157 + TB-500 + KPV)
- 5. GHK-Cu 100mg
- 6. SS-31 10mg
- 7. KPV 10mg — NEW
- 8. KPV 20mg — NEW
- 9. MOTS-C 10mg
-10. Semax 10mg — NEW
+ 4. Tirzepatide 30mg — NEW
+ 5. Tirzepatide 60mg — NEW
+ 6. KLOW 80mg (GHK-Cu + BPC-157 + TB-500 + KPV)
+ 7. GHK-Cu 100mg
+ 8. SS-31 10mg
+ 9. KPV 10mg — NEW
+10. KPV 20mg — NEW
+11. MOTS-C 10mg
+12. Semax 10mg — NEW
 
 TIER 2 — STRONG DEMAND
 Proven, consistent high sellers. Keep deep stock. These must never run dry.
 
-11. BPC-157 10mg
-12. Wolverine 20mg (BPC-157 + TB-500)
-13. GLOW 70mg (GHK-Cu + BPC-157 + TB-500)
-14. TB-500 10mg standalone — REINTRODUCTION, previously discontinued
-15. Selank 10mg — NEW
-16. Semax + Selank blend 10mg — NEW
-17. Semax + Selank blend 20mg — NEW
-18. CJC-1295 DAC 5mg
+13. BPC-157 10mg
+14. Semaglutide 10mg — NEW
+15. Semaglutide 5mg — NEW
+16. Wolverine 20mg (BPC-157 + TB-500)
+17. GLOW 70mg (GHK-Cu + BPC-157 + TB-500)
+18. TB-500 10mg standalone
+19. Selank 10mg — NEW
+20. Semax + Selank blend 10mg — NEW
+21. Semax + Selank blend 20mg — NEW
+22. CJC-1295 DAC 5mg
 
 TIER 3 — MEDIUM DEMAND
 Steady sellers and range extensions. Moderate quantities.
 
-19. Tesamorelin 20mg
-20. NAD+ 500mg
-21. Thymosin Alpha-1 10mg — NEW
-22. HGH 24iu — NEW
-23. HGH 36iu — NEW
-24. Wolverine 30mg (BPC-157 + TB-500) — NEW
-25. Wolverine 40mg (BPC-157 + TB-500) — NEW
+23. Tesamorelin 20mg
+24. NAD+ 500mg
+25. Thymosin Alpha-1 10mg — NEW
+26. HGH 24iu — NEW
+27. HGH 36iu — NEW
+28. Wolverine 30mg (BPC-157 + TB-500) — NEW
+29. Wolverine 40mg (BPC-157 + TB-500) — NEW
 
-TIER 4 — LOW DEMAND
-Trial quantities only. Do not overstock — we will reorder if they move.
-
-26. Pentadeca Arginate (PDA) 10mg — NEW
-27. DSIP 10mg — NEW
-28. Kisspeptin-10 10mg — NEW
-29. GHRP-2 10mg — NEW
-30. GHRP-6 10mg — NEW
-31. Snap-8 10mg — NEW
-
----
-
-ESSENTIALS — standing order, ships with every shipment
-
-Not ranked, because they are not optional. Every shipment must include these in
-quantities matched to the peptide volume in that shipment. An order that arrives
-without them is unsellable.
+TIER 4 — ESSENTIALS
+Standing order, ships with every shipment. Not optional — an order that arrives
+without these is unsellable. Quantities matched to the peptide volume shipped.
 
 - Bacteriostatic water 3ml
 - B12 10mg — NEW
-- Reusable dosing pen
-- 3ml glass cartridge
-- Needle heads (5 per kit)
-- Syringe
-- Carry case
+- Kit parts: reusable pen, 3ml glass cartridge, 5x needle heads, syringe, carry case
 
----
+TIER 5 — LOW DEMAND
+Trial quantities only. Do not overstock — we will reorder if they move.
 
-SEPARATE QUOTE — not on the ranked list, we are deciding whether to add these
-
-Please price these as well. We are evaluating them for the catalogue and need
-numbers before we commit.
-
-- Tirzepatide, all available strengths
-- Semaglutide, all available strengths
-- Cagrilintide, all available strengths
-- Ipamorelin 5mg / 10mg
-- PT-141 10mg
-- Melanotan II 10mg
-- MK-677 (oral)
-
----
-
-Please come back with:
-
-1. Unit price for every line above, plus volume price breaks.
-2. MOQ on every item marked NEW and on the separate quote list.
-3. Lead time per tier. We need Tier 1 and the Essentials first — confirm what you
-   can have ready soonest.
-4. COA for every batch, sent before dispatch. Batch-level COAs are non-negotiable
-   for us and we will be sharing them with customers.
-5. For GHK-Cu specifically, confirm injectable-grade material with COA. We will not
-   accept repackaged cosmetic-grade.
-6. Flag anything you cannot produce, so we can source it elsewhere rather than hold
-   up the catalogue launch.
-
-Thanks,
-Josh
-Valar Peptides
+30. Pentadeca Arginate (PDA) 10mg — NEW
+31. DSIP 10mg — NEW
+32. Kisspeptin-10 10mg — NEW
+33. GHRP-2 10mg — NEW
+34. GHRP-6 10mg — NEW
+35. Snap-8 10mg — NEW
 
 ---
 
@@ -191,12 +142,28 @@ Other moves:
   tier and the watchlist entirely. Kisspeptin-10 is watchlist-only (one strong
   technical thread), so 28 is right.
 
-### Adds the brief argues for, now on the separate quote list
+### GLP-1 additions — now ranked, not quoted separately
 
-- Tirzepatide (#2) and Semaglutide (#3). The growth driver is regulatory: the FDA has
-  closed both legal mass-compounding pathways, and displaced telehealth demand is
-  flowing into exactly the research-peptide channel we sell into. Caveat: that is a US
-  mechanism and we are AU.
+- Tirzepatide ranked 4-5, top of Tier 1 behind our own Retatrutide ladder. It is #2
+  retail and #1 WHOLESALE in the brief, the largest raw volume in the market, rising.
+- Semaglutide ranked 14-15, top of Tier 2. It is #3 overall but the only GLP-1 the
+  brief marks stable/plateauing, and much of its demand is still served by legitimate
+  channels — the slice relevant to us is the displaced post-compounding demand, which
+  is smaller than the headline number though highly motivated. Strong, not rising.
+- BPC-157 held at 13, above Semaglutide, because the brief flags it as undercounted
+  everywhere: it is also inside KLOW, GLOW and Wolverine, so true unit volume exceeds
+  any mention count.
+- The growth driver for both is regulatory: the FDA has closed both legal
+  mass-compounding pathways and displaced telehealth demand is flowing into exactly
+  the research-peptide channel we sell into. Caveat: that is a US mechanism and we
+  are AU.
+- STRENGTHS ARE ASSUMED. Tirzepatide 30mg/60mg and Semaglutide 5mg/10mg are the
+  common grey-market vial sizes, not a Valar decision. Confirm against what the
+  manufacturer actually runs before ordering. Two strengths each deliberately, to
+  cap first-order risk on two untested products.
+
+### Still on a separate quote — worth asking for even though the message is tiers only
+
 - Cagrilintide (#14). Retatrutide's default companion with 10 months of sustained
   growth and a forming "RetaCagri" blend culture. This is the attachment sell onto our
   own number 1 — the single highest-leverage add on the list.
