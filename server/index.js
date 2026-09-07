@@ -215,6 +215,7 @@ if (DASHBOARD_PASSWORD && DASHBOARD_PASSWORD !== 'changeme') {
     '/manifest.json',
     '/novapeptides', '/nova-profit-loss', '/Nova-Profit-Loss',  // NovaPeptides P&L dashboard (public)
     '/nova', '/catalogue',  // NovaPeptides customer catalogue (public)
+    '/prices', '/price-list',  // NovaPeptides customer price list page (public)
     '/nova-sales',  // Sales-log PAGE shell is public; its data API (/api/nova-*) stays gated below
     '/api/shopify/shipping-costs-diag',
     // ── Static bundle + PWA assets needed by /checkout and /sign HTML shells ──
@@ -749,6 +750,11 @@ app.get(['/Nova-Profit-Loss', '/nova-profit-loss', '/novapeptides'], (_req, res)
 app.get(['/nova', '/catalogue'], (_req, res) => {
   res.setHeader('Cache-Control', 'no-store')
   res.sendFile(join(__dirname, '..', 'docs', 'nova.html'))
+})
+// NovaPeptides customer price list — PUBLIC page
+app.get(['/prices', '/price-list'], (_req, res) => {
+  res.setHeader('Cache-Control', 'no-store')
+  res.sendFile(join(__dirname, '..', 'pricing', 'price-list-white.html'))
 })
 app.get('/novapeptides-stocktake.csv', (_req, res) => {
   res.sendFile(join(__dirname, '..', 'docs', 'novapeptides-stocktake.csv'))

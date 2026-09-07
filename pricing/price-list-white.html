@@ -9,7 +9,6 @@
   body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#dfe6f4;color:var(--ink)}
   .sheet{width:1000px;margin:0 auto;background:#fff}
 
-  /* header */
   header{padding:40px 54px 26px;text-align:center;border-bottom:1px solid var(--line)}
   .brand{display:inline-flex;align-items:center;gap:14px}
   .mark{width:56px;height:56px}
@@ -21,38 +20,45 @@
   .pl .ln{width:46px;height:2px;background:var(--grad)}
   .pl .t{font-size:20px;font-weight:800;letter-spacing:5px;text-transform:uppercase;color:var(--ink)}
 
-  /* ship strip */
   .ship{padding:15px 20px;text-align:center;background:linear-gradient(120deg,#101a3c,#1b2c63);color:#fff}
   .ship .a{font-size:15px;font-weight:800;letter-spacing:.4px}
   .ship .a .g{background:linear-gradient(120deg,#9b8dff,#4fe0e0);-webkit-background-clip:text;background-clip:text;color:transparent}
   .ship .b{font-size:12.5px;color:#c7d2f0;margin-top:3px;font-weight:600}
 
-  /* column head */
-  .list{padding:14px 54px 6px}
-  .colh{display:flex;align-items:flex-end;padding:8px 2px 12px;border-bottom:2px solid var(--line)}
+  .list{padding:6px 54px 6px}
+  .colh{display:flex;align-items:flex-end;padding:14px 2px 12px;border-bottom:2px solid var(--line);position:sticky;top:0;background:#fff}
   .colh .sp{flex:1}
-  .colh .c{width:128px;text-align:center;font-size:13px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:var(--mist)}
+  .colh .c{width:118px;text-align:center;font-size:13px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:var(--mist)}
   .colh .c.k{color:var(--navy)}
 
-  .row{display:flex;align-items:center;gap:18px;padding:16px 2px;border-bottom:1px solid var(--line)}
+  .cat{display:flex;align-items:center;gap:14px;margin:22px 2px 2px;padding:4px 0}
+  .cat .t{font-size:13.5px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;
+    background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;white-space:nowrap}
+  .cat .ln{flex:1;height:1px;background:var(--line)}
+
+  .row{display:flex;align-items:center;gap:18px;padding:14px 2px;border-bottom:1px solid var(--line)}
   .row:last-child{border-bottom:none}
   .info{flex:1;min-width:0}
-  .nm{font-size:23px;font-weight:800;color:var(--ink);line-height:1.15}
-  .nm .mg{font-size:16px;font-weight:800;color:var(--blue);margin-left:7px}
-  .ben{font-size:13px;color:var(--mist);margin-top:5px;font-weight:600}
-  .prices{display:flex;gap:12px;flex:0 0 auto}
-  .cell{width:128px;text-align:center}
-  .cell .v{font-size:27px;font-weight:800;color:var(--ink)}
-  .cell.kit{background:var(--navy);border-radius:12px;padding:12px 0}
+  .nm{font-size:21px;font-weight:800;color:var(--ink);line-height:1.15}
+  .nm .mg{font-size:15px;font-weight:800;color:var(--blue);margin-left:7px}
+  .ben{font-size:12.5px;color:var(--mist);margin-top:4px;font-weight:600}
+  .prices{display:flex;gap:11px;flex:0 0 auto}
+  .cell{width:118px;text-align:center}
+  .cell .v{font-size:25px;font-weight:800;color:var(--ink)}
+  .cell.kit{background:var(--navy);border-radius:11px;padding:11px 0}
   .cell.kit .v{color:#fff}
-  .cell.vial{padding:12px 0}
+  .cell.vial{padding:11px 0}
+  .cell.na{padding:11px 0}
+  .cell.na .v{color:#bcc5db;font-weight:700}
 
-  .bac{display:flex;align-items:center;justify-content:space-between;margin:12px 54px 0;background:#f5f8ff;
+  .bac{display:flex;align-items:center;justify-content:space-between;margin:14px 54px 0;background:#f5f8ff;
     border:1px solid var(--line);border-radius:14px;padding:15px 22px}
   .bac .n{font-size:17px;font-weight:800} .bac .n span{font-size:12.5px;color:var(--mist);font-weight:600;margin-left:6px}
   .bac .v{font-size:20px;font-weight:800;color:var(--blue)}
 
-  footer{margin-top:20px;padding:22px 54px 34px;border-top:1px solid var(--line);text-align:center}
+  .note{margin:14px 54px 0;font-size:12px;color:var(--mist);text-align:center;font-weight:600}
+
+  footer{margin-top:20px;padding:24px 54px 34px;border-top:1px solid var(--line);text-align:center}
   .foot-badges{display:flex;justify-content:center;flex-wrap:wrap;gap:9px;margin-bottom:16px}
   .fb{font-size:12px;font-weight:800;letter-spacing:.4px;color:var(--navy);background:#eef2ff;border:1px solid #dde6fb;border-radius:999px;padding:8px 15px}
   .site{font-size:19px;font-weight:800}
@@ -82,62 +88,107 @@
     <div class="list">
       <div class="colh"><span class="sp"></span><div class="c">Vial</div><div class="c k">Full Kit</div></div>
 
+      <div class="cat"><span class="t">Weight &amp; Metabolic</span><span class="ln"></span></div>
+
       <div class="row"><div class="info"><div class="nm">Retatrutide <span class="mg">10mg &middot; RT10</span></div><div class="ben">Appetite control &middot; fat loss &middot; metabolic</div></div>
         <div class="prices"><div class="cell vial"><div class="v">$130</div></div><div class="cell kit"><div class="v">$220</div></div></div></div>
-
       <div class="row"><div class="info"><div class="nm">Retatrutide <span class="mg">20mg &middot; RT20</span></div><div class="ben">Appetite control &middot; fat loss &middot; metabolic</div></div>
         <div class="prices"><div class="cell vial"><div class="v">$200</div></div><div class="cell kit"><div class="v">$250</div></div></div></div>
-
       <div class="row"><div class="info"><div class="nm">Retatrutide <span class="mg">30mg &middot; RT30</span></div><div class="ben">Appetite control &middot; fat loss &middot; metabolic</div></div>
         <div class="prices"><div class="cell vial"><div class="v">$290</div></div><div class="cell kit"><div class="v">$330</div></div></div></div>
+      <div class="row"><div class="info"><div class="nm">Tirzepatide <span class="mg">30mg</span></div><div class="ben">Blood sugar &middot; weight loss &middot; appetite control</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$130</div></div><div class="cell kit"><div class="v">$175</div></div></div></div>
+      <div class="row"><div class="info"><div class="nm">Tirzepatide <span class="mg">40mg</span></div><div class="ben">Blood sugar &middot; weight loss &middot; appetite control</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$250</div></div><div class="cell na"><div class="v">&mdash;</div></div></div></div>
+      <div class="row"><div class="info"><div class="nm">Tirzepatide <span class="mg">50mg</span></div><div class="ben">Blood sugar &middot; weight loss &middot; appetite control</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$300</div></div><div class="cell na"><div class="v">&mdash;</div></div></div></div>
+      <div class="row"><div class="info"><div class="nm">Tirzepatide <span class="mg">60mg</span></div><div class="ben">Blood sugar &middot; weight loss &middot; appetite control</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$350</div></div><div class="cell na"><div class="v">&mdash;</div></div></div></div>
+      <div class="row"><div class="info"><div class="nm">Semaglutide <span class="mg">5mg</span></div><div class="ben">Blood sugar &middot; weight loss &middot; appetite</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$55</div></div><div class="cell na"><div class="v">&mdash;</div></div></div></div>
+      <div class="row"><div class="info"><div class="nm">Semaglutide <span class="mg">30mg</span></div><div class="ben">Blood sugar &middot; weight loss &middot; appetite</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$200</div></div><div class="cell na"><div class="v">&mdash;</div></div></div></div>
+      <div class="row"><div class="info"><div class="nm">AOD-9604 <span class="mg">5mg</span></div><div class="ben">Fat loss &middot; metabolic &middot; recovery</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$85</div></div><div class="cell na"><div class="v">&mdash;</div></div></div></div>
+      <div class="row"><div class="info"><div class="nm">AOD-9604 <span class="mg">10mg</span></div><div class="ben">Fat loss &middot; metabolic &middot; recovery</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$150</div></div><div class="cell na"><div class="v">&mdash;</div></div></div></div>
+      <div class="row"><div class="info"><div class="nm">MOTS-C <span class="mg">10mg</span></div><div class="ben">Metabolic &middot; energy &middot; endurance</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$95</div></div><div class="cell kit"><div class="v">$130</div></div></div></div>
+      <div class="row"><div class="info"><div class="nm">MOTS-C <span class="mg">20mg</span></div><div class="ben">Metabolic &middot; energy &middot; endurance</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$130</div></div><div class="cell na"><div class="v">&mdash;</div></div></div></div>
+      <div class="row"><div class="info"><div class="nm">MOTS-C <span class="mg">40mg</span></div><div class="ben">Metabolic &middot; energy &middot; endurance</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$200</div></div><div class="cell na"><div class="v">&mdash;</div></div></div></div>
 
-      <div class="row"><div class="info"><div class="nm">KLOW <span class="mg">80mg</span></div><div class="ben">Anti-aging &middot; repair &middot; skin &middot; gut</div></div>
-        <div class="prices"><div class="cell vial"><div class="v">$160</div></div><div class="cell kit"><div class="v">$230</div></div></div></div>
-
-      <div class="row"><div class="info"><div class="nm">GLOW <span class="mg">70mg</span></div><div class="ben">Skin &middot; hair &middot; collagen &middot; healing</div></div>
-        <div class="prices"><div class="cell vial"><div class="v">$149</div></div><div class="cell kit"><div class="v">$210</div></div></div></div>
-
-      <div class="row"><div class="info"><div class="nm">GHK-Cu <span class="mg">100mg</span></div><div class="ben">Skin &middot; anti-aging &middot; hair &middot; healing</div></div>
-        <div class="prices"><div class="cell vial"><div class="v">$95</div></div><div class="cell kit"><div class="v">$135</div></div></div></div>
-
-      <div class="row"><div class="info"><div class="nm">BPC-157 <span class="mg">10mg</span></div><div class="ben">Recovery &middot; gut health &middot; injury repair</div></div>
-        <div class="prices"><div class="cell vial"><div class="v">$95</div></div><div class="cell kit"><div class="v">$160</div></div></div></div>
-
-      <div class="row"><div class="info"><div class="nm">KPV <span class="mg">10mg</span></div><div class="ben">Anti-inflammatory &middot; gut healing &middot; immune &middot; skin</div></div>
-        <div class="prices"><div class="cell vial"><div class="v">$95</div></div><div class="cell kit"><div class="v">$160</div></div></div></div>
-
-      <div class="row"><div class="info"><div class="nm">Wolverine+ <span class="mg">20mg</span></div><div class="ben">BPC-157 + TB-500 &middot; recovery &middot; tendon &middot; gut</div></div>
-        <div class="prices"><div class="cell vial"><div class="v">$170</div></div><div class="cell kit"><div class="v">$235</div></div></div></div>
+      <div class="cat"><span class="t">Growth Hormone</span><span class="ln"></span></div>
 
       <div class="row"><div class="info"><div class="nm">Tesamorelin <span class="mg">20mg</span></div><div class="ben">Fat loss &middot; growth hormone &middot; cognition</div></div>
         <div class="prices"><div class="cell vial"><div class="v">$195</div></div><div class="cell kit"><div class="v">$240</div></div></div></div>
-
       <div class="row"><div class="info"><div class="nm">CJC-1295 No DAC <span class="mg">5mg</span></div><div class="ben">Growth hormone &middot; muscle &middot; recovery &middot; sleep</div></div>
         <div class="prices"><div class="cell vial"><div class="v">$75</div></div><div class="cell kit"><div class="v">$110</div></div></div></div>
-
+      <div class="row"><div class="info"><div class="nm">CJC-1295 + Ipamorelin <span class="mg">10mg</span></div><div class="ben">Growth hormone &middot; muscle &middot; recovery &middot; fat loss</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$130</div></div><div class="cell kit"><div class="v">$165</div></div></div></div>
+      <div class="row"><div class="info"><div class="nm">Ipamorelin <span class="mg">10mg</span></div><div class="ben">Growth hormone &middot; recovery &middot; sleep</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$80</div></div><div class="cell na"><div class="v">&mdash;</div></div></div></div>
+      <div class="row"><div class="info"><div class="nm">HGH <span class="mg">10iu</span></div><div class="ben">Recovery &middot; anti-aging &middot; lean muscle &middot; vitality</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$60</div></div><div class="cell na"><div class="v">&mdash;</div></div></div></div>
       <div class="row"><div class="info"><div class="nm">HGH <span class="mg">24iu</span></div><div class="ben">Recovery &middot; anti-aging &middot; lean muscle &middot; vitality</div></div>
         <div class="prices"><div class="cell vial"><div class="v">$120</div></div><div class="cell kit"><div class="v">$160</div></div></div></div>
+      <div class="row"><div class="info"><div class="nm">HGH <span class="mg">36iu</span></div><div class="ben">Recovery &middot; anti-aging &middot; lean muscle &middot; vitality</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$200</div></div><div class="cell na"><div class="v">&mdash;</div></div></div></div>
 
-      <div class="row"><div class="info"><div class="nm">MOTS-C <span class="mg">10mg</span></div><div class="ben">Metabolic &middot; energy &middot; endurance</div></div>
-        <div class="prices"><div class="cell vial"><div class="v">$95</div></div><div class="cell kit"><div class="v">$130</div></div></div></div>
+      <div class="cat"><span class="t">Recovery &amp; Healing</span><span class="ln"></span></div>
 
-      <div class="row"><div class="info"><div class="nm">SS-31 <span class="mg">10mg</span></div><div class="ben">Mitochondria &middot; energy &middot; cellular repair</div></div>
-        <div class="prices"><div class="cell vial"><div class="v">$95</div></div><div class="cell kit"><div class="v">$130</div></div></div></div>
+      <div class="row"><div class="info"><div class="nm">BPC-157 <span class="mg">10mg</span></div><div class="ben">Recovery &middot; gut health &middot; injury repair</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$95</div></div><div class="cell kit"><div class="v">$160</div></div></div></div>
+      <div class="row"><div class="info"><div class="nm">TB-500 <span class="mg">10mg</span></div><div class="ben">Recovery &middot; injury repair &middot; flexibility</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$110</div></div><div class="cell na"><div class="v">&mdash;</div></div></div></div>
+      <div class="row"><div class="info"><div class="nm">Wolverine+ <span class="mg">20mg</span></div><div class="ben">BPC-157 + TB-500 &middot; recovery &middot; tendon &middot; gut</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$170</div></div><div class="cell kit"><div class="v">$235</div></div></div></div>
+      <div class="row"><div class="info"><div class="nm">Wolverine+ <span class="mg">30mg</span></div><div class="ben">BPC-157 + TB-500 &middot; recovery &middot; tendon &middot; gut</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$210</div></div><div class="cell na"><div class="v">&mdash;</div></div></div></div>
+      <div class="row"><div class="info"><div class="nm">KPV <span class="mg">10mg</span></div><div class="ben">Anti-inflammatory &middot; gut healing &middot; immune &middot; skin</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$95</div></div><div class="cell kit"><div class="v">$160</div></div></div></div>
+      <div class="row"><div class="info"><div class="nm">GHK-Cu <span class="mg">100mg</span></div><div class="ben">Skin &middot; anti-aging &middot; hair &middot; healing</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$95</div></div><div class="cell kit"><div class="v">$135</div></div></div></div>
 
+      <div class="cat"><span class="t">Skin &amp; Anti-Aging</span><span class="ln"></span></div>
+
+      <div class="row"><div class="info"><div class="nm">KLOW <span class="mg">80mg</span></div><div class="ben">Anti-aging &middot; repair &middot; skin &middot; gut</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$160</div></div><div class="cell kit"><div class="v">$230</div></div></div></div>
+      <div class="row"><div class="info"><div class="nm">GLOW <span class="mg">70mg</span></div><div class="ben">Skin &middot; hair &middot; collagen &middot; healing</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$149</div></div><div class="cell kit"><div class="v">$210</div></div></div></div>
+      <div class="row"><div class="info"><div class="nm">Melanotan II <span class="mg">10mg</span></div><div class="ben">Tanning &middot; libido</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$80</div></div><div class="cell na"><div class="v">&mdash;</div></div></div></div>
+      <div class="row"><div class="info"><div class="nm">Snap-8 <span class="mg">10mg</span></div><div class="ben">Anti-wrinkle &middot; skin smoothing</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$80</div></div><div class="cell na"><div class="v">&mdash;</div></div></div></div>
+      <div class="row"><div class="info"><div class="nm">Epithalon <span class="mg">10mg</span></div><div class="ben">Longevity &middot; sleep &middot; anti-aging</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$80</div></div><div class="cell na"><div class="v">&mdash;</div></div></div></div>
       <div class="row"><div class="info"><div class="nm">NAD+ <span class="mg">500mg</span></div><div class="ben">Anti-aging &middot; energy &middot; focus</div></div>
         <div class="prices"><div class="cell vial"><div class="v">$110</div></div><div class="cell kit"><div class="v">$150</div></div></div></div>
 
+      <div class="cat"><span class="t">Cognitive &amp; Mood</span><span class="ln"></span></div>
+
       <div class="row"><div class="info"><div class="nm">Semax <span class="mg">10mg</span></div><div class="ben">Brain function &middot; focus &middot; memory &middot; mood</div></div>
         <div class="prices"><div class="cell vial"><div class="v">$160</div></div><div class="cell kit"><div class="v">$200</div></div></div></div>
+      <div class="row"><div class="info"><div class="nm">Semax <span class="mg">30mg</span></div><div class="ben">Brain function &middot; focus &middot; memory &middot; mood</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$150</div></div><div class="cell na"><div class="v">&mdash;</div></div></div></div>
+      <div class="row"><div class="info"><div class="nm">Selank <span class="mg">10mg</span></div><div class="ben">Anxiety &middot; focus &middot; calm</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$75</div></div><div class="cell na"><div class="v">&mdash;</div></div></div></div>
+      <div class="row"><div class="info"><div class="nm">Selank <span class="mg">30mg</span></div><div class="ben">Anxiety &middot; focus &middot; calm</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$150</div></div><div class="cell na"><div class="v">&mdash;</div></div></div></div>
+      <div class="row"><div class="info"><div class="nm">DSIP <span class="mg">10mg</span></div><div class="ben">Deep sleep &middot; recovery &middot; stress</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$80</div></div><div class="cell na"><div class="v">&mdash;</div></div></div></div>
 
-      <div class="row"><div class="info"><div class="nm">CJC-1295 + Ipamorelin <span class="mg">10mg</span></div><div class="ben">Growth hormone &middot; muscle &middot; recovery &middot; fat loss</div></div>
-        <div class="prices"><div class="cell vial"><div class="v">$130</div></div><div class="cell kit"><div class="v">$165</div></div></div></div>
+      <div class="cat"><span class="t">Cellular &amp; Hormonal</span><span class="ln"></span></div>
 
-      <div class="row"><div class="info"><div class="nm">Tirzepatide <span class="mg">30mg</span></div><div class="ben">Blood sugar &middot; weight loss &middot; appetite control</div></div>
-        <div class="prices"><div class="cell vial"><div class="v">$130</div></div><div class="cell kit"><div class="v">$175</div></div></div></div>
+      <div class="row"><div class="info"><div class="nm">SS-31 <span class="mg">10mg</span></div><div class="ben">Mitochondria &middot; energy &middot; cellular repair</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$95</div></div><div class="cell kit"><div class="v">$130</div></div></div></div>
+      <div class="row"><div class="info"><div class="nm">Kisspeptin <span class="mg">10mg</span></div><div class="ben">Hormonal &middot; libido &middot; fertility</div></div>
+        <div class="prices"><div class="cell vial"><div class="v">$80</div></div><div class="cell na"><div class="v">&mdash;</div></div></div></div>
     </div>
 
     <div class="bac"><div class="n">Bacteriostatic Water <span>3ml &middot; for reconstitution</span></div><div class="v">$19.99</div></div>
+    <div class="note">&mdash; Full-kit pricing available on more products by request &middot; message us for kit options and bundles.</div>
 
     <footer>
       <div class="foot-badges">
